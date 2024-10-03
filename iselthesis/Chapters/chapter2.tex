@@ -7,6 +7,14 @@
 \chapter{Estado de arte}
 \label{capitulo:estado_arte}
 
-Este problema é denominado \acrfull{uctp} e de acordo com \cite{goos_complexity_1996} são apresentados cinco casos em que problemas de criação de horários são NP-completo o que explica a sua complexidade, apesar de problemas de criação de horários universitários serem maiores mas mais simples.
+Este problema é denominado \acrfull{uctp} e é normalmente conhecido por ser um problema de otimização, caso se pretenda obter a melhor solução possível. Caso se presenta apenas descobrir uma solução possível diz-se que é um problema de procura. No contexto de problema de otimização, o objetivo consiste em alocar múltiplos recursos (salas, professores) em múltiplos períodos de tempo de modo a respeitar as restrições rígidas e a minimizar as violações das restrições flexiveis.
+
+De acordo com \cite{goos_complexity_1996} são apresentados cinco casos em que problemas de criação de horários são NP-completo o que explica a sua complexidade, apesar de problemas de criação de horários universitários serem maiores mas mais simples.
+
+No artigo \cite{schaerf_survey_nodate} este tipo de problemas são divididos em três classes distintas: \textit{School timetabling}, \textit{Course timetabling} e \textit{Examination timetabling}. O \textit{School timetabling} tem um foco em atribuir as múltiplas disciplinas sem que haja sobreposição de aulas (muito importante em escolas primárias e secundárias). O \textit{Course timetabling} é um problema universitário com um foco em minimizar sobreposições de aulas com alunos em comum. O \texit{Examination timetabling} consiste na atribuição de exames universitários tendo um foco em evitar sobreposição de exames e espaçar os exames num certo período de tempo. Este projeto terá um foco na categoria de \textit{Course timetabling}.
+
+Para além disso são mencionadas várias técnicas utilizadas para a solução deste tipo de problema, nomeadamente a utilização de \textit{direct heuristics} que consistiam numa \textcolor{red}{simulação de como os humanos resolviam o problema.} Mais tarde os investigadores começaram a utilizar técnicas mais generalistas baseadas em \textit{integer programming}, \textit{network flow}, entre outros. O problema acabou por ser abordado como um problema, muito conhecido, denominado de \textit{graph coloring}.
 
 No artigo \cite{tuga_hybrid_2007} é apresentada uma solução híbrida com a utilização do \acrshort{sa}. Nesta solução, para além do uso do \acrshort{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe chain neighbourhood}, denominada de \textit{Pair-wise Kempe Chain}, incorporada no \acrshort{sa} é possível minimizar o número de restrições flexiveis violadas mas também melhorar as trocas de eventos em caso de conflitos sem violar as restrições rígidas.
+
+\textcolor{red}{Falta explicar o Kempe chain neighbourhood, simulated annealing}

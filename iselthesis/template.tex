@@ -16,6 +16,7 @@
 %%% Version v2.6.2: (October 2022)
 %%% Version v3.0: May 2024
 %%% Version v4.0: June 2024
+%%% Version v4.0.1: September 2024
 %%% 
 %%% 
 %%% This template is vaguely based on a template from the
@@ -32,8 +33,8 @@
     
 % The default option marked with (*)
 \documentclass[
-  docdegree=mscprep,        % msc(*), mscprep, bsc
-  doctype=project, % dissertation(*), project
+  docdegree=mscprep,    % msc(*), mscprep, bsc
+  doctype=project, 		% dissertation(*), project
   lang=pt,              % en, pt(*)
   coverlang=pt,         % defaults to main language
   fontstyle=kpfonts,    % baskervaldx bookman charter ebgaramond fbb fourier garamond
@@ -97,6 +98,7 @@
 \AtEndDocument{\ifdefined\there@is@a@figure\label{fig:was:used:in:doc}\fi} 
 \newcommand{\conditionalLoF}{\@ifundefined{r@fig:was:used:in:doc}{}{\listoffigures}}%
 
+
 %%==== DANGER ==== DANGER ==== DANGER ==== DANGER ==== DANGER ====
 %%==== DANGER ==== DANGER ==== DANGER ==== DANGER ==== DANGER ====
 %%==== DANGER ==== DANGER ==== DANGER ==== DANGER ==== DANGER ====
@@ -126,7 +128,7 @@
 % --------------------------------------------------------
 \ncthesismainmatter	    % The main text
 % --------------------------------------------------------
-\ncprintchapters        % Print document chapters		
+\printchapters        % Print document chapters		
 \printbib		        % Print the bibliography
 \printotherlists 	    % If option 'otherlistsat=back', print other lists of contents according to instructions given above, otherwise do nothing
 
