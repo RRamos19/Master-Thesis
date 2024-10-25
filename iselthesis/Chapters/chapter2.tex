@@ -11,7 +11,9 @@ Problemas de agendamento são encontrados em múltiplas áreas tais como, medici
 
 O \textit{School timetabling} tem um foco em atribuir as múltiplas disciplinas sem que haja sobreposição de aulas (muito importante em escolas primárias e secundárias). O \textit{Course timetabling} é um problema universitário com um foco em minimizar sobreposições de aulas com alunos em comum. O \textit{Examination timetabling} consiste na atribuição de exames universitários tendo um foco em evitar sobreposição de exames e espaçar os exames num certo período de tempo. Este projeto terá um foco na categoria de \textit{Course timetabling}.
 
-O problema de agendamento da categoria \textit{Course timetabling} é denominado \acrfull{uctp} e é normalmente conhecido por ser um problema de otimização, caso se pretenda obter a melhor solução possível. Caso se presenta apenas descobrir uma solução possível diz-se que é um problema de procura. No contexto de problema de otimização, o objetivo consiste em alocar múltiplos recursos (salas, professores) em múltiplos períodos de tempo de modo a respeitar as restrições rígidas e a minimizar as violações das restrições flexiveis.
+O problema de agendamento da categoria \textit{Course timetabling} é denominado \acrfull{uctp} e é normalmente conhecido por ser um problema de otimização, caso se pretenda obter a melhor solução possível. Caso se presenta apenas descobrir uma solução possível diz-se que é um problema de procura. No contexto de problema de otimização, o objetivo consiste em alocar múltiplos recursos (salas, professores) em múltiplos períodos de tempo de modo a respeitar as restrições rígidas e a minimizar as violações das restrições flexiveis. 
+
+Este problema de \textit{Course timetabling} tem algumas diferenças em relação à categoria \textit{School timetabling}. As maiores diferenças são as seguintes: aulas distintas podem ter alunos em comum, os professores estão encarregados de dar uma ou mais disciplinas e a capacidade das salas deve ser considerada quando se faz o agendamento das aulas.
 
 De acordo com \cite{goos_complexity_1996} são apresentados cinco casos em que problemas de criação de horários são NP-completo, o que explica a sua complexidade, apesar de problemas de criação de horários universitários serem maiores mas mais simples.
 
@@ -19,23 +21,35 @@ Um problema é considerado NP-completo caso seja \acrfull{np}, tal como, possa s
 
 No artigo \cite{schaerf_survey_1999}, já mencionado anteriormente, são mencionadas várias técnicas utilizadas para a solução deste tipo de problema, nomeadamente a utilização de \textit{direct heuristics} que consistem numa simulação da forma humana de resolver o problema. Mais tarde os investigadores começaram a utilizar técnicas mais generalistas baseadas em \textit{integer programming}, \textit{network flow}, entre outros. O problema acabou por ser abordado como um problema, muito conhecido, denominado de \textit{graph coloring}.
 
-\textit{Direct Heuristics} começam com um processo de preenchimento do horário considerando uma disciplina, ou grupo de disciplinas, de cada vez de modo que não ocorram conflitos. Depois do preenchimento estar concluido começa o processo de troca da organização das disciplinas para acomodar as outras aulas. \textcolor{red}{Explicar melhor}
+O problema de agendamento começou por ser abordado como um \textit{Basic search problem}. Olhando para o artigo (de Werra 1985) é possível ver uma possível solução do problema que é mostrada a seguir.
 
-Um exemplo típico da utilização deste método foi no sistema SCHOLA descrito no artigo (Junginger 1986). O sistema foi baseado no seguimento de três estratégias distintas.
+\begin{equation}
+    \begin{aligned}
+        & \text{find } y_{ik} \quad &&(i = 1..q; k = 1..p)                               \\
+        \text{s.t.} \quad & \displaystyle\sum_{k=1}^{p} y_{ik} = k_i \quad &&(i = 1..q)  \\
+        & \displaystyle\sum_{i=1}^{q} y_{ik} \leq l_k \quad &&(k = 1..p)                 \\
+        & \displaystyle\sum_{i \in S_l} y_{ik} \leq 1 \quad &&(l = 1..r; k = 1..p)       \\
+        & y_{ik} = 0 \text{ or } 1 \quad &&(i = 1..q; k = 1..p)                        
+    \end{aligned}
+\end{equation}
 
-\begin{enumerate}[(a)]
-    \item Agendamento da disciplina mais urgente ao período mais favorável para aquela disciplina. \label{estrategia_A}
-    \item Quando um período só pode ser utilizado por uma disciplina, é atribuido o período para dita disciplina. \label{estrategia_B}
-    \item Troca uma disciplina já agendada para um período livre, de modo a deixar o período para a disciplina que se está a considerar agendar neste momento. \label{estrategia_C}
-\end{enumerate}
+%\textit{Direct Heuristics} começam com um processo de preenchimento do horário considerando uma disciplina, ou grupo de disciplinas, de cada vez de modo que não ocorram conflitos. Depois do preenchimento estar concluido começa o processo de troca da organização das disciplinas para acomodar as outras aulas. \textcolor{red}{Explicar melhor}
 
-Uma aula é dita ''urgente'' quando é fortemente condicionada, ou seja, quando o professor (e a turma) têm pouca disponibilidade e muitas aulas para dar. Um período é ''favorável'' quando há poucas disciplinas que podem ser agendadas para esse mesmo período, tendo em conta a disponibilidade dos outros professores e turmas.
+%Um exemplo típico da utilização deste método foi no sistema SCHOLA descrito no artigo (Junginger 1986). O sistema foi baseado no seguimento de três estratégias distintas.
 
-O sistema SCHOLA agenda as disciplinas de acordo com as estratégias \ref{estrategia_A} e \ref{estrategia_B} o tanto quando possível. Quando mais nenhuma disciplina pode ser agendada desta forma, o sistema começa a seguir a estratégia \ref{estrategia_C}.
+%\begin{enumerate}[(a)]
+%    \item Agendamento da disciplina mais urgente ao período mais favorável para aquela disciplina. \label{estrategia_A}
+%    \item Quando um período só pode ser utilizado por uma disciplina, é atribuido o período para dita disciplina. \label{estrategia_B}
+%    \item Troca uma disciplina já agendada para um período livre, de modo a deixar o período para a disciplina que se está a considerar agendar neste momento. \label{estrategia_C}
+%\end{enumerate}
 
-A estratégia \ref{estrategia_A} é o núcleo do sistema, e é utilizada em quase todos os sistemas, com diferentes formas de definir urgência e favorabilidade. A utilização da estratégia \ref{estrategia_B} pode impedir que a estratégia \ref{estrategia_A} entre em becos sem saída. A estratégia \ref{estrategia_C} fornece uma forma limitada de retrocesso para recuperar dos "erros" da estratégia \ref{estrategia_A}.
+%Uma aula é dita ''urgente'' quando é fortemente condicionada, ou seja, quando o professor (e a turma) têm pouca disponibilidade e muitas aulas para dar. Um período é ''favorável'' quando há poucas disciplinas que podem ser agendadas para esse mesmo período, tendo em conta a disponibilidade dos outros professores e turmas.
 
-\textcolor{red}{Falta resumir o texto}
+%O sistema SCHOLA agenda as disciplinas de acordo com as estratégias \ref{estrategia_A} e \ref{estrategia_B} o tanto quando possível. Quando mais nenhuma disciplina pode ser agendada desta forma, o sistema começa a seguir a estratégia \ref{estrategia_C}.
+
+%A estratégia \ref{estrategia_A} é o núcleo do sistema, e é utilizada em quase todos os sistemas, com diferentes formas de definir urgência e favorabilidade. A utilização da estratégia \ref{estrategia_B} pode impedir que a estratégia \ref{estrategia_A} entre em becos sem saída. A estratégia \ref{estrategia_C} fornece uma forma limitada de retrocesso para recuperar dos ''erros'' da estratégia \ref{estrategia_A}.
+
+%\textcolor{red}{Falta resumir o texto}
 
 \textit{Graph Coloring} consiste num problema de coloração dos vértices de um grafo. A coloração dos vértices deve ser efetuada de forma a que dois vértices adjacentes não fiquem com cores iguais. A cor é apenas um rótulo que é atribuido ao vértice e por isso esta técnica pode ser utilizada para resolver múltiplos tipos de problemas.
 
