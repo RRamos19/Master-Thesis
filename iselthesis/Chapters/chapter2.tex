@@ -19,50 +19,70 @@ De acordo com \cite{goos_complexity_1996} são apresentados cinco casos em que p
 
 Um problema é considerado NP-completo caso seja \acrfull{np}, tal como, possa ser resolvido em tempo polinomial. Um problema \acrshort{np} é um problema que pode ser verificado em tempo polinomial por uma máquina de turing não determinística. Ou seja, um problema NP-completo é um problema que pode ter a sua solução verificada em tempo polinomial e que possa ser resolvido em tempo polinomial.
 
-No artigo \cite{schaerf_survey_1999}, já mencionado anteriormente, são mencionadas várias técnicas utilizadas para a solução deste tipo de problema, nomeadamente a utilização de \textit{direct heuristics} que consistem numa simulação da forma humana de resolver o problema. Mais tarde os investigadores começaram a utilizar técnicas mais generalistas baseadas em \textit{integer programming}, \textit{network flow}, entre outros. O problema acabou por ser abordado como um problema, muito conhecido, denominado de \textit{graph coloring}.
+No artigo \cite{schaerf_survey_1999}, já mencionado anteriormente, são abordadas várias técnicas utilizadas para a solução deste tipo de problema. Nomeadamente a utilização de \textit{direct heuristics}, que consistem numa simulação da forma humana de resolver o problema. Mais tarde os investigadores começaram a utilizar técnicas mais generalistas baseadas em \textit{integer programming}, \textit{network flow}, entre outros. O problema acabou por ser abordado como um problema, muito conhecido, denominado de \textit{graph coloring}.
+
+\section{Basic search problem}
 
 O problema de agendamento começou por ser abordado como um \textit{Basic search problem}. Olhando para o artigo (de Werra 1985) é possível ver uma possível solução do problema que é mostrada a seguir.
 
-\begin{equation}
-    \begin{aligned}
-        & \text{find } y_{ik} \quad &&(i = 1..q; k = 1..p)                               \\
-        \text{s.t.} \quad & \displaystyle\sum_{k=1}^{p} y_{ik} = k_i \quad &&(i = 1..q)  \\
-        & \displaystyle\sum_{i=1}^{q} y_{ik} \leq l_k \quad &&(k = 1..p)                 \\
-        & \displaystyle\sum_{i \in S_l} y_{ik} \leq 1 \quad &&(l = 1..r; k = 1..p)       \\
-        & y_{ik} = 0 \text{ or } 1 \quad &&(i = 1..q; k = 1..p)                        
-    \end{aligned}
-\end{equation}
+\begin{itemize}[wide]
+    \item $i$ - Número de cursos (varia entre 1 e q);
 
-%\textit{Direct Heuristics} começam com um processo de preenchimento do horário considerando uma disciplina, ou grupo de disciplinas, de cada vez de modo que não ocorram conflitos. Depois do preenchimento estar concluido começa o processo de troca da organização das disciplinas para acomodar as outras aulas. \textcolor{red}{Explicar melhor}
+    \item $k$ - Número de períodos (varia entre 1 e p);
 
-%Um exemplo típico da utilização deste método foi no sistema SCHOLA descrito no artigo (Junginger 1986). O sistema foi baseado no seguimento de três estratégias distintas.
+    \item $k_{i}$ - Número de aulas;
 
-%\begin{enumerate}[(a)]
-%    \item Agendamento da disciplina mais urgente ao período mais favorável para aquela disciplina. \label{estrategia_A}
-%    \item Quando um período só pode ser utilizado por uma disciplina, é atribuido o período para dita disciplina. \label{estrategia_B}
-%    \item Troca uma disciplina já agendada para um período livre, de modo a deixar o período para a disciplina que se está a considerar agendar neste momento. \label{estrategia_C}
-%\end{enumerate}
+    \item $l_{k}$ - Número máximo de aulas que podem ser agendadas num dado período;
 
-%Uma aula é dita ''urgente'' quando é fortemente condicionada, ou seja, quando o professor (e a turma) têm pouca disponibilidade e muitas aulas para dar. Um período é ''favorável'' quando há poucas disciplinas que podem ser agendadas para esse mesmo período, tendo em conta a disponibilidade dos outros professores e turmas.
+    \item $y_{ik}$ - Estado do agendamento
+\end{itemize}
 
-%O sistema SCHOLA agenda as disciplinas de acordo com as estratégias \ref{estrategia_A} e \ref{estrategia_B} o tanto quando possível. Quando mais nenhuma disciplina pode ser agendada desta forma, o sistema começa a seguir a estratégia \ref{estrategia_C}.
+\begin{align}
+    & \text{descobre } y_{ik} \quad &&(i = 1..q; k = 1..p) \\
+    \text{s.t.} \quad & \displaystyle\sum_{k=1}^{p} y_{ik} = k_i \quad &&(i = 1..q) \label{eq_basic:aulas}\\
+    & \displaystyle\sum_{i=1}^{q} y_{ik} \leq l_k \quad &&(k = 1..p) \label{eq_basic:salas}\\
+    & \displaystyle\sum_{i \in S_l} y_{ik} \leq 1 \quad &&(l = 1..r; k = 1..p) \label{eq_basic:sobreposicao}\\
+    & y_{ik} = 0 \text{ or } 1 \quad &&(i = 1..q; k = 1..p) \label{eq_basic:agendamento}
+\end{align}
 
-%A estratégia \ref{estrategia_A} é o núcleo do sistema, e é utilizada em quase todos os sistemas, com diferentes formas de definir urgência e favorabilidade. A utilização da estratégia \ref{estrategia_B} pode impedir que a estratégia \ref{estrategia_A} entre em becos sem saída. A estratégia \ref{estrategia_C} fornece uma forma limitada de retrocesso para recuperar dos ''erros'' da estratégia \ref{estrategia_A}.
+A restrição \eqref{eq_basic:aulas} impõe que cada disciplina é composta pelo número correto de aulas. A restrição \eqref{eq_basic:salas} impõe que não devem existir mais aulas que salas disponíveis. A restrição \eqref{eq_basic:sobreposicao} previne que aulas conflituosas possam ser agendadas no mesmo período.
 
-%\textcolor{red}{Falta resumir o texto}
+No \eqref{eq_basic:agendamento} é indicado se a aula foi agendada, caso $y_{ik} = 1$ ou $y_{ik} = 0$ caso contrário.
+
+\section{Problema de otimização}
+
+\section{Variantes do problema}
+
+\section{Técnicas e abordagens utilizadas como solução}
+
+\subsection{Redução a \textit{graph coloring}}
 
 \textit{Graph Coloring} consiste num problema de coloração dos vértices de um grafo. A coloração dos vértices deve ser efetuada de forma a que dois vértices adjacentes não fiquem com cores iguais. A cor é apenas um rótulo que é atribuido ao vértice e por isso esta técnica pode ser utilizada para resolver múltiplos tipos de problemas.
 
 \textcolor{red}{Possivelmente explicar melhor}
 
+\subsection{\textit{Integer linear programming}}
+
 \textit{Integer Programming} é um modelo de programação linear onde as variáveis de decisão são restritas a assumir apenas valores inteiros. Este tipo de problema é normalmente utilizado em cenários como a alocação de recursos, roteamento, escalonamento, entre outros. O seu funcionamento consiste em maximizar ou minimizar o resultado da função objetivo. A função objetivo e as restrições podem ser lineares ou não lineares mas as variáveis devem ser números inteiros.
+
+\subsection{Técnicas de \textit{network flow}}
 
 \textit{Network Flow} é um conceito da teoria dos grafos. O fluxo é representado como um grafo direcionado, ou seja, segue uma direção de acordo com as setas representadas nas arestas. Existem duas regras para o funcionamento correto do fluxo. O fluxo que entra num nó deve ser igual ao fluxo que sai do nó. Cada aresta possui uma capacidade máxima de fluxo que deve ser respeitada. Este tipo de conceito é normalmente utilizado para problemas como logística e transporte, redes de comunicação e informações, energia e distribuição de recursos, entre outros.
 
-% Não sei se faz sentido estar incluido
-Com o passar dos anos o problema foi transformado num problema de otimização. Em 1986 Junginger propôs a adição de uma função objetivo e posteriormente em 1996 Colorni et al. introduziram funções objetivo mais complexas. Yoshikawa et al. em 1996 introduziram uma linguagem de restrições associando uma penalização por cada restrição violada. Neste período eles consideram a possibilidade que um professor é forçado a ensinar num período no qual, dito professor, pode não estar disponível.
-%
+\subsection{\textit{Tabu search}}
+
+\subsection{Abordagem baseada em regras}
+
+\subsection{\textit{Constraint logic programming approach}}
+
+\subsection{Outras técnicas e abordagens}
+
+\section{Solução híbrida}
 
 No artigo \cite{tuga_hybrid_2007} é apresentada uma solução híbrida com a utilização do \acrshort{sa}. Nesta solução, para além do uso do \acrshort{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe chain neighbourhood}, denominada de \textit{Pair-wise Kempe Chain}, incorporada no \acrshort{sa} é possível minimizar o número de restrições flexiveis violadas mas também melhorar as trocas de eventos em caso de conflitos sem violar as restrições rígidas.
+
+\subsection{\textit{Kempe chain neighbourhood}}
+
+\subsection{\textit{Simulated annealing}}
 
 \textcolor{red}{Falta explicar o Kempe chain neighbourhood, simulated annealing}
