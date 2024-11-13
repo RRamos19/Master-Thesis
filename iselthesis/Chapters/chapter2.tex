@@ -23,47 +23,69 @@ No artigo \cite{schaerf_survey_1999}, já mencionado anteriormente, são abordad
 
 \section{Basic search problem}
 
-O problema de agendamento começou por ser abordado como um \textit{Basic search problem}. Olhando para o artigo (de Werra 1985) é possível ver uma possível solução do problema que é mostrada a seguir.
+O problema de agendamento começou por ser abordado como um \textit{Basic search problem}. Olhando para o artigo \cite{de_werr_introduction_nodate} é possível ver uma possível solução do problema que é mostrada a seguir.
 
-\begin{itemize}[wide]
-    \item $i$ - Número de cursos (varia entre 1 e q);
-
-    \item $k$ - Número de períodos (varia entre 1 e p);
-
-    \item $k_{i}$ - Número de aulas;
-
-    \item $l_{k}$ - Número máximo de aulas que podem ser agendadas num dado período;
-
-    \item $y_{ik}$ - Estado do agendamento
-\end{itemize}
+{
+\setlength{\abovedisplayskip}{0pt}
+\setlength{\abovedisplayshortskip}{0pt}
+\setlength{\belowdisplayskip}{20pt}
 
 \begin{align}
-    & \text{descobre } y_{ik} \quad &&(i = 1..q; k = 1..p) \\
+    & \text{descobre } y_{ik} \quad &&(i = 1..q; k = 1..p) \nonumber \\
     \text{s.t.} \quad & \displaystyle\sum_{k=1}^{p} y_{ik} = k_i \quad &&(i = 1..q) \label{eq_basic:aulas}\\
     & \displaystyle\sum_{i=1}^{q} y_{ik} \leq l_k \quad &&(k = 1..p) \label{eq_basic:salas}\\
     & \displaystyle\sum_{i \in S_l} y_{ik} \leq 1 \quad &&(l = 1..r; k = 1..p) \label{eq_basic:sobreposicao}\\
     & y_{ik} = 0 \text{ or } 1 \quad &&(i = 1..q; k = 1..p) \label{eq_basic:agendamento}
 \end{align}
+}
+
+\begin{itemize}[itemsep=5pt, topsep=5pt, partopsep=5pt, parsep=5pt]
+    \item $i$ - Número de cursos (varia entre 1 e q);
+    \item $k$ - Número de períodos (varia entre 1 e p);
+    \item $k_{i}$ - Número de aulas;
+    \item $l_{k}$ - Número máximo de aulas que podem ser agendadas num dado período;
+    \item $y_{ik}$ - Estado do agendamento
+\end{itemize}
 
 A restrição \eqref{eq_basic:aulas} impõe que cada disciplina é composta pelo número correto de aulas. A restrição \eqref{eq_basic:salas} impõe que não devem existir mais aulas que salas disponíveis. A restrição \eqref{eq_basic:sobreposicao} previne que aulas conflituosas possam ser agendadas no mesmo período.
 
-No \eqref{eq_basic:agendamento} é indicado se a aula foi agendada, caso $y_{ik} = 1$ ou $y_{ik} = 0$ caso contrário.
+No \eqref{eq_basic:agendamento} caso $y_{ik} = 1$ é indicado que a aula foi agendada. Caso $y_{ik} = 0$ é indicado que a aula não foi agendada.
 
 \section{Problema de otimização}
+
+No artigo \cite{de_werr_introduction_nodate} é incluída uma função objetivo na equação mostrada anteriormente.
+
+{
+\setlength{\abovedisplayskip}{0pt}
+\setlength{\abovedisplayshortskip}{0pt}
+\setlength{\belowdisplayskip}{20pt}
+
+\begin{align*}
+    \text{max } \displaystyle\sum_{i=1}^{q} \displaystyle\sum_{k=1}^{p} d_{ik}y_{ik}
+\end{align*}
+}
+
+\begin{itemize}[itemsep=5pt, topsep=5pt, partopsep=5pt, parsep=5pt]
+    \item $d_{ik}$ - É o desejo de ter uma aula do curso $K_{i}$ no período k.
+\end{itemize}
+
+No artigo \cite{tripathy_computerised_1992} é considerada uma matriz de conflitos $C_{qxq}$ com valores inteiros, de modo que $c_{ij}$ representa o número de estudantes que estão matriculados em ambos os cursos $K_i$ e $K_j$. Dessa forma, $c_{ij}$ também representa uma medida de insatisfação caso uma aula de $K_i$ e uma aula de $K_j$ sejam agendadas ao mesmo tempo. Tripathy tenta minimizar a insatisfação global, obtida como a soma de todas as insatisfações desse tipo.
+
+Múltiplos autores após o artigo \cite{h_a_combinatorial_1987} separam as restrições em duas categorias, restrições rígidas e restrições suaves. As restrições rígidas limitam o espaço de procura. As restrições suaves são incluídas na função objetivo.
 
 \section{Variantes do problema}
 
 \section{Técnicas e abordagens utilizadas como solução}
 
-\subsection{Redução a \textit{graph coloring}}
+\subsection{\textit{Graph Coloring}}
 
-\textit{Graph Coloring} consiste num problema de coloração dos vértices de um grafo. A coloração dos vértices deve ser efetuada de forma a que dois vértices adjacentes não fiquem com cores iguais. A cor é apenas um rótulo que é atribuido ao vértice e por isso esta técnica pode ser utilizada para resolver múltiplos tipos de problemas.
+Graph Coloring consiste num problema de coloração dos vértices de um grafo. A coloração dos vértices deve ser efetuada de forma a que dois vértices adjacentes não fiquem com cores iguais. A cor é apenas um rótulo que é atribuido ao vértice e por isso esta técnica pode ser utilizada para resolver múltiplos tipos de problemas.
 
 \textcolor{red}{Possivelmente explicar melhor}
 
 \subsection{\textit{Integer linear programming}}
 
-\textit{Integer Programming} é um modelo de programação linear onde as variáveis de decisão são restritas a assumir apenas valores inteiros. Este tipo de problema é normalmente utilizado em cenários como a alocação de recursos, roteamento, escalonamento, entre outros. O seu funcionamento consiste em maximizar ou minimizar o resultado da função objetivo. A função objetivo e as restrições podem ser lineares ou não lineares mas as variáveis devem ser números inteiros.
+Integer Programming é um modelo de programação linear onde as variáveis de decisão são restritas a assumir apenas valores inteiros. Este tipo de problema é normalmente utilizado em cenários como a alocação de recursos, roteamento, escalonamento, entre outros. O seu funcionamento consiste em maximizar ou minimizar o resultado da função objetivo. A função objetivo e as restrições podem ser lineares ou não lineares mas as variáveis devem ser números inteiros.
 
 \subsection{Técnicas de \textit{network flow}}
 
