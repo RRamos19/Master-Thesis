@@ -7,48 +7,49 @@
 \chapter{Estado de arte}
 \label{capitulo:estado_arte}
 
-Problemas de agendamento são encontrados em múltiplas áreas tais como, medicina, transporte, logística, educação, entre outros. Este projeto terá um foco nos problemas de agendamento na área da educação. Os problemas de agendamento na área de educação podem ser divididos em três categorias, mencionado no artigo \cite{schaerf_survey_1999}, estas categorias são denominadas de \textit{School timetabling}, \textit{Course timetabling} e \textit{Examination timetabling}.
+Problemas de agendamento são encontrados em múltiplas áreas tais como, medicina, transporte, logística, educação, entre outros. Problemas de agendamento são desafios relacionados com a alocação de recursos (como tempo, espaço ou pessoas) a determinadas tarefas, atividades ou eventos, respeitando um conjunto de restrições. Este tipo de problemas são conhecidos pela sua alta complexidade combinatória pois podem existir múltiplas soluções diferentes mas apenas um grupo muito reduzido de soluções ótimas.
 
-O \textit{School timetabling} tem um foco em atribuir as múltiplas disciplinas sem que haja sobreposição de aulas (muito importante em escolas primárias e secundárias). O \textit{Course timetabling} é um problema universitário com um foco em minimizar sobreposições de aulas com alunos em comum. O \textit{Examination timetabling} consiste na atribuição de exames universitários tendo um foco em evitar sobreposição de exames e espaçar os exames num certo período de tempo. Este projeto terá um foco na categoria de \textit{Course timetabling}.
+Este projeto terá um foco nos problemas de agendamento na área da educação. Os problemas de agendamento na área de educação podem ser divididos em três categorias, mencionado no artigo \cite{SurveyAutomatedTimetabling_Schaerf_1999}, estas categorias são denominadas de \textit{School timetabling}, \textit{Course timetabling} e \textit{Examination timetabling}.
+
+O \textit{School timetabling} consiste em atribuir todas as disciplinas, , sem que haja sobreposição de aulas (muito importante em escolas primárias e secundárias). O \textit{Course timetabling} é um problema universitário com um foco em minimizar sobreposições de aulas com alunos em comum. O \textit{Examination timetabling} consiste na atribuição de exames universitários tendo um foco em evitar sobreposição de exames e espaçar os exames num certo período de tempo. Este projeto terá um foco na categoria de \textit{Course timetabling}.
 
 \section{Course timetabling}
 
-O problema de agendamento da categoria \textit{Course timetabling} é denominado \acrfull{uctp} e é normalmente conhecido por ser um problema de otimização, caso se pretenda obter a melhor solução possível. Caso se presenta apenas descobrir uma solução possível diz-se que é um problema de procura. No contexto de problema de otimização, o objetivo consiste em alocar múltiplos recursos (salas, professores) em múltiplos períodos de tempo de modo a respeitar as restrições rígidas e a minimizar as violações das restrições flexiveis. 
+O problema de agendamento da categoria \textit{Course timetabling} é denominado \acrfull{uctp} e é normalmente conhecido por ser um problema de otimização, caso se pretenda obter a melhor solução possível. Caso se pretenda apenas descobrir uma solução possível diz-se que é um problema de procura. No contexto de problema de otimização, o objetivo consiste em alocar múltiplos recursos (salas, professores) em múltiplos períodos de tempo de modo a respeitar as restrições rígidas e a minimizar as violações das restrições flexiveis. 
 
 Este problema de \textit{Course timetabling} tem algumas diferenças em relação à categoria \textit{School timetabling}. As maiores diferenças são as seguintes: aulas distintas podem ter alunos em comum, os professores estão encarregados de dar uma ou mais disciplinas e a capacidade das salas deve ser considerada quando se faz o agendamento das aulas.
 
 \subsection{Problema NP-Completo}
 
-De acordo com \cite{goos_complexity_1996} são apresentados cinco casos em que problemas de criação de horários são NP-completo, o que explica a sua complexidade, apesar de problemas de criação de horários universitários serem maiores mas mais simples.
+De acordo com \cite{complexitytimetableconstruction_Cooper_1996} são apresentados cinco casos em que problemas de criação de horários são NP-completo, o que explica a sua complexidade, apesar de problemas de criação de horários universitários serem maiores mas mais simples.
 
-Um problema é considerado NP-completo caso seja \acrfull{np}, tal como, possa ser resolvido em tempo polinomial. Um problema \acrshort{np} é um problema que pode ser verificado em tempo polinomial por uma máquina de turing não determinística. Ou seja, um problema NP-completo é um problema que pode ter a sua solução verificada em tempo polinomial e que possa ser resolvido em tempo polinomial.
+Um problema é considerado NP-completo caso seja \acrfull{np}, ou seja, caso possa ser resolvido em tempo polinomial. Um problema \acrshort{np} é um problema que pode ser verificado em tempo polinomial por uma máquina de turing não determinística. Concluindo, um problema ''C'' diz-se NP-completo caso possa ter a sua solução verificada em tempo polinomial e que qualquer problema \acrshort{np} possa ser reduzido ao problema ''C'' em tempo polinomial.
 
-No artigo \cite{schaerf_survey_1999}, já mencionado anteriormente, são abordadas várias técnicas utilizadas para a solução deste tipo de problema. Nomeadamente a utilização de \textit{direct heuristics}, que consistem numa simulação da forma humana de resolver o problema. Mais tarde os investigadores começaram a utilizar técnicas mais generalistas baseadas em \textit{integer programming}, \textit{network flow}, entre outros. O problema acabou por ser abordado como um problema, muito conhecido, denominado de \textit{graph coloring}.
+No artigo \cite{SurveyAutomatedTimetabling_Schaerf_1999}, já mencionado anteriormente, são abordadas várias técnicas utilizadas para a solução deste tipo de problema. Nomeadamente a utilização de \textit{direct heuristics}, que consistem numa simulação da forma humana de resolver o problema. Mais tarde começaram a ser utilizadas técnicas mais generalistas baseadas em \textit{integer programming}, \textit{network flow}, entre outros. O problema acabou por ser abordado como um problema, muito conhecido, denominado de \textit{graph coloring}.
 
-\subsection{Problema de busca básica (Basic search problem)}
+\subsection{Problema de Basic search}
 
-O problema de agendamento começou por ser abordado como um problema de busca básica. Olhando para o artigo \cite{de_werr_introduction_nodate} é possível ver um algoritmo, em forma de equação, de uma possível solução do problema que é mostrada a seguir.
+O problema de agendamento começou por ser abordado como um problema de busca básica. Olhando para o artigo \cite{introductiontimetabling_Werra_1985} é possível ver um algoritmo, em forma de equação, de uma possível solução do problema que é mostrada a seguir.
 
-{
-\setlength{\abovedisplayskip}{0pt}
-\setlength{\abovedisplayshortskip}{0pt}
-\setlength{\belowdisplayskip}{20pt}
+\begin{figure}[ht]
+    \centering
+    \begin{align}
+        & \text{descobre } y_{ik} \quad &&(i = 1..q; k = 1..p) \nonumber \\
+        \text{s.t.} \quad & \displaystyle\sum_{k=1}^{p} y_{ik} = k_i \quad &&(i = 1..q) \label{eq_basic:aulas}\\
+        & \displaystyle\sum_{i=1}^{q} y_{ik} \leq l_k \quad &&(k = 1..p) \label{eq_basic:salas}\\
+        & \displaystyle\sum_{i \in S_l} y_{ik} \leq 1 \quad &&(l = 1..r; k = 1..p) \label{eq_basic:sobreposicao}\\
+        & y_{ik} = 0 \text{ or } 1 \quad &&(i = 1..q; k = 1..p) \label{eq_basic:agendamento}
+    \end{align}
+    \caption{Equação de Basic search}
+    \label{eq_basic}
+\end{figure}
 
-\begin{align} \label{eq_basic}
-    & \text{descobre } y_{ik} \quad &&(i = 1..q; k = 1..p) \nonumber \\
-    \text{s.t.} \quad & \displaystyle\sum_{k=1}^{p} y_{ik} = k_i \quad &&(i = 1..q) \label{eq_basic:aulas}\\
-    & \displaystyle\sum_{i=1}^{q} y_{ik} \leq l_k \quad &&(k = 1..p) \label{eq_basic:salas}\\
-    & \displaystyle\sum_{i \in S_l} y_{ik} \leq 1 \quad &&(l = 1..r; k = 1..p) \label{eq_basic:sobreposicao}\\
-    & y_{ik} = 0 \text{ or } 1 \quad &&(i = 1..q; k = 1..p) \label{eq_basic:agendamento}
-\end{align}
-}
-
-\begin{itemize}[itemsep=5pt, topsep=5pt, partopsep=5pt, parsep=5pt]
+\begin{itemize}
     \item $i$ - Número de cursos (varia entre 1 e q);
     \item $k$ - Número de períodos (varia entre 1 e p);
     \item $k_{i}$ - Número de aulas;
     \item $l_{k}$ - Número máximo de aulas que podem ser agendadas num dado período;
-    \item $y_{ik}$ - Estado do agendamento
+    \item $y_{ik}$ - Estado do agendamento.
 \end{itemize}
 
 A restrição \eqref{eq_basic:aulas} impõe que cada disciplina é composta pelo número correto de aulas. A restrição \eqref{eq_basic:salas} impõe que não devem existir mais aulas que salas disponíveis. A restrição \eqref{eq_basic:sobreposicao} previne que aulas conflituosas possam ser agendadas no mesmo período de tempo.
@@ -57,19 +58,19 @@ O resultado do agendamento é apresentado no ponto \eqref{eq_basic:agendamento},
 
 \subsection{Problema de otimização}
 
-No artigo \cite{de_werr_introduction_nodate} o problema passou a ser abordado como um problema de otimização, sendo utilizada uma função objetivo na equação \eqref{eq_basic}. A função objetivo é a seguinte:
+No artigo \cite{de_werra_introduction_nodate} o problema passou a ser abordado como um problema de otimização, sendo utilizada uma função objetivo na equação \eqref{eq_basic}. A função objetivo é a seguinte:
 
 \begin{equation}
     \text{max } \displaystyle\sum_{i=1}^{q} \displaystyle\sum_{k=1}^{p} d_{ik}y_{ik}
 \end{equation}
 
-\begin{itemize}[itemsep=5pt, topsep=5pt, partopsep=5pt, parsep=5pt]
+\begin{itemize}
     \item $d_{ik}$ - É o desejo de ter uma aula do curso $K_{i}$ no período k.
 \end{itemize}
 
-No artigo \cite{tripathy_computerised_1992} é considerada uma matriz de conflitos $C_{qxq}$ com valores inteiros, de modo que $c_{ij}$ representa o número de estudantes que estão matriculados em ambos os cursos $K_i$ e $K_j$. Dessa forma, $c_{ij}$ também representa uma medida de insatisfação caso uma aula de $K_i$ e uma aula de $K_j$ sejam agendadas ao mesmo tempo. Tripathy tenta minimizar a insatisfação global, obtida como a soma de todas as insatisfações desse tipo.
+No artigo \cite{Computeriseddecisionaid_Tripathy_1992} é considerada uma matriz de conflitos $C_{qxq}$ com valores inteiros, de modo que $c_{ij}$ representa o número de estudantes que estão matriculados em ambos os cursos $K_i$ e $K_j$. Dessa forma, $c_{ij}$ também representa uma medida de insatisfação caso uma aula de $K_i$ e uma aula de $K_j$ sejam agendadas ao mesmo tempo. Tripathy tenta minimizar a insatisfação global, obtida como a soma de todas as insatisfações desse tipo.
 
-Múltiplos autores após o artigo \cite{h_a_combinatorial_1987} separam as restrições em duas categorias, restrições rígidas e restrições suaves. As restrições rígidas limitam o espaço de procura. As restrições suaves são incluídas na função objetivo.
+Múltiplos autores após o artigo \cite{CombinatorialOptimizationProblems_Eiselt_1987} separam as restrições em duas categorias, restrições rígidas e restrições suaves. As restrições rígidas limitam o espaço de procura. As restrições suaves são incluídas na função objetivo.
 
 \subsection{Variantes do problema}
 
@@ -103,7 +104,7 @@ Para clarificar, há uma distinção entre técnica e abordagem. Técnica é con
 
 Coloração de grafos consiste num problema de coloração dos vértices de um grafo. A coloração dos vértices deve ser efetuada de forma a que dois vértices adjacentes não fiquem com cores iguais. A cor é apenas um rótulo que é atribuido ao vértice e por isso esta técnica pode ser utilizada para resolver múltiplos tipos de problemas.
 
-No artigo \cite{de_werr_introduction_nodate} é demonstrada a redução do problema de \textit{Course timetabling} num problema de \textit{Graph coloring}.
+No artigo \cite{de_werra_introduction_nodate} é demonstrada a redução do problema de \textit{Course timetabling} num problema de \textit{Graph coloring}.
 
 % Explicar melhor
 
@@ -129,7 +130,7 @@ O algoritmo começa com uma solução inicial, normalmente aleatória mas não n
 
 \section{Solução híbrida com utilização do Simulated Annealing}
 
-No artigo \cite{tuga_hybrid_2007} é apresentada uma solução híbrida com a utilização do \acrshort{sa}. Nesta solução, para além do uso do \acrshort{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe chain neighbourhood}, denominada de \textit{Pair-wise Kempe Chain}, incorporada no \acrshort{sa} é possível minimizar o número de restrições flexiveis violadas mas também melhorar as trocas de eventos em caso de conflitos sem violar as restrições rígidas.
+No artigo \cite{HybridSimulatedAnnealing_Tuga_2007} é apresentada uma solução híbrida com a utilização do \acrshort{sa}. Nesta solução, para além do uso do \acrshort{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe chain neighbourhood}, denominada de \textit{Pair-wise Kempe Chain}, incorporada no \acrshort{sa} é possível minimizar o número de restrições flexiveis violadas mas também melhorar as trocas de eventos em caso de conflitos sem violar as restrições rígidas.
 
 % Falta explicar o Kempe chain neighbourhood, simulated annealing
 
@@ -140,3 +141,5 @@ No artigo \cite{tuga_hybrid_2007} é apresentada uma solução híbrida com a ut
 \subsection{\texit{Simulated Annealing}}
 
 \texit{Simulated Annealing}
+
+\section{ITC 2019}
