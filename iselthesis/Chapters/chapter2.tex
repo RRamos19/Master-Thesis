@@ -29,20 +29,24 @@ No artigo \cite{SurveyAutomatedTimetabling_Schaerf_1999}, já mencionado anterio
 
 \subsection{Problema de Basic search}
 
-O problema de agendamento começou por ser abordado como um problema de busca básica. Olhando para o artigo \cite{introductiontimetabling_Werra_1985} é possível ver um algoritmo, em forma de equação, de uma possível solução do problema que é mostrada a seguir.
+No artigo \cite{introductiontimetabling_Werra_1985} são apresentados alguns modelos básicos utilizados como resolução de certos problemas de agendamento, apenas serão mencionados os modelos mais relevantes para o problema a resolver. O primeiro modelo apresentado consiste num modelo de coloração de grafos.
 
-\begin{figure}[ht]
+\begin{figure}[ht!]
     \centering
-    \begin{align}
-        & \text{descobre } y_{ik} \quad &&(i = 1..q; k = 1..p) \nonumber \\
-        \text{s.t.} \quad & \displaystyle\sum_{k=1}^{p} y_{ik} = k_i \quad &&(i = 1..q) \label{eq_basic:aulas}\\
-        & \displaystyle\sum_{i=1}^{q} y_{ik} \leq l_k \quad &&(k = 1..p) \label{eq_basic:salas}\\
-        & \displaystyle\sum_{i \in S_l} y_{ik} \leq 1 \quad &&(l = 1..r; k = 1..p) \label{eq_basic:sobreposicao}\\
-        & y_{ik} = 0 \text{ or } 1 \quad &&(i = 1..q; k = 1..p) \label{eq_basic:agendamento}
-    \end{align}
-    \caption{Equação de Basic search}
-    \label{eq_basic}
+    \includegraphics[width=.35\textwidth]{grafos.png}
+    \caption{Modelo de grafos apresentado (Fonte:\cite{introductiontimetabling_Werra_1985})}
+    \label{fig:grafos_de_werra}
 \end{figure}
+
+Um dos modelos apresentados é apresentado um algoritmo, na forma de equação, de uma abordagem de descoberta de soluções.
+
+\begin{align}
+    & \text{descobre } y_{ik} \quad &&(i = 1..q; k = 1..p) \nonumber \\
+    \text{s.t.} \quad & \displaystyle\sum_{k=1}^{p} y_{ik} = k_i \quad &&(i = 1..q) \label{eq_basic:aulas}\\
+    & \displaystyle\sum_{i=1}^{q} y_{ik} \leq l_k \quad &&(k = 1..p) \label{eq_basic:salas}\\
+    & \displaystyle\sum_{i \in S_l} y_{ik} \leq 1 \quad &&(l = 1..r; k = 1..p) \label{eq_basic:sobreposicao}\\
+    & y_{ik} = 0 \text{ or } 1 \quad &&(i = 1..q; k = 1..p) \label{eq_basic:agendamento}
+\end{align}
 
 \begin{itemize}
     \item $i$ - Número de cursos (varia entre 1 e q);
@@ -56,16 +60,14 @@ A restrição \eqref{eq_basic:aulas} impõe que cada disciplina é composta pelo
 
 O resultado do agendamento é apresentado no ponto \eqref{eq_basic:agendamento}, caso $y_{ik} = 1$ indica que a aula foi agendada. Caso $y_{ik} = 0$ indica que a aula não foi agendada.
 
-\subsection{Problema de otimização}
-
-No artigo \cite{de_werra_introduction_nodate} o problema passou a ser abordado como um problema de otimização, sendo utilizada uma função objetivo na equação \eqref{eq_basic}. A função objetivo é a seguinte:
+Ainda no mesmo artigo foi utilizada a seguinte função objetivo. A função objetivo tem como finalidade otimizar as soluções obtidas, maximizando ou minimizando certos critérios. 
 
 \begin{equation}
-    \text{max } \displaystyle\sum_{i=1}^{q} \displaystyle\sum_{k=1}^{p} d_{ik}y_{ik}
+    \text{max } \displaystyle\sum_{i=1}^{q} \displaystyle\sum_{k=1}^{p} C_{ik}y_{ik}
 \end{equation}
 
 \begin{itemize}
-    \item $d_{ik}$ - É o desejo de ter uma aula do curso $K_{i}$ no período k.
+    \item $C_{ik}$ - Medida de desejabilidade de ter uma aula do curso $K_{i}$ no período k.
 \end{itemize}
 
 No artigo \cite{Computeriseddecisionaid_Tripathy_1992} é considerada uma matriz de conflitos $C_{qxq}$ com valores inteiros, de modo que $c_{ij}$ representa o número de estudantes que estão matriculados em ambos os cursos $K_i$ e $K_j$. Dessa forma, $c_{ij}$ também representa uma medida de insatisfação caso uma aula de $K_i$ e uma aula de $K_j$ sejam agendadas ao mesmo tempo. Tripathy tenta minimizar a insatisfação global, obtida como a soma de todas as insatisfações desse tipo.
@@ -104,7 +106,7 @@ Para clarificar, há uma distinção entre técnica e abordagem. Técnica é con
 
 Coloração de grafos consiste num problema de coloração dos vértices de um grafo. A coloração dos vértices deve ser efetuada de forma a que dois vértices adjacentes não fiquem com cores iguais. A cor é apenas um rótulo que é atribuido ao vértice e por isso esta técnica pode ser utilizada para resolver múltiplos tipos de problemas.
 
-No artigo \cite{de_werra_introduction_nodate} é demonstrada a redução do problema de \textit{Course timetabling} num problema de \textit{Graph coloring}.
+No artigo \cite{introductiontimetabling_Werra_1985} é demonstrada a redução do problema de \textit{Course timetabling} num problema de \textit{Graph coloring}.
 
 % Explicar melhor
 
