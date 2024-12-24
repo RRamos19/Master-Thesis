@@ -9,15 +9,15 @@
 
 Os problemas de agendamento são uma classe de problemas de otimização combinatória que surgem em diversas áreas, sendo fundamentais para melhorar a eficiência e a alocação de recursos em cenários reais. A essência do problema de agendamento está na organização de um conjunto de tarefas (ou eventos) em um intervalo de tempo, de forma a atender a um conjunto de restrições e, em muitos casos, otimizar um ou mais critérios. Esses problemas aparecem em contextos tão variados quanto educação, logística, saúde, produção industrial, e transportes.
 
-A elaboração de horários de cursos universitários é tipicamente feita de forma manual e todos os anos. Devido à existência de múltiplos horários possíveis que podem não ser ótimos, torna esta atividade muito demorada e complexa. Em certos casos não é possível criar um horário possível devido ao número de restrições presentes.
+A elaboração de horários de cursos universitários é tipicamente feita de forma manual e anualmente. Devido à existência de múltiplos horários possíveis que podem não ser ótimos, torna esta atividade muito demorada e complexa, e em certos casos pode nao ser possível criar um horário devido ao número de restrições presentes.
 
-As restrições podem ser rígidas ou flexiveis. Restrições rígidas são de cumprimento obrigatório não sendo possível criar um horário caso a restrição seja violada. Restrições flexiveis podem não ser cumpridas apesar de haver um incentivo para o cumprimentos das mesmas. Caso as restrições flexíveis não sejam cumpridas o horário não deixa de ser válido. A qualidade de um horário é avaliado relativamente à quantidade de restrições flexiveis violadas.
+As restrições podem ser rígidas ou flexíveis. Restrições rígidas são de cumprimento obrigatório não sendo possível criar um horário caso a restrição seja violada. Restrições flexíveis podem não ser cumpridas apesar de haver um incentivo para o cumprimentos das mesmas. Caso as restrições flexíveis não sejam cumpridas o horário não deixa de ser válido. A qualidade de um horário é avaliado relativamente à quantidade de restrições flexíveis violadas.
 
 \section{Objetivos}
 
-O projeto visa o desenvolvimento de uma aplicação gráfica que permita a criação de horários apenas necessitando uma configuração inicial acerca do ciclo (licenciatura, mestrado) do horário e os dados relativos às salas, disciplinas e professores. Para a criação dos horários será utilizada a meta heurística \acrfull{sa} e será seguido o padrão apresentado no concurso \acrfull{itc} 2019 \cite{itc2019_Website}.
+O projeto visa o desenvolvimento de uma aplicação gráfica que permita a criação de horários apenas necessitando uma configuração inicial acerca do ciclo (licenciatura, mestrado) do horário e os dados relativos às salas, disciplinas e professores. Para a criação dos horários será utilizada a meta heurística \glsxtrfull{sa} e será seguido o padrão apresentado no concurso \glsxtrfull{itc}~2019 \cite{itc2019_Website}.
 
-Pretende-se a utilização do padrão apresentado no concurso \acrshort{itc} 2019 de modo a simplificar o padrão de apresentação dos dados com um padrão já definido e amplamente utilizado. A utilização de um padrão já definido possui as seguintes vantagens:
+Pretende-se a utilização do padrão apresentado no concurso \glsxtrshort{itc} 2019 de modo a simplificar o padrão de apresentação dos dados com um padrão já definido e amplamente utilizado. A utilização de um padrão já definido possui as seguintes vantagens:
 
 \begin{itemize}
     \item Redução do tempo de implementação;

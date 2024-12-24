@@ -9,27 +9,27 @@
 
 Problemas de agendamento são encontrados em múltiplas áreas tais como, medicina, transporte, logística, educação, entre outros. Problemas de agendamento são desafios relacionados com a alocação de recursos (como tempo, espaço ou pessoas) a determinadas tarefas, atividades ou eventos, respeitando um conjunto de restrições. Este tipo de problemas são conhecidos pela sua alta complexidade combinatória pois podem existir múltiplas soluções diferentes mas apenas um grupo muito reduzido de soluções ótimas.
 
-Este projeto terá um foco nos problemas de agendamento na área da educação. Os problemas de agendamento na área de educação podem ser divididos em três categorias, mencionado no artigo \cite{SurveyAutomatedTimetabling_Schaerf_1999}, estas categorias são denominadas de \textit{School timetabling}, \textit{Course timetabling} e \textit{Examination timetabling}.
+Este projeto terá um foco nos problemas de agendamento na área da educação. Os problemas de agendamento na área de educação podem ser divididos em três categorias, mencionado no artigo~\cite{SurveyAutomatedTimetabling_Schaerf_1999}, estas categorias são denominadas de \textit{School timetabling}, \textit{Course timetabling} e \textit{Examination timetabling}.
 
-O \textit{School timetabling} consiste em atribuir todas as disciplinas, , sem que haja sobreposição de aulas (muito importante em escolas primárias e secundárias). O \textit{Course timetabling} é um problema universitário com um foco em minimizar sobreposições de aulas com alunos em comum. O \textit{Examination timetabling} consiste na atribuição de exames universitários tendo um foco em evitar sobreposição de exames e espaçar os exames num certo período de tempo. Este projeto terá um foco na categoria de \textit{Course timetabling}.
+O \textit{School timetabling} consiste em atribuir todas as disciplinas, sem que haja sobreposição de aulas (muito importante em escolas primárias e secundárias). O \textit{Course timetabling} é um problema universitário com um foco em minimizar sobreposições de aulas com alunos em comum. O \textit{Examination timetabling} consiste na atribuição de exames universitários tendo um foco em evitar sobreposição de exames e espaçar os exames num certo período de tempo. Este projeto terá um foco na categoria de \textit{Course timetabling}.
 
 \section{Course timetabling}
 
-O problema de agendamento da categoria \textit{Course timetabling} é denominado \acrfull{uctp} e é normalmente conhecido por ser um problema de otimização, caso se pretenda obter a melhor solução possível. Caso se pretenda apenas descobrir uma solução possível diz-se que é um problema de procura. No contexto de problema de otimização, o objetivo consiste em alocar múltiplos recursos (salas, professores) em múltiplos períodos de tempo de modo a respeitar as restrições rígidas e a minimizar as violações das restrições flexiveis. 
+O problema de agendamento da categoria \textit{Course timetabling} é denominado \glsxtrfull{uctp} e é normalmente conhecido por ser um problema de otimização, caso se pretenda obter a melhor solução possível. Caso se pretenda apenas descobrir uma solução possível diz-se que é um problema de procura. No contexto de problema de otimização, o objetivo consiste em alocar múltiplos recursos (salas, professores) em múltiplos períodos de tempo de modo a respeitar as restrições rígidas e a minimizar as violações das restrições flexiveis. 
 
-Este problema de \textit{Course timetabling} tem algumas diferenças em relação à categoria \textit{School timetabling}. As maiores diferenças são as seguintes: aulas distintas podem ter alunos em comum, os professores estão encarregados de dar uma ou mais disciplinas e a capacidade das salas deve ser considerada quando se faz o agendamento das aulas.
+A categoria \textit{Course timetabling} tem algumas diferenças em relação à categoria \textit{School timetabling}. As maiores diferenças são as seguintes: aulas distintas podem ter alunos em comum, os professores estão encarregados de dar uma ou mais disciplinas, existem disciplinas opcionais e disciplinas obrigatórias, pode haver sobreposição entre disciplinas opcionais mas nunca pode haver sobreposicao com disciplinas obrigatórias.
 
 \subsection{Problema NP-Completo}
 
-De acordo com \cite{complexitytimetableconstruction_Cooper_1996} são apresentados cinco casos em que problemas de criação de horários são NP-completo, o que explica a sua complexidade, apesar de problemas de criação de horários universitários serem maiores mas mais simples.
+De acordo com o artigo~\cite{complexitytimetableconstruction_Cooper_1996} são apresentados cinco casos em que problemas de criação de horários são NP-completos, o que explica a sua complexidade, apesar de problemas de criação de horários universitários, embora de maior escala, tendem a ser mais simples.
 
-Um problema é considerado NP-completo caso seja \acrfull{np}, ou seja, caso possa ser resolvido em tempo polinomial. Um problema \acrshort{np} é um problema que pode ser verificado em tempo polinomial por uma máquina de turing não determinística. Concluindo, um problema ''C'' diz-se NP-completo caso possa ter a sua solução verificada em tempo polinomial e que qualquer problema \acrshort{np} possa ser reduzido ao problema ''C'' em tempo polinomial.
+Um problema \glsxtrshort{np} é um problema que pode ser verificado em tempo polinomial por uma máquina de turing não determinística. Um problema é considerado NP-completo se sua solução puder ser verificada em tempo polinomial por uma máquina de Turing não determinística e se qualquer problema da classe \glsxtrshort{np} puder ser reduzido a ele em tempo polinomial.
 
-No artigo \cite{SurveyAutomatedTimetabling_Schaerf_1999}, já mencionado anteriormente, são abordadas várias técnicas utilizadas para a solução deste tipo de problema. Nomeadamente a utilização de \textit{direct heuristics}, que consistem numa simulação da forma humana de resolver o problema. Mais tarde começaram a ser utilizadas técnicas mais generalistas baseadas em \textit{integer programming}, \textit{network flow}, entre outros. O problema acabou por ser abordado como um problema, muito conhecido, denominado de \textit{graph coloring}.
+\subsection{Abordagens de resolução do problema}
 
-\subsection{Problema de Basic search}
+No artigo~\cite{SurveyAutomatedTimetabling_Schaerf_1999}, mencionado anteriormente, são discutidas diversas técnicas utilizadas para a solução deste tipo de problema. Inicialmente, destacam-se as \textit{direct heuristics}, que simulam a forma humana de resolver o problema. Posteriormente, começaram a ser adotadas abordagens mais generalistas baseadas em técnicas como \textit{integer programming} e \textit{network flow}, entre outras. Além disso, o problema passou a ser frequentemente tratado como uma variante do conhecido problema de \textit{graph coloring}.
 
-No artigo \cite{introductiontimetabling_Werra_1985} são apresentados alguns modelos básicos utilizados como resolução de certos problemas de agendamento, apenas serão mencionados os modelos mais relevantes para o problema a resolver. O primeiro modelo apresentado consiste num modelo de coloração de grafos.
+No artigo~\cite{introductiontimetabling_Werra_1985} são apresentados alguns modelos básicos utilizados como resolução de certos problemas de agendamento, apenas serão mencionados os modelos relacionados com \textit{Course timetabling}. O primeiro modelo apresentado consiste num modelo de coloração de grafos.
 
 \begin{figure}[ht!]
     \centering
@@ -38,7 +38,7 @@ No artigo \cite{introductiontimetabling_Werra_1985} são apresentados alguns mod
     \label{fig:grafos_de_werra}
 \end{figure}
 
-Um dos modelos apresentados é apresentado um algoritmo, na forma de equação, de uma abordagem de descoberta de soluções.
+Outra abordagem ao problema é um modelo matemático de otimização mostrado abaixo.
 
 \begin{align}
     & \text{descobre } y_{ik} \quad &&(i = 1..q; k = 1..p) \nonumber \\
@@ -58,7 +58,7 @@ Um dos modelos apresentados é apresentado um algoritmo, na forma de equação, 
 
 A restrição \eqref{eq_basic:aulas} impõe que cada disciplina é composta pelo número correto de aulas. A restrição \eqref{eq_basic:salas} impõe que não devem existir mais aulas que salas disponíveis. A restrição \eqref{eq_basic:sobreposicao} previne que aulas conflituosas possam ser agendadas no mesmo período de tempo.
 
-O resultado do agendamento é apresentado no ponto \eqref{eq_basic:agendamento}, caso $y_{ik} = 1$ indica que a aula foi agendada. Caso $y_{ik} = 0$ indica que a aula não foi agendada.
+O resultado do agendamento é apresentado no ponto~\eqref{eq_basic:agendamento}, caso $y_{ik} = 1$ indica que a aula foi agendada. Caso $y_{ik} = 0$ indica que a aula não foi agendada.
 
 Ainda no mesmo artigo foi utilizada a seguinte função objetivo. A função objetivo tem como finalidade otimizar as soluções obtidas, maximizando ou minimizando certos critérios. 
 
@@ -70,9 +70,9 @@ Ainda no mesmo artigo foi utilizada a seguinte função objetivo. A função obj
     \item $C_{ik}$ - Medida de desejabilidade de ter uma aula do curso $K_{i}$ no período k.
 \end{itemize}
 
-No artigo \cite{Computeriseddecisionaid_Tripathy_1992} é considerada uma matriz de conflitos $C_{qxq}$ com valores inteiros, de modo que $c_{ij}$ representa o número de estudantes que estão matriculados em ambos os cursos $K_i$ e $K_j$. Dessa forma, $c_{ij}$ também representa uma medida de insatisfação caso uma aula de $K_i$ e uma aula de $K_j$ sejam agendadas ao mesmo tempo. Tripathy tenta minimizar a insatisfação global, obtida como a soma de todas as insatisfações desse tipo.
+% TODO: Apresentar a conclusão do artigo
 
-Múltiplos autores após o artigo \cite{CombinatorialOptimizationProblems_Eiselt_1987} separam as restrições em duas categorias, restrições rígidas e restrições suaves. As restrições rígidas limitam o espaço de procura. As restrições suaves são incluídas na função objetivo.
+Múltiplos autores após o artigo~\cite{CombinatorialOptimizationProblems_Eiselt_1987} separam as restrições em duas categorias, restrições rígidas e restrições flexíveis. As restrições rígidas limitam o espaço de procura. As restrições flexíveis são incluídas na função objetivo.
 
 \subsection{Variantes do problema}
 
@@ -81,7 +81,7 @@ Serão agora discutidas algumas variantes do problema de agendamento de aulas un
 
 \subsubsection{Indisponibilidades e pré-inscrições}
 
-Esta variante não é considerada no modelo apresentado em \eqref{eq_basic}. Para considerar esta variante poderiam ser acrescentadas algumas restrições ao modelo de modo a prevenir agendamentos em períodos pré-inscritos.
+Esta variante não é considerada no modelo apresentado anteriormente. Para considerar esta variante poderiam ser acrescentadas algumas restrições ao modelo de modo a prevenir agendamentos em períodos pré-inscritos.
 
 \subsubsection{Subproblema de múltiplas secções e agrupamentos}
 
@@ -96,52 +96,48 @@ No artigo (Ferland and Roy 1985) começou a ser considerada a existência de aul
 
 \subsubsection{Subproblema de agendamento de salas}
 
-\subsection{Técnicas e abordagens utilizadas como solução}
+\subsection{Solução híbrida com utilização do Simulated Annealing}
 
-As seguintes técnicas e abordagens foram propostas na literatura como solução para o problema. É seguida a ordem cronológica das técnicas.
+No artigo~\cite{HybridSimulatedAnnealing_Tuga_2007} é apresentada uma solução híbrida com a utilização do \glsxtrshort{sa}. Nesta solução, para além do uso do \glsxtrshort{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe chain neighbourhood}, denominada de \textit{Pair-wise Kempe Chain}, incorporada no \glsxtrshort{sa} é possível minimizar o número de restrições flexiveis violadas mas também melhorar as trocas de eventos em caso de conflitos sem violar as restrições rígidas.
 
-Para clarificar, há uma distinção entre técnica e abordagem. Técnica é consiste num algoritmo ou conjunto de algoritmos de solução. Uma abordagem consiste numa estruturação generalizada para a concretização de um algoritmo de solução.
+% TODO: Apresentar os resultados
 
-\subsubsection{Coloração de grafos (\textit{Graph Coloring})}
+\section{ITC 2019}
 
-Coloração de grafos consiste num problema de coloração dos vértices de um grafo. A coloração dos vértices deve ser efetuada de forma a que dois vértices adjacentes não fiquem com cores iguais. A cor é apenas um rótulo que é atribuido ao vértice e por isso esta técnica pode ser utilizada para resolver múltiplos tipos de problemas.
+O \glsxtrshort{itc}~2019 \cite{itc2019_Website} é uma competição internacional que tem como objetivo incentivar a pesquisa e o desenvolvimento de métodos inovadores para resolver problemas complexos de criação de horários. Esta competição, parte de uma série iniciada em 2002, busca promover avanços em algoritmos e heurísticas voltados para a alocação de recursos no tempo, com aplicações em áreas como educação, transporte e negócios.
 
-No artigo \cite{introductiontimetabling_Werra_1985} é demonstrada a redução do problema de \textit{Course timetabling} num problema de \textit{Graph coloring}.
+A edição de 2019 teve um foco na geração de horários em contextos educacionais, como a criação de horários para escolas e universidades, considerando restrições rígidas e flexíveis. A competição desafiou os participantes a encontrar soluções de alta qualidade para esses problemas, equilibrando a satisfação das restrições com a eficiência computacional.
 
-% Explicar melhor
+Os métodos avaliados incluíram algoritmos heurísticos e meta-heurísticos, como algoritmos genéticos e simulated annealing, abordagens exatas baseadas em programação matemática, e métodos híbridos que integram \textit{machine learning} e otimização. Os algoritmos submetidos foram avaliados com base na qualidade das soluções geradas e no tempo necessário para obtê-las, utilizando instâncias de problemas fornecidas pela organização.
 
-\subsubsection{Programação inteira (\textit{Integer Programming})}
+\section{Conceitos teóricos}
 
-Programação inteira é um modelo de programação linear onde as variáveis de decisão são restritas a assumir apenas valores inteiros. Este tipo de problema é normalmente utilizado em cenários como a alocação de recursos, roteamento, escalonamento, entre outros. O seu funcionamento consiste em maximizar ou minimizar o resultado da função objetivo. A função objetivo e as restrições podem ser lineares ou não lineares mas as variáveis devem ser números inteiros.
+As seguintes técnicas e abordagens foram propostas na literatura como soluções para o problema. Para cada técnica é apresentada uma explicação para clarificar o funcionamento da mesma.
 
-\subsubsection{Rede de fluxo (\textit{Network Flow})}
+Para clarificar, há uma distinção entre técnica e abordagem. Técnica consiste num algoritmo ou conjunto de algoritmos de solução. Uma abordagem consiste numa estruturação generalizada para a concretização de um algoritmo de solução.
 
-Rede de fluxo é um conceito da teoria dos grafos. O fluxo é representado como um grafo direcionado, ou seja, segue uma direção de acordo com as setas representadas nas arestas. Existem duas regras para o funcionamento correto do fluxo. O fluxo que entra num nó deve ser igual ao fluxo que sai do nó. Cada aresta possui uma capacidade máxima de fluxo que deve ser respeitada. Este tipo de conceito é normalmente utilizado para problemas como logística e transporte, redes de comunicação e informações, energia e distribuição de recursos, entre outros.
+\subsection{Coloração de grafos}
 
-\subsubsection{Tabu search}
+Coloração de grafos (\textit{Graph Coloring}) consiste num problema de coloração dos vértices de um grafo. A coloração dos vértices deve ser efetuada de forma a que dois vértices adjacentes não fiquem com cores iguais. A cor é apenas um rótulo que é atribuido ao vértice e por isso esta técnica pode ser utilizada para resolver múltiplos tipos de problemas.
+
+% TODO: Explicar melhor
+
+\subsection{Programação inteira}
+
+Programação inteira (\textit{Integer Programming}) é um modelo de programação linear onde as variáveis de decisão são restritas a assumir apenas valores inteiros. Este tipo de problema é normalmente utilizado em cenários como a alocação de recursos, roteamento, escalonamento, entre outros. O seu funcionamento consiste em maximizar ou minimizar o resultado da função objetivo. A função objetivo e as restrições podem ser lineares ou não lineares mas as variáveis devem ser números inteiros.
+
+\subsection{Rede de fluxo}
+
+Rede de fluxo (\textit{Network Flow}) é um conceito da teoria dos grafos. O fluxo é representado como um grafo direcionado, ou seja, segue uma direção de acordo com as setas representadas nas arestas. Existem duas regras para o funcionamento correto do fluxo. O fluxo que entra num nó deve ser igual ao fluxo que sai do nó. Cada aresta possui uma capacidade máxima de fluxo que deve ser respeitada. Este tipo de conceito é normalmente utilizado para problemas como logística e transporte, redes de comunicação e informações, energia e distribuição de recursos, entre outros.
+
+\subsection{Tabu search}
 
 \textit{Tabu search} é uma meta-heurística e um procedimento adaptativo que guia algoritmos de busca local na exploração de espaços de busca. O \textit{Tabu search} costuma ser utilizado para resolver problemas complexos e tem como objetivo evitar que a busca fique presa em mínimos ou máximos locais.
 
-O algoritmo começa com uma solução inicial, normalmente aleatória mas não necessariamente. De seguida são efetuadas pequenas modificações para explorar os espaços vizinhos. Através da utilização da \textit{Tabu list} são memorizados certos locais com o objetivo de evitar ciclos e revisitas a soluções já exploradas recentemente. Embora movimentos ''tabu'' sejam proibidos, pode haver exceções se eles resultarem numa solução significativamente melhor. Isso é controlado por um critério de aspiração.
+O algoritmo começa com uma solução inicial, normalmente aleatória mas não necessariamente. De seguida são efetuadas pequenas modificações para explorar os espaços vizinhos. Através da utilização da \textit{Tabu list} são memorizados certos locais com o objetivo de evitar ciclos e revisitas a soluções já exploradas recentemente. Embora movimentos ``tabu`` sejam proibidos, pode haver exceções se eles resultarem numa solução significativamente melhor. Isso é controlado por um critério de aspiração.
 
-\subsubsection{Abordagem baseada em regras}
+% TODO: Falta explicar o Kempe chain neighbourhood, simulated annealing
 
-\subsubsection{\textit{Constraint logic programming approach}}
+\subsection{Simulated Annealing}
 
-\subsubsection{Outras técnicas e abordagens}
-
-\section{Solução híbrida com utilização do Simulated Annealing}
-
-No artigo \cite{HybridSimulatedAnnealing_Tuga_2007} é apresentada uma solução híbrida com a utilização do \acrshort{sa}. Nesta solução, para além do uso do \acrshort{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe chain neighbourhood}, denominada de \textit{Pair-wise Kempe Chain}, incorporada no \acrshort{sa} é possível minimizar o número de restrições flexiveis violadas mas também melhorar as trocas de eventos em caso de conflitos sem violar as restrições rígidas.
-
-% Falta explicar o Kempe chain neighbourhood, simulated annealing
-
-\subsection{\textit{Kempe chain neighbourhood}}
-
-\textit{Kempe chain neighbourhood}
-
-\subsection{\texit{Simulated Annealing}}
-
-\texit{Simulated Annealing}
-
-\section{ITC 2019}
+\subsection{Kempe chain neighbourhood}
