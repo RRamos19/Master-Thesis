@@ -98,7 +98,7 @@ No artigo (Ferland and Roy 1985) começou a ser considerada a existência de aul
 
 \subsection{Solução híbrida com utilização do Simulated Annealing}
 
-No artigo~\cite{HybridSimulatedAnnealing_Tuga_2007} é apresentada uma solução híbrida com a utilização do \glsxtrshort{sa}. Nesta solução, para além do uso do \glsxtrshort{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe chain neighbourhood}, denominada de \textit{Pair-wise Kempe Chain}, incorporada no \glsxtrshort{sa} é possível minimizar o número de restrições flexiveis violadas mas também melhorar as trocas de eventos em caso de conflitos sem violar as restrições rígidas.
+No artigo~\cite{HybridSimulatedAnnealing_Tuga_2007} é apresentada uma solução híbrida com a utilização do \glsxtrshort{sa}. Nesta solução, para além do uso do \glsxtrshort{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe Chain Neighbourhood}, denominada de \textit{Pair-wise Kempe Chain}, incorporada no \glsxtrshort{sa} é possível minimizar o número de restrições flexiveis violadas mas também melhorar as trocas de eventos em caso de conflitos sem violar as restrições rígidas.
 
 % TODO: Apresentar os resultados
 
@@ -117,27 +117,78 @@ As seguintes técnicas e abordagens foram propostas na literatura como soluçõe
 Para clarificar, há uma distinção entre técnica e abordagem. Técnica consiste num algoritmo ou conjunto de algoritmos de solução. Uma abordagem consiste numa estruturação generalizada para a concretização de um algoritmo de solução.
 
 \subsection{Coloração de grafos}
+\label{explic:graph_coloring}
 
 Coloração de grafos (\textit{Graph Coloring}) consiste num problema de coloração dos vértices de um grafo. A coloração dos vértices deve ser efetuada de forma a que dois vértices adjacentes não fiquem com cores iguais. A cor é apenas um rótulo que é atribuido ao vértice e por isso esta técnica pode ser utilizada para resolver múltiplos tipos de problemas.
 
 % TODO: Explicar melhor
 
 \subsection{Programação inteira}
+\label{explic:integer_programming}
 
 Programação inteira (\textit{Integer Programming}) é um modelo de programação linear onde as variáveis de decisão são restritas a assumir apenas valores inteiros. Este tipo de problema é normalmente utilizado em cenários como a alocação de recursos, roteamento, escalonamento, entre outros. O seu funcionamento consiste em maximizar ou minimizar o resultado da função objetivo. A função objetivo e as restrições podem ser lineares ou não lineares mas as variáveis devem ser números inteiros.
 
 \subsection{Rede de fluxo}
+\label{explic:network_flow}
 
-Rede de fluxo (\textit{Network Flow}) é um conceito da teoria dos grafos. O fluxo é representado como um grafo direcionado, ou seja, segue uma direção de acordo com as setas representadas nas arestas. Existem duas regras para o funcionamento correto do fluxo. O fluxo que entra num nó deve ser igual ao fluxo que sai do nó. Cada aresta possui uma capacidade máxima de fluxo que deve ser respeitada. Este tipo de conceito é normalmente utilizado para problemas como logística e transporte, redes de comunicação e informações, energia e distribuição de recursos, entre outros.
+Rede de fluxo (\textit{Network Flow}) é um conceito da teoria dos grafos. O fluxo é representado como um grafo direcionado, ou seja, segue uma direção de acordo com as setas representadas nas arestas. Existem duas regras para o funcionamento correto do fluxo. O fluxo que entra num nó deve ser igual ao fluxo que sai do nó. Cada aresta possui uma capacidade máxima de fluxo que deve ser respeitada. Este algoritmo normalmente é utilizado para problemas como logística e transporte, redes de comunicação e informações, energia e distribuição de recursos, entre outros.
 
 \subsection{Tabu search}
+\label{explic:tabu_search}
 
 \textit{Tabu search} é uma meta-heurística e um procedimento adaptativo que guia algoritmos de busca local na exploração de espaços de busca. O \textit{Tabu search} costuma ser utilizado para resolver problemas complexos e tem como objetivo evitar que a busca fique presa em mínimos ou máximos locais.
 
-O algoritmo começa com uma solução inicial, normalmente aleatória mas não necessariamente. De seguida são efetuadas pequenas modificações para explorar os espaços vizinhos. Através da utilização da \textit{Tabu list} são memorizados certos locais com o objetivo de evitar ciclos e revisitas a soluções já exploradas recentemente. Embora movimentos ``tabu`` sejam proibidos, pode haver exceções se eles resultarem numa solução significativamente melhor. Isso é controlado por um critério de aspiração.
+O algoritmo começa com uma solução inicial, normalmente aleatória mas não necessariamente. De seguida são efetuadas pequenas modificações para explorar os espaços vizinhos. Através da utilização da \textit{Tabu list} são memorizados certos locais com o objetivo de evitar ciclos e revisitas a soluções já exploradas recentemente. Embora movimentos tabu sejam proibidos, pode haver exceções se eles resultarem numa solução significativamente melhor. Isso é controlado por um critério de aspiração.
 
-% TODO: Falta explicar o Kempe chain neighbourhood, simulated annealing
+% TODO: Falta explicar o Kempe chain
 
 \subsection{Simulated Annealing}
+\label{explic:simulated_annealing}
 
-\subsection{Kempe chain neighbourhood}
+Simulated Annealing é um algoritmo de otimização estocástico inspirado metalurgia, onde um material é aquecido e depois arrefecido de forma controlada para moldar o material ao resultado pretendido. Esse processo é modelado para resolver problemas de otimização em que se busca minimizar (ou maximizar) uma função objetivo, muitas vezes em espaços de busca complexos e não-lineares.
+
+Inicialização do algoritmo:
+
+\begin{itemize}
+    \item O problema de otimização é representado por uma função objetivo $f(x)$, onde $x$ é a solução no espaço de busca. O objetivo é encontrar o valor de $x$ que minimiza, ou maximiza, $f(x)$.
+
+    \item Definição de uma solução inicial $x_0$.
+
+    \item Definição da temperatura inicial $T_0$ e da taxa de arrefecimento $\alpha$ (normalmente 0 < $\alpha$ < 1)
+
+    \item Estabelecimento dos critérios de paragem, como temperatura mínima ou número máximo de iterações.
+\end{itemize}
+
+Ordem de funcionamento do algoritmo:
+
+\begin{itemize}
+    \item Geração de uma solução vizinha $x'$. A descoberta de uma solução vizinha é feita através de uma função de vizinhança. A escolha da função depende do problema.
+
+    \item Calcular a diferença de custo entre a solução inicial $x_0$ e a solução vizinha $x'$. A diferença do custo é a seguinte:
+
+    \begin{center}
+        $\Delta E &= f(x') - f(x)$
+    \end{center}
+
+    Caso a solução vizinha seja melhor que a solução inicial esta é aceite imediatamente. Caso contrário a probabilidade de aceitação da solução vizinha é calculada da seguinte forma:
+
+    \begin{center}
+        $P &= e^{-\Delta E/T}$
+    \end{center}
+
+    Sendo T a temperatura atual.
+
+    \item Redução da temperatura atual tendo em conta a taxa de arrefecimento antes de iniciar a próxima iteração
+\end{itemize}
+
+A escolha de temperatura inicial, função de vizinhança e taxa de arrefecimento são cruciais para o desempenho do algoritmo mas é simples de implementar e permite, através da probabilidade de aceitação, fugir dos locais ótimos, o que aumenta a chance de encontrar globais ótimos.
+
+\subsection{Kempe Chain}
+\label{explic:kempe_chain}
+
+O Kempe Chain é uma técnica baseada em coloração de grafos \ref{explic:graph_coloring}
+
+\subsection{Kempe chain Neighborhood}
+\label{explic:kempe_chain_neighborhood}
+
+O Kempe Chain Neighborhood é uma especialização das cadeias de Kempe \ref{explic:kempe_chain}. O algoritmo tem como objetivo explorar soluções de coloração diferentes, modificando as cores de uma cadeia de Kempe no grafo.
