@@ -116,10 +116,10 @@
   \mbox{%
     \hspace*{0.5cm}%
     \begin{tabular}[c]{@{}l@{}}%
-      \includegraphics[width=8cm]{logoisel}%
+      \includegraphics[width=8cm]{Logo/logoisel.png}%
     \end{tabular}%
   }%
-}(cover) 
+}(cover)
 
 \addcoveritem[c]{-1.5cm}{%
 \ifx\@workimage\undefined
@@ -155,7 +155,7 @@
   \OR\equal{\iselthesis@opt@docdegree}{mscprep}}%
     {
 	  \fontseries{mc}\fontsize{13}{13}\selectfont%
-        (Grau de \thedocauthor(degree,\iselthesis@opt@coverlang))%
+        (\thedocauthor(degree,\iselthesis@opt@coverlang))%
     }	
 {}
 }(cover) 
@@ -170,7 +170,7 @@
 % Advisers
 \addcoveritem[c]{2}{%
  \setprintaffiliation{0} % [0] for surpress the affiliation and [1] for print the affiliation
- \committeestrfont(\iselthesis@opt@coverlang)={\bfseries}%
+ \committeestrfont(\iselthesis@opt@coverlang)={\fontsize{13}{13}\selectfont}%\bfseries
  \fontsize{12}{12}\selectfont
   \printadvisers
   }(cover) 
@@ -182,10 +182,10 @@
     \equal{\iselthesis@opt@docdegree}{bsc}%
     \OR\equal{\iselthesis@opt@docdegree}{msc}}%
     {
-        \setprintaffiliation{0} 
+         \setprintaffiliation{0} 
         \committeetitlestrfont(\iselthesis@opt@coverlang)={
-        \fontsize{12}{12}\selectfont\bfseries}%
-        \committeestrfont(\iselthesis@opt@coverlang)={\bfseries}%
+        \fontsize{12}{12}\selectfont}%\bfseries
+        \committeestrfont(\iselthesis@opt@coverlang)={\fontsize{13}{13}\selectfont}%\bfseries
         \fontsize{12}{12}\selectfont
          \printcommittee
   }%
@@ -208,14 +208,14 @@
 % --------------------------------------------------------
 
 % LOGO
-\addcoveritem[c]{-1.5cm}{%
-  \mbox{%
-    \hspace*{0.5cm}%
-    \begin{tabular}[c]{@{}l@{}}%
-      \includegraphics[width=8cm]{logoisel}%
-    \end{tabular}%
-  }%
-}(secondcover)  
+% \addcoveritem[c]{-1.5cm}{%
+%   \mbox{%
+%     \hspace*{0.5cm}%
+%     \begin{tabular}[c]{@{}l@{}}%
+%       \includegraphics[width=8cm]{logoisel}%
+%     \end{tabular}%
+%   }%
+% }(secondcover)  
 
 % \addcoveritem[c]{-1.5cm}{%
 % \ifx\@workimage\undefined
@@ -251,7 +251,7 @@
   \OR\equal{\iselthesis@opt@docdegree}{mscprep}}%
     {
 	  \fontseries{mc}\fontsize{13}{13}\selectfont%
-        (Grau de \thedocauthor(degree,\iselthesis@opt@coverlang))%
+        (\thedocauthor(degree,\iselthesis@opt@coverlang))%
     }	
 {}
 }(secondcover)  
@@ -265,7 +265,7 @@
 % Advisers
 \addcoveritem[c]{2}{%
  \setprintaffiliation{1} % [0] for surpress the affiliation and [1] for print the affiliation
- \committeestrfont(\iselthesis@opt@coverlang)={\bfseries}%
+ \committeestrfont(\iselthesis@opt@coverlang)={\fontsize{13}{13}\selectfont}%\bfseries
  \fontsize{12}{12}\selectfont
   \printadvisers
   }(secondcover)  
@@ -278,8 +278,8 @@
     {
         \setprintaffiliation{1} 
         \committeetitlestrfont(\iselthesis@opt@coverlang)={
-        \fontsize{12}{12}\selectfont\bfseries}%
-        \committeestrfont(\iselthesis@opt@coverlang)={\bfseries}%
+        \fontsize{12}{12}\selectfont}%\bfseries
+        \committeestrfont(\iselthesis@opt@coverlang)={\fontsize{13}{13}\selectfont}%\bfseries
         \fontsize{12}{12}\selectfont
          \printcommittee
   }%
