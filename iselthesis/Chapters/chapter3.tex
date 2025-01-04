@@ -4,5 +4,45 @@
 %  
 %  Created by Matilde Pós-de-Mina Pato on 2012/10/09.
 %
-\chapter{Método}
-\label{capitulo:metodo}
+\chapter{Abordagem proposta}
+\label{capitulo:abordagem_proposta}
+
+Antes de dar inicio à implementação da aplicação é necessário entender a estrutura do padrão do concurso \glsxtrshort{itc}~2019. Na secção~\ref{capitulo3:dados_itc2019} será apresentada uma explicação do padrão e de modificações, que poderão ser necessárias, para suportar as necessidades deste projeto.
+
+Para iniciar a implementação da aplicação, é fundamental primeiro estabelecer um diagrama inicial que represente a estrutura geral de todo o sistema. O diagrama irá fornecer uma visão clara e abrangente de todos os componentes principais, garantindo que as relações e dependências sejam devidamente compreendidas desde o início do desenvolvimento. Esta etapa será explicada na secção~\ref{capitulo3:Diagrama_geral}.
+
+Após essa etapa inicial de mapeamento estrutural, o próximo passo consiste em detalhar os casos de utilização. Estes devem descrever de forma precisa as interações dos diferentes tipos de usuários com o sistema, identificando as funcionalidades necessárias e seus objetivos específicos. Esta etapa será explicada na secção~\ref{capitulo3:Casos_util}.
+
+De seguida é necessário especificar os componentes técnicos que suportarão as funcionalidades identificadas. Isso inclui a escolha de padrões arquiteturais, definições de tecnologias a serem utilizadas, além de aspetos relacionados à segurança, escalabilidade, e manutenção futura. Esta etapa será explicada na secção~\ref{capitulo3:arquitetura}.
+
+\section{Estrutura do padrão definido no concurso ITC 2019}
+\label{capitulo3:dados_itc2019}
+
+No concurso \glsxtrshort{itc}~2019 são apresentados conjuntos de instâncias que podem ser utilizadas para testar o funcionamento do sistema. Os dados encontram-se no formato xml e contêm múltiplas \textit{tags} que permitem definir múltiplas informações relativos a horários de funcionamento, salas, cursos e estudantes.
+
+\subsection{Horário de funcionamento}
+
+Na \textit{tag} principal dos dados encontram-se dados relativos ao número de dias por semana, número de \textit{slots} por dia e duração do horário em semanas.
+
+Entende-se como slot um bloco ao qual se pode atribuir uma aula. Quanto mais \textit{slots} por dia maior é a granularidade na atribuição das aulas. Para ajudar na compreensão encontra-se abaixo um exemplo que se encontra na página do concurso \cite{itc2019_Website}.
+
+\begin{lstlisting}
+    <problem name="unique-instance-name" nrDays="7" nrWeeks="13" slotsPerDay="288">
+\end{lstlisting}
+
+Neste caso cada semana, do horário, tem 7 dias, o horário possui uma duração de 13 semanas e cada \textit{slot} possui uma duração de 5 minutos. Para obter a duração de cada \textit{slot} é necessário dividir o número de minutos, em um único dia, pelo número de \textit{slots} totais, ou seja, $24*60/288 = 5$.
+
+\subsection{Salas}
+
+\subsection{Cursos}
+
+\subsection{Estudantes}
+
+\section{Diagrama geral do sistema}
+\label{capitulo3:Diagrama_geral}
+
+\section{Casos de utilização}
+\label{capitulo3:Casos_util}
+
+\section{Arquitetura do sistema}
+\label{capitulo3:arquitetura}
