@@ -7,36 +7,53 @@
 \chapter{Abordagem proposta}
 \label{capitulo:abordagem_proposta}
 
-Antes de dar inicio à implementação da aplicação é necessário entender a estrutura do padrão do concurso \glsxtrshort{itc}~2019. Na secção~\ref{capitulo3:dados_itc2019} será apresentada uma explicação do padrão e de modificações, que poderão ser necessárias, para suportar as necessidades deste projeto.
+Antes de dar inicio à implementação da aplicação é necessário entender a estrutura do padrão do concurso \glsxtrshort{itc}~2019. Na Secção~\ref{capitulo3:dados_itc2019} será apresentada uma explicação do padrão e de modificações, que poderão ser necessárias, para suportar as necessidades deste projeto.
 
-Para iniciar a implementação da aplicação, é fundamental primeiro estabelecer um diagrama inicial que represente a estrutura geral de todo o sistema. O diagrama irá fornecer uma visão clara e abrangente de todos os componentes principais, garantindo que as relações e dependências sejam devidamente compreendidas desde o início do desenvolvimento. Esta etapa será explicada na secção~\ref{capitulo3:Diagrama_geral}.
+Para a elaboração dos horários, é essencial definir tanto as restrições rígidas quanto as flexíveis, que desempenham um papel fundamental na otimização dos horários gerados. A descrição detalhada dessas restrições pode ser encontrada na Secção~\ref{capitulo3:Restricoes}.
 
-Após essa etapa inicial de mapeamento estrutural, o próximo passo consiste em detalhar os casos de utilização. Estes devem descrever de forma precisa as interações dos diferentes tipos de usuários com o sistema, identificando as funcionalidades necessárias e seus objetivos específicos. Esta etapa será explicada na secção~\ref{capitulo3:Casos_util}.
+Para garantir uma organização sólida, é essencial criar um diagrama inicial que represente a estrutura geral do sistema. Esse diagrama fornecerá uma visão abrangente dos principais componentes, facilitando a compreensão das relações e dependências desde o início do desenvolvimento. Essa etapa será abordada na Secção~\ref{capitulo3:Diagrama_geral}.
 
-De seguida é necessário especificar os componentes técnicos que suportarão as funcionalidades identificadas. Isso inclui a escolha de padrões arquiteturais, definições de tecnologias a serem utilizadas, além de aspetos relacionados à segurança, escalabilidade, e manutenção futura. Esta etapa será explicada na secção~\ref{capitulo3:arquitetura}.
+Concluída a etapa de mapeamento estrutural, o próximo passo consiste em detalhar os casos de utilização. Os casos descrevem, de forma precisa, as interações entre os diferentes tipos de usuários e o sistema, identificando funcionalidades específicas e seus objetivos. A elaboração dos casos de utilização será discutida na Secção~\ref{capitulo3:Casos_util}.
+
+De seguida é necessário especificar os componentes técnicos que suportarão as funcionalidades identificadas. Isso inclui a escolha de padrões arquiteturais, definições de tecnologias a serem utilizadas, além de aspetos relacionados à segurança, escalabilidade, e manutenção futura. Esta etapa será explicada na Secção~\ref{capitulo3:arquitetura}.
 
 \section{Estrutura do padrão definido no concurso ITC 2019}
 \label{capitulo3:dados_itc2019}
 
 No concurso \glsxtrshort{itc}~2019 são apresentados conjuntos de instâncias que podem ser utilizadas para testar o funcionamento do sistema. Os dados encontram-se no formato xml e contêm múltiplas \textit{tags} que permitem definir múltiplas informações relativos a horários de funcionamento, salas, cursos e estudantes.
 
-\subsection{Horário de funcionamento}
+\subsection{Horários de funcionamento}
 
-Na \textit{tag} principal dos dados encontram-se dados relativos ao número de dias por semana, número de \textit{slots} por dia e duração do horário em semanas.
+Na \textit{tag} principal dos dados encontram-se dados relativos ao número de dias por semana, número de \textit{slots} por dia e duração do semestre em semanas.
 
-Entende-se como slot um bloco ao qual se pode atribuir uma aula. Quanto mais \textit{slots} por dia maior é a granularidade na atribuição das aulas. Para ajudar na compreensão encontra-se abaixo um exemplo que se encontra na página do concurso \cite{itc2019_Website}.
+Entende-se como \textit{slot} um bloco ao qual se pode atribuir uma aula. Quanto mais \textit{slots} por dia maior é a granularidade no momento de atribuição das aulas aos vários períodos de tempo disponíveis. Para ajudar na compreensão encontra-se abaixo um exemplo que se encontra na página do concurso \cite{itc2019_Website}.
 
-\begin{lstlisting}
-    <problem name="unique-instance-name" nrDays="7" nrWeeks="13" slotsPerDay="288">
+\begin{lstlisting}[caption={Exemplo da definição da duração do semestre}]
+<problem name="unique-instance-name" nrDays="7" nrWeeks="13" slotsPerDay="288">
 \end{lstlisting}
 
 Neste caso cada semana, do horário, tem 7 dias, o horário possui uma duração de 13 semanas e cada \textit{slot} possui uma duração de 5 minutos. Para obter a duração de cada \textit{slot} é necessário dividir o número de minutos, em um único dia, pelo número de \textit{slots} totais, ou seja, $24*60/288 = 5$.
+
+Para definir os horários das aulas serão utilizados os \textit{slots} definidos anteriormente. Abaixo encontra-se um exemplo da definição de uma aula.
+
+\begin{lstlisting}[caption={Exemplo da definição de uma aula}]
+<class id="1" limit="20">
+    <time days="1010100" start="90" length="10" weeks="1111111111111" penalty="20"/>
+</class>
+\end{lstlisting}
+
+Na \textit{tag class} é definido o identificador da aula e a quantidade limite de alunos que podem frequentar a aula. O limite apresentado apenas faz sentido no caso da criação dos horários ser feita após a inscrição dos alunos, pois desta forma tem-se acesso à quantidade de alunos que devem frequentar a disciplina em causa.
+
+A definição dos dias, em que a aula é dada, encontra-se num formato binário e inicia-se na segunda-feira. De acordo com o exemplo, a aula vai ser dada na segunda-feira, quarta-feira e sexta-feira. Para calcular a hora de inicio, da aula, é necessário multiplicar a duração de cada \textit{slot} pelo \textit{offset} apresentado no \textit{start} e de seguida converter para horas, ou seja, $inicio = 5*90/60 = 7,5$, de acordo com o resultado, a aula tem inicio às 7:30 da manhã. A duração da aula é de 50 minutos e pode ser calculada da mesma forma que o inicio da aula, ou seja, $duração = 5*10 = 50$. É possível definir as semanas em que a aula vai ser dada através de um formato binário. Neste exemplo a aula é dada todas as semanas. Por fim, é definida uma penalização caso o horário não siga a definição na sua totalidade. 
 
 \subsection{Salas}
 
 \subsection{Cursos}
 
 \subsection{Estudantes}
+
+\section{Restrições dos horários}
+\label{capitulo3:Restricoes}
 
 \section{Diagrama geral do sistema}
 \label{capitulo3:Diagrama_geral}
