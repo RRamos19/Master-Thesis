@@ -39,14 +39,16 @@ No artigo~\cite{introductiontimetabling_Werra_1985} são apresentados alguns mod
 
 \begin{figure}[ht!]
     \centering
-    \includegraphics[width=.35\textwidth]{grafos.png}
-    \caption{Modelo de grafos apresentado (Fonte:\cite{introductiontimetabling_Werra_1985})}
-    \label{fig:grafos_de_werra}
+    \includegraphics[width=.35\textwidth]{grafo_simples_dewerra.png}
+    \caption{Modelo de grafos simples (Fonte:\cite{introductiontimetabling_Werra_1985})}
+    \label{fig:grafo_simples_dewerra}
 \end{figure}
 
 Em cada vértice é apresentada uma relação curso-disciplina. O primeiro índice indica o curso e o segundo índice indica a disciplina. Por exemplo $m_{12}$ representa uma aula do curso $K_{1}$ da disciplina $l_{2}$.
 
-No grafo apresentado na Figura~\ref{fig:grafos_de_werra} são apresentados os períodos junto de cada vértice. Na tabela seguinte são organizadas as relações curso-disciplina juntamente com o período:
+São criadas arestas entre vértices do mesmo curso mas também entre vértices caso haja algum aluno que esteja em ambos os cursos. Neste caso a ''cor'' dos vértices é o periodo, ou seja, vértices que estejam ligados por uma aresta devem possuir períodos diferentes e caso possível devem ser reutilizados períodos já criados de modo a utilizar a menor quantidade de períodos possível.
+
+Na tabela seguinte são organizadas as relações curso-disciplina juntamente com os períodos resultantes:
 
 \begin{table}[ht!]
     \centering
@@ -59,12 +61,23 @@ No grafo apresentado na Figura~\ref{fig:grafos_de_werra} são apresentados os pe
         m_{31}  & K_{3} & l_{1}      & 1       \\
         m_{32}  & K_{3} & l_{2}      & 4      
     \end{tabular}
-    \caption{Organização dos dados dos vértices do grafo da Figura~\ref{fig:grafos_de_werra}}
+    \caption{Organização dos dados dos vértices do grafo da Figura~\ref{fig:grafo_simples_dewerra}}
 \end{table}
 
-São criadas arestas entre vértices do mesmo curso mas também entre vértices caso haja algum aluno que esteja em ambos os cursos. Neste caso a ''cor'' dos vértices é o periodo, ou seja, vértices que estejam ligados por uma aresta devem possuir períodos diferentes, reutilizando períodos já criados de modo a utilizar o menor número de períodos possível.
+Esta abordagem funciona para casos simples que não tenham restrições de indisponibilidades ou casos em que certas aulas não podem ser dadas em certos períodos. Para casos mais complexos pode ser utilizado o seguinte modelo.
 
-Outra abordagem ao problema consiste num modelo matemático de otimização que é mostrado abaixo.
+\newpage
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=.45\textwidth]{grafo_complexo_dewerra.png}
+    \caption{Modelo de grafos complexo (Fonte:\cite{introductiontimetabling_Werra_1985})}
+    \label{fig:grafo_complexo_dewerra}
+\end{figure}
+
+Na Figura~\ref{fig:grafo_complexo_dewerra} é apresentado um modelo ligeiramente mais complexo que o da Figura~\ref{fig:grafo_simples_dewerra}. Foram adicionados novos vértices relativos aos períodos de indisponibilidade. No caso do vértice da aula $m_{13}$ verifica-se que este possui duas arestas ligadas a vértices relativos aos períodos, estas ligações indicam os períodos aos quais a aulas não pode ser dada.
+
+Outra abordagem ao problema consiste na utilização de um modelo matemático de otimização, que é mostrado abaixo.
 
 \begin{align}
     & \text{descobre } y_{ik} \quad &&(i = 1..q; k = 1..p) \nonumber \\
@@ -96,11 +109,13 @@ Ao modelo matemático apresentado foi acrescentada a seguinte função objetivo.
     \item $C_{ik}$ - Medida de desejabilidade de ter uma aula do curso $K_{i}$ no período k.
 \end{itemize}
 
-% TODO: Apresentar a conclusão do artigo
+No artigo~\cite{CombinatorialOptimizationProblems_Eiselt_1987} é discutido um método de duas fases para resolver alguns problemas de agendamento. Alguns dos problemas abordados podem ter variações nos métodos de resolução mas será apenas discutido o funcionamento comum das duas fases. Antes de iniciar o processo de resolução é definida a função objetivo que permitirá comparar soluções.
 
-Múltiplos autores após o artigo~\cite{CombinatorialOptimizationProblems_Eiselt_1987} separam as restrições em duas categorias, restrições rígidas e restrições flexíveis. As restrições rígidas limitam o espaço de procura. As restrições flexíveis são incluídas na função objetivo.
+Na primeira fase ocorre uma tentativa de descoberta de uma solução possível, utilizando um procedimento ganancioso. Começando sem atribuições é executado um algoritmo que faz uma construção gradual dos agendamentos, comparando as várias alternativas e escolhendo sempre a opção com menor custo, sendo o custo obtido através da função objetivo. Se após a primeira fase não for obtida uma solução possível então ainda pode haver uma tentativa de relaxamento das restrições. Se mesmo depois das restrições serem relaxadas e não se obtiver uma solução possível então as restrições devem ser modificadas pelo tomador de decisões.
 
-\subsection{Solução híbrida com utilização do Simulated Annealing}
+A segunda fase tem como objetivo melhorar a solução obtida, sendo que os métodos utilizados pela fase anterior não garantem ótimos resultados. Começa por ser escolhido um agendamento da solução para ser retirado, colocando-o numa outra posição que reduza o custo da solução. Caso não exista outra posição que reduza o custo é terminada a segunda fase pois foi encontrada uma solução ótima local.
+
+Esta abordagem de resolução não tem garantias de convergência a ótimos globais mas soluções ótimas locais são garantidas. 
 
 No artigo~\cite{HybridSimulatedAnnealing_Tuga_2007} é apresentada uma solução híbrida com a utilização do \glsxtrshort{sa}. Nesta solução, para além do uso do \glsxtrshort{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe Chain Neighbourhood}, denominada de \textit{Pair-wise Kempe Chain}, incorporada no \glsxtrshort{sa} é possível minimizar o número de restrições flexiveis violadas mas também melhorar as trocas de eventos em caso de conflitos sem violar as restrições rígidas.
 
@@ -114,7 +129,7 @@ A edição de 2019 teve um foco na geração de horários em contextos educacion
 
 Os métodos avaliados incluíram algoritmos heurísticos e meta-heurísticos, como algoritmos genéticos, \textit{simulated annealing}, abordagens exatas baseadas em programação matemática, e métodos híbridos que integram \textit{machine learning} e otimização. Os algoritmos submetidos foram avaliados com base na qualidade das soluções geradas e no tempo necessário para obtê-las, utilizando instâncias de problemas fornecidas pela organização.
 
-\section{Conceitos teóricos}
+\section{Teoria e funcionamento dos algoritmos}
 
 As seguintes técnicas e abordagens foram propostas na literatura como soluções para o problema em questão. Para cada técnica é apresentada uma explicação teórica do seu funcionamento.
 
