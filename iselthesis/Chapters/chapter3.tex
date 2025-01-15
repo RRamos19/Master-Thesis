@@ -7,20 +7,65 @@
 \chapter{Abordagem proposta}
 \label{capitulo:abordagem_proposta}
 
-Antes de dar inicio à implementação da aplicação é necessário entender a estrutura do padrão do concurso \glsxtrshort{itc}~2019. Na Secção~\ref{capitulo3:dados_itc2019} será apresentada uma explicação do padrão e de modificações, que poderão ser necessárias, para suportar as necessidades deste projeto.
+Nesta secção, será apresentado o planeamento do projeto e trabalho feito, acompanhado de uma explicação detalhada das decisões tomadas ao longo do processo. Serão descritas as razões que orientaram cada escolha, de modo a garantir a coerência das estratégias adotadas.
 
-Para a elaboração dos horários, é essencial definir tanto as restrições rígidas quanto as flexíveis, que desempenham um papel fundamental na otimização dos horários gerados. A descrição detalhada dessas restrições pode ser encontrada na Secção~\ref{capitulo3:Restricoes}.
+\section{Diagrama de blocos do sistema}
+\label{capitulo3:Diagrama_blocos}
 
-Para garantir uma organização sólida, é essencial criar um diagrama inicial que represente a estrutura geral do sistema. Esse diagrama fornecerá uma visão abrangente dos principais componentes, facilitando a compreensão das relações e dependências desde o início do desenvolvimento. Essa etapa será abordada na Secção~\ref{capitulo3:Diagrama_geral}.
+Para garantir uma organização sólida, é essencial criar um diagrama de blocos que represente a estrutura geral do sistema. Esse diagrama fornecerá uma visão abrangente dos principais componentes, facilitando a compreensão das relações e dependências desde o início do desenvolvimento.
 
-Concluída a etapa de mapeamento estrutural, o próximo passo consiste em detalhar os casos de utilização. Os casos descrevem, de forma precisa, as interações entre os diferentes tipos de usuários e o sistema, identificando funcionalidades específicas e seus objetivos. A elaboração dos casos de utilização será discutida na Secção~\ref{capitulo3:Casos_util}.
+% ATENÇÃO: Temporário enquanto o diagrama de blocos não está feito
+\newpage
 
-De seguida é necessário especificar os componentes técnicos que suportarão as funcionalidades identificadas. Isso inclui a escolha de padrões arquiteturais, definições de tecnologias a serem utilizadas, além de aspetos relacionados à segurança, escalabilidade, e manutenção futura. Esta etapa será explicada na Secção~\ref{capitulo3:arquitetura}.
+\section{Requisitos funcionais e não funcionais do sistema}
+\label{capitulo3:requisitos_funcionais_nao_funcionais}
+
+{
+\setlength{\tabcolsep}{.8em}
+\begin{table}[htb]
+    \centering
+    \begin{tabular}{c p{0.5\linewidth} c}
+        \toprule
+        Referência & \multicolumn{1}{c}{Descrição}                                                      & Classificação \\ \midrule
+        RF001      & Deve ser possível manipular os horários criados através da interface gráfica       & Obrigatório   \\ \midrule
+RF002      & Deve haver persistência de dados, de entrada e saída, através de uma base de dados & Obrigatório   \\ \midrule
+RF003      & Horários modificados devem ser guardados em ficheiros distintos dos originais      & Obrigatório   \\ \midrule
+RF004 & A exportação de dados deve ser possível para os seguintes tipos de dados (pdf, xml, excel) & Obrigatório \\ \midrule
+RF005      & A criação de horários deve permitir criar manchas institucionais                   & Obrigatório   \\ \midrule
+RF006 & Devem ser apresentados erros ao utilizador caso a aplicação falhe em alguma operação       & Obrigatório \\ \midrule
+RF007      & Na interface gráfica devem ser apresentados os dados já presentes na base de dados & Obrigatório   \\ \midrule
+RF008      & Através da interface gráfica deve ser possível alterar os dados na base de dados   & Obrigatório   \\ \midrule
+RF009      & Congelamento de salas e/ou professores no momento de geração dos horários          & Opcional      \\ \midrule
+RF010      & Alteração das manchas através da interface gráfica                                 & Opcional      \\ \midrule
+RF011      & Através da interface gráfica definir períodos para as aulas partilhadas            & Opcional      \\ \bottomrule
+    \end{tabular}
+    \caption{Requisitos funcionais do projeto}
+    \label{tabela:requisitos_funcionais}
+\end{table}
+}
+
+{
+\setlength{\tabcolsep}{.8em}
+\begin{table}[htb]
+    \centering
+    \begin{tabular}{c p{0.5\linewidth} c}
+        \toprule
+        Referência & \multicolumn{1}{c}{Descrição}                                                      & Classificação \\ \midrule
+        RNF001      &        & Obrigatório   \\ \bottomrule
+    \end{tabular}
+    \caption{Requisitos não funcionais do projeto}
+    \label{tabela:requisitos_nao_funcionais}
+\end{table}
+}
+
+Apresentados os requisitos do projeto de seguida devem ser definidos os casos de utilização. Os casos de utilização descrevem, de forma precisa, as interações entre os diferentes tipos de usuários e o sistema, identificando funcionalidades específicas e seus objetivos. A elaboração dos casos de utilização será discutida na Secção~\ref{apendice:casos_util}.
+
+A definição e representação dos horários serão feitas com base no padrão introduzido pelo concurso \glsxtrshort{itc}~2019 como já foi mencionado anteriormente. Para que se possa concretizar a definição dos horários é necessário primeiro compreender o padrão mencionado. A explicação do padrão é feita na secção seguinte.
 
 \section{Estrutura do padrão definido no concurso ITC 2019}
 \label{capitulo3:dados_itc2019}
 
-No concurso \glsxtrshort{itc}~2019 são apresentados conjuntos de instâncias que podem ser utilizadas para testar o funcionamento do sistema. Os dados encontram-se no formato xml e contêm múltiplas \textit{tags} que permitem definir múltiplas informações relativos a horários de funcionamento, salas, cursos e estudantes.
+No concurso \glsxtrshort{itc}~2019 são apresentados conjuntos de instâncias que podem ser utilizadas para testar o funcionamento do sistema. Os dados encontram-se no formato \glsxtrfull{xml} e contêm múltiplas \textit{tags} que permitem definir múltiplas informações tais como horários de funcionamento, salas, cursos e estudantes.
 
 \subsection{Horários de funcionamento}
 
@@ -52,14 +97,11 @@ A definição dos dias, em que a aula é dada, encontra-se num formato binário 
 
 \subsection{Estudantes}
 
+\subsection{Modificações propostas}
+
 \section{Restrições dos horários}
 \label{capitulo3:Restricoes}
 
-\section{Diagrama geral do sistema}
-\label{capitulo3:Diagrama_geral}
+\subsection{Restrições rígidas}
 
-\section{Casos de utilização}
-\label{capitulo3:Casos_util}
-
-\section{Arquitetura do sistema}
-\label{capitulo3:arquitetura}
+\subsection{Restrições flexíveis}

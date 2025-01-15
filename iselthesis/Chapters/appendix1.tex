@@ -8,6 +8,7 @@
 \label{apendice:1}
 
 \section{Casos de utilização}
+\label{apendice:casos_util}
 
 Nesta secção serão apresentados os casos de utilização do projeto. Todos os casos de utilização têm um ator em comum sendo este o utilizador da aplicação.
 
@@ -18,26 +19,51 @@ Cenário principal:
 
 \begin{enumerate}
     \item O caso de utilização inicia-se quando o ator pressiona o botão de inserção de dados através de ficheiro
-    \item O ator escolhe o ficheiro que deve ser lido por parte da aplicação
-    \item A aplicação processa os dados e guarda numa base de dados a informação \label{casos_util:caso_1_process_dados}
+    \item O ator escolhe o ficheiro que deve ser lido por parte da aplicação \label{casos_util_1:escolha_ficheiro}
+    \item A aplicação processa os dados e armazena-os na base de dados \label{casos_util_1:processar_dados}
     \item O caso de utilização termina
 \end{enumerate}
 
 Cenário alternativo 1:
 
 \begin{enumerate}
-    \item No passo \ref{casos_util:caso_1_process_dados} o ficheiro escolhido não segue o padrão do concurso \glsxtrshort{itc} 2019.
+    \item No passo~\ref{casos_util_1:escolha_ficheiro} o ator cancela a escolha do ficheiro
+    \item O caso de utilização termina
+\end{enumerate}
+
+Cenário alternativo 2:
+
+\begin{enumerate}
+    \item No passo~\ref{casos_util_1:processar_dados} o ficheiro escolhido não segue o padrão do concurso \glsxtrshort{itc} 2019.
     \item Apresentação de um erro ao utilizador
     \item O caso de utilização termina
 \end{enumerate}
 
 \subsection{Inserção de dados manual}
-Resumo: 
+Resumo: Inserção de dados relativos a salas, professores ou disciplinas manualmente.
 
 Cenário principal:
 
 \begin{enumerate}
-    
+    \item O caso de utilização inicia-se quando o ator pressiona o botão de inserção de dados manual (este pode ser relativo a salas, professores ou disciplinas)
+    \item O ator preenche a informação relativa à categoria escolhida \label{casos_util_2:preench_dados}
+    \item A aplicação processa os dados recebidos e armazena-os na base de dados \label{casos_util_2:processar_dados}
+    \item O caso de utilização termina
+\end{enumerate}
+
+Cenário alternativo 1:
+
+\begin{enumerate}
+    \item No passo~\ref{casos_util_2:preench_dados} o ator pressiona o botão para cancelar a inserção de dados
+    \item O caso de utilização termina
+\end{enumerate}
+
+Cenário alternativo 2:
+
+\begin{enumerate}
+    \item No passo~\ref{casos_util_2:processar_dados} os dados introduzidos não estão de acordo com o esperado
+    \item Apresentação de uma mensagem de erro ao ator
+    \item O caso de utilização termina
 \end{enumerate}
 
 \subsection{Criação de horários}

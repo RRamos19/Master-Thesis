@@ -1,18 +1,23 @@
 @ECHO OFF
-cd iselthesis
+CD iselthesis
 
-set file="template.pdf"
+SET output=template.pdf
+SET log_file=template.log
 
-set /p resposta="Deseja atualizar a bibliografia ? (s/n): "
+SET /p resposta="Atualizar a bibliografia ? (s/n): "
 
-IF EXIST %file% (
+SET or_=false
+IF EXIST %output% SET or_=true
+IF EXIST %log_file% SET or_=true
+
+IF "%or_%"=="true" (
 	IF /I "%resposta%"=="s" (
 		make clean
 	) else (
-		del %file%
+		IF EXIST "%output%" DEL "%output%"
 	)
 )
 
 make pdf
 
-start "" %file%
+start "" "%output%"

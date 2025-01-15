@@ -37,9 +37,9 @@ No artigo~\cite{SurveyAutomatedTimetabling_Schaerf_1999}, previamente referido, 
 
 No artigo~\cite{introductiontimetabling_Werra_1985} são apresentados alguns modelos básicos utilizados como resolução de certos problemas de agendamento. Apenas serão mencionados os modelos relacionados com a categoria \textit{Course timetabling}. O primeiro modelo apresentado consiste num modelo de \textit{graph coloring}.
 
-\begin{figure}[ht!]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=.35\textwidth]{grafo_simples_dewerra.png}
+    \includegraphics[width=.35\textwidth]{grafo_simples_dewerra}
     \caption{Modelo de grafos simples (Fonte:\cite{introductiontimetabling_Werra_1985})}
     \label{fig:grafo_simples_dewerra}
 \end{figure}
@@ -50,7 +50,7 @@ São criadas arestas entre vértices do mesmo curso mas também entre vértices 
 
 Na tabela seguinte são organizadas as relações curso-disciplina juntamente com os períodos resultantes:
 
-\begin{table}[ht!]
+\begin{table}[ht]
     \centering
     \begin{tabular}{cccc}
         \hline
@@ -68,9 +68,9 @@ Esta abordagem funciona para casos simples que não tenham restrições de indis
 
 \newpage
 
-\begin{figure}[ht!]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=.45\textwidth]{grafo_complexo_dewerra.png}
+    \includegraphics[width=.45\textwidth]{grafo_complexo_dewerra}
     \caption{Modelo de grafos complexo (Fonte:\cite{introductiontimetabling_Werra_1985})}
     \label{fig:grafo_complexo_dewerra}
 \end{figure}
@@ -123,11 +123,15 @@ No artigo~\cite{HybridSimulatedAnnealing_Tuga_2007} é apresentada uma solução
 
 \section{ITC 2019}
 
-O \glsxtrshort{itc}~2019 \cite{itc2019_Website} é uma competição internacional que tem como objetivo incentivar a pesquisa e o desenvolvimento de métodos inovadores para resolver problemas complexos de criação de horários. Esta competição, parte de uma série iniciada em 2002, busca promover avanços em algoritmos e heurísticas voltados para a alocação de recursos no tempo, com aplicações em áreas como educação, transporte e negócios.
+O \glsxtrshort{itc}~2019~\cite{itc2019_Website} é uma competição internacional que tem como objetivo incentivar a pesquisa e o desenvolvimento de métodos inovadores para resolver problemas complexos de criação de horários. Esta competição, parte de uma série iniciada em 2002, busca promover avanços em algoritmos e heurísticas voltados para a alocação de recursos no tempo, com aplicações em áreas como educação, transporte e negócios.
 
 A edição de 2019 teve um foco na geração de horários em contextos educacionais, como a criação de horários para escolas e universidades, considerando restrições rígidas e flexíveis. A competição desafiou os participantes a encontrar soluções de alta qualidade para esses problemas, equilibrando a satisfação das restrições com a eficiência computacional.
 
 Os métodos avaliados incluíram algoritmos heurísticos e meta-heurísticos, como algoritmos genéticos, \textit{simulated annealing}, abordagens exatas baseadas em programação matemática, e métodos híbridos que integram \textit{machine learning} e otimização. Os algoritmos submetidos foram avaliados com base na qualidade das soluções geradas e no tempo necessário para obtê-las, utilizando instâncias de problemas fornecidas pela organização.
+
+\section{Bullet Solutions}
+
+A empresa \textit{Bullet Solutions}~\cite{bulletsolutions_Website} 
 
 \section{Teoria e funcionamento dos algoritmos}
 
@@ -203,7 +207,7 @@ Ordem de funcionamento do algoritmo:
     \item Redução da temperatura atual tendo em conta a taxa de arrefecimento antes de iniciar a próxima iteração
 \end{itemize}
 
-A escolha de temperatura inicial, função de vizinhança e taxa de arrefecimento são cruciais para o desempenho do algoritmo mas é simples de implementar e permite, através da probabilidade de aceitação, fugir dos locais ótimos, o que aumenta a chance de encontrar globais ótimos.
+A escolha de temperatura inicial, função de vizinhança e taxa de arrefecimento são cruciais para o desempenho do algoritmo mas é simples de implementar e permite, através da probabilidade de aceitação, fugir dos ótimos locais, o que aumenta a chance de encontrar ótimos globais.
 
 \subsection{Kempe Chain}
 \label{explic:kempe_chain}

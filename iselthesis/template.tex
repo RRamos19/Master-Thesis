@@ -80,7 +80,7 @@
 	memoir={	            % See the 'memoir' documentation
     a4paper,            % the paper size/format
     11pt,               % 10pt, 11pt(*), 12pt
-    final,              % draft, final  <= Replace 'draft' with 'final' in final version
+    draft,              % draft, final  <= Replace 'draft' with 'final' in final version
   },
   media=screen,         % screen(*), paper
           % behavior to be defined in school options based in "\iselthesis@opt@media"
@@ -90,23 +90,23 @@
 
 % --------------------------------------------------------
 %%
-%%  BEGINING OF USER CUSTOMIZATION
+%%  BEGINNING OF USER CUSTOMIZATION
 %%
 % --------------------------------------------------------
 
-\AtEndEnvironment{figure}{\gdef\there@is@a@figure{}} 
-\AtEndDocument{\ifdefined\there@is@a@figure\label{fig:was:used:in:doc}\fi} 
-\newcommand{\conditionalLoF}{\@ifundefined{r@fig:was:used:in:doc}{}{\listoffigures}}%
+%\AtEndEnvironment{figure}{\gdef\there@is@a@figure{}} 
+%\AtEndDocument{\ifdefined\there@is@a@figure\label{fig:was:used:in:doc}\fi} 
+%\newcommand{\conditionalLoF}{\@ifundefined{r@fig:was:used:in:doc}{}{\listoffigures}}%
 
 
-\renewcommand{\familydefault}{\sfdefault}
-\usepackage{sansmathfonts}
-\usepackage{helvet}
+%\renewcommand{\familydefault}{\sfdefault}
+%\usepackage{sansmathfonts}
+%\usepackage{helvet}
 %%==== DANGER ==== DANGER ==== DANGER ==== DANGER ==== DANGER ====
 %%==== DANGER ==== DANGER ==== DANGER ==== DANGER ==== DANGER ====
 %%==== DANGER ==== DANGER ==== DANGER ==== DANGER ==== DANGER ====
 %%
-%% END OF USER COSTUMIZATION
+%% END OF USER CUSTOMIZATION
 %% Please do not change below this point!!! :)
 %%
 %%==== DANGER ==== DANGER ==== DANGER ==== DANGER ==== DANGER ====
@@ -125,7 +125,7 @@
 \printacknowledgements  % Print the acknowledgments (will only be printed if adequate for the document type)
 \printquote             % Print the quote (if file exists and is adequate for the document type)
 \printstatement         % Print statement text. This file will only be considered for final documents, i.e., "msc", otherwise, it will be silently ignored
-\printabstract          % Print abstracts (in PT and EN). The abstract in the document main language will be printed first, the abstract in the foreign language will be printed second
+%\printabstract          % Print abstracts (in PT and EN). The abstract in the document main language will be printed first, the abstract in the foreign language will be printed second
 \tableofcontents*       % Always print the table of contents
 \printotherlists        % If option 'otherlistsat=front', print other lists of contents according to instructions given above, otherwise do nothing
 % --------------------------------------------------------
