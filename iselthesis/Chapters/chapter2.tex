@@ -7,9 +7,9 @@
 \chapter{Estado de arte}
 \label{capitulo:estado_arte}
 
-Problemas de agendamento são encontrados em múltiplas áreas tais como, medicina, transporte, logística, educação, entre outros. Problemas de agendamento são desafios relacionados com a alocação de recursos (como tempo, espaço ou pessoas) a determinadas tarefas, atividades ou eventos, respeitando um conjunto de restrições. Este tipo de problemas são conhecidos pela sua alta complexidade combinatória pois podem existir múltiplas soluções diferentes mas apenas um grupo muito reduzido de soluções ótimas.
+Problemas de agendamento são encontrados em múltiplas áreas tais como, medicina, transporte, logística, educação, entre outros. Problemas de agendamento são desafios relacionados com a alocação de recursos (como tempo, espaço ou pessoas) a determinadas tarefas, atividades ou eventos, respeitando um conjunto de restrições. Estes problemas são conhecidos pela sua alta complexidade combinatória, pois há muitas soluções possíveis, mas poucas soluções realmente ótimas.
 
-Este projeto terá um foco nos problemas de agendamento na área da educação. Os problemas de agendamento na área de educação podem ser divididos em três categorias, mencionado no artigo~\cite{SurveyAutomatedTimetabling_Schaerf_1999}, estas categorias são denominadas de \textit{School timetabling}, \textit{Course timetabling} e \textit{Examination timetabling}.
+Este projeto terá um foco nos problemas de agendamento na área da educação. Os problemas de agendamento na área de educação podem ser divididos em três categorias, mencionado no artigo~\cite{SurveyAutomatedTimetabling_Schaerf_1999}, estas categorias são denominadas de Agendamento escolar (\textit{School timetabling}), Agendamento de cursos universitários (\textit{Course timetabling}) e Agendamento de exames (\textit{Examination timetabling}).
 
 O \textit{School Timetabling} refere-se ao processo de atribuir horários às disciplinas e turmas em escolas primárias e secundárias, garantindo que não haja sobreposição de aulas, professores e salas. Esse tipo de agendamento é particularmente crítico, pois turmas têm horários fixos e geralmente as aulas ocupam o período de tempo, do aluno na escola, na sua totalidade.
 
@@ -19,9 +19,9 @@ O \textit{Examination Timetabling} foca-se no agendamento de exames universitár
 
 Este projeto concentrar-se-á na categoria de \textit{Course Timetabling}, lidando com os desafios específicos do agendamento de disciplinas num ambiente universitário, onde a flexibilidade e a personalização dos horários são fundamentais para atender às necessidades dos alunos e da instituição.
 
-\section{Course timetabling}
+\section{Agendamento de cursos universitários}
 
-O problema de agendamento da categoria \textit{Course timetabling} é denominado \glsxtrfull{uctp} e é normalmente conhecido por ser um problema de otimização, caso se pretenda obter a melhor solução possível. Caso se pretenda apenas descobrir uma solução possível diz-se que é um problema de busca. No contexto de problema de otimização, o objetivo consiste em alocar múltiplos recursos (salas, professores) em múltiplos períodos de tempo de modo a respeitar as restrições rígidas e a minimizar as violações das restrições flexiveis. 
+O problema de agendamento da categoria \textit{Course timetabling} é denominado \glsxtrfull{uctp} e é normalmente conhecido por ser um problema de otimização, caso se pretenda obter a melhor solução possível. Caso se pretenda apenas descobrir uma solução possível diz-se que é um problema de busca. No contexto de problema de otimização, o objetivo consiste em alocar múltiplos recursos (salas, professores) em múltiplos períodos de tempo de modo a respeitar as restrições rígidas e a minimizar as violações das restrições flexiveis.
 
 A categoria \textit{Course timetabling} tem algumas diferenças em relação à categoria \textit{School timetabling}. As maiores diferenças são as seguintes: aulas distintas podem ter alunos em comum, os professores estão encarregados de dar uma ou mais disciplinas, existem disciplinas opcionais e disciplinas obrigatórias, pode haver sobreposição entre disciplinas opcionais mas nunca pode haver sobreposicao com disciplinas obrigatórias.
 
@@ -55,11 +55,11 @@ Na tabela seguinte são organizadas as relações curso-disciplina juntamente co
     \begin{tabular}{cccc}
         \hline
         Vértice & Curso & Disciplina & Período \\ \hline
-        m_{11}  & K_{1} & l_{1}      & 1       \\
-        m_{21}  & K_{2} & l_{1}      & 2       \\
-        m_{22}  & K_{2} & l_{2}      & 3       \\
-        m_{31}  & K_{3} & l_{1}      & 1       \\
-        m_{32}  & K_{3} & l_{2}      & 4      
+        $m_{11}$  & $K_{1}$ & $l_{1}$      & 1       \\
+        $m_{21}$  & $K_{2}$ & $l_{1}$      & 2       \\
+        $m_{22}$  & $K_{2}$ & $l_{2}$      & 3       \\
+        $m_{31}$  & $K_{3}$ & $l_{1}$      & 1       \\
+        $m_{32}$  & $K_{3}$ & $l_{2}$      & 4      
     \end{tabular}
     \caption{Organização dos dados dos vértices do grafo da Figura~\ref{fig:grafo_simples_dewerra}}
 \end{table}
@@ -75,7 +75,7 @@ Esta abordagem funciona para casos simples que não tenham restrições de indis
     \label{fig:grafo_complexo_dewerra}
 \end{figure}
 
-Na Figura~\ref{fig:grafo_complexo_dewerra} é apresentado um modelo ligeiramente mais complexo que o da Figura~\ref{fig:grafo_simples_dewerra}. Foram adicionados novos vértices relativos aos períodos de indisponibilidade. No caso do vértice da aula $m_{13}$ verifica-se que este possui duas arestas ligadas a vértices relativos aos períodos, estas ligações indicam os períodos aos quais a aulas não pode ser dada.
+Na Figura~\ref{fig:grafo_complexo_dewerra} é apresentado um modelo ligeiramente mais complexo que o da Figura~\ref{fig:grafo_simples_dewerra}. Foram adicionados novos vértices relativos aos períodos de indisponibilidade. No caso do vértice da aula $m_{31}$ verifica-se que este possui duas arestas ligadas a vértices relativos aos períodos, mais concretamente aos vértice 3 e 4. Estas ligações indicam os períodos nos quais a aulas não pode ser dada.
 
 Outra abordagem ao problema consiste na utilização de um modelo matemático de otimização, que é mostrado abaixo.
 
@@ -117,9 +117,15 @@ A segunda fase tem como objetivo melhorar a solução obtida, sendo que os méto
 
 Esta abordagem de resolução não tem garantias de convergência a ótimos globais mas soluções ótimas locais são garantidas. 
 
-No artigo~\cite{HybridSimulatedAnnealing_Tuga_2007} é apresentada uma solução híbrida com a utilização do \glsxtrshort{sa}. Nesta solução, para além do uso do \glsxtrshort{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe Chain Neighbourhood}, denominada de \textit{Pair-wise Kempe Chain}, incorporada no \glsxtrshort{sa} é possível minimizar o número de restrições flexiveis violadas mas também melhorar as trocas de eventos em caso de conflitos sem violar as restrições rígidas.
+No artigo~\cite{HybridSimulatedAnnealing_Tuga_2007} é apresentada uma solução híbrida com a utilização do \glsxtrshort{sa}. Nesta solução, para além do uso do \glsxtrshort{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe Chain Neighborhood}, denominada de \textit{Pair-wise Kempe Chain}, incorporada no \glsxtrshort{sa} é possível minimizar o número de restrições flexíveis violadas mas também melhorar as trocas de eventos em caso de conflitos sem violar as restrições rígidas.
 
-% TODO: Apresentar os resultados
+Para testar o algoritmo foram utilizados três \textit{datasets} distintos que foram criados utilizando instâncias artificiais. Os \textit{datasets} foram construidos de modo a serem difíceis de resolver através de um método de heurística sequencial.
+
+% TODO: Apresentar os resultados e concluir o texto
+
+No artigo~\cite{Bellio_2016}
+
+No artigo~\cite{Abdipoor_2023}
 
 \section{ITC 2019}
 
@@ -131,7 +137,7 @@ Os métodos avaliados incluíram algoritmos heurísticos e meta-heurísticos, co
 
 \section{Bullet Solutions}
 
-A empresa \textit{Bullet Solutions}~\cite{bulletsolutions_Website} 
+A empresa \textit{Bullet Solutions}~\cite{bulletsolutions_Website} é uma empresa tecnológica que desenvolve soluções para a otimização de recursos e gestão de horários
 
 \section{Teoria e funcionamento dos algoritmos}
 
@@ -193,13 +199,13 @@ Ordem de funcionamento do algoritmo:
     \item Calcular a diferença de custo entre a solução inicial $x_0$ e a solução vizinha $x'$. A diferença do custo é a seguinte:
 
     \begin{center}
-        $\Delta E &= f(x') - f(x)$
+        $\Delta E = f(x') - f(x)$
     \end{center}
 
     Caso a solução vizinha seja melhor que a solução inicial esta é aceite imediatamente. Caso contrário a probabilidade de aceitação da solução vizinha é calculada da seguinte forma:
 
     \begin{center}
-        $P &= e^{-\Delta E/T}$
+        $P = e^{-\Delta E/T}$
     \end{center}
 
     Sendo T a temperatura atual.
@@ -209,12 +215,12 @@ Ordem de funcionamento do algoritmo:
 
 A escolha de temperatura inicial, função de vizinhança e taxa de arrefecimento são cruciais para o desempenho do algoritmo mas é simples de implementar e permite, através da probabilidade de aceitação, fugir dos ótimos locais, o que aumenta a chance de encontrar ótimos globais.
 
-\subsection{Kempe Chain}
+\subsection{Cadeia de Kempe}
 \label{explic:kempe_chain}
 
-O Kempe Chain é uma técnica baseada em coloração de grafos \ref{explic:graph_coloring}
+A Cadeia de Kempe (\textit{Kempe Chain}) é uma técnica baseada em coloração de grafos \ref{explic:graph_coloring}
 
-\subsection{Kempe chain Neighborhood}
+\subsection{Vizinhança de Cadeias de Kempe}
 \label{explic:kempe_chain_neighborhood}
 
-O Kempe Chain Neighborhood é uma especialização do \textit{Kempe Chain} \ref{explic:kempe_chain}. O algoritmo tem como objetivo explorar soluções de coloração diferentes, modificando as cores de uma cadeia de Kempe no grafo.
+A Vizinhança de Cadeias de Kempe (Kempe Chain Neighborhood) é um operador de vizinhança baseado no algoritmo \textit{Kempe Chain} \ref{explic:kempe_chain}. O operador tem como objetivo explorar soluções de coloração diferentes, modificando as cores de uma cadeia de Kempe no grafo.

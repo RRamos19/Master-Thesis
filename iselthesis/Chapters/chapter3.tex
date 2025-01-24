@@ -30,7 +30,7 @@ Para garantir uma organização sólida, é essencial criar um diagrama de bloco
         RF001      & Deve ser possível manipular os horários criados através da interface gráfica       & Obrigatório   \\ \midrule
 RF002      & Deve haver persistência de dados, de entrada e saída, através de uma base de dados & Obrigatório   \\ \midrule
 RF003      & Horários modificados devem ser guardados em ficheiros distintos dos originais      & Obrigatório   \\ \midrule
-RF004 & A exportação de dados deve ser possível para os seguintes tipos de dados (pdf, xml, excel) & Obrigatório \\ \midrule
+RF004 & A exportação de dados deve ser possível para os seguintes tipos de dados (\glsxtrshort{pdf}, \glsxtrshort{xml}, \glsxtrshort{png}, \glsxtrshort{csv}) & Obrigatório \\ \midrule
 RF005      & A criação de horários deve permitir criar manchas institucionais                   & Obrigatório   \\ \midrule
 RF006 & Devem ser apresentados erros ao utilizador caso a aplicação falhe em alguma operação       & Obrigatório \\ \midrule
 RF007      & Na interface gráfica devem ser apresentados os dados já presentes na base de dados & Obrigatório   \\ \midrule
@@ -69,7 +69,7 @@ No concurso \glsxtrshort{itc}~2019 são apresentados conjuntos de instâncias qu
 
 \subsection{Horários de funcionamento}
 
-Na \textit{tag} principal dos dados encontram-se dados relativos ao número de dias por semana, número de \textit{slots} por dia e duração do semestre em semanas.
+A \textit{tag} principal apresenta o número de dias por semana, a quantidade de \textit{slots} diários e a duração do semestre em semanas que o horário deve conter.
 
 Entende-se como \textit{slot} um bloco ao qual se pode atribuir uma aula. Quanto mais \textit{slots} por dia maior é a granularidade no momento de atribuição das aulas aos vários períodos de tempo disponíveis. Para ajudar na compreensão encontra-se abaixo um exemplo que se encontra na página do concurso \cite{itc2019_Website}.
 
@@ -79,11 +79,16 @@ Entende-se como \textit{slot} um bloco ao qual se pode atribuir uma aula. Quanto
 
 Neste caso cada semana, do horário, tem 7 dias, o horário possui uma duração de 13 semanas e cada \textit{slot} possui uma duração de 5 minutos. Para obter a duração de cada \textit{slot} é necessário dividir o número de minutos, em um único dia, pelo número de \textit{slots} totais, ou seja, $24*60/288 = 5$.
 
-Para definir os horários das aulas serão utilizados os \textit{slots} definidos anteriormente. Abaixo encontra-se um exemplo da definição de uma aula.
+Para definir os horários das aulas serão utilizados os \textit{slots} definidos anteriormente. Abaixo encontra-se um exemplo da definição de uma aula. A definição de cada aula deve ser efetuada dentro da definição do respetivo curso, mas, neste caso, para simplificar apenas será mostrada a definição da aula.
 
 \begin{lstlisting}[caption={Exemplo da definição de uma aula}]
-<class id="1" limit="20">
-    <time days="1010100" start="90" length="10" weeks="1111111111111" penalty="20"/>
+<class id="1" limit="22">
+    <room id="10" penalty="0"/>
+    <room id="11" penalty="0"/>
+    <room id="12" penalty="0"/>
+    <time days="0100000" start="90" length="22" weeks="111111111111111" penalty="0"/>
+    <time days="0010000" start="90" length="22" weeks="111111111111111" penalty="0"/>
+    <time days="0001000" start="90" length="22" weeks="111111111111111" penalty="0"/>
 </class>
 \end{lstlisting}
 
@@ -93,9 +98,101 @@ A definição dos dias, em que a aula é dada, encontra-se num formato binário 
 
 \subsection{Salas}
 
+No momento de definição de salas é possível definir o seu identificador, a sua capacidade, a distância das outras salas e períodos de indisponibilidade. É apresentado um exemplo para clarificar.
+
+\begin{lstlisting}[caption={Exemplo da definição das salas}]
+<rooms>
+    <room id="1" capacity="61">
+        <travel room="2" value="12"/>
+        <unavailable days="0010000" start="222" length="36" weeks="111111111111111"/>
+    </room>
+    <room id="2" capacity="36">
+        <travel room="4" value="12"/>
+        <travel room="5" value="12"/>
+    </room>
+</rooms>
+\end{lstlisting}
+
+Neste exemplo são definidas duas salas. A sala 1 tem uma capacidade de 61 alunos e a sala 2 tem uma capacidade de 36 alunos. Para cada uma das salas são apresentadas as distâncias às outras salas. A definição das distâncias é importante no caso de duas aulas em simultâneo, por exemplo uma aula na sala 1 e de seguida uma aula na sala 2, pois os alunos têm de fazer o percurso entre ambas as salas. É um atributo relevante caso se pretenda otimizar a seleção das salas caso se encontrem muito afastadas.
+
+Os períodos de indisponibilidade são definidos de forma muito semelhante aos horários de funcionamento das aulas.
+
 \subsection{Cursos}
 
+%TODO: por fazer
+
 \subsection{Estudantes}
+
+A definição dos estudantes consiste na atribuição de um identificador único, normalmente o número de aluno, e dos cursos ao qual o estudante pertence. É apresentado um exemplo abaixo para demonstrar o padrão.
+
+\begin{lstlisting}[caption={Exemplo da definição dos estudantes}]
+<students>
+    <student id="1">
+        <course id="4"/>
+    </student>
+</students>
+\end{lstlisting}
+
+Esta funcionalidade não será utilizada neste projeto devido ao ISEL não permitir pré-inscrições dos alunos.
+
+\subsection{Restrições}
+
+No padrão podem ser definidas várias restrições, que são apresentadas na Figura~\ref{fig:restricoes_itc2019}.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=.75\textwidth]{restricoes_itc2019}
+    \caption{Restrições suportadas no padrão \glsxtrshort{itc} 2019 (Fonte:\cite{itc2019_Website})}
+    \label{fig:restricoes_itc2019}
+\end{figure}
+
+Abaixo são apresentadas pequenas descrições das várias restrições.
+
+\begin{itemize}
+    \item SameStart - Todas as aulas presentes na restrição devem começar à mesma hora;
+    \item SameTime - Todas as aulas presentes na restrição devem ser dadas nos mesmos horários do dia exigidos pela aula mais longa do conjunto;
+    \item DifferentTime - Todas as aulas presentes na restrição não devem estar sobrepostas;
+    \item SameDays - Todas as aulas presentes na restrição devem ser dadas nos mesmos dias da semana. Caso uma das aulas seja dada em um número reduzido de dias em relação às outras esta deve ser dada num subconjunto dos dias utilizados pela aula com maior número de dias;
+    \item DifferentDays - Todas as aulas presentes na restrição devem ser dadas em dias da semana diferentes;
+    \item SameWeeks - Todas as aulas presentes na restrição devem ser dadas nas mesmas semanas. Caso uma das aulas seja dada em um número reduzido de semanas em relação às outras esta deve ser dada num subconjunto das semanas utilizadas pela aula com maior número de semanas;
+    \item DifferentWeeks - Todas as aulas presentes na restrição devem ser dadas em semanas diferentes;
+    \item SameRoom - Todas as aulas presentes na restrição devem ser dadas na mesma sala;
+    \item DifferentRoom - Todas as aulas presentes na restrição devem ser dadas em salas diferentes;
+    \item Overlap - Quaisquer duas aulas nesta restrição devem ter alguma sobreposição no tempo. Implica sobreposição período do dia, dias da semana e semanas;
+    \item NotOverlap - Não devem haver duas aulas nesta restrição que se possam sobrepor no tempo;
+    \item SameAttendees - Todas as aulas presentes na restrição devem ocorrer em horários e locais tais que alguém que deva comparecer, seja capaz de assistir a todas as aulas;
+    \item Precedence - Esta restrição estabelece uma ordem que exige que a primeira reunião da primeira aula listada ocorra na sua totalidade antes da primeira reunião da aula que se segue na ordem, repetindo a lógica para as restantes aulas;
+    \item WorkDay(S) - Esta restrição previne ou penaliza quando o número de períodos entre o inicio da primeira aula e fim da última aula excede o número de períodos ''S'' definido na restrição;
+    \item MinGap(G) - Os horários atribuídos a quaisquer duas aulas nesta restrição que sejam colocadas no mesmo dia devem permitir pelo menos G slots entre o final da aula anterior e o início da aula posterior;
+    \item MaxDays(D) - As aulas nesta restrição não devem ser atribuídas a mais de D dias da semana diferentes, independentemente de isso ocorrer durante a mesma semana de um semana; %TODO: Confirmar
+    \item MaxDayLoad(S) - Esta restrição limita a quantidade total de tempo atribuída ao conjunto de aulas listadas na restrição a não mais do que S intervalos de tempo por dia durante todo o semestre;
+    \item MaxBreaks(R,S) - Esta restrição limita o número de intervalos entre aulas durante um dia. O número de intervalos deve exceder S intervalos de tempo mas não mais do que R por dia;
+    \item MaxBlock(M,S) - Esta restrição limita a quantidade de tempo (medida como M slots) que um conjunto de aulas pode ser agendado consecutivamente, cada uma separada por no máximo S slots.
+\end{itemize}
+
+Sabendo quais as restrições suportadas pelo padrão é apresentado um exemplo da definição das restrições. Cada restrição definida pode ser rígida ou ligeira, sendo as suas definições `required="true"'' e `penalty="4"'' (no local do 4 pode ser qualquer valor) respetivamente.
+
+\begin{lstlisting}[caption={Exemplo da definição das restrições}]
+<distributions>
+    <distribution type="SameAttendees" required="true">
+        <class id="140"/>
+        <class id="155"/>
+        <class id="156"/>
+    </distribution>
+    <distribution type="NotOverlap" required="true">
+        <class id="91"/>
+        <class id="92"/>
+        <class id="93"/>
+        <class id="94"/>
+    </distribution>
+    <distribution type="SameRoom" penalty="4">
+        <class id="81"/>
+        <class id="82"/>
+    </distribution>
+</distributions>
+\end{lstlisting}
+
+No exemplo são apresentadas três restrições diferentes. Dentro de cada bloco são colocados os identificadores das aulas que possuem tal restrição.
 
 \subsection{Modificações propostas}
 
