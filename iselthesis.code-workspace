@@ -5,6 +5,14 @@
 		}
 	],
 	"settings": {
-		"editor.wordWrap": "on"
+		"editor.wordWrap": "on",
+		"git.enabled": false,
+		"cSpell.language": "en,pt-PT",
+		"cSpell.words": [
+			"desejabilidade",
+			"ISEL",
+			"Kempe",
+			"Vizing"
+		]
 	}
 }
