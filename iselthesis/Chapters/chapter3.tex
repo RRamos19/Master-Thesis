@@ -117,6 +117,8 @@ Neste exemplo são definidas duas salas. A sala 1 tem uma capacidade de 61 aluno
 
 Os períodos de indisponibilidade são definidos de forma muito semelhante aos horários de funcionamento das aulas.
 
+A capacidade das salas não terá importância na concretização do projeto pois os horários são criados antes das inscrições dos alunos, ou seja, não é possível saber o número de ocupantes em cada disciplina, o que impossibilita a utilização dessa restrição. %TODO: Confirmar
+
 \subsection{Cursos}
 
 %TODO: por fazer
@@ -148,7 +150,7 @@ No padrão podem ser definidas várias restrições, que são apresentadas na Fi
 
 Abaixo são apresentadas pequenas descrições das várias restrições.
 
-\begin{itemize}
+\begin{compactitem}
     \item SameStart - Todas as aulas presentes na restrição devem começar à mesma hora;
     \item SameTime - Todas as aulas presentes na restrição devem ser dadas nos mesmos horários do dia exigidos pela aula mais longa do conjunto;
     \item DifferentTime - Todas as aulas presentes na restrição não devem estar sobrepostas;
@@ -168,7 +170,7 @@ Abaixo são apresentadas pequenas descrições das várias restrições.
     \item MaxDayLoad(S) - Esta restrição limita a quantidade total de tempo atribuída ao conjunto de aulas listadas na restrição a não mais do que S intervalos de tempo por dia durante todo o semestre;
     \item MaxBreaks(R,S) - Esta restrição limita o número de intervalos entre aulas durante um dia. O número de intervalos deve exceder S intervalos de tempo mas não mais do que R por dia;
     \item MaxBlock(M,S) - Esta restrição limita a quantidade de tempo (medida como M slots) que um conjunto de aulas pode ser agendado consecutivamente, cada uma separada por no máximo S slots.
-\end{itemize}
+\end{compactitem}
 
 Sabendo quais as restrições suportadas pelo padrão é apresentado um exemplo da definição das restrições. Cada restrição definida pode ser rígida ou ligeira, sendo as suas definições `required="true"'' e `penalty="4"'' (no local do 4 pode ser qualquer valor) respetivamente.
 
@@ -196,9 +198,82 @@ No exemplo são apresentadas três restrições diferentes. Dentro de cada bloco
 
 \subsection{Modificações propostas}
 
-\section{Restrições dos horários}
+Considerando que o projeto se focará na formulação \glsxtrshort{cb-ctt} serão efetuadas modificações relacionadas com as inscrições dos alunos. Para além das modificações mencionadas será também acrescentada uma secção relacionada com os professores.
+
+\subsubsection{Modificações relacionadas com os alunos}
+
+As informações relacionadas com os alunos encontram-se na definição das turmas e salas. Como não será utilizada essa funcionalidade, serão excluidas as definições dos dados. Abaixo encontra-se um exemplo das definições excluindo as funcionalidades mencionadas.
+
+\begin{lstlisting}[caption={Exemplo do padrão depois de retirados os dados relativos aos alunos}]
+<class id="1">
+    <room id="10" penalty="0"/>
+    <room id="11" penalty="0"/>
+    <room id="12" penalty="0"/>
+    <time days="0100000" start="90" length="22" weeks="111111111111111" penalty="0"/>
+    <time days="0010000" start="90" length="22" weeks="111111111111111" penalty="0"/>
+    <time days="0001000" start="90" length="22" weeks="111111111111111" penalty="0"/>
+</class>
+<rooms>
+    <room id="1">
+        <travel room="2" value="12"/>
+        <unavailable days="0010000" start="222" length="36" weeks="111111111111111"/>
+    </room>
+    <room id="2">
+        <travel room="4" value="12"/>
+        <travel room="5" value="12"/>
+    </room>
+</rooms>
+\end{lstlisting}
+
+\subsubsection{Modificações relacionadas com os professores}
+
+Para a criação dos horários é necessário incluir os dados relativos aos professores que irão dar as aulas agendadas. Para permitir a inclusão dessa informação nos horários criados será necessário incluir esses dados no padrão. Abaixo encontra-se um exemplo da definição dos dados relativos aos professores.
+
+\begin{lstlisting}[caption={Exemplo da informação relacionada com os professores}]
+<teachers>
+    <teacher id="1">
+        <class id="1">
+        <class id="2">
+        <unavailable days="0010000" start="222" length="36" weeks="111111111111111"/>
+    </teacher>
+    <teacher id="2">
+        <class id="3">
+        <class id="4">
+    </teacher>
+</teachers>
+\end{lstlisting}
+
+%TODO: Falta explicar e terminar
+
+\section{Restrições definidas para a criação dos horários}
 \label{capitulo3:Restricoes}
 
 \subsection{Restrições rígidas}
 
+\begin{compactitem}
+    \item Ocupação de salas: Aulas dadas no mesmo período devem ser concretizadas em salas distintas;
+    \item Conflitos de disciplinas obrigatórias: Não devem haver conflitos entre disciplinas quando pelo menos uma delas é obrigatória;
+    \item 
+\end{compactitem}
+
+%TODO: Falta explicar e terminar
+
 \subsection{Restrições flexíveis}
+
+\begin{compactitem}
+    \item Número de salas: O número de salas distintas utilizadas pelo curso deve ser o menor possível;
+    \item 
+\end{compactitem}
+
+%TODO: Falta explicar e terminar
+
+\subsection{Método de busca}
+\label{capitulo3:Metodo_busca}
+
+\subsubsection{Espaço de busca}
+
+\subsubsection{Relações de vizinhança}
+
+\subsubsection{Função de custo}
+
+A função de custo consiste na soma das penalizações das restrições violadas. As penalizações das restrições devem-se encontrar nos dados fornecidos à aplicação.

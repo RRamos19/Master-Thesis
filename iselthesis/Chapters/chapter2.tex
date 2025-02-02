@@ -87,13 +87,13 @@ Outra abordagem ao problema consiste na utilização de um modelo matemático de
     & y_{ik} = 0 \text{ or } 1 \quad &&(i = 1..q; k = 1..p) \label{eq_basic:agendamento}
 \end{align}
 
-\begin{itemize}
+\begin{compactitem}
     \item $i$ - Número de cursos (varia entre 1 e q);
     \item $k$ - Número de períodos (varia entre 1 e p);
     \item $k_{i}$ - Número de aulas;
     \item $l_{k}$ - Número máximo de aulas que podem ser agendadas num dado período;
     \item $y_{ik}$ - Estado do agendamento.
-\end{itemize}
+\end{compactitem}
 
 A restrição \eqref{eq_basic:aulas} impõe que cada disciplina é composta pelo número correto de aulas. A restrição \eqref{eq_basic:salas} impõe que não devem existir mais aulas que salas disponíveis. A restrição \eqref{eq_basic:sobreposicao} previne que aulas conflituosas possam ser agendadas no mesmo período de tempo.
 
@@ -105,9 +105,9 @@ Ao modelo matemático apresentado foi acrescentada a seguinte função objetivo.
     \text{max } \displaystyle\sum_{i=1}^{q} \displaystyle\sum_{k=1}^{p} C_{ik}y_{ik}
 \end{equation}
 
-\begin{itemize}
+\begin{compactitem}
     \item $C_{ik}$ - Medida de desejabilidade de ter uma aula do curso $K_{i}$ no período k.
-\end{itemize}
+\end{compactitem}
 
 No artigo~\cite{CombinatorialOptimizationProblems_Eiselt_1987} é discutido um método de duas fases para resolver alguns problemas de agendamento. Alguns dos problemas abordados podem ter variações nos métodos de resolução mas será apenas discutido o funcionamento comum das duas fases. Antes de iniciar o processo de resolução é definida a função objetivo que permitirá comparar soluções.
 
@@ -181,7 +181,7 @@ Simulated Annealing é um algoritmo de otimização estocástico inspirado metal
 
 Inicialização do algoritmo:
 
-\begin{itemize}
+\begin{compactitem}
     \item O problema de otimização é representado por uma função objetivo $f(x)$, onde $x$ é a solução no espaço de busca. O objetivo é encontrar o valor de $x$ que minimiza, ou maximiza, $f(x)$.
 
     \item Definição de uma solução inicial $x_0$.
@@ -189,11 +189,11 @@ Inicialização do algoritmo:
     \item Definição da temperatura inicial $T_0$ e da taxa de arrefecimento $\alpha$ (normalmente 0 < $\alpha$ < 1)
 
     \item Estabelecimento dos critérios de paragem, como temperatura mínima ou número máximo de iterações.
-\end{itemize}
+\end{compactitem}
 
 Ordem de funcionamento do algoritmo:
 
-\begin{itemize}
+\begin{compactitem}
     \item Geração de uma solução vizinha $x'$. A descoberta de uma solução vizinha é feita através de uma função de vizinhança. A escolha da função depende do problema.
 
     \item Calcular a diferença de custo entre a solução inicial $x_0$ e a solução vizinha $x'$. A diferença do custo é a seguinte:
@@ -211,7 +211,7 @@ Ordem de funcionamento do algoritmo:
     Sendo T a temperatura atual.
 
     \item Redução da temperatura atual tendo em conta a taxa de arrefecimento antes de iniciar a próxima iteração
-\end{itemize}
+\end{compactitem}
 
 A escolha de temperatura inicial, função de vizinhança e taxa de arrefecimento são cruciais para o desempenho do algoritmo mas é simples de implementar e permite, através da probabilidade de aceitação, fugir dos ótimos locais, o que aumenta a chance de encontrar ótimos globais.
 
