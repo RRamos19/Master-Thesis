@@ -7,51 +7,63 @@
 \chapter{Estado de arte}
 \label{capitulo:estado_arte}
 
-Problemas de agendamento são encontrados em múltiplas áreas tais como, medicina, transporte, logística, educação, entre outros. Problemas de agendamento são desafios relacionados com a alocação de recursos (como tempo, espaço ou pessoas) a determinadas tarefas, atividades ou eventos, respeitando um conjunto de restrições. Estes problemas são conhecidos pela sua alta complexidade combinatória, pois há muitas soluções possíveis, mas poucas soluções realmente ótimas.
+%TODO: Apresentar um resumo das secções
 
-Este projeto terá um foco nos problemas de agendamento na área da educação. Os problemas de agendamento na área de educação podem ser divididos em três categorias, mencionado no artigo~\cite{SurveyAutomatedTimetabling_Schaerf_1999}, estas categorias são denominadas de Agendamento escolar (\textit{School timetabling}), Agendamento de cursos universitários (\textit{Course timetabling}) e Agendamento de exames (\textit{Examination timetabling}).
+\section{Problemas de agendamento}
 
-O \textit{School Timetabling} refere-se ao processo de atribuir horários às disciplinas e turmas em escolas primárias e secundárias, garantindo que não haja sobreposição de aulas, professores e salas. Esse tipo de agendamento é particularmente crítico, pois turmas têm horários fixos e geralmente as aulas ocupam o período de tempo, do aluno na escola, na sua totalidade.
+Problemas de agendamento são encontrados em múltiplas áreas tais como, medicina, transporte, logística, educação, entre outros. Estes problemas colocam desafios relacionados com a alocação de recursos (como tempo, espaço ou pessoas) a determinadas tarefas, atividades ou eventos, respeitando um conjunto de restrições. Estes problemas são conhecidos pela sua alta complexidade combinatória, pois podem existir múltiplas soluções diferentes mas apenas um grupo reduzido de soluções ótimas.
 
-O \textit{Course Timetabling}, por sua vez, é um problema de agendamento em ambientes universitários, onde o objetivo principal é minimizar conflitos de horários para disciplinas que compartilham alunos em comum. Esse tipo de timetabling deve acomodar uma maior diversidade de combinações de disciplinas e opções, levando em conta a flexibilidade necessária no ensino superior e as escolhas individuais dos alunos.
+Este projeto terá um foco nos problemas de agendamento na área da educação, os quais podem ser divididos em três categorias \cite{SurveyAutomatedTimetabling_Schaerf_1999}, denominadas de:
 
-O \textit{Examination Timetabling} foca-se no agendamento de exames universitários. Esse problema busca evitar conflitos como sobreposição de exames para alunos inscritos em várias disciplinas, garantir um espaçamento adequado entre exames para permitir a preparação, e evitar a alocação de múltiplos exames no mesmo período ou na mesma sala, atendendo também às limitações de capacidade das salas.
+\begin{compactItem}
+    \item Agendamento escolar (\textit{School timetabling});
+    \item Agendamento de cursos universitários (\textit{Course timetabling});
+    \item Agendamento de exames (\textit{Examination timetabling}).
+\end{compactItem}
+
+O \textit{School Timetabling} refere-se ao processo de atribuir horários às disciplinas e turmas em escolas primárias e secundárias, garantindo que não haja sobreposição de aulas, professores e salas. Esse tipo de agendamento é particularmente crítico, pois as turmas têm horários fixos e geralmente as aulas ocupam o período de tempo, do aluno na escola, na sua totalidade.
+
+O \textit{Course Timetabling}, por sua vez, é um problema de agendamento em ambientes universitários, onde o objetivo principal é minimizar conflitos de horários para disciplinas que compartilham alunos em comum. Esse tipo de \texit{timetabling} deve acomodar uma maior diversidade de combinações de disciplinas e opções, levando em conta a flexibilidade necessária no ensino superior e as escolhas individuais dos alunos.
+
+O \textit{Examination Timetabling} foca-se no agendamento de exames universitários. Neste problema procura-se evitar conflitos como sobreposição de exames para alunos inscritos em várias disciplinas, garantir um espaçamento adequado entre exames para permitir a preparação, e evitar a alocação de múltiplos exames no mesmo período ou na mesma sala, atendendo também às limitações de capacidade das salas.
 
 Este projeto concentrar-se-á na categoria de \textit{Course Timetabling}, lidando com os desafios específicos do agendamento de disciplinas num ambiente universitário, onde a flexibilidade e a personalização dos horários são fundamentais para atender às necessidades dos alunos e da instituição.
 
-\section{Agendamento de cursos universitários}
+\section{Agendamento de horários de cursos universitários}
 
-O problema de agendamento da categoria \textit{Course timetabling} é denominado \glsxtrfull{uctp} e é normalmente conhecido por ser um problema de otimização, caso se pretenda obter a melhor solução possível. Caso se pretenda apenas descobrir uma solução possível diz-se que é um problema de busca. No contexto de problema de otimização, o objetivo consiste em alocar múltiplos recursos (salas, professores) em múltiplos períodos de tempo de modo a respeitar as restrições rígidas e a minimizar as violações das restrições flexiveis.
+O problema de agendamento da categoria \textit{Course timetabling} é denominado \glsxtrfull{uctp} e é normalmente conhecido por ser um problema de otimização, caso se pretenda obter a melhor solução possível. Caso se pretenda apenas descobrir uma solução possível diz-se que é um problema de procura. No contexto de problema de otimização, o objetivo consiste em alocar múltiplos recursos (salas, professores) em múltiplos períodos de tempo de modo a respeitar as restrições rígidas e a minimizar as violações das restrições flexiveis.
 
-A categoria \textit{Course timetabling} tem algumas diferenças em relação à categoria \textit{School timetabling}. As maiores diferenças são as seguintes: aulas distintas podem ter alunos em comum, os professores estão encarregados de dar uma ou mais disciplinas, existem disciplinas opcionais e disciplinas obrigatórias, pode haver sobreposição entre disciplinas opcionais mas nunca pode haver sobreposicao com disciplinas obrigatórias.
+A categoria \textit{Course timetabling} tem algumas diferenças em relação à categoria \textit{School timetabling}. As maiores diferenças são as seguintes: aulas distintas podem ter alunos em comum, os professores estão encarregados de dar uma ou mais disciplinas, existem disciplinas opcionais e disciplinas obrigatórias, pode haver sobreposição entre disciplinas opcionais mas nunca pode haver sobreposicao entre disciplinas obrigatórias.
 
 \subsection{Problema NP-Completo}
 
 De acordo com o artigo~\cite{complexitytimetableconstruction_Cooper_1996} são apresentados cinco casos em que problemas de criação de horários são NP-completos, o que explica a sua complexidade, apesar de problemas de criação de horários universitários, embora de maior escala, tendam a ser mais simples.
 
-Um problema \glsxtrshort{np} é um problema que pode ser verificado em tempo polinomial por uma máquina de turing não determinística. Um problema é considerado NP-completo se sua solução puder ser verificada em tempo polinomial por uma máquina de Turing não determinística e se qualquer problema da classe \glsxtrshort{np} puder ser reduzido a ele em tempo polinomial.
+Um problema \glsxtrshort{np} é um problema cuja solução pode ser verificada em tempo polinomial por uma máquina de Turing não determinística. Um problema é considerado NP-completo se sua solução puder ser verificada em tempo polinomial por uma máquina de Turing não determinística e se qualquer problema da classe \glsxtrshort{np} puder ser reduzido a ele em tempo polinomial.
 
 \subsection{Abordagens para resolução do problema}
 
-No artigo~\cite{SurveyAutomatedTimetabling_Schaerf_1999}, previamente referido, são analisadas diversas técnicas aplicadas à resolução deste tipo de problema. Inicialmente, destacam-se as \textit{direct heuristics}, que imitam a abordagem humana para solucionar o problema. Posteriormente, foram introduzidas abordagens mais generalistas, fundamentadas em técnicas como \textit{integer programming} (explicação na Secção~\ref{explic:integer_programming}) e \textit{network flow} (explicação na Secção~\ref{explic:network_flow}), entre outras. Por fim, o problema passou a ser frequentemente modelado como uma variante de um problema de \textit{graph coloring} (explicação na Secção~\ref{explic:graph_coloring}).
+No artigo~\cite{SurveyAutomatedTimetabling_Schaerf_1999}, previamente referido, são analisadas diversas técnicas aplicadas à resolução deste tipo de problema. Inicialmente, destacam-se as \textit{direct heuristics}, que imitam a abordagem humana para solucionar o problema. Posteriormente, foram introduzidas abordagens mais generalistas, fundamentadas em técnicas como \textit{integer programming} (referida na Secção~\ref{explic:integer_programming}) e \textit{network flow} (referida na Secção~\ref{explic:network_flow}), entre outras. Por fim, o problema passou a ser frequentemente modelado como uma variante do problema de \textit{graph coloring} (descrito na Secção~\ref{explic:graph_coloring}).
 
-No artigo~\cite{introductiontimetabling_Werra_1985} são apresentados alguns modelos básicos utilizados como resolução de certos problemas de agendamento. Apenas serão mencionados os modelos relacionados com a categoria \textit{Course timetabling}. O primeiro modelo apresentado consiste num modelo de \textit{graph coloring}.
+No artigo~\cite{introductiontimetabling_Werra_1985} são apresentados alguns modelos básicos utilizados como resolução de certos problemas de agendamento. Em seguida, referem-se os modelos relacionados com a categoria \textit{Course timetabling}. O primeiro modelo apresentado consiste no \textit{graph coloring}, apresentado na Figura~\ref{fig:grafo_simples_dewerra}.
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=.35\textwidth]{grafo_simples_dewerra}
+    \includegraphics[width=.5\textwidth]{grafo_simples_dewerra}
     \caption{Modelo de grafos simples (Fonte:\cite{introductiontimetabling_Werra_1985})}
     \label{fig:grafo_simples_dewerra}
 \end{figure}
 
-Em cada vértice é apresentada uma relação curso-disciplina. O primeiro índice indica o curso e o segundo índice indica a disciplina. Por exemplo $m_{12}$ representa uma aula do curso $K_{1}$ da disciplina $l_{2}$.
+Em cada vértice é apresentada uma relação curso-disciplina. O primeiro índice indica o curso e o segundo índice indica a disciplina. Por exemplo, $m_{12}$ representa uma aula do curso $K_{1}$ da disciplina $l_{2}$.
 
-São criadas arestas entre vértices do mesmo curso mas também entre vértices caso haja algum aluno que esteja em ambos os cursos. Neste caso a ''cor'' dos vértices é o periodo, ou seja, vértices que estejam ligados por uma aresta devem possuir períodos diferentes e caso possível devem ser reutilizados períodos já criados de modo a utilizar a menor quantidade de períodos possível.
+São criadas arestas entre vértices do mesmo curso mas também entre vértices caso haja algum aluno que esteja em ambos os cursos. Neste caso a ''cor'' dos vértices é o periodo, ou seja, vértices que estejam ligados por uma aresta devem possuir períodos diferentes e caso seja possível devem ser reutilizados períodos já criados de modo a utilizar a menor quantidade de períodos possível.
 
-Na tabela seguinte são organizadas as relações curso-disciplina juntamente com os períodos resultantes:
+Na Tabela~\ref{tab:resumo_grafo_simples_dewerra} são organizadas as relações curso-disciplina, juntamente com os períodos resultantes:
 
 \begin{table}[ht]
     \centering
+    \caption{Organização dos dados dos vértices do grafo da Figura~\ref{fig:grafo_simples_dewerra}}
+    \label{tab:resumo_grafo_simples_dewerra}
     \begin{tabular}{cccc}
         \hline
         Vértice & Curso & Disciplina & Período \\ \hline
@@ -61,10 +73,9 @@ Na tabela seguinte são organizadas as relações curso-disciplina juntamente co
         $m_{31}$  & $K_{3}$ & $l_{1}$      & 1       \\
         $m_{32}$  & $K_{3}$ & $l_{2}$      & 4      
     \end{tabular}
-    \caption{Organização dos dados dos vértices do grafo da Figura~\ref{fig:grafo_simples_dewerra}}
 \end{table}
 
-Esta abordagem funciona para casos simples que não tenham restrições de indisponibilidades ou casos em que certas aulas não podem ser dadas em certos períodos. Para casos mais complexos pode ser utilizado o seguinte modelo.
+Esta abordagem funciona para casos simples que não tenham restrições de indisponibilidades ou casos em que certas aulas não podem ocorrer em determinados períodos. Para casos mais complexos pode ser utilizado o modelo da Figura~\ref{fig:grafo_complexo_dewerra}.
 
 \newpage
 
@@ -75,7 +86,7 @@ Esta abordagem funciona para casos simples que não tenham restrições de indis
     \label{fig:grafo_complexo_dewerra}
 \end{figure}
 
-Na Figura~\ref{fig:grafo_complexo_dewerra} é apresentado um modelo ligeiramente mais complexo que o da Figura~\ref{fig:grafo_simples_dewerra}. Foram adicionados novos vértices relativos aos períodos de indisponibilidade. No caso do vértice da aula $m_{31}$ verifica-se que este possui duas arestas ligadas a vértices relativos aos períodos, mais concretamente aos vértice 3 e 4. Estas ligações indicam os períodos nos quais a aulas não pode ser dada.
+Na Figura~\ref{fig:grafo_complexo_dewerra} é apresentado um modelo ligeiramente mais complexo que o da Figura~\ref{fig:grafo_simples_dewerra}. Foram adicionados novos vértices relativos aos períodos de indisponibilidade. No caso do vértice da aula $m_{31}$ verifica-se que este possui duas arestas ligadas a vértices relativos aos períodos. Sendo que estas ligações indicam os períodos nos quais as aulas não podem ser agendadas.
 
 Outra abordagem ao problema consiste na utilização de um modelo matemático de otimização, que é mostrado abaixo.
 
@@ -88,8 +99,8 @@ Outra abordagem ao problema consiste na utilização de um modelo matemático de
 \end{align}
 
 \begin{compactitem}
-    \item $i$ - Número de cursos (varia entre 1 e q);
-    \item $k$ - Número de períodos (varia entre 1 e p);
+    \item $i$ - Índice de cursos (varia entre 1 e q);
+    \item $k$ - Índice de períodos (varia entre 1 e p);
     \item $k_{i}$ - Número de aulas;
     \item $l_{k}$ - Número máximo de aulas que podem ser agendadas num dado período;
     \item $y_{ik}$ - Estado do agendamento.
@@ -97,7 +108,7 @@ Outra abordagem ao problema consiste na utilização de um modelo matemático de
 
 A restrição \eqref{eq_basic:aulas} impõe que cada disciplina é composta pelo número correto de aulas. A restrição \eqref{eq_basic:salas} impõe que não devem existir mais aulas que salas disponíveis. A restrição \eqref{eq_basic:sobreposicao} previne que aulas conflituosas possam ser agendadas no mesmo período de tempo.
 
-O resultado do agendamento é apresentado no ponto~\eqref{eq_basic:agendamento}, caso $y_{ik} = 1$ indica que a aula foi agendada. Caso $y_{ik} = 0$ indica que a aula não foi agendada.
+O resultado do agendamento é apresentado na expressão~\eqref{eq_basic:agendamento}, caso $y_{ik} = 1$ indica que a aula foi agendada. Caso $y_{ik} = 0$ indica que a aula não foi agendada.
 
 Ao modelo matemático apresentado foi acrescentada a seguinte função objetivo. A função objetivo tem como finalidade otimizar as soluções obtidas, maximizando ou minimizando o custo das soluções.
 
@@ -113,9 +124,9 @@ No artigo~\cite{CombinatorialOptimizationProblems_Eiselt_1987} é discutido um m
 
 Na primeira fase ocorre uma tentativa de descoberta de uma solução possível, utilizando um procedimento ganancioso. Começando sem atribuições é executado um algoritmo que faz uma construção gradual dos agendamentos, comparando as várias alternativas e escolhendo sempre a opção com menor custo, sendo o custo obtido através da função objetivo. Se após a primeira fase não for obtida uma solução possível então ainda pode haver uma tentativa de relaxamento das restrições. Se mesmo depois das restrições serem relaxadas e não se obtiver uma solução possível então as restrições devem ser modificadas pelo tomador de decisões.
 
-A segunda fase tem como objetivo melhorar a solução obtida, sendo que os métodos utilizados pela fase anterior não garantem ótimos resultados. Começa por ser escolhido um agendamento da solução para ser retirado, colocando-o numa outra posição que reduza o custo da solução. Caso não exista outra posição que reduza o custo é terminada a segunda fase pois foi encontrada uma solução ótima local.
+A segunda fase tem como objetivo melhorar a solução obtida, dado que os métodos utilizados pela fase anterior não garantem resultados ótimos. Começa por ser escolhido um agendamento da solução para ser retirado, colocando-o numa outra posição que reduza o custo da solução. Caso não exista outra posição que reduza o custo é terminada a segunda fase pois foi encontrada uma solução ótima local.
 
-Esta abordagem de resolução não tem garantias de convergência a ótimos globais mas soluções ótimas locais são garantidas. 
+Esta abordagem de resolução não tem garantias de convergência para ótimos globais mas sim para soluções ótimas locais. 
 
 No artigo~\cite{HybridSimulatedAnnealing_Tuga_2007} é apresentada uma solução híbrida com a utilização do \glsxtrshort{sa}. Nesta solução, para além do uso do \glsxtrshort{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe Chain Neighborhood}, denominada de \textit{Pair-wise Kempe Chain}, incorporada no \glsxtrshort{sa} é possível minimizar o número de restrições flexíveis violadas mas também melhorar as trocas de eventos em caso de conflitos sem violar as restrições rígidas.
 
@@ -127,17 +138,19 @@ No artigo~\cite{Bellio_2016}
 
 No artigo~\cite{Abdipoor_2023}
 
-\section{ITC 2019}
+\section{\glsxtrfull{itc} 2019}
 
-O \glsxtrshort{itc}~2019~\cite{itc2019_Website} é uma competição internacional que tem como objetivo incentivar a pesquisa e o desenvolvimento de métodos inovadores para resolver problemas complexos de criação de horários. Esta competição, parte de uma série iniciada em 2002, busca promover avanços em algoritmos e heurísticas voltados para a alocação de recursos no tempo, com aplicações em áreas como educação, transporte e negócios.
+O \glsxtrfull{itc}~2019~\cite{itc2019_Website} é uma competição internacional que tem como objetivo incentivar a pesquisa e o desenvolvimento de métodos inovadores para resolver problemas complexos de criação de horários. Esta competição, parte de uma série iniciada em 2002, busca promover avanços em algoritmos e heurísticas voltados para a alocação de recursos no tempo, com aplicações em áreas como educação, transporte e negócios.
 
 A edição de 2019 teve um foco na geração de horários em contextos educacionais, como a criação de horários para escolas e universidades, considerando restrições rígidas e flexíveis. A competição desafiou os participantes a encontrar soluções de alta qualidade para esses problemas, equilibrando a satisfação das restrições com a eficiência computacional.
 
-Os métodos avaliados incluíram algoritmos heurísticos e meta-heurísticos, como algoritmos genéticos, \textit{simulated annealing}, abordagens exatas baseadas em programação matemática, e métodos híbridos que integram \textit{machine learning} e otimização. Os algoritmos submetidos foram avaliados com base na qualidade das soluções geradas e no tempo necessário para obtê-las, utilizando instâncias de problemas fornecidas pela organização.
+Os métodos avaliados incluíram algoritmos heurísticos e meta-heurísticos, como algoritmos genéticos, \textit{simulated annealing}, abordagens exatas baseadas em programação matemática, e métodos híbridos que integram aprendizagem automática e otimização. Os algoritmos submetidos foram avaliados com base na qualidade das soluções geradas e no tempo necessário para obtê-las, utilizando instâncias de problemas fornecidas pela organização.
 
 \section{Bullet Solutions}
 
 A empresa \textit{Bullet Solutions}~\cite{bulletsolutions_Website} é uma empresa tecnológica que desenvolve soluções para a otimização de recursos e gestão de horários
+
+%TODO: Apresentar os produtos principais, apresentar imagens dos produtos e referir a utilização no ISEL
 
 \section{Teoria e funcionamento dos algoritmos}
 
@@ -146,14 +159,14 @@ As seguintes técnicas e abordagens foram propostas na literatura como soluçõe
 \subsection{Coloração de grafos}
 \label{explic:graph_coloring}
 
-Coloração de grafos (\textit{Graph Coloring}) é uma técnica matemática aplicada a grafos, onde o objetivo principal é atribuir cores (ou rótulos) aos vértices de um grafo, de maneira que dois vértices adjacentes (conectados por uma aresta) nunca compartilhem a mesma cor. A cor neste contexto é uma abstração que representa um rótulo ou categoria, podendo ser utilizada para resolver uma ampla variedade de problemas práticos.
+Coloração de grafos (\textit{Graph Coloring}) é uma técnica matemática aplicada a grafos, onde o objetivo principal é atribuir cores (ou rótulos) aos vértices de um grafo, de maneira que dois vértices adjacentes (conectados por uma aresta) nunca compartilhem a mesma cor. A cor neste contexto é uma abstração que representa um rótulo ou categoria, podendo ser utilizada para resolver uma ampla variedade de problemas.
 
-O objetivo em problemas de coloração de grafos é minimizar o número de cores necessárias para realizar uma coloração válida, conhecido como o número cromático do grafo. O problema de determinar o número cromático é NP-completo em grafos gerais, o que significa que encontrar a solução ótima pode ser computacionalmente inviável para grafos grandes.
+O objetivo em problemas de coloração de grafos é minimizar o número de cores necessárias para realizar uma coloração válida, conhecido como o número cromático do grafo. O problema de determinar o número cromático é NP-completo em grafos gerais, o que significa que encontrar a solução ótima pode ser computacionalmente inviável para grafos de dimensão elevada.
 
 \subsection{Coloração de arestas}
 \label{explic:edge_coloring}
 
-Coloração de arestas (\textit{Edge Coloring}) é uma variante da coloração de grafos \ref{explic:graph_coloring}, onde o objetivo é atribuir cores às arestas de um grafo, obedecendo à seguinte restrição: duas arestas incidentes no mesmo vértice não podem compartilhar a mesma cor. Assim como na coloração de grafos, a cor representa um rótulo ou categoria abstrata que pode ser interpretada de diversas formas dependendo da aplicação.
+Coloração de arestas (\textit{Edge Coloring}) é uma variante da coloração de grafos, onde o objetivo é atribuir cores às arestas de um grafo, obedecendo à seguinte restrição: duas arestas incidentes no mesmo vértice não podem compartilhar a mesma cor. Assim como na coloração de grafos, a cor representa um rótulo ou categoria abstrata que pode ser interpretada de diversas formas dependendo da aplicação.
 
 O objetivo típico em problemas de coloração de arestas é minimizar o número de cores utilizadas, conhecido como o número cromático das arestas. Este número é fundamental na teoria dos grafos e está relacionado ao grau máximo do grafo. O grau máximo do grafo é o maior número de arestas conectadas a qualquer vértice. Para grafos simples pode ser utilizado o teorema de Vizing para descobrir o número mínimo de cores. O teorema indica que número mínimo de cores do grafo varia entre o grau máximo do grafo (grafo de classe 1) e esse mesmo número acrescido de um (grafo de classe 2).
 
@@ -170,14 +183,16 @@ Rede de fluxo (\textit{Network Flow}) é um conceito da teoria dos grafos. O flu
 \subsection{Tabu search}
 \label{explic:tabu_search}
 
-\textit{Tabu search} é uma meta-heurística e um procedimento adaptativo que guia algoritmos de busca local na exploração de espaços de busca. O \textit{Tabu search} costuma ser utilizado para resolver problemas complexos e tem como objetivo evitar que a busca fique presa em mínimos ou máximos locais.
+\textit{Tabu search} é uma meta-heurística e um procedimento adaptativo que guia algoritmos de pesquisa local na exploração de espaços de busca. O \textit{Tabu search} costuma ser utilizado para resolver problemas complexos e tem como objetivo evitar que a busca fique presa em mínimos ou máximos locais.
 
-O algoritmo começa com uma solução inicial, normalmente aleatória mas não necessariamente. De seguida são efetuadas pequenas modificações para explorar os espaços vizinhos. Através da utilização da \textit{Tabu list} são memorizados certos locais com o objetivo de evitar ciclos e revisitas a soluções já exploradas recentemente. Embora movimentos tabu sejam proibidos, pode haver exceções se eles resultarem numa solução significativamente melhor. Isso é controlado por um critério de aspiração.
+O algoritmo começa com uma solução inicial, tipicamente aleatória. De seguida, são efetuadas pequenas modificações para explorar os espaços vizinhos. Através da utilização da \textit{Tabu list} são memorizados certos locais com o objetivo de evitar ciclos e revisitas a soluções já exploradas recentemente. Embora movimentos tabu sejam proibidos, pode haver exceções se eles resultarem numa solução significativamente melhor, sendo controlado por um critério de aspiração.
 
 \subsection{Simulated Annealing}
 \label{explic:simulated_annealing}
 
-Simulated Annealing é um algoritmo de otimização estocástico inspirado metalurgia, onde um material é aquecido e depois arrefecido de forma controlada para moldar o material ao resultado pretendido. Esse processo é modelado para resolver problemas de otimização em que se busca minimizar (ou maximizar) uma função objetivo, muitas vezes em espaços de busca complexos e não-lineares.
+\glsxtrfull{sa} é um algoritmo de otimização estocástico inspirado na metalurgia, onde um material é aquecido e depois arrefecido de forma controlada para moldar-se ao resultado pretendido. Esse processo é modelado para resolver problemas de otimização em que se procura minimizar (ou maximizar) uma função objetivo, muitas vezes em espaços de busca complexos e não-lineares.
+
+Em termos gerais, o \glsxtrshort{sa} opera da seguinte forma:
 
 Inicialização do algoritmo:
 
@@ -191,36 +206,42 @@ Inicialização do algoritmo:
     \item Estabelecimento dos critérios de paragem, como temperatura mínima ou número máximo de iterações.
 \end{compactitem}
 
-Ordem de funcionamento do algoritmo:
+Funcionamento do algoritmo:
 
 \begin{compactitem}
     \item Geração de uma solução vizinha $x'$. A descoberta de uma solução vizinha é feita através de uma função de vizinhança. A escolha da função depende do problema.
 
     \item Calcular a diferença de custo entre a solução inicial $x_0$ e a solução vizinha $x'$. A diferença do custo é a seguinte:
 
-    \begin{center}
+    \begin{equation}
         $\Delta E = f(x') - f(x)$
-    \end{center}
+    \end{equation}
 
-    Caso a solução vizinha seja melhor que a solução inicial esta é aceite imediatamente. Caso contrário a probabilidade de aceitação da solução vizinha é calculada da seguinte forma:
+    Caso a solução vizinha seja melhor que a solução inicial, esta é aceite imediatamente. Caso contrário, a probabilidade de aceitação da solução vizinha é calculada da seguinte forma:
 
-    \begin{center}
+    \begin{equation}
         $P = e^{-\Delta E/T}$
-    \end{center}
+    \end{equation}
 
     Sendo T a temperatura atual.
 
     \item Redução da temperatura atual tendo em conta a taxa de arrefecimento antes de iniciar a próxima iteração
 \end{compactitem}
 
-A escolha de temperatura inicial, função de vizinhança e taxa de arrefecimento são cruciais para o desempenho do algoritmo mas é simples de implementar e permite, através da probabilidade de aceitação, fugir dos ótimos locais, o que aumenta a chance de encontrar ótimos globais.
+A escolha de temperatura inicial, função de vizinhança e taxa de arrefecimento são cruciais para o desempenho do algoritmo. Tal permite, através da probabilidade de aceitação, evitar ótimos locais, o que aumenta a possibilidade de encontrar ótimos globais.
 
 \subsection{Cadeia de Kempe}
 \label{explic:kempe_chain}
 
-A Cadeia de Kempe (\textit{Kempe Chain}) é uma técnica baseada em coloração de grafos \ref{explic:graph_coloring}
+A Cadeia de Kempe (\textit{Kempe Chain}) é uma técnica baseada em coloração de grafos
+
+%TODO: Desenvolver
 
 \subsection{Vizinhança de Cadeias de Kempe}
 \label{explic:kempe_chain_neighborhood}
 
-A Vizinhança de Cadeias de Kempe (Kempe Chain Neighborhood) é um operador de vizinhança baseado no algoritmo \textit{Kempe Chain} \ref{explic:kempe_chain}. O operador tem como objetivo explorar soluções de coloração diferentes, modificando as cores de uma cadeia de Kempe no grafo.
+A Vizinhança de Cadeias de Kempe (Kempe Chain Neighborhood) é um operador de vizinhança baseado no algoritmo \textit{Kempe Chain}. O operador tem como objetivo explorar soluções de coloração diferentes, modificando as cores de uma cadeia de Kempe no grafo.
+
+%TODO: Desenvolver
+
+%TODO: Acrescentar imagens da web, referindo o autor
