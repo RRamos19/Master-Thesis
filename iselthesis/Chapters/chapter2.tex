@@ -93,15 +93,15 @@ Outra abordagem ao problema consiste na utilização de um modelo matemático de
     \text{s.t.} \quad & \displaystyle\sum_{k=1}^{p} y_{ik} = k_i \quad &&(i = 1..q) \label{eq_basic:aulas}\\
     & \displaystyle\sum_{i=1}^{q} y_{ik} \leq l_k \quad &&(k = 1..p) \label{eq_basic:salas}\\
     & \displaystyle\sum_{i \in S_l} y_{ik} \leq 1 \quad &&(l = 1..r; k = 1..p) \label{eq_basic:sobreposicao}\\
-    & y_{ik} = 0 \text{ or } 1 \quad &&(i = 1..q; k = 1..p) \label{eq_basic:agendamento}
+    & y_{ik} = 0 \text{ ou } 1 \quad &&(i = 1..q; k = 1..p) \label{eq_basic:agendamento}
 \end{align}
 
 \begin{compactitem}
     \item $i$ - Índice de cursos (varia entre 1 e q);
     \item $k$ - Índice de períodos (varia entre 1 e p);
-    \item $k_{i}$ - Número de aulas;
+    \item $k_{i}$ - Número total de períodos em que a disciplina deve ser agendada;
     \item $l_{k}$ - Número máximo de aulas que podem ser agendadas num dado período;
-    \item $y_{ik}$ - Estado do agendamento.
+    \item $y_{ik}$ - Variável de decisão binária.
 \end{compactitem}
 
 A restrição \eqref{eq_basic:aulas} impõe que cada disciplina é composta pelo número correto de aulas. A restrição \eqref{eq_basic:salas} impõe que não devem existir mais aulas que salas disponíveis. A restrição \eqref{eq_basic:sobreposicao} previne que aulas conflituosas possam ser agendadas no mesmo período de tempo.
@@ -126,15 +126,47 @@ A segunda fase tem como objetivo melhorar a solução obtida, dado que os métod
 
 Esta abordagem de resolução não tem garantias de convergência para ótimos globais mas sim para soluções ótimas locais. 
 
-No artigo~\cite{HybridSimulatedAnnealing_Tuga_2007} é apresentada uma solução híbrida com a utilização do \glsxtrshort{sa}. Nesta solução, para além do uso do \glsxtrshort{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe Chain Neighborhood}, denominada de \textit{Pair-wise Kempe Chain}, incorporada no \glsxtrshort{sa} é possível minimizar o número de restrições flexíveis violadas mas também melhorar as trocas de eventos em caso de conflitos sem violar as restrições rígidas.
+No artigo~\cite{HybridSimulatedAnnealing_Tuga_2007} é apresentada uma solução híbrida com a utilização do \glsxtrshort{sa}. Nesta solução, para além do uso do \glsxtrshort{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe Chain Neighbourhood} (descrito na Secção~\ref{explic:kempe_chain_neighbourhood}), denominada de \textit{Pair-wise Kempe Chain}, incorporada no \glsxtrshort{sa} é possível minimizar o número de restrições flexíveis violadas mas também melhorar as trocas de eventos em caso de conflitos sem violar as restrições rígidas.
 
 Para testar o algoritmo foram utilizados três \textit{datasets} distintos que foram criados utilizando instâncias artificiais. Os \textit{datasets} foram construidos de modo a serem difíceis de resolver através de um método de heurística sequencial.
 
 % TODO: Apresentar os resultados e concluir o texto
 
-No artigo~\cite{Bellio_2016}
+No artigo~\cite{Bellio_2016} é utilizado o algoritmo \glsxtrshort{sa} para a resolução do problema combinatório.
 
-No artigo~\cite{Abdipoor_2023}
+Foram consideradas duas relações de vizinhança entre horários:
+
+\begin{compactitem}
+    \item MoveLecture/MoverAula (ML): Muda o período e a sala de uma aula;
+
+    \item SwapLectures/TrocarAulas (SL): Troca o período e a sala de duas aulas de disciplinas distintas.
+\end{compactitem}
+
+A operação ML só permite movimentos de aulas para salas vazias. A restrição apresentada só é possível caso hajam salas vazias, caso contrário a restrição não se aplica.
+
+A estratégia de seleção de movimentos é a seguinte:
+
+\begin{compactitem}
+    \item Seleção da vizinhança (ML ou SL) com probabilidade não uniforme;
+    
+    A probabilidade de escolher SL é controlada por um parâmetro chamado sr (swap rate). Dependendo do valor de sr, o algoritmo pode favorecer mais trocas de aulas (SL) ou mudanças individuais (ML).
+
+    \item Escolha aleatória dentro da vizinhança selecionada
+    
+    Depois de escolher qual o tipo de movimento que será aplicado, um movimento específico dentro dessa vizinhança é selecionado de forma uniforme.
+\end{compactitem}
+
+Para fazer o afinamento dos parâmetros do algoritmo foram divididas as instâncias em três grupos distintos: um grupo de treino para afinar os parâmetros, um grupo de validação para avaliar o afinamento e um grupo de novas instâncias para verificar a qualidade do método proposto.
+
+O grupo de treino é um grande conjunto de instâncias artificiais concebido para reproduzir as caraterísticas das instâncias do mundo real. Para evitar \textit{overtuning}, este é o único grupo de instâncias que foi utilizado na fase de afinamento.
+
+O grupo de afinamento é um conjunto de instâncias utilizados na literatura. É composto por 21 instâncias com dados reais e tem o propósito de permitir a comparação dos resultados com os métodos do estado de arte.
+
+Por fim, o grupo de novas instâncias são utilizadas para fins de referência comparativa para artigos futuros.
+
+Através da utilização dos métodos Feature Based Tuning e F-Race~\cite{Birattari_2010} foi possível descobrir os melhores parâmetros para cada \textit{dataset}. Discutindo agora os resultados, foi possível obter melhores resultados em 10 das 21 instâncias apresentadas na literatura.
+
+O artigo~\cite{Abdipoor_2023} apresenta uma revisão dos vários artigos e métodos apresentados na literatura de modo a apresentar de forma clara a evolução que ocorreu ao longo dos tempos. %TODO: Terminar
 
 \section{\glsxtrfull{itc} 2019}
 
@@ -146,9 +178,26 @@ Os métodos avaliados incluíram algoritmos heurísticos e meta-heurísticos, co
 
 \section{Bullet Solutions}
 
-A empresa \textit{Bullet Solutions}~\cite{bulletsolutions_Website} é uma empresa tecnológica que desenvolve soluções para a otimização de recursos e gestão de horários
+A \textit{Bullet Solutions}~\cite{bulletsolutions_Website} é uma empresa tecnológica especializada no desenvolvimento de soluções para otimização de recursos e gestão de horários. Fundada na \glsxtrfull{estesc-ipc}, as suas ferramentas são amplamente utilizadas por diversas instituições de ensino e organizações, incluindo o \glsxtrshort{isel}, para a criação e gestão eficiente de horários académicos e administrativos.
 
-%TODO: Apresentar os produtos principais, apresentar imagens dos produtos e referir a utilização no ISEL
+Os principais produtos da empresa incluem:  
+
+\begin{compactitem}
+    \item Agendamento e Calendarização Automatizadas (Automated Scheduling and Timetabling)
+    \item Gestão de Atividades e Recursos (Activities and Resource Management)
+    \item Reserva e Marcação de Quartos (Room Booking and Reservations)
+    \item Integração avançada de API (Advanced API Integration)
+    \item Publicação e Visualização (Publishing and Viewer)
+    \item Relatórios e Análises (Reporting and Analytics)
+\end{compactitem}
+
+Cada uma destas soluções foi desenvolvida para responder aos desafios específicos enfrentados por instituições que necessitam de uma gestão eficaz do tempo e dos recursos disponíveis.
+
+Graças a estas soluções inovadoras, a Bullet Solutions tem vindo a consolidar-se como uma referência no setor, proporcionando ferramentas avançadas que melhoram a produtividade e a organização de instituições em diversos países.
+
+Tendo em consideração estes aspetos, o projeto será desenvolvido com o objetivo de oferecer uma alternativa competitiva à aplicação da Bullet Solutions atualmente utilizada no \glsxtrshort{isel}. Para tal, será necessário analisar em detalhe as funcionalidades disponibilizadas pela solução existente, identificando potenciais melhorias e inovações que possam ser implementadas.
+
+Desta forma, o projeto procurará não apenas replicar as funcionalidades essenciais da aplicação da Bullet Solutions, mas também introduzir novas abordagens que possam melhorar a eficiência e a usabilidade do sistema, contribuindo para um sistema mais organizado e produtivo.
 
 \section{Teoria e funcionamento dos algoritmos}
 
@@ -157,7 +206,7 @@ As seguintes técnicas e abordagens foram propostas na literatura como soluçõe
 \subsection{Coloração de grafos}
 \label{explic:graph_coloring}
 
-Coloração de grafos (\textit{Graph Coloring}) é uma técnica matemática aplicada a grafos, onde o objetivo principal é atribuir cores (ou rótulos) aos vértices de um grafo, de maneira que dois vértices adjacentes (conectados por uma aresta) nunca compartilhem a mesma cor. A cor neste contexto é uma abstração que representa um rótulo ou categoria, podendo ser utilizada para resolver uma ampla variedade de problemas.
+Coloração de grafos (\textit{Graph Coloring}) é uma técnica matemática aplicada a grafos, onde o objetivo principal é atribuir cores aos vértices de um grafo, de maneira que dois vértices adjacentes (conectados por uma aresta) nunca compartilhem a mesma cor. A cor neste contexto é uma abstração que representa um rótulo ou categoria, podendo ser utilizada para resolver uma ampla variedade de problemas.
 
 O objetivo em problemas de coloração de grafos é minimizar o número de cores necessárias para realizar uma coloração válida, conhecido como o número cromático do grafo. O problema de determinar o número cromático é NP-completo em grafos gerais, o que significa que encontrar a solução ótima pode ser computacionalmente inviável para grafos de dimensão elevada.
 
@@ -188,7 +237,7 @@ O algoritmo começa com uma solução inicial, tipicamente aleatória. De seguid
 \subsection{Simulated Annealing}
 \label{explic:simulated_annealing}
 
-\glsxtrfull{sa} é um algoritmo de otimização estocástico inspirado na metalurgia, onde um material é aquecido e depois arrefecido de forma controlada para moldar-se ao resultado pretendido. Esse processo é modelado para resolver problemas de otimização em que se procura minimizar (ou maximizar) uma função objetivo, muitas vezes em espaços de busca complexos e não-lineares.
+\glsxtrfull{sa}~\cite{MetaheuristicsDesignImplementation_Talbi_2009} é um algoritmo de otimização estocástico inspirado na metalurgia, onde um material é aquecido e depois arrefecido de forma controlada para moldar-se ao resultado pretendido. Esse processo é modelado para resolver problemas de otimização em que se procura minimizar (ou maximizar) uma função objetivo, muitas vezes em espaços de busca complexos e não-lineares.
 
 Em termos gerais, o \glsxtrshort{sa} opera da seguinte forma:
 
@@ -223,10 +272,10 @@ Funcionamento do algoritmo:
 
     Sendo T a temperatura atual.
 
-    \item Redução da temperatura atual tendo em conta a taxa de arrefecimento antes de iniciar a próxima iteração. Existem vários métodos de fazer a redução mas a mais utilizada costuma ser a seguinte:
+    \item Redução da temperatura atual tendo em conta a taxa de arrefecimento antes de iniciar a próxima iteração. Existem vários métodos de fazer a redução mas a mais comum é a seguinte:
 
     \begin{equation}
-        T = \alpha T, \alpha \epsilon ]0, 1[
+        T = \alpha T, \quad \alpha \in \ \rbrack 0, \ 1 \lbrack
     \end{equation}
 \end{compactitem}
 
@@ -235,15 +284,37 @@ A escolha de temperatura inicial, função de vizinhança e taxa de arrefeciment
 \subsection{Cadeia de Kempe}
 \label{explic:kempe_chain}
 
-A Cadeia de Kempe (\textit{Kempe Chain}) é uma técnica baseada em coloração de grafos
+A Cadeia de Kempe (\textit{Kempe Chain})~\cite{GuideGraphColouring_Lewis_2016} é uma estrutura baseada em coloração de grafos e consiste num subgrafo formado por vértices interligados que alternam entre duas cores.
 
-%TODO: Desenvolver
+Na Figura~\ref{fig:exemplo_kempe_chain} é apresentado um exemplo de um grafo com uma cadeia de Kempe.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=.5\textwidth]{exemplo_kempe_chain}
+    \caption{Exemplo de uma cadeia de Kempe presente num grafo (Fonte:\cite{GuideGraphColouring_Lewis_2016})}
+    \label{fig:exemplo_kempe_chain}
+\end{figure}
+
+Na Figura~\ref{fig:exemplo_kempe_chain}, observa-se uma Cadeia de Kempe iniciada no vértice $v7$ com as cores 1 e 2. Esta cadeia pode ser representada como KEMPE($v7$, 1, 2) e inclui os vértices \{$v4$,$v7$,$v8$,$v9$\}.
 
 \subsection{Vizinhança de Cadeias de Kempe}
-\label{explic:kempe_chain_neighborhood}
+\label{explic:kempe_chain_neighbourhood}
 
-A Vizinhança de Cadeias de Kempe (Kempe Chain Neighborhood) é um operador de vizinhança baseado no algoritmo \textit{Kempe Chain}. O operador tem como objetivo explorar soluções de coloração diferentes, modificando as cores de uma cadeia de Kempe no grafo.
+A Vizinhança de Cadeias de Kempe (\textit{Kempe Chain Neighbourhood})~\cite{GuideGraphColouring_Lewis_2016} é um operador de vizinhança baseado no algoritmo \textit{Kempe Chain}. O operador tem como objetivo explorar soluções de coloração diferentes, modificando as cores de uma cadeia de Kempe.
 
-%TODO: Desenvolver
+Relacionado com as cadeias de Kempe existe o conceito de trocas de cadeia de Kempe (\textit{Kempe chain interchange}), que permite a criação de grafos vizinhos através da troca das cores das cadeias.
 
-%TODO: Acrescentar imagens da web, referindo o autor
+Na Figura~\ref{fig:exemplo_kempe_chain_neighbourhood} é apresentado um exemplo com variantes do mesmo grafo criados através das trocas de cores mencionadas.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{exemplo_kempe_chain_neighbourhood}
+    \caption{Exemplo das cadeias de Kempe (Fonte:\cite{GuideGraphColouring_Lewis_2016})}
+    \label{fig:exemplo_kempe_chain_neighbourhood}
+\end{figure}
+
+Na Figura~\ref{fig:exemplo_kempe_chain_neighbourhood} (a), observa-se uma Cadeia de Kempe iniciada no vértice $v7$ com as cores 1 e 2. Esta cadeia pode ser representada como KEMPE($v7$, 1, 2) e inclui os vértices \{$v4$,$v7$,$v8$,$v9$\}.
+
+Na transição da Figura~\ref{fig:exemplo_kempe_chain_neighbourhood} (a) para a Figura~\ref{fig:exemplo_kempe_chain_neighbourhood} (b), ocorre uma troca de cores dentro dessa cadeia. Especificamente, os vértices \{$v4$,$v9$\}, originalmente coloridos com a cor 2, passam a ter a cor 1, enquanto os vértices \{$v7$,$v8$\}, antes coloridos com a cor 1, passam a ter a cor 2. Essa modificação altera a distribuição das cores no grafo, mas mantém o número total de cores utilizadas, garantindo que a coloração permaneça válida.
+
+Por fim, na Figura~\ref{fig:exemplo_kempe_chain_neighbourhood}(c), introduz-se o conceito de troca de pares (\textit{pair swap}). Neste caso, ocorre a troca de cores nas cadeias KEMPE($v1$, 3, 4) e KEMPE($v5$ , 4, 3), cadeias as quais possuem apenas um vértice. A troca de pares resulta numa nova distribuição de cores que continua a satisfazer as restrições do problema.

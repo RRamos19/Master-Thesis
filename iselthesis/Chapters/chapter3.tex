@@ -92,7 +92,7 @@ Para definir os horários das aulas serão utilizados os \textit{slots} definido
 
 Na \textit{tag class} é definido o identificador da aula e a quantidade limite de alunos que podem frequentar a aula. O limite apresentado apenas faz sentido no caso da criação dos horários ser feita após a inscrição dos alunos, pois desta forma tem-se acesso à quantidade de alunos que devem frequentar a disciplina em causa.
 
-A definição dos dias, em que a aula é dada, encontra-se num formato binário e inicia-se na segunda-feira. De acordo com o exemplo, a aula vai ser dada na segunda-feira, quarta-feira e sexta-feira. Para calcular a hora de inicio, da aula, é necessário multiplicar a duração de cada \textit{slot} pelo \textit{offset} apresentado no \textit{start} e de seguida converter para horas, ou seja, $inicio = 5*90/60 = 7,5$, de acordo com o resultado, a aula tem inicio às 7:30 da manhã. A duração da aula é de 50 minutos e pode ser calculada da mesma forma que o inicio da aula, ou seja, $duração = 5*10 = 50$. É possível definir as semanas em que a aula vai ser dada através de um formato binário. Neste exemplo a aula é dada todas as semanas. Por fim, é definida uma penalização caso o horário não siga a definição na sua totalidade. 
+A definição dos dias, em que a aula é dada, encontra-se num formato binário e inicia-se na segunda-feira. De acordo com o exemplo, a aula vai ser dada na segunda-feira, quarta-feira e sexta-feira. Para calcular a hora de inicio da aula, é necessário multiplicar a duração de cada \textit{slot} pelo \textit{offset} apresentado no \textit{start} e de seguida converter para horas, ou seja, $inicio = 5*90/60 = 7,5$, de acordo com o resultado, a aula tem inicio às 7:30 da manhã. A duração da aula é de 50 minutos e pode ser calculada da mesma forma que o inicio da aula, ou seja, $duração = 5*10 = 50$. É possível definir as semanas em que a aula vai ser dada através de um formato binário. Neste exemplo a aula é dada todas as semanas. Por fim, é definida uma penalização caso o horário não siga a definição na sua totalidade. 
 
 \subsection{Salas}
 
@@ -374,8 +374,9 @@ Cenário principal:
 \subsection{Restrições rígidas}
 
 \begin{compactitem}
-    \item Ocupação de salas: Aulas dadas no mesmo período devem ser concretizadas em salas distintas;
-    \item Conflitos de disciplinas obrigatórias: Não devem haver conflitos entre disciplinas quando pelo menos uma delas é obrigatória;
+    \item Ocupação de salas: Aulas agendadas no mesmo período devem ser concretizadas em salas distintas;
+    \item Conflitos de disciplinas obrigatórias: Não devem haver sobreposições entre disciplinas quando pelo menos uma delas é obrigatória;
+    \item Indisponibilidade dos professores: Caso os professores tenham algum período de indisponibilidade não devem ser agendadas aulas nesse períodos para esses professores;
     \item 
 \end{compactitem}
 
@@ -385,6 +386,7 @@ Cenário principal:
 
 \begin{compactitem}
     \item Número de salas: O número de salas distintas utilizadas pelo curso deve ser o menor possível;
+    \item Intervalos entre aulas: Não devem haver blocos ''vazios'' entre aulas;
     \item 
 \end{compactitem}
 
@@ -395,10 +397,22 @@ Cenário principal:
 
 \subsubsection{Espaço de busca}
 
+%TODO: Por preencher
+
 \subsubsection{Relações de vizinhança}
+
+%TODO: Por preencher
 
 \subsubsection{Função de custo}
 
 A função de custo consiste na soma das penalizações das restrições violadas. As penalizações das restrições devem-se encontrar nos dados fornecidos à aplicação.
 
+%TODO: Por preencher
+
 \section{Diagrama de Gantt}
+
+%TODO: Por preencher
+
+\section{Tarefas principais}
+
+%TODO: Por preencher
