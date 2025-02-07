@@ -15,11 +15,11 @@ Problemas de agendamento são encontrados em múltiplas áreas tais como, medici
 
 Este projeto terá um foco nos problemas de agendamento na área da educação, os quais podem ser divididos em três categorias \cite{SurveyAutomatedTimetabling_Schaerf_1999}, denominadas de:
 
-\begin{compactItem}
+\begin{compactitem}
     \item Agendamento escolar (\textit{School timetabling});
     \item Agendamento de cursos universitários (\textit{Course timetabling});
     \item Agendamento de exames (\textit{Examination timetabling}).
-\end{compactItem}
+\end{compactitem}
 
 O \textit{School Timetabling} refere-se ao processo de atribuir horários às disciplinas e turmas em escolas primárias e secundárias, garantindo que não haja sobreposição de aulas, professores e salas. Esse tipo de agendamento é particularmente crítico, pois as turmas têm horários fixos e geralmente as aulas ocupam o período de tempo, do aluno na escola, na sua totalidade.
 
@@ -76,8 +76,6 @@ Na Tabela~\ref{tab:resumo_grafo_simples_dewerra} são organizadas as relações 
 \end{table}
 
 Esta abordagem funciona para casos simples que não tenham restrições de indisponibilidades ou casos em que certas aulas não podem ocorrer em determinados períodos. Para casos mais complexos pode ser utilizado o modelo da Figura~\ref{fig:grafo_complexo_dewerra}.
-
-\newpage
 
 \begin{figure}[ht]
     \centering
@@ -214,18 +212,22 @@ Funcionamento do algoritmo:
     \item Calcular a diferença de custo entre a solução inicial $x_0$ e a solução vizinha $x'$. A diferença do custo é a seguinte:
 
     \begin{equation}
-        $\Delta E = f(x') - f(x)$
+        \Delta E = f(x') - f(x)
     \end{equation}
 
     Caso a solução vizinha seja melhor que a solução inicial, esta é aceite imediatamente. Caso contrário, a probabilidade de aceitação da solução vizinha é calculada da seguinte forma:
 
     \begin{equation}
-        $P = e^{-\Delta E/T}$
+        P = e^{-\Delta E/T}
     \end{equation}
 
     Sendo T a temperatura atual.
 
-    \item Redução da temperatura atual tendo em conta a taxa de arrefecimento antes de iniciar a próxima iteração
+    \item Redução da temperatura atual tendo em conta a taxa de arrefecimento antes de iniciar a próxima iteração. Existem vários métodos de fazer a redução mas a mais utilizada costuma ser a seguinte:
+
+    \begin{equation}
+        T = \alpha T, \alpha \epsilon ]0, 1[
+    \end{equation}
 \end{compactitem}
 
 A escolha de temperatura inicial, função de vizinhança e taxa de arrefecimento são cruciais para o desempenho do algoritmo. Tal permite, através da probabilidade de aceitação, evitar ótimos locais, o que aumenta a possibilidade de encontrar ótimos globais.
