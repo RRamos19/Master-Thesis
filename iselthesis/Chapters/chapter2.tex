@@ -7,9 +7,16 @@
 \chapter{Estado de arte}
 \label{capitulo:estado-arte}
 
-%TODO: Apresentar um resumo das secções
+Na Secção~\ref{capitulo2:Problemas-agendamento}, é apresentada uma contextualização do problema abordado ao longo do projeto, fornecendo um enquadramento geral sobre os desafios inerentes ao agendamento.
+
+Na Secção~\ref{capitulo2:Course-timetabling}, é feita uma análise aprofundada de uma das categorias específicas dos problemas de agendamento, explorando as suas características e complexidades. Além disso, são discutidos os principais métodos e técnicas utilizadas na literatura, bem como os resultados obtidos.
+
+A Secção~\ref{capitulo2:ITC-2019} introduz uma competição de referência na área, cujo objetivo é incentivar o desenvolvimento de novos métodos e fomentar a pesquisa em problemas de agendamento, com foco particular no agendamento universitário.
+
+Por fim, na Secção~\ref{capitulo2:Teoria-funcionamento-algoritmos}, são apresentados os fundamentos teóricos e o funcionamento dos principais métodos e algoritmos descritos na literatura, proporcionando uma visão estruturada das abordagens utilizadas para a resolução desses problemas.
 
 \section{Problemas de agendamento}
+\label{capitulo2:Problemas-agendamento}
 
 Problemas de agendamento são encontrados em múltiplas áreas tais como, medicina, transporte, logística, educação, entre outros. Estes problemas colocam desafios relacionados com a alocação de recursos (como tempo, espaço ou pessoas) a determinadas tarefas, atividades ou eventos, respeitando um conjunto de restrições. Estes problemas são conhecidos pela sua alta complexidade combinatória, pois podem existir múltiplas soluções diferentes mas apenas um grupo reduzido de soluções ótimas.
 
@@ -30,6 +37,7 @@ O \textit{Examination Timetabling} foca-se no agendamento de exames universitár
 Este projeto concentrar-se-á na categoria de \textit{Course Timetabling}, lidando com os desafios específicos do agendamento de disciplinas num ambiente universitário, onde a flexibilidade e a personalização dos horários são fundamentais para atender às necessidades dos alunos e da instituição.
 
 \section{Agendamento de horários de cursos universitários}
+\label{capitulo2:Course-timetabling}
 
 O problema de agendamento da categoria \textit{Course timetabling} é denominado \glsxtrfull{uctp} e é normalmente conhecido por ser um problema de otimização, caso se pretenda obter a melhor solução possível. Caso se pretenda apenas descobrir uma solução possível diz-se que é um problema de procura. No contexto de problema de otimização, o objetivo consiste em alocar múltiplos recursos (salas, professores) em múltiplos períodos de tempo de modo a respeitar as restrições rígidas e a minimizar as violações das restrições flexiveis.
 
@@ -137,38 +145,41 @@ No artigo~\cite{Featurebasedtuning-Bellio-2016} é utilizado o algoritmo \glsxtr
 Foram consideradas duas relações de vizinhança entre horários:
 
 \begin{compactitem}
-    \item MoveLecture/MoverAula (ML): Muda o período e a sala de uma aula;
+    \item \textit{MoveLecture}/MoverAula (ML): Muda o período e a sala de uma aula;
 
-    \item SwapLectures/TrocarAulas (SL): Troca o período e a sala de duas aulas de disciplinas distintas.
+    \item \textit{SwapLectures}/TrocarAulas (SL): Troca o período e a sala de duas aulas de disciplinas distintas.
 \end{compactitem}
 
-A operação ML só permite movimentos de aulas para salas vazias. A restrição apresentada só é possível caso hajam salas vazias, caso contrário a restrição não se aplica.
+A operação ML permite apenas deslocamentos para salas vazias, desde que existam espaços disponíveis. Caso contrário, essa restrição não se aplica.
 
 A estratégia de seleção de movimentos é a seguinte:
 
 \begin{compactitem}
     \item Seleção da vizinhança (ML ou SL) com probabilidade não uniforme;
     
-    A probabilidade de escolher SL é controlada por um parâmetro chamado sr (swap rate). Dependendo do valor de sr, o algoritmo pode favorecer mais trocas de aulas (SL) ou mudanças individuais (ML).
+    A probabilidade de escolher SL é controlada por um parâmetro chamado sr (\textit{swap rate}). Dependendo do valor de sr, o algoritmo pode favorecer mais trocas de aulas (SL) ou mudanças individuais (ML).
 
     \item Escolha aleatória dentro da vizinhança selecionada
     
     Depois de escolher qual o tipo de movimento que será aplicado, um movimento específico dentro dessa vizinhança é selecionado de forma uniforme.
 \end{compactitem}
 
-Para fazer o afinamento dos parâmetros do algoritmo foram divididas as instâncias em três grupos distintos: um grupo de treino para afinar os parâmetros, um grupo de validação para avaliar o afinamento e um grupo de novas instâncias para verificar a qualidade do método proposto.
+Para o ajuste dos parâmetros do algoritmo, as instâncias foram divididas em três grupos distintos:
 
-O grupo de treino é um grande conjunto de instâncias artificiais concebido para reproduzir as caraterísticas das instâncias do mundo real. Para evitar \textit{overtuning}, este é o único grupo de instâncias que foi utilizado na fase de afinamento.
+\begin{compactenum}
+    \item O grupo de treino consiste em um grande conjunto de instâncias artificiais projetadas para reproduzir as características das instâncias do mundo real. Para evitar overtuning, este foi o único grupo utilizado na fase de ajuste dos parâmetros.
+    
+    \item O grupo de validação contém 21 instâncias baseadas em dados reais e utilizadas na literatura. O seu objetivo é permitir a comparação com os métodos do estado da arte.
+    
+    \item O grupo de novas instâncias é utilizado como referência comparativa para estudos futuros.
+\end{compactenum}
 
-O grupo de afinamento é um conjunto de instâncias utilizados na literatura. É composto por 21 instâncias com dados reais e tem o propósito de permitir a comparação dos resultados com os métodos do estado de arte.
-
-Por fim, o grupo de novas instâncias são utilizadas para fins de referência comparativa para artigos futuros.
-
-Através da utilização dos métodos Feature Based Tuning e F-Race~\cite{FRaceIterated-Birattari-2010} foi possível descobrir os melhores parâmetros para cada \textit{dataset}. Discutindo agora os resultados, foi possível obter melhores resultados em 10 das 21 instâncias apresentadas na literatura.
+Através da aplicação dos métodos Feature-Based Tuning e F-Race~\cite{FRaceIterated-Birattari-2010}, foi possível identificar os melhores parâmetros para cada \textit{dataset}. Em termos de desempenho, os resultados demonstram melhorias em 10 das 21 instâncias analisadas na literatura, evidenciando a eficácia do método proposto.
 
 O artigo~\cite{Metaheuristicapproaches-Abdipoor-2023} apresenta uma revisão dos vários artigos e métodos apresentados na literatura de modo a apresentar de forma clara a evolução que ocorreu ao longo dos tempos. %TODO: Terminar
 
 \section{\glsxtrfull{itc} 2019}
+\label{capitulo2:ITC-2019}
 
 O \glsxtrfull{itc} é uma competição internacional que tem como objetivo incentivar a pesquisa e o desenvolvimento de métodos inovadores para resolver problemas complexos de criação de horários. Esta competição, organizou-se nos anos 2002, 2007~\cite{SecondInternationalTimetabling-Mccollum-2007}, 2011~\cite{ThirdInternationalTimetabling-Post-2013} e 2019~\cite{Realworlduniversity-Mueller-2024}. A organização das competições têm como objetivo promover avanços em algoritmos e heurísticas voltados para a alocação de recursos no tempo, com aplicações em áreas como educação, transporte e negócios.
 
@@ -179,6 +190,7 @@ Os métodos avaliados incluíram algoritmos heurísticos e meta-heurísticos, co
 São disponibilizadas 36 instâncias no formato \glsxtrfull{xml} no site da competição, sendo 6 delas instâncias de teste e as restantes 30 instâncias problemas da competição. Das 30 instâncias mencionadas ainda há uma divisão relativamente à data de publicação das instâncias, sendo as 10 primeiras instâncias consideradas do tipo ''cedo'', foram publicadas a 14/11/2018 e são as que valem menos caso sejam resolvidas. As 10 instâncias seguintes foram publicadas a 18/09/2019, são do tipo ''meio'' e encontram-se no meio em termos de valor. Por fim, as 10 instâncias restantes são as que têm mais valor, são consideradas do tipo ''tarde'' e foram publicadas a 07/11/2019.
 
 \section{Bullet Solutions}
+\label{capitulo2:Bullet-Solutions}
 
 A \textit{Bullet Solutions}~\cite{bulletsolutions-Website} é uma empresa tecnológica especializada no desenvolvimento de soluções para otimização de recursos e gestão de horários. Fundada na \glsxtrfull{estesc-ipc}, as suas ferramentas são amplamente utilizadas por diversas instituições de ensino e organizações, incluindo o \glsxtrshort{isel}, para a criação e gestão eficiente de horários académicos e administrativos.
 
@@ -200,6 +212,7 @@ Tendo em consideração estes aspetos, o projeto será desenvolvido com o objeti
 Desta forma, o projeto procurará não apenas replicar a funcionalidade de agendamento automático da aplicação da Bullet Solutions, mas também introduzir novas abordagens que possam melhorar a eficiência e a usabilidade do sistema, contribuindo para uma melhor experiência na sua utilização.
 
 \section{Teoria e funcionamento dos algoritmos}
+\label{capitulo2:Teoria-funcionamento-algoritmos}
 
 As seguintes técnicas e abordagens foram propostas na literatura como soluções para o problema em questão. Para cada técnica é apresentada uma explicação teórica do seu funcionamento.
 
