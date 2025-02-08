@@ -21,6 +21,8 @@ IF "%or_%"=="true" (
 
 make pdf
 
+pause
+
 IF EXIST "%output%" REN "%output%" "%final_output%"
 
 start "" "%final_output%"

@@ -23,10 +23,10 @@
 %%%     Universidade Nova de Lisboa (NOT OFFICIAL)
 %%%
 %%% BUGS and SUGGESTIONS: please send email to "matilde.pato@isel.pt"
-%%%     or sumit a ticket in the the project web page at
+%%%     or submit a ticket in the the project web page at
 %%%     https://github.com/matpato/iselthesis
 %%%
-%%% CONTRIBUTERS are welcome. Please contact "matilde.pato@isel.pt"
+%%% CONTRIBUTORS are welcome. Please contact "matilde.pato@isel.pt"
 %%%
 %%% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -114,14 +114,14 @@
 %%==== DANGER ==== DANGER ==== DANGER ==== DANGER ==== DANGER ====
 
 \benchmarktic
-%% Begining of document
+%% Beginning of document
 \begin{document}
 
 % --------------------------------------------------------
 \ncthesisfrontmatter    % Before the main text (TOC, etc)
 % --------------------------------------------------------
 \printcoverpage		    % The cover page
-%\printdedicatory        % Print the dedicatory (will only be printed if adequate for the document type)
+\printdedicatory        % Print the dedicatory (will only be printed if adequate for the document type)
 \printacknowledgements  % Print the acknowledgments (will only be printed if adequate for the document type)
 \printquote             % Print the quote (if file exists and is adequate for the document type)
 \printstatement         % Print statement text. This file will only be considered for final documents, i.e., "msc", otherwise, it will be silently ignored
@@ -136,9 +136,9 @@
 \printotherlists 	    % If option 'otherlistsat=back', print other lists of contents according to instructions given above, otherwise do nothing
 
 \ncprintappendices      % Print appendixes, if any!
-% \ncprintannexes         % Print annexes, if any!
+\ncprintannexes         % Print annexes, if any!
 
-% \printbackcoverpage     % Print the cover back page
+\printbackcoverpage     % Print the cover back page
 % --------------------------------------------------------
 %% End of document
 % --------------------------------------------------------

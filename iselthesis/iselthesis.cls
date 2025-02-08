@@ -26,10 +26,10 @@
 %%%      - Nuno Datia <nuno.datia@isel.pt>
 %%%
 %%% BUGS and SUGGESTIONS: please send email to "matilde.pato@isel.pt"
-%%%     or sumit a ticket in the the project web page at
+%%%     or submit a ticket in the the project web page at
 %%%     https://github.com/matpato/iselthesis
 %%%
-%%% CONTRIBUTERS are welcome. Please contact "matilde.pato@isel.pt"
+%%% CONTRIBUTORS are welcome. Please contact "matilde.pato@isel.pt"
 %%%
 %%% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -99,7 +99,7 @@
 }
 
 % --------------------------------------------------------
-%% Loading additinal files
+%% Loading additional files
 % --------------------------------------------------------
 
 \def\iselthesis@saveabstractorder{}
@@ -129,7 +129,7 @@
 % --------------------------------------------------------
 %% SOME ESSENTIAL PACKAGES
 %% Others will be loaded later, in the file “packages.clo”
-%% And, additionaly defined by use in the file "_packages.tex"
+%% And, additionally defined by use in the file "_packages.tex"
 % --------------------------------------------------------
 \RequirePackage[table,svgnames]{xcolor}%
 \RequirePackage{colortbl}

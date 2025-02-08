@@ -5,12 +5,12 @@
 %  Created by Matilde Pós-de-Mina Pato on 2012/10/09.
 %
 \chapter{Abordagem proposta}
-\label{capitulo:abordagem_proposta}
+\label{capitulo:abordagem-proposta}
 
 Nesta secção, será apresentado o planeamento do projeto e trabalho feito, acompanhado de uma explicação detalhada das decisões tomadas ao longo do processo. Serão descritas as razões que orientaram cada escolha, de modo a garantir a coerência das estratégias adotadas.
 
 \section{Diagrama de blocos do sistema}
-\label{capitulo3:Diagrama_blocos}
+\label{capitulo3:Diagrama-blocos}
 
 Para garantir uma organização sólida, é essencial criar um diagrama de blocos que represente a estrutura geral do sistema. Esse diagrama fornecerá uma visão abrangente dos principais componentes, facilitando a compreensão das relações e dependências desde o início do desenvolvimento.
 
@@ -18,14 +18,14 @@ Para garantir uma organização sólida, é essencial criar um diagrama de bloco
 \newpage
 
 \section{Requisitos funcionais e não funcionais do sistema}
-\label{capitulo3:requisitos_funcionais_nao_funcionais}
+\label{capitulo3:requisitos-funcionais-nao-funcionais}
 
 {
 \setlength{\tabcolsep}{.8em}
 \begin{table}[htb]
     \centering
     \caption{Requisitos funcionais do projeto}
-    \label{tabela:requisitos_funcionais}
+    \label{tabela:requisitos-funcionais}
     \begin{tabular}{c p{0.5\linewidth} c}
         \toprule
         Referência & \multicolumn{1}{c}{Descrição}                                                      & Classificação \\ \midrule
@@ -49,7 +49,7 @@ RF011      & Através da interface gráfica definir períodos para as aulas part
 \begin{table}[htb]
     \centering
     \caption{Requisitos não funcionais do projeto}
-    \label{tabela:requisitos_nao_funcionais}
+    \label{tabela:requisitos-nao-funcionais}
     \begin{tabular}{c p{0.5\linewidth} c}
         \toprule
         Referência & \multicolumn{1}{c}{Descrição}                                                      & Classificação \\ \midrule
@@ -59,17 +59,17 @@ RF011      & Através da interface gráfica definir períodos para as aulas part
 }
 
 \section{Estrutura do padrão do concurso ITC 2019}
-\label{capitulo3:dados_itc2019}
+\label{capitulo3:dados-itc2019}
 
 A definição e representação dos horários serão feitas com base no padrão introduzido pelo concurso \glsxtrshort{itc}~2019. Para que se possa concretizar a definição dos horários é necessário primeiro compreender o padrão.
 
-No concurso \glsxtrshort{itc}~2019 são apresentados conjuntos de instâncias que podem ser utilizadas para testar o funcionamento do sistema. Os dados encontram-se no formato \glsxtrfull{xml} e contêm \textit{tags} que permitem definir múltiplas informações tais como horários de funcionamento, salas, cursos e estudantes.
+No concurso \glsxtrshort{itc}~2019 são apresentados conjuntos de instâncias que podem ser utilizadas para testar o funcionamento do sistema. Os dados encontram-se no formato \glsxtrshort{xml} e contêm \textit{tags} que permitem definir múltiplas informações tais como horários de funcionamento, salas, cursos e estudantes.
 
 \subsection{Horários de funcionamento}
 
 A \textit{tag} principal apresenta o número de dias por semana, a quantidade de \textit{slots} diários e a duração do semestre em semanas que o horário deve conter.
 
-Entende-se como \textit{slot} um bloco ao qual se pode atribuir uma aula. Quanto mais \textit{slots} por dia maior é a granularidade no momento de atribuição das aulas aos vários períodos de tempo disponíveis. Para ajudar na compreensão encontra-se abaixo um exemplo que se encontra na página do concurso \cite{itc2019_Website}.
+Entende-se como \textit{slot} um bloco ao qual se pode atribuir uma aula. Quanto mais \textit{slots} por dia maior é a granularidade no momento de atribuição das aulas aos vários períodos de tempo disponíveis. Para ajudar na compreensão encontra-se abaixo um exemplo que se encontra na página do concurso \cite{itc2019-Website}.
 
 \begin{lstlisting}[caption={Exemplo da definição da duração do semestre}]
 <problem name="unique-instance-name" nrDays="7" nrWeeks="13" slotsPerDay="288">
@@ -137,13 +137,13 @@ Esta funcionalidade não será utilizada neste projeto devido ao ISEL não permi
 
 \subsection{Restrições}
 
-No padrão podem ser definidas várias restrições, que são apresentadas na Figura~\ref{fig:restricoes_itc2019}.
+No padrão podem ser definidas várias restrições, que são apresentadas na Figura~\ref{fig:restricoes-itc2019}.
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=.75\textwidth]{restricoes_itc2019}
-    \caption{Restrições suportadas no padrão \glsxtrshort{itc} 2019 (Fonte:\cite{itc2019_Website})}
-    \label{fig:restricoes_itc2019}
+    \includegraphics[width=.75\textwidth]{restricoes-itc2019}
+    \caption{Restrições suportadas no padrão \glsxtrshort{itc} 2019 (Fonte:\cite{itc2019-Website})}
+    \label{fig:restricoes-itc2019}
 \end{figure}
 
 Abaixo são apresentadas pequenas descrições das várias restrições.
@@ -256,22 +256,22 @@ Cenário principal:
 
 \begin{enumerate}
     \item O caso de utilização inicia-se quando o utilizador pressiona o botão de inserção de dados através de ficheiro.
-    \item O utilizador escolhe o ficheiro que deve ser lido por parte da aplicação. \label{casos_util_1:escolha_ficheiro}
-    \item A aplicação processa os dados e armazena-os na base de dados. \label{casos_util_1:processar_dados}
+    \item O utilizador escolhe o ficheiro que deve ser lido por parte da aplicação. \label{casos-util-1:escolha-ficheiro}
+    \item A aplicação processa os dados e armazena-os na base de dados. \label{casos-util-1:processar-dados}
     \item O caso de utilização termina.
 \end{enumerate}
 
 Cenário alternativo 1:
 
 \begin{enumerate}
-    \item No passo~\ref{casos_util_1:escolha_ficheiro} o utilizador cancela a escolha do ficheiro.
+    \item No passo~\ref{casos-util-1:escolha-ficheiro} o utilizador cancela a escolha do ficheiro.
     \item O caso de utilização termina.
 \end{enumerate}
 
 Cenário alternativo 2:
 
 \begin{enumerate}
-    \item No passo~\ref{casos_util_1:processar_dados} o ficheiro escolhido não segue o padrão do concurso \glsxtrshort{itc} 2019.
+    \item No passo~\ref{casos-util-1:processar-dados} o ficheiro escolhido não segue o padrão do concurso \glsxtrshort{itc} 2019.
     \item Apresentação de um erro ao utilizador.
     \item O caso de utilização termina.
 \end{enumerate}
@@ -283,22 +283,22 @@ Cenário principal:
 
 \begin{enumerate}
     \item O caso de utilização inicia-se quando o utilizador pressiona o botão de inserção de dados manual (este pode ser relativo a salas, professores ou disciplinas).
-    \item O utilizador preenche a informação relativa à categoria escolhida. \label{casos_util_2:preench_dados}
-    \item A aplicação processa os dados recebidos e armazena-os na base de dados. \label{casos_util_2:processar_dados}
+    \item O utilizador preenche a informação relativa à categoria escolhida. \label{casos-util-2:preench-dados}
+    \item A aplicação processa os dados recebidos e armazena-os na base de dados. \label{casos-util-2:processar-dados}
     \item O caso de utilização termina.
 \end{enumerate}
 
 Cenário alternativo 1:
 
 \begin{enumerate}
-    \item No passo~\ref{casos_util_2:preench_dados} o utilizador pressiona o botão para cancelar a inserção de dados.
+    \item No passo~\ref{casos-util-2:preench-dados} o utilizador pressiona o botão para cancelar a inserção de dados.
     \item O caso de utilização termina.
 \end{enumerate}
 
 Cenário alternativo 2:
 
 \begin{enumerate}
-    \item No passo~\ref{casos_util_2:processar_dados} os dados introduzidos não estão de acordo com o esperado.
+    \item No passo~\ref{casos-util-2:processar-dados} os dados introduzidos não estão de acordo com o esperado.
     \item Apresentação de uma mensagem de erro ao utilizador.
     \item O caso de utilização termina.
 \end{enumerate}
@@ -341,7 +341,7 @@ Cenário principal:
     \item O caso de utilização inicia-se quando o utilizador seleciona um horário gerado de uma lista de horários gerados pela aplicação.
     \item A aplicação apresenta o horário de forma ampliada ao utilizador.
     \item O utilizador modifica o horário ao mover as atribuições das aulas.
-    \item O utilizador confirma as modificações através do clique num botão. \label{casos_util_5:confirmar_alteracoes}
+    \item O utilizador confirma as modificações através do clique num botão. \label{casos-util-5:confirmar-alteracoes}
     \item A aplicação armazena as alterações num novo horário de modo a não se perder o horário original.
     \item O caso de utilização termina.
 \end{enumerate}
@@ -349,7 +349,7 @@ Cenário principal:
 Cenário alternativo 1:
 
 \begin{enumerate}
-    \item No passo~\ref{casos_util_5:confirmar_alteracoes} o utilizador pressiona o botão para cancelar as alterações efetuadas ao horário.
+    \item No passo~\ref{casos-util-5:confirmar-alteracoes} o utilizador pressiona o botão para cancelar as alterações efetuadas ao horário.
     \item O caso de utilização termina.
 \end{enumerate}
 
@@ -393,7 +393,7 @@ Cenário principal:
 %TODO: Falta explicar e terminar
 
 \subsection{Método de busca}
-\label{capitulo3:Metodo_busca}
+\label{capitulo3:Metodo-busca}
 
 \subsubsection{Espaço de busca}
 

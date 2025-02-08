@@ -2,7 +2,7 @@
 %% strings-pt.clo
 %% ISEL thesis configuration file
 %%
-%% Costumization for language depedent strings
+%% Customization for language dependent strings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --------------------------------------------------------
@@ -52,7 +52,7 @@
 \thedegreestr(\iselthesis@opt@docdegree,\expanded{\thedocauthor(gender)},\iselthesis@opt@coverlang)~em\\[1.25ex] \themajorfield(\iselthesis@opt@coverlang)}
 
 %% MSc thesis plan
-%\dissertationstr(mscprep,pt)={Preparação de \thedoctypestr(\iselthesis@opt@docdegree,\iselthesis@opt@doctype,\iselthesis@opt@coverlang) intermédio para obtenção do Grau de 
+#\dissertationstr(mscprep,pt)={Preparação de \thedoctypestr(\iselthesis@opt@docdegree,\iselthesis@opt@doctype,\iselthesis@opt@coverlang) intermédio para obtenção do Grau de 
 \thedegreestr(\iselthesis@opt@docdegree,\expanded{\thedocauthor(gender)},\iselthesis@opt@coverlang)~em \\[1.25ex]%
 \themajorfield(\iselthesis@opt@coverlang)}%, na Área de Especialização de \thespecialization(\iselthesis@opt@coverlang)}
 
