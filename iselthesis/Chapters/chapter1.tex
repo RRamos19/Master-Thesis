@@ -21,21 +21,34 @@ Por outro lado, a formulação \glsxtrshort{pe-ctt} foca-se no planeamento de ho
 
 \section{Objetivos}
 
-O projeto tem como objetivo principal o desenvolvimento de uma aplicação gráfica que permita a criação de horários apenas necessitando uma configuração inicial acerca do ciclo (licenciatura, mestrado) do horário e os dados relativos às salas, disciplinas e professores. Para a criação dos horários será utilizada a meta heurística \glsxtrfull{sa} e será seguido o padrão apresentado no concurso \glsxtrfull{itc}~2019 \cite{itc2019-Website}.
+O projeto tem como objetivo principal o desenvolvimento de uma aplicação gráfica que permita a criação de horários apenas necessitando uma configuração inicial acerca do ciclo (licenciatura, mestrado) do horário e os dados relativos às salas, disciplinas e professores. Para a criação dos horários será utilizada a meta heurística \glsxtrfull{sa} e será seguido o padrão apresentado na competição \glsxtrfull{itc}~2019 \cite{itc2019-Website}.
 
 A aplicação será desenvolvida de modo a ser utilizada pelo \glsxtrfull{isel}, seguindo as normas estabelecidas pela instituição. Para a formulação do problema de agendamento, será adotada a abordagem \glsxtrshort{cb-ctt}, uma vez que a inscrição dos alunos ocorre apenas após a criação dos horários.
 
-Pretende-se a utilização do padrão apresentado no concurso \glsxtrshort{itc} 2019 de modo a simplificar o armazenamento e representação dos dados com um padrão já definido e amplamente utilizado. A utilização de um padrão já definido possui algumas vantagens, tais como: redução do tempo de implementação, fiabilidade e qualidade, facilidade de manutenção, atualização e redução de erros de implementação.
+Pretende-se a utilização do padrão \glsxtrshort{itc}~2019 de modo a simplificar o armazenamento e representação dos dados com um padrão já definido e amplamente utilizado. A utilização de um padrão já definido possui algumas vantagens, tais como: redução do tempo de implementação, fiabilidade e qualidade, facilidade de manutenção, atualização e redução de erros de implementação.
 
 O projeto terá um foco na otimização do processo de geração de horários e haverá uma fase de modificação dos parâmetros do algoritmo \glsxtrshort{sa}, comparando os tempos de execução e os resultados obtidos.
 
 Os dados utilizados por parte do projeto devem ser guardados de forma persistente para que os seus utilizadores não sejam obrigados a alimentar os mesmos dados entre utilizações. Com isso em mente será criada uma base de dados para guardar os dados fornecidos de forma organizada e normalizada.
 
-%TODO: Adicionar diagrama de inputs e outputs
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{diagrama-geral}
+    \caption{Diagrama geral do funcionamento do sistema}
+    \label{fig:diagrama-geral}
+\end{figure}
+
+A Figura~\ref{fig:diagrama-geral} apresenta um diagrama geral da aplicação. Na primeira utilização, o utilizador deve introduzir os dados referentes aos cursos, disciplinas e professores, seguindo o padrão estabelecido pelo \glsxtrshort{itc}~2019.
+
+Após a inserção e processamento dos dados, estes são exibidos ao utilizador através da interface gráfica. Os dados introduzidos são armazenados numa base de dados, garantindo a sua persistência entre diferentes utilizações da aplicação.
+
+Quando o utilizador inicia o processo de geração de horários, a aplicação executa o algoritmo responsável pela criação dos horários. Durante este processo, uma barra de progresso é exibida para fornecer \textit{feedback} sobre o estado da operação.
+
+Por fim, o utilizador pode optar por exportar os dados armazenados na base de dados. A exportação pode ser realizada nos formatos \glsxtrshort{xml} e \glsxtrshort{csv} para todos os dados, sendo os formatos \glsxtrshort{png} e \glsxtrshort{pdf} exclusivos para os horários.
 
 \section{Organização do documento}
 
-Neste capítulo é introduzido o contexto geral do problema, assim como os objetivos específicos a serem alcançados, estabelecendo as bases para o entendimento do problema e respetiva solução.
+Neste capítulo é apresentado o contexto geral do problema, assim como os objetivos específicos a serem alcançados, estabelecendo as bases para o entendimento do problema e respetiva solução.
 
 O capítulo~\ref{capitulo:estado-arte} tem como objetivo ampliar a compreensão do problema ao explorar abordagens e técnicas descritas na literatura. A análise começa com estudos relevantes a partir do ano de 1996, fornecendo uma perspetiva histórica das soluções propostas. Em seguida, são destacados artigos que fazem uso do algoritmo que será utilizado neste projeto, o \glsxtrshort{sa}, permitindo compreender a sua aplicação em cenários semelhantes e o impacto das suas características na resolução do problema em questão.
 

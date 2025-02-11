@@ -23,4 +23,4 @@ make pdf
 
 IF EXIST "%output%" REN "%output%" "%final_output%"
 
-start "" "%final_output%"
+IF EXIST "%final_output%" START "" "%final_output%"

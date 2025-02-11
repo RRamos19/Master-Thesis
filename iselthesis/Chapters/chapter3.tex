@@ -14,15 +14,21 @@ Nesta secção, será apresentado o planeamento do projeto e trabalho feito, aco
 
 Para garantir uma organização sólida, é essencial criar um diagrama de blocos que represente a estrutura geral do sistema. Esse diagrama fornecerá uma visão abrangente dos principais componentes, facilitando a compreensão das relações e dependências desde o início do desenvolvimento.
 
-% ATENÇÃO: Temporário enquanto o diagrama de blocos não está feito
-\newpage
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=.6\textwidth]{diagrama-blocos}
+    \caption{Diagrama de blocos do sistema}
+    \label{fig:diagrama-blocos}
+\end{figure}
+
+\newpage % Correção temporária, serve para corrigir a colocação de tabelas e imagens
 
 \section{Requisitos funcionais e não funcionais do sistema}
 \label{capitulo3:requisitos-funcionais-nao-funcionais}
 
 {
 \setlength{\tabcolsep}{.8em}
-\begin{table}[htb]
+\begin{table}[H]
     \centering
     \caption{Requisitos funcionais do projeto}
     \label{tabela:requisitos-funcionais}
@@ -30,30 +36,36 @@ Para garantir uma organização sólida, é essencial criar um diagrama de bloco
         \toprule
         Referência & \multicolumn{1}{c}{Descrição}                                                      & Classificação \\ \midrule
         RF001      & Deve ser possível manipular os horários criados através da interface gráfica       & Obrigatório   \\ \midrule
-RF002      & Deve haver persistência de dados, de entrada e saída, através de uma base de dados & Obrigatório   \\ \midrule
-RF003      & Horários modificados devem ser guardados em ficheiros distintos dos originais      & Obrigatório   \\ \midrule
-RF004 & A exportação de dados deve ser possível para os seguintes tipos de dados (\glsxtrshort{pdf}, \glsxtrshort{xml}, \glsxtrshort{png}, \glsxtrshort{csv}) & Obrigatório \\ \midrule
-RF005      & A criação de horários deve permitir criar manchas institucionais                   & Obrigatório   \\ \midrule
-RF006 & Devem ser apresentados erros ao utilizador caso a aplicação falhe nalguma operação       & Obrigatório \\ \midrule
-RF007      & Na interface gráfica devem ser apresentados os dados já presentes na base de dados & Obrigatório   \\ \midrule
-RF008      & Através da interface gráfica deve ser possível alterar os dados na base de dados   & Obrigatório   \\ \midrule
-RF009      & Congelamento de salas e/ou professores no momento de geração dos horários          & Opcional      \\ \midrule
-RF010      & Alteração das manchas através da interface gráfica                                 & Opcional      \\ \midrule
-RF011      & Através da interface gráfica definir períodos para as aulas partilhadas            & Opcional      \\ \bottomrule
+        RF002      & Deve haver persistência de dados, de entrada e saída, através de uma base de dados & Obrigatório   \\ \midrule
+        RF003      & Horários modificados devem ser guardados em ficheiros distintos dos originais      & Obrigatório   \\ \midrule
+        RF004      & A criação de horários deve permitir criar manchas institucionais                   & Obrigatório   \\ \midrule
+        RF005      & Devem ser apresentados erros ao utilizador caso a aplicação falhe nalguma operação & Obrigatório   \\ \midrule
+        RF006      & Na interface gráfica devem ser apresentados os dados já presentes na base de dados & Obrigatório   \\ \midrule
+        RF007      & Através da interface gráfica deve ser possível alterar os dados na base de dados   & Obrigatório   \\ \midrule
+        RF008      & Congelamento de salas e/ou professores no momento de geração dos horários          & Opcional      \\ \midrule
+        RF009      & Alteração das manchas através da interface gráfica                                 & Opcional      \\ \midrule
+        RF010      & Através da interface gráfica definir períodos para as aulas partilhadas            & Opcional      \\ \bottomrule
     \end{tabular}
 \end{table}
 }
 
+\newpage % Correção temporária, serve para corrigir a colocação de tabelas e imagens
+
 {
 \setlength{\tabcolsep}{.8em}
-\begin{table}[htb]
+\begin{table}[H]
     \centering
     \caption{Requisitos não funcionais do projeto}
     \label{tabela:requisitos-nao-funcionais}
     \begin{tabular}{c p{0.5\linewidth} c}
         \toprule
-        Referência & \multicolumn{1}{c}{Descrição}                                                      & Classificação \\ \midrule
-        RNF001      &        & Obrigatório   \\ \bottomrule
+        Referência & \multicolumn{1}{c}{Descrição}                                                            & Classificação \\ \midrule
+        RNF001     & A interface gráfica deve ser intuitiva e permitir a edição manual dos horários gerados   & Obrigatório   \\ \midrule
+        RNF002     & Deve fornecer feedback visual, como barras de progresso, durante a geração dos horários. & Obrigatório   \\ \midrule
+        RNF003 &
+        A exportação de dados deve ser possível para os seguintes tipos de dados (os dados são disponibilizados nos formatos \glsxtrshort{xml} e \glsxtrshort{csv}, sendo os formatos \glsxtrshort{png} e \glsxtrshort{pdf} exclusivos para os horários) &
+        Obrigatório \\ \midrule
+        RNF004     & Deve permitir a criação de logs detalhados do funcionamento do sistema                   & Opcional      \\ \bottomrule
     \end{tabular}
 \end{table}
 }
@@ -115,7 +127,7 @@ Neste exemplo são definidas duas salas. A sala 1 tem uma capacidade de 61 aluno
 
 Os períodos de indisponibilidade são definidos de forma muito semelhante aos horários de funcionamento das aulas.
 
-A capacidade das salas não terá importância na concretização do projeto pois os horários são criados antes das inscrições dos alunos, ou seja, não é possível saber o número de ocupantes em cada disciplina, o que impossibilita a utilização dessa restrição. %TODO: Confirmar
+A capacidade das salas não será utilizada neste projeto pois os horários são criados antes das inscrições dos alunos, o que impossibilita a utilização desta restrição.
 
 %\subsection{Cursos}
 
@@ -373,24 +385,22 @@ Cenário principal:
 
 \subsection{Restrições rígidas}
 
-\begin{compactitem}
+\begin{compactenum}
     \item Ocupação de salas: Aulas agendadas no mesmo período devem ser concretizadas em salas distintas;
     \item Conflitos de disciplinas obrigatórias: Não devem haver sobreposições entre disciplinas quando pelo menos uma delas é obrigatória;
     \item Indisponibilidade dos professores: Caso os professores tenham algum período de indisponibilidade não devem ser agendadas aulas nesse períodos para esses professores;
-    \item 
-\end{compactitem}
+\end{compactenum}
 
-%TODO: Falta explicar e terminar
+%TODO: Falta explicar e terminar até próxima entrega
 
 \subsection{Restrições flexíveis}
 
-\begin{compactitem}
+\begin{compactenum}
     \item Número de salas: O número de salas distintas utilizadas pelo curso deve ser o menor possível;
     \item Intervalos entre aulas: Não devem haver blocos ''vazios'' entre aulas;
-    \item 
-\end{compactitem}
+\end{compactenum}
 
-%TODO: Falta explicar e terminar
+%TODO: Falta explicar e terminar até próxima entrega
 
 %\subsection{Método de busca}
 %\label{capitulo3:Metodo-busca}
@@ -413,17 +423,27 @@ Cenário principal:
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=.95\textwidth]{diagrama-de-gantt}
+    \includegraphics[width=.95\textwidth]{diagrama-gantt}
     \caption{Diagrama de Gantt}
-    \label{fig:diagrama-de-gantt}
+    \label{fig:diagrama-gantt}
 \end{figure}
 
-%TODO: Por preencher
+Na Figura~\ref{fig:diagrama-gantt}, apresenta-se o Diagrama de Gantt correspondente ao desenvolvimento deste projeto. Nele, estão detalhadas as principais fases, desde a análise inicial dos requisitos até a implementação e validação do sistema. Cada tarefa é representada por uma barra que indica o período de execução previsto, dentro de cada barra encontra-se o número de dias que a barra representa.
+
+A utilização deste diagrama permite uma gestão eficiente do cronograma do projeto, facilitando o acompanhamento do progresso e a identificação de eventuais atrasos ou necessidade de ajustes. Além disso, proporciona uma visão estruturada do fluxo de trabalho auxiliando no cumprimento dos prazos estabelecidos.
 
 \section{Tarefas principais}
 
 \begin{compactitem}
-    \item 
+    \item Implementação de um sistema de importação de dados \glsxtrshort{xml} do padrão \glsxtrshort{itc}~2019;
+    \item Permitir a importação manual dos dados;
+    \item Apresentação de erros ao utilizar caso ocorra alguma falha no funcionamento do sistema;
+    \item Apresentação de conflitos no caso de impossibilidade de criação de horários;
+    \item Criação de uma interface gráfica simples e fácil de utilizar;
+    \item Permitir ajustes manuais aos horários gerados;
+    \item Implementação e otimização dos parâmetros do algoritmo \glsxtrshort{sa};
+    \item Implementação de uma base de dados para a persistência dos dados da aplicação;
+    \item Apresentação de feedback visual durante o processo de geração de horários.
 \end{compactitem}
 
-%TODO: Por preencher
+%TODO: Por terminar
