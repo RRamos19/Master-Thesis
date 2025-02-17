@@ -16,7 +16,7 @@ Para garantir uma organização sólida, é essencial criar um diagrama de bloco
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=.6\textwidth]{diagrama-blocos}
+    \includegraphics[width=.85\textwidth]{diagrama-blocos}
     \caption{Diagrama de blocos do sistema}
     \label{fig:diagrama-blocos}
 \end{figure}
@@ -25,6 +25,13 @@ Para garantir uma organização sólida, é essencial criar um diagrama de bloco
 
 \section{Requisitos funcionais e não funcionais do sistema}
 \label{capitulo3:requisitos-funcionais-nao-funcionais}
+
+A Tabela~\ref{tabela:requisitos-funcionais} apresenta os requisitos funcionais do sistema. Cada requisito é classificado como ''Obrigatório'' ou ''Opcional'', de acordo com a sua prioridade de implementação.
+
+\begin{compactitem}
+    \item Obrigatório: Indica que o requisito deve ser implementado dentro do prazo estipulado;
+    \item Opcional: Refere-se a requisitos cuja implementação está condicionada à disponibilidade de tempo. Caso não seja viável dentro do cronograma, esses requisitos poderão ser descartados sem comprometer a funcionalidade essencial do sistema.
+\end{compactitem}
 
 {
 \setlength{\tabcolsep}{.8em}
@@ -81,17 +88,19 @@ No concurso \glsxtrshort{itc}~2019 são apresentados conjuntos de instâncias qu
 
 A \textit{tag} principal apresenta o número de dias por semana, a quantidade de \textit{slots} diários e a duração do semestre em semanas que o horário deve conter.
 
-Entende-se como \textit{slot} um bloco ao qual se pode atribuir uma aula. Quanto mais \textit{slots} por dia maior é a granularidade no momento de atribuição das aulas aos vários períodos de tempo disponíveis. Para ajudar na compreensão encontra-se abaixo um exemplo que se encontra na página do concurso \cite{itc2019-Website}.
+Entende-se como \textit{slot} um bloco ao qual se pode atribuir uma aula. Quanto mais \textit{slots} por dia maior é a granularidade no momento de atribuição das aulas aos vários períodos de tempo disponíveis. Para ajudar na compreensão encontra-se na Listagem~\ref{listagem:exemplo-duracao-semestre} um exemplo que se encontra na página do concurso \cite{itc2019-Website}.
 
-\begin{lstlisting}[caption={Exemplo da definição da duração do semestre}]
+\begin{lstlisting}[caption={Exemplo da definição da duração do semestre}, label={listagem:exemplo-duracao-semestre}]
 <problem name="unique-instance-name" nrDays="7" nrWeeks="13" slotsPerDay="288">
 \end{lstlisting}
 
-Neste caso cada semana, tem 7 dias, o horário possui uma duração de 13 semanas e cada \textit{slot} possui uma duração de 5 minutos. Para obter a duração de cada \textit{slot} é necessário dividir o número de minutos, num único dia, pelo número de \textit{slots} totais, ou seja, $24*60/288 = 5$.
+Neste caso, cada semana tem 7 dias, o horário possui uma duração de 13 semanas e cada \textit{slot} possui uma duração de 5 minutos. Para obter a duração de cada \textit{slot} é necessário dividir o número de minutos, num único dia, pelo número de \textit{slots} totais, ou seja, $24*60/288 = 5$.
 
-Para definir os horários das aulas serão utilizados os \textit{slots} definidos anteriormente. Abaixo encontra-se um exemplo da definição de uma aula. A definição de cada aula deve ser efetuada dentro da definição do respetivo curso, mas, neste caso, para simplificar apenas será mostrada a definição da aula.
+\subsection{Aulas}
 
-\begin{lstlisting}[caption={Exemplo da definição de uma aula}]
+Para definir os horários das aulas serão utilizados os \textit{slots} definidos anteriormente. Abaixo encontra-se um exemplo da definição de uma aula. A definição de cada aula deve ser efetuada dentro da definição do respetivo curso, mas, neste caso, para simplificar apenas será mostrada a definição da aula, que é apresentada na Listagem~\ref{listagem:exemplo-aula}.
+
+\begin{lstlisting}[caption={Exemplo da definição de uma aula}, label={listagem:exemplo-aula}]
 <class id="1" limit="22">
     <room id="10" penalty="0"/>
     <room id="11" penalty="0"/>
@@ -104,13 +113,17 @@ Para definir os horários das aulas serão utilizados os \textit{slots} definido
 
 Na \textit{tag class} é definido o identificador da aula e a quantidade limite de alunos que podem frequentar a aula. O limite apresentado apenas faz sentido no caso da criação dos horários ser feita após a inscrição dos alunos, pois desta forma tem-se acesso à quantidade de alunos que devem frequentar a disciplina em causa.
 
-A definição dos dias, em que a aula é dada, encontra-se num formato binário e inicia-se na segunda-feira. De acordo com o exemplo, a aula vai ser dada na segunda-feira, quarta-feira e sexta-feira. Para calcular a hora de inicio da aula, é necessário multiplicar a duração de cada \textit{slot} pelo \textit{offset} apresentado no \textit{start} e de seguida converter para horas, ou seja, $inicio = 5*90/60 = 7,5$, de acordo com o resultado, a aula tem inicio às 7:30 da manhã. A duração da aula é de 50 minutos e pode ser calculada da mesma forma que o inicio da aula, ou seja, $duração = 5*10 = 50$. É possível definir as semanas em que a aula vai ser dada através de um formato binário. Neste exemplo a aula é dada todas as semanas. Por fim, é definida uma penalização caso o horário não siga a definição na sua totalidade. 
+A definição dos dias, em que a aula fica agendada, encontra-se num formato binário e inicia-se na segunda-feira. De acordo com o exemplo, a aula pode ser dada na segunda-feira, quarta-feira ou sexta-feira.
+
+Para calcular a hora de inicio da aula, é necessário multiplicar a duração de cada \textit{slot} pelo \textit{offset} apresentado no \textit{start} e de seguida converter para horas, ou seja, $inicio = 5*90/60 = 7,5$, de acordo com o resultado, a aula deve ter inicio às 7:30 da manhã.
+
+A duração da aula deve ser de 50 minutos e pode ser calculada da mesma forma que o inicio da aula, ou seja, $duração = 5*10 = 50$. É possível definir as semanas em que a aula deve ser agendada através de um formato binário. Neste exemplo a aula deve ser agendada todas as semanas. Por fim, é definida uma penalização caso o horário não siga a definição na sua totalidade. 
 
 \subsection{Salas}
 
-No momento de definição de salas é possível definir o seu identificador, a sua capacidade, a distância das outras salas e períodos de indisponibilidade. É apresentado um exemplo para clarificar.
+No momento de definição de salas é possível definir o seu identificador, a sua capacidade, a distância das outras salas e períodos de indisponibilidade. É apresentado na Listagem~\ref{listagem:exemplo-salas} um exemplo para clarificar.
 
-\begin{lstlisting}[caption={Exemplo da definição das salas}]
+\begin{lstlisting}[caption={Exemplo da definição das salas}, label={listagem:exemplo-salas}]
 <rooms>
     <room id="1" capacity="61">
         <travel room="2" value="12"/>
@@ -123,7 +136,7 @@ No momento de definição de salas é possível definir o seu identificador, a s
 </rooms>
 \end{lstlisting}
 
-Neste exemplo são definidas duas salas. A sala 1 tem uma capacidade de 61 alunos e a sala 2 tem uma capacidade de 36 alunos. Para cada uma das salas são apresentadas as distâncias às outras salas. A definição das distâncias é importante no caso de duas aulas em simultâneo, por exemplo uma aula na sala 1 e de seguida uma aula na sala 2, pois os alunos têm de fazer o percurso entre ambas as salas. É um atributo relevante caso se pretenda otimizar a seleção das salas caso se encontrem muito afastadas.
+No exemplo são definidas duas salas. A sala 1 tem uma capacidade de 61 alunos e a sala 2 tem uma capacidade de 36 alunos. Para cada uma das salas são apresentadas as distâncias às outras salas. A definição das distâncias é importante no caso de duas aulas em simultâneo, por exemplo uma aula na sala 1 e de seguida uma aula na sala 2, pois os alunos têm de fazer o percurso entre ambas as salas. É um atributo relevante caso se pretenda otimizar a seleção das salas caso se encontrem muito afastadas.
 
 Os períodos de indisponibilidade são definidos de forma muito semelhante aos horários de funcionamento das aulas.
 
@@ -135,9 +148,9 @@ A capacidade das salas não será utilizada neste projeto pois os horários são
 
 \subsection{Estudantes}
 
-A definição dos estudantes consiste na atribuição de um identificador único, normalmente o número de aluno, e dos cursos ao qual o estudante pertence. É apresentado um exemplo abaixo para demonstrar o padrão.
+A definição dos estudantes consiste na atribuição de um identificador único, normalmente o número de aluno, e dos cursos ao qual o estudante pertence. É apresentado na Listagem~\ref{listagem:exemplo-estudantes} um exemplo para demonstrar o padrão.
 
-\begin{lstlisting}[caption={Exemplo da definição dos estudantes}]
+\begin{lstlisting}[caption={Exemplo da definição dos estudantes}, label={listagem:exemplo-estudantes}]
 <students>
     <student id="1">
         <course id="4"/>
@@ -145,7 +158,7 @@ A definição dos estudantes consiste na atribuição de um identificador único
 </students>
 \end{lstlisting}
 
-Esta funcionalidade não será utilizada neste projeto devido ao ISEL não permitir pré-inscrições dos alunos.
+Esta funcionalidade não será utilizada neste projeto devido ao \glsxtrshort{isel} não permitir as pré-inscrições dos alunos.
 
 \subsection{Restrições}
 
@@ -184,7 +197,7 @@ Abaixo são apresentadas pequenas descrições das várias restrições.
 
 Sabendo quais as restrições suportadas pelo padrão é apresentado um exemplo da definição das restrições. Cada restrição definida pode ser rígida ou ligeira, sendo as suas definições `required="true"'' e `penalty="4"'' (no local do 4 pode ser qualquer valor) respetivamente.
 
-\begin{lstlisting}[caption={Exemplo da definição das restrições}]
+\begin{lstlisting}[caption={Exemplo da definição das restrições}, label={listagem:exemplo-restricoes}]
 <distributions>
     <distribution type="SameAttendees" required="true">
         <class id="140"/>
@@ -204,42 +217,17 @@ Sabendo quais as restrições suportadas pelo padrão é apresentado um exemplo 
 </distributions>
 \end{lstlisting}
 
-No exemplo são apresentadas três restrições diferentes. Dentro de cada bloco são colocados os identificadores das aulas que possuem tal restrição.
+Na Listagem~\ref{listagem:exemplo-restricoes} são apresentadas três restrições diferentes. Dentro de cada bloco são colocados os identificadores das aulas que possuem tal restrição.
 
 \subsection{Modificações propostas}
 
-Considerando que o projeto se focará na formulação \glsxtrshort{cb-ctt} serão efetuadas modificações relacionadas com as inscrições dos alunos. Para além das modificações mencionadas será também acrescentada uma secção relacionada com os professores.
-
-\subsubsection{Modificações relacionadas com os alunos}
-
-As informações relacionadas com os alunos encontram-se na definição das turmas e salas. Como não será utilizada essa funcionalidade, serão excluidas as definições dos dados. Abaixo encontra-se um exemplo das definições excluindo as funcionalidades mencionadas.
-
-\begin{lstlisting}[caption={Exemplo do padrão depois de retirados os dados relativos aos alunos}]
-<class id="1">
-    <room id="10" penalty="0"/>
-    <room id="11" penalty="0"/>
-    <room id="12" penalty="0"/>
-    <time days="0100000" start="90" length="22" weeks="111111111111111" penalty="0"/>
-    <time days="0010000" start="90" length="22" weeks="111111111111111" penalty="0"/>
-    <time days="0001000" start="90" length="22" weeks="111111111111111" penalty="0"/>
-</class>
-<rooms>
-    <room id="1">
-        <travel room="2" value="12"/>
-        <unavailable days="0010000" start="222" length="36" weeks="111111111111111"/>
-    </room>
-    <room id="2">
-        <travel room="4" value="12"/>
-        <travel room="5" value="12"/>
-    </room>
-</rooms>
-\end{lstlisting}
+Considerando que o padrão não possui informações relacionadas com os professores serão efetuadas modificações de modo a permitir acrescentar essa informação.
 
 \subsubsection{Modificações relacionadas com os professores}
 
-Para a criação dos horários é necessário incluir os dados relativos aos professores que irão dar as aulas agendadas. Para permitir a inclusão dessa informação nos horários criados será necessário incluir esses dados no padrão. Abaixo encontra-se um exemplo da definição dos dados relativos aos professores.
+Para a criação dos horários é necessário incluir os dados relativos aos professores que irão dar as aulas agendadas. Para permitir a inclusão dessa informação será necessário incluir esses dados no padrão. Na Listagem~\ref{listagem:padrao-exemplo-professores} encontra-se um exemplo da definição dos dados relativos aos professores.
 
-\begin{lstlisting}[caption={Exemplo da informação relacionada com os professores}]
+\begin{lstlisting}[caption={Exemplo da informação relacionada com os professores}, label={listagem:padrao-exemplo-professores}]
 <teachers>
     <teacher id="1">
         <class id="1">
@@ -253,7 +241,7 @@ Para a criação dos horários é necessário incluir os dados relativos aos pro
 </teachers>
 \end{lstlisting}
 
-%TODO: Falta explicar e terminar
+Cada professor pode dar várias disciplinas e também pode ter manchas de indisponibilidade. Para identificar cada professor é utilizado um identificador, que nas instituições de ensino costuma ser um número atribuido tanto aos docentes como aos alunos. Para atribuir as disciplinas e as manchas é seguido o padrão
 
 \section{Casos de utilização}
 
@@ -261,127 +249,129 @@ Os casos de utilização descrevem, de forma precisa, as interações entre os d
 
 Todos os casos de utilização têm apenas um ator, sendo este o utilizador da aplicação.
 
-\subsection{Inserção de dados através de um ficheiro}
+\subsection*{Caso de Utilização 1 - Inserção de dados através de um ficheiro}
 Resumo: Leitura de um ficheiro, organizado de acordo com o padrão do concurso \glsxtrshort{itc} 2019, e armazenamento dos dados numa base de dados.
 
 Cenário principal:
 
-\begin{enumerate}
+\begin{compactenum}
     \item O caso de utilização inicia-se quando o utilizador pressiona o botão de inserção de dados através de ficheiro.
     \item O utilizador escolhe o ficheiro que deve ser lido por parte da aplicação. \label{casos-util-1:escolha-ficheiro}
     \item A aplicação processa os dados e armazena-os na base de dados. \label{casos-util-1:processar-dados}
     \item O caso de utilização termina.
-\end{enumerate}
+\end{compactenum}
 
 Cenário alternativo 1:
 
-\begin{enumerate}
+\begin{compactenum}
     \item No passo~\ref{casos-util-1:escolha-ficheiro} o utilizador cancela a escolha do ficheiro.
     \item O caso de utilização termina.
-\end{enumerate}
+\end{compactenum}
 
 Cenário alternativo 2:
 
-\begin{enumerate}
+\begin{compactenum}
     \item No passo~\ref{casos-util-1:processar-dados} o ficheiro escolhido não segue o padrão do concurso \glsxtrshort{itc} 2019.
     \item Apresentação de um erro ao utilizador.
     \item O caso de utilização termina.
-\end{enumerate}
+\end{compactenum}
 
-\subsection{Inserção de dados manual}
+\subsection*{Caso de Utilização 2 - Inserção de dados manual}
 Resumo: Inserção de dados relativos a salas, professores ou disciplinas manualmente.
 
 Cenário principal:
 
-\begin{enumerate}
+\begin{compactenum}
     \item O caso de utilização inicia-se quando o utilizador pressiona o botão de inserção de dados manual (este pode ser relativo a salas, professores ou disciplinas).
     \item O utilizador preenche a informação relativa à categoria escolhida. \label{casos-util-2:preench-dados}
     \item A aplicação processa os dados recebidos e armazena-os na base de dados. \label{casos-util-2:processar-dados}
     \item O caso de utilização termina.
-\end{enumerate}
+\end{compactenum}
 
 Cenário alternativo 1:
 
-\begin{enumerate}
+\begin{compactenum}
     \item No passo~\ref{casos-util-2:preench-dados} o utilizador pressiona o botão para cancelar a inserção de dados.
     \item O caso de utilização termina.
-\end{enumerate}
+\end{compactenum}
 
 Cenário alternativo 2:
 
-\begin{enumerate}
+\begin{compactenum}
     \item No passo~\ref{casos-util-2:processar-dados} os dados introduzidos não estão de acordo com o esperado.
     \item Apresentação de uma mensagem de erro ao utilizador.
     \item O caso de utilização termina.
-\end{enumerate}
+\end{compactenum}
 
-\subsection{Criação de horários}
+\subsection*{Caso de Utilização 3 - Criação de horários}
 Resumo: Após o clique no botão de criação de horários, o programa deve gerar os horários, conforme a configuração especificada, e apresentar os horários gerados na interface gráfica.
 
 Pré-condições: Devem haver dados armazenados na base de dados.
 
 Cenário principal:
 
-\begin{enumerate}
+\begin{compactenum}
     \item O caso de utilização inicia-se quando o utilizador pressiona o botão de criação de horários.
     \item A aplicação processa os dados armazenados e cria os horários pedidos.
     \item São apresentados os horários gerados através da interface gráfica.
     \item O caso de utilização termina.
-\end{enumerate}
+\end{compactenum}
 
-\subsection{Visualização de horário criado}
+\subsection*{Caso de Utilização 4 - Visualização de horário criado}
 Resumo: Após selecionado um dos horários gerados, de uma lista de horários, apresentados na interface gráfica, deve ser apresentado o horário de forma ampliada.
 
 Pré-condições: Existência de horários gerados previamente.
 
 Cenário principal:
 
-\begin{enumerate}
+\begin{compactenum}
     \item O caso de utilização inicia-se quando o utilizador seleciona um horário gerado de uma lista de horários gerados pela aplicação.
     \item A aplicação apresenta o horário de forma ampliada ao utilizador.
     \item O caso de utilização termina.
-\end{enumerate}
+\end{compactenum}
 
-\subsection{Modificação de horário criado}
+\subsection*{Caso de Utilização 5 - Modificação de horário criado}
 Resumo: Após selecionado um dos horários gerados, de uma lista de horários, apresentados na interface gráfica, deve ser apresentado o horário permitindo a modificação do mesmo.
 
 Pré-condições: Existência de horários gerados previamente.
 
 Cenário principal:
 
-\begin{enumerate}
+\begin{compactenum}
     \item O caso de utilização inicia-se quando o utilizador seleciona um horário gerado de uma lista de horários gerados pela aplicação.
     \item A aplicação apresenta o horário de forma ampliada ao utilizador.
     \item O utilizador modifica o horário ao mover as atribuições das aulas.
     \item O utilizador confirma as modificações através do clique num botão. \label{casos-util-5:confirmar-alteracoes}
     \item A aplicação armazena as alterações num novo horário de modo a não se perder o horário original.
     \item O caso de utilização termina.
-\end{enumerate}
+\end{compactenum}
 
 Cenário alternativo 1:
 
-\begin{enumerate}
+\begin{compactenum}
     \item No passo~\ref{casos-util-5:confirmar-alteracoes} o utilizador pressiona o botão para cancelar as alterações efetuadas ao horário.
     \item O caso de utilização termina.
-\end{enumerate}
+\end{compactenum}
 
-\subsection{Exportação dos horários criados}
+\subsection*{Caso de Utilização 6 - Exportação dos horários criados}
 Resumo: São exportados os horários selecionados no formato escolhido para a localização que o utilizador especificou.
 
 Pré-condições: Devem ter sido gerados horários previamente.
 
 Cenário principal:
 
-\begin{enumerate}
+\begin{compactenum}
     \item O caso de utilização inicia-se quando o utilizador seleciona a opção de exportar horários.
     \item O utilizador seleciona o formato no qual o horário deve ser exportado, sendo os seguintes formatos suportados \glsxtrshort{xml}, \glsxtrshort{pdf}, \glsxtrshort{csv} e \glsxtrshort{png}.
     \item O utilizador deve apresentar o local para o qual os horários serão exportados.
     \item A aplicação efetua a exportação do horário.
     \item O caso de utilização termina.
-\end{enumerate}
+\end{compactenum}
 
-\section{Restrições definidas para a criação dos horários}
+\section{Restrições dos horários}
 \label{capitulo3:Restricoes}
+
+Nesta secção serão definidas as restrições consideradas aquando na criação dos horários. %TODO: Completar
 
 \subsection{Restrições rígidas}
 
@@ -423,7 +413,37 @@ Cenário principal:
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=.95\textwidth]{diagrama-gantt}
+    \begin{ganttchart}[
+        x unit=0.05cm, % Ajusta o espaçamento horizontal
+        y unit chart=0.7cm, % Ajusta o espaçamento vertical
+        title height=1,
+        y unit title=5mm,
+        title label font=\tiny\bfseries,
+        group label font=\footnotesize\bfseries,
+        bar label font=\scriptsize,
+        group height=.5,
+        group/.append style={draw=black, fill=teal},
+        bar/.append style={draw=black, fill=cyan},
+        time slot format=little-endian,
+        progress label node/.append style={font=\tiny, text=black} % Formata a etiqueta de progresso
+    ]{01.03.2025}{30.09.2025} % Define a escala do diagrama
+      \gantttitlecalendar{year, month} \\
+
+      \node (a) [anchor=east] at (current bounding box.west){Meses:};
+    
+      \ganttgroup[progress=100, progress label text={213 dias}]{Escrita do TFM}{01.03.2025}{30.09.2025} \\
+
+      \ganttgroup[progress=100, progress label text={159 dias}]{Implementação}{01.03.2025}{07.08.2025} \\
+      \ganttbar[progress=100, progress label text={28 dias}]{Planeamento da Arquitetura}{01.03.2025}{29.03.2025} \\
+      \ganttbar[progress=100, progress label text={21 dias}]{Interpretador ITC 2019}{29.03.2025}{19.04.2025} \\
+      \ganttbar[progress=100, progress label text={21 dias}]{Base de Dados}{16.04.2025}{07.05.2025} \\
+      \ganttbar[progress=100, progress label text={28 dias}]{Simulated Annealing}{04.05.2025}{01.06.2025} \\
+      \ganttbar[progress=100, progress label text={41 dias}]{Interface Gráfica}{29.05.2025}{09.07.2025} \\
+      \ganttbar[progress=100, progress label text={32 dias}]{Correção de erros}{06.07.2025}{07.08.2025} \\
+
+      \ganttgroup[progress=100, progress label text={54 dias}]{Avaliação da Aplicação}{07.08.2025}{30.09.2025}
+    
+    \end{ganttchart}
     \caption{Diagrama de Gantt}
     \label{fig:diagrama-gantt}
 \end{figure}

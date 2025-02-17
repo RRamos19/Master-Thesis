@@ -4,7 +4,7 @@
 %  
 %  Created by Matilde Pós-de-Mina Pato on 2012/10/09.
 %
-\chapter{Estado de arte}
+\chapter{Estado da arte}
 \label{capitulo:estado-arte}
 
 Na Secção~\ref{capitulo2:Problemas-agendamento}, é apresentada uma contextualização do problema abordado ao longo do projeto, fornecendo um enquadramento geral sobre os desafios inerentes ao agendamento.
@@ -12,6 +12,8 @@ Na Secção~\ref{capitulo2:Problemas-agendamento}, é apresentada uma contextual
 Na Secção~\ref{capitulo2:Course-timetabling}, é feita uma análise aprofundada de uma das categorias específicas dos problemas de agendamento, explorando as suas características e complexidades. Além disso, são discutidos os principais métodos e técnicas utilizadas na literatura, bem como os resultados obtidos.
 
 A Secção~\ref{capitulo2:ITC-2019} introduz uma competição de referência na área, cujo objetivo é incentivar o desenvolvimento de novos métodos e fomentar a pesquisa em problemas de agendamento, com foco particular no agendamento universitário.
+
+A Secção~\ref{capitulo2:Bullet-Solutions} apresenta a empresa \textit{Bullet Solutions}, especializada no desenvolvimento de aplicações para a gestão de horários académicos e administrativos. Nesta secção, são detalhadas as principais funcionalidades das soluções oferecidas pela empresa, bem como os objetivos do presente projeto em relação a essas ferramentas.
 
 Por fim, na Secção~\ref{capitulo2:Teoria-funcionamento-algoritmos}, são apresentados os fundamentos teóricos e o funcionamento dos principais métodos e algoritmos descritos na literatura, proporcionando uma visão estruturada das abordagens utilizadas para a resolução desses problemas.
 
@@ -55,9 +57,9 @@ No artigo~\cite{SurveyAutomatedTimetabling-Schaerf-1999}, previamente referido, 
 
 No artigo~\cite{introductiontimetabling-Werra-1985} são apresentados alguns modelos básicos utilizados como resolução de certos problemas de agendamento. Em seguida, referem-se os modelos relacionados com a categoria \textit{Course timetabling}. O primeiro modelo apresentado consiste no \textit{graph coloring}, apresentado na Figura~\ref{fig:grafo-simples-dewerra}.
 
-\begin{figure}[ht]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=.5\textwidth]{grafo-simples-dewerra}
+    \includegraphics[width=.6\textwidth]{grafo-simples-dewerra}
     \caption{Modelo de grafos simples (Fonte:\cite{introductiontimetabling-Werra-1985})}
     \label{fig:grafo-simples-dewerra}
 \end{figure}
@@ -66,12 +68,12 @@ Em cada vértice é apresentada uma relação curso-disciplina. O primeiro índi
 
 São criadas arestas entre vértices do mesmo curso mas também entre vértices caso haja algum aluno que esteja em ambos os cursos. Neste caso a ''cor'' dos vértices é o periodo, ou seja, vértices que estejam ligados por uma aresta devem possuir períodos diferentes e caso seja possível devem ser reutilizados períodos já criados de modo a utilizar a menor quantidade de períodos possível.
 
-Na Tabela~\ref{tab:resumo-grafo-simples-dewerra} são organizadas as relações curso-disciplina, juntamente com os períodos resultantes:
+Na Tabela~\ref{tabela:resumo-grafo-simples-dewerra} são organizadas as relações curso-disciplina, juntamente com os períodos resultantes:
 
-\begin{table}[ht]
+\begin{table}[H]
     \centering
     \caption{Organização dos dados dos vértices do grafo da Figura~\ref{fig:grafo-simples-dewerra}}
-    \label{tab:resumo-grafo-simples-dewerra}
+    \label{tabela:resumo-grafo-simples-dewerra}
     \begin{tabular}{cccc}
         \hline
         Vértice & Curso & Disciplina & Período \\ \hline
@@ -85,9 +87,9 @@ Na Tabela~\ref{tab:resumo-grafo-simples-dewerra} são organizadas as relações 
 
 Esta abordagem funciona para casos simples que não tenham restrições de indisponibilidades ou casos em que certas aulas não podem ocorrer em determinados períodos. Para casos mais complexos pode ser utilizado o modelo da Figura~\ref{fig:grafo-complexo-dewerra}.
 
-\begin{figure}[ht]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=.45\textwidth]{grafo-complexo-dewerra}
+    \includegraphics[width=.6\textwidth]{grafo-complexo-dewerra}
     \caption{Modelo de grafos complexo (Fonte:\cite{introductiontimetabling-Werra-1985})}
     \label{fig:grafo-complexo-dewerra}
 \end{figure}
@@ -136,18 +138,26 @@ Esta abordagem de resolução não tem garantias de convergência para ótimos g
 
 No artigo~\cite{HybridSimulatedAnnealing-Tuga-2007} é apresentada uma solução híbrida com a utilização do \glsxtrshort{sa}. Nesta solução, para além do uso do \glsxtrshort{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe Chain Neighbourhood} (descrito na Secção~\ref{explic:kempe-chain-neighbourhood}), denominada de \textit{Pair-wise Kempe Chain}, incorporada no \glsxtrshort{sa} é possível minimizar o número de restrições flexíveis violadas mas também melhorar as trocas de eventos em caso de conflitos sem violar as restrições rígidas.
 
-Para testar o algoritmo foram utilizados três \textit{datasets} distintos que foram criados utilizando instâncias artificiais. Os \textit{datasets} foram construidos de modo a serem difíceis de resolver através de um método de heurística sequencial.
+Para testar o algoritmo foram utilizadas 60 instâncias artificiais. As instâncias foram geradas artificialmente e projetadas para serem desafiadoras, especialmente para heurísticas sequenciais. Os eventos devem ser agendados semanalmente e as instâncias podem ser divididas em três categorias distintas:
 
-% TODO: Apresentar os resultados e concluir o texto
+\begin{compactitem}
+    \item Instâncias pequenas: Entre 200 a 225 eventos e entre 5 a 6 salas disponíveis.
+
+    \item Instâncias médias: Entre 390 a 425 eventos e entre 10 a 11 salas disponíveis.
+
+    \item Instâncias grandes: Entre 1000 a 1075 eventos e entre 25 a 28 salas disponíveis.
+\end{compactitem}
+
+O método proposto foi comparado com os melhores resultados disponíveis na literatura. Para as instâncias pequenas, os resultados foram comparáveis aos do estado da arte. Já para as instâncias médias, o método demonstrou um desempenho ligeiramente superior. Por fim, para as instâncias grandes, a abordagem obteve um desempenho significativamente melhor, destacando-se pela sua eficácia na resolução de problemas mais complexos.
 
 No artigo~\cite{Featurebasedtuning-Bellio-2016} é utilizado o algoritmo \glsxtrshort{sa} para a resolução do problema combinatório.
 
 Foram consideradas duas relações de vizinhança entre horários:
 
 \begin{compactitem}
-    \item \textit{MoveLecture}/MoverAula (ML): Muda o período e a sala de uma aula;
+    \item MoverAula/\textit{MoveLecture} (ML): Muda o período e a sala de uma aula;
 
-    \item \textit{SwapLectures}/TrocarAulas (SL): Troca o período e a sala de duas aulas de disciplinas distintas.
+    \item TrocarAulas/\textit{SwapLectures} (SL): Troca o período e a sala de duas aulas de disciplinas distintas.
 \end{compactitem}
 
 A operação ML permite apenas deslocamentos para salas vazias, desde que existam espaços disponíveis. Caso contrário, essa restrição não se aplica.
@@ -155,7 +165,7 @@ A operação ML permite apenas deslocamentos para salas vazias, desde que exista
 A estratégia de seleção de movimentos é a seguinte:
 
 \begin{compactitem}
-    \item Seleção da vizinhança (ML ou SL) com probabilidade não uniforme;
+    \item Seleção da vizinhança (ML ou SL) com probabilidade não uniforme
     
     A probabilidade de escolher SL é controlada por um parâmetro chamado sr (\textit{swap rate}). Dependendo do valor de sr, o algoritmo pode favorecer mais trocas de aulas (SL) ou mudanças individuais (ML).
 
@@ -167,16 +177,28 @@ A estratégia de seleção de movimentos é a seguinte:
 Para o ajuste dos parâmetros do algoritmo, as instâncias foram divididas em três grupos distintos:
 
 \begin{compactenum}
-    \item O grupo de treino consiste em um grande conjunto de instâncias artificiais projetadas para reproduzir as características das instâncias do mundo real. Para evitar overtuning, este foi o único grupo utilizado na fase de ajuste dos parâmetros.
+    \item O grupo de treino consiste em um grande conjunto de instâncias artificiais projetadas para reproduzir as características das instâncias do mundo real. Para evitar \textit{overtuning}, este foi o único grupo utilizado na fase de ajuste dos parâmetros.
     
     \item O grupo de validação contém 21 instâncias baseadas em dados reais e utilizadas na literatura. O seu objetivo é permitir a comparação com os métodos do estado da arte.
     
     \item O grupo de novas instâncias é utilizado como referência comparativa para estudos futuros.
 \end{compactenum}
 
-Através da aplicação dos métodos Feature-Based Tuning e F-Race~\cite{FRaceIterated-Birattari-2010}, foi possível identificar os melhores parâmetros para cada \textit{dataset}. Em termos de desempenho, os resultados demonstram melhorias em 10 das 21 instâncias analisadas na literatura, evidenciando a eficácia do método proposto.
+Através da aplicação dos métodos \textit{Feature-Based Tuning} e \textit{F-Race}~\cite{FRaceIterated-Birattari-2010}, foi possível identificar os melhores parâmetros para cada \textit{dataset}. Em termos de desempenho, os resultados demonstram melhorias em 10 das 21 instâncias analisadas na literatura, evidenciando a eficácia do método proposto.
 
-O artigo~\cite{Metaheuristicapproaches-Abdipoor-2023} apresenta uma revisão dos vários artigos e métodos apresentados na literatura de modo a apresentar de forma clara a evolução que ocorreu ao longo dos tempos. %TODO: Terminar
+O artigo~\cite{Metaheuristicapproaches-Abdipoor-2023} apresenta uma revisão da literatura e dos métodos apresentados de modo a demonstrar de forma clara a evolução que ocorreu ao longo dos tempos. Os métodos podem ser divididos em 5 categorias:
+
+\begin{compactenum}
+    \item Baseada em Pesquisa Operacional (\textit{Operational Research based})
+
+    \item Meta-Heurísticas (\textit{meta-heuristics})
+
+    \item Hiper-Heurísticas (\textit{hyper-heuristics})
+
+    \item Multiobjetivo (\textit{multiobjective})
+
+    \item Abordagens Híbridas (\textit{hybrid approaches})
+\end{compactenum}
 
 \section{\glsxtrfull{itc} 2019}
 \label{capitulo2:ITC-2019}
@@ -189,27 +211,27 @@ Os métodos avaliados incluíram algoritmos heurísticos e meta-heurísticos, co
 
 São disponibilizadas 36 instâncias no formato \glsxtrfull{xml} no site da competição, sendo 6 delas instâncias de teste e as restantes 30 instâncias problemas da competição. Das 30 instâncias mencionadas ainda há uma divisão relativamente à data de publicação das instâncias, sendo as 10 primeiras instâncias consideradas do tipo ''cedo'', foram publicadas a 14/11/2018 e são as que valem menos caso sejam resolvidas. As 10 instâncias seguintes foram publicadas a 18/09/2019, são do tipo ''meio'' e encontram-se no meio em termos de valor. Por fim, as 10 instâncias restantes são as que têm mais valor, são consideradas do tipo ''tarde'' e foram publicadas a 07/11/2019.
 
-\section{Bullet Solutions}
+\section{\textit{Bullet Solutions}}
 \label{capitulo2:Bullet-Solutions}
 
 A \textit{Bullet Solutions}~\cite{bulletsolutions-Website} é uma empresa tecnológica especializada no desenvolvimento de soluções para otimização de recursos e gestão de horários. Fundada na \glsxtrfull{estesc-ipc}, as suas ferramentas são amplamente utilizadas por diversas instituições de ensino e organizações, incluindo o \glsxtrshort{isel}, para a criação e gestão eficiente de horários académicos e administrativos.
 
-As principais caraterísticas do software disponibilizado incluem:
+As principais caraterísticas do \textit{software} disponibilizado incluem:
 
 \begin{compactitem}
-    \item Agendamento e Calendarização Automatizadas (Automated Scheduling and Timetabling)
-    \item Gestão de Atividades e Recursos (Activities and Resource Management)
-    \item Reserva e Marcação de Salas (Room Booking and Reservations)
-    \item Integração avançada de API (Advanced API Integration)
-    \item Publicação e Visualização (Publishing and Viewer)
-    \item Relatórios e Análises (Reporting and Analytics)
+    \item Agendamento e Calendarização Automatizadas (\textit{Automated Scheduling and Timetabling})
+    \item Gestão de Atividades e Recursos (\textit{Activities and Resource Management})
+    \item Reserva e Marcação de Salas (\textit{Room Booking and Reservations})
+    \item Integração avançada de API (\textit{Advanced API Integration})
+    \item Publicação e Visualização (\textit{Publishing and Viewer})
+    \item Relatórios e Análises (\textit{Reporting and Analytics})
 \end{compactitem}
 
-Graças a estas soluções inovadoras, a Bullet Solutions tem vindo a consolidar-se como uma referência no setor, proporcionando ferramentas avançadas que melhoram a produtividade e a organização de instituições em diversos países.
+Graças a estas soluções inovadoras, a \textit{Bullet Solutions} tem vindo a consolidar-se como uma referência no setor, proporcionando ferramentas avançadas que melhoram a produtividade e a organização de instituições em diversos países.
 
-Tendo em consideração estes aspetos, o projeto será desenvolvido com o objetivo de oferecer uma alternativa competitiva à aplicação da Bullet Solutions atualmente utilizada no \glsxtrshort{isel}. Para tal, será necessário analisar em detalhe as funcionalidades disponibilizadas pela solução existente, identificando potenciais melhorias e inovações que possam ser implementadas.
+Tendo em consideração estes aspetos, o projeto será desenvolvido com o objetivo de oferecer uma alternativa competitiva à aplicação da \textit{Bullet Solutions} atualmente utilizada no \glsxtrshort{isel}. Para tal, será necessário analisar em detalhe as funcionalidades disponibilizadas pela solução existente, identificando potenciais melhorias e inovações que possam ser implementadas.
 
-Desta forma, o projeto procurará não apenas replicar a funcionalidade de agendamento automático da aplicação da Bullet Solutions, mas também introduzir novas abordagens que possam melhorar a eficiência e a usabilidade do sistema, contribuindo para uma melhor experiência na sua utilização.
+Desta forma, o projeto procurará não apenas replicar a funcionalidade de agendamento automático da aplicação da \textit{Bullet Solutions}, mas também introduzir novas abordagens que possam melhorar a eficiência e a usabilidade do sistema, contribuindo para uma melhor experiência na sua utilização.
 
 \section{Teoria e funcionamento dos algoritmos}
 \label{capitulo2:Teoria-funcionamento-algoritmos}
@@ -235,17 +257,23 @@ O objetivo típico em problemas de coloração de arestas é minimizar o número
 
 Programação inteira (\textit{Integer Programming}) é um modelo de programação linear onde as variáveis de decisão são restritas a assumir apenas valores inteiros. Este tipo de problema é normalmente utilizado em cenários como a alocação de recursos, roteamento, escalonamento, entre outros. O seu funcionamento consiste em maximizar ou minimizar o resultado da função objetivo. A função objetivo e as restrições podem ser lineares ou não lineares mas as variáveis devem ser números inteiros.
 
+%TODO: Expandir
+
 \subsection{Rede de fluxo}
 \label{explic:network-flow}
 
 Rede de fluxo (\textit{Network Flow}) é um conceito da teoria dos grafos. O fluxo é representado como um grafo direcionado, ou seja, segue uma direção de acordo com as setas representadas nas arestas. Existem duas regras para o funcionamento correto do fluxo. O fluxo que entra num nó deve ser igual ao fluxo que sai do nó. Cada aresta possui uma capacidade máxima de fluxo que deve ser respeitada. Este algoritmo normalmente é utilizado para problemas como logística e transporte, redes de comunicação e informações, energia e distribuição de recursos, entre outros.
 
-\subsection{Tabu search}
+%TODO: Expandir
+
+\subsection{\textit{Tabu search}}
 \label{explic:tabu-search}
 
 \textit{Tabu search} é uma meta-heurística e um procedimento adaptativo que guia algoritmos de pesquisa local na exploração de espaços de busca. O \textit{Tabu search} costuma ser utilizado para resolver problemas complexos e tem como objetivo evitar que a busca fique presa em mínimos ou máximos locais.
 
 O algoritmo começa com uma solução inicial, tipicamente aleatória. De seguida, são efetuadas pequenas modificações para explorar os espaços vizinhos. Através da utilização da \textit{Tabu list} são memorizados certos locais com o objetivo de evitar ciclos e revisitas a soluções já exploradas recentemente. Embora movimentos tabu sejam proibidos, pode haver exceções se eles resultarem numa solução significativamente melhor, sendo controlado por um critério de aspiração.
+
+%TODO: Expandir
 
 \subsection{Simulated Annealing}
 \label{explic:simulated-annealing}
@@ -303,7 +331,7 @@ Na Figura~\ref{fig:exemplo-kempe-chain} é apresentado um exemplo de um grafo co
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=.5\textwidth]{exemplo-kempe-chain}
+    \includegraphics[width=.7\textwidth]{exemplo-kempe-chain}
     \caption{Exemplo de uma cadeia de Kempe presente num grafo (Fonte:\cite{GuideGraphColouring-Lewis-2016})}
     \label{fig:exemplo-kempe-chain}
 \end{figure}
@@ -321,7 +349,7 @@ Na Figura~\ref{fig:exemplo-kempe-chain-neighbourhood} é apresentado um exemplo 
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=.95\textwidth]{exemplo-kempe-chain-neighbourhood}
+    \includegraphics[width=\textwidth]{exemplo-kempe-chain-neighbourhood}
     \caption{Exemplo das cadeias de Kempe (Fonte:\cite{GuideGraphColouring-Lewis-2016})}
     \label{fig:exemplo-kempe-chain-neighbourhood}
 \end{figure}
