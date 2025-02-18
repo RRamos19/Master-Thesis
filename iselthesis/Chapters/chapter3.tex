@@ -4,8 +4,8 @@
 %  
 %  Created by Matilde Pós-de-Mina Pato on 2012/10/09.
 %
-\chapter{Abordagem proposta}
-\label{capitulo:abordagem-proposta}
+\chapter{Trabalho realizado e por realizar}
+\label{capitulo:trabalho-realizado-e-por-realizar}
 
 Nesta secção, será apresentado o planeamento do projeto e trabalho feito, acompanhado de uma explicação detalhada das decisões tomadas ao longo do processo. Serão descritas as razões que orientaram cada escolha, de modo a garantir a coerência das estratégias adotadas.
 
@@ -16,7 +16,7 @@ Para garantir uma organização sólida, é essencial criar um diagrama de bloco
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=.85\textwidth]{diagrama-blocos}
+    \includegraphics[width=.85\linewidth]{diagrama-blocos}
     \caption{Diagrama de blocos do sistema}
     \label{fig:diagrama-blocos}
 \end{figure}
@@ -70,7 +70,7 @@ A Tabela~\ref{tabela:requisitos-funcionais} apresenta os requisitos funcionais d
         RNF001     & A interface gráfica deve ser intuitiva e permitir a edição manual dos horários gerados   & Obrigatório   \\ \midrule
         RNF002     & Deve fornecer feedback visual, como barras de progresso, durante a geração dos horários. & Obrigatório   \\ \midrule
         RNF003 &
-        A exportação de dados deve ser possível para os seguintes tipos de dados (os dados são disponibilizados nos formatos \glsxtrshort{xml} e \glsxtrshort{csv}, sendo os formatos \glsxtrshort{png} e \glsxtrshort{pdf} exclusivos para os horários) &
+        A exportação de dados deve ser possível para os seguintes tipos de dados (os dados são disponibilizados nos formatos \gls{xml} e \gls{csv}, sendo os formatos \gls{png} e \gls{pdf} exclusivos para os horários) &
         Obrigatório \\ \midrule
         RNF004     & Deve permitir a criação de logs detalhados do funcionamento do sistema                   & Opcional      \\ \bottomrule
     \end{tabular}
@@ -80,9 +80,9 @@ A Tabela~\ref{tabela:requisitos-funcionais} apresenta os requisitos funcionais d
 \section{Estrutura do padrão do concurso ITC 2019}
 \label{capitulo3:dados-itc2019}
 
-A definição e representação dos horários serão feitas com base no padrão introduzido pelo concurso \glsxtrshort{itc}~2019. Para que se possa concretizar a definição dos horários é necessário primeiro compreender o padrão.
+A definição e representação dos horários serão feitas com base no padrão introduzido pelo concurso \gls{itc}~2019. Para que se possa concretizar a definição dos horários é necessário primeiro compreender o padrão.
 
-No concurso \glsxtrshort{itc}~2019 são apresentados conjuntos de instâncias que podem ser utilizadas para testar o funcionamento do sistema. Os dados encontram-se no formato \glsxtrshort{xml} e contêm \textit{tags} que permitem definir múltiplas informações tais como horários de funcionamento, salas, cursos e estudantes.
+No concurso \gls{itc}~2019 são apresentados conjuntos de instâncias que podem ser utilizadas para testar o funcionamento do sistema. Os dados encontram-se no formato \gls{xml} e contêm \textit{tags} que permitem definir múltiplas informações tais como horários de funcionamento, salas, cursos e estudantes.
 
 \subsection{Horários de funcionamento}
 
@@ -158,7 +158,7 @@ A definição dos estudantes consiste na atribuição de um identificador único
 </students>
 \end{lstlisting}
 
-Esta funcionalidade não será utilizada neste projeto devido ao \glsxtrshort{isel} não permitir as pré-inscrições dos alunos.
+Esta funcionalidade não será utilizada neste projeto devido ao \gls{isel} não permitir as pré-inscrições dos alunos.
 
 \subsection{Restrições}
 
@@ -166,8 +166,8 @@ No padrão podem ser definidas várias restrições, que são apresentadas na Fi
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=.75\textwidth]{restricoes-itc2019}
-    \caption{Restrições suportadas no padrão \glsxtrshort{itc} 2019 (Fonte:\cite{itc2019-Website})}
+    \includegraphics[width=.75\linewidth]{restricoes-itc2019}
+    \caption{Restrições suportadas no padrão \gls{itc} 2019 (Fonte:\cite{itc2019-Website})}
     \label{fig:restricoes-itc2019}
 \end{figure}
 
@@ -250,7 +250,7 @@ Os casos de utilização descrevem, de forma precisa, as interações entre os d
 Todos os casos de utilização têm apenas um ator, sendo este o utilizador da aplicação.
 
 \subsection*{Caso de Utilização 1 - Inserção de dados através de um ficheiro}
-Resumo: Leitura de um ficheiro, organizado de acordo com o padrão do concurso \glsxtrshort{itc} 2019, e armazenamento dos dados numa base de dados.
+Resumo: Leitura de um ficheiro, organizado de acordo com o padrão do concurso \gls{itc} 2019, e armazenamento dos dados numa base de dados.
 
 Cenário principal:
 
@@ -271,7 +271,7 @@ Cenário alternativo 1:
 Cenário alternativo 2:
 
 \begin{compactenum}
-    \item No passo~\ref{casos-util-1:processar-dados} o ficheiro escolhido não segue o padrão do concurso \glsxtrshort{itc} 2019.
+    \item No passo~\ref{casos-util-1:processar-dados} o ficheiro escolhido não segue o padrão do concurso \gls{itc} 2019.
     \item Apresentação de um erro ao utilizador.
     \item O caso de utilização termina.
 \end{compactenum}
@@ -362,7 +362,7 @@ Cenário principal:
 
 \begin{compactenum}
     \item O caso de utilização inicia-se quando o utilizador seleciona a opção de exportar horários.
-    \item O utilizador seleciona o formato no qual o horário deve ser exportado, sendo os seguintes formatos suportados \glsxtrshort{xml}, \glsxtrshort{pdf}, \glsxtrshort{csv} e \glsxtrshort{png}.
+    \item O utilizador seleciona o formato no qual o horário deve ser exportado, sendo os seguintes formatos suportados \gls{xml}, \gls{pdf}, \gls{csv} e \gls{png}.
     \item O utilizador deve apresentar o local para o qual os horários serão exportados.
     \item A aplicação efetua a exportação do horário.
     \item O caso de utilização termina.
@@ -409,15 +409,15 @@ Nesta secção serão definidas as restrições consideradas aquando na criaçã
 
 %TODO: Por preencher
 
-\section{Diagrama de Gantt}
+\section{Diagrama de Gantt - planeamento}
 
 \begin{figure}[ht]
     \centering
     \begin{ganttchart}[
         x unit=0.05cm, % Ajusta o espaçamento horizontal
         y unit chart=0.7cm, % Ajusta o espaçamento vertical
-        title height=1,
-        y unit title=5mm,
+        title height=1, % Retira a linha entre o ano e os meses
+        y unit title=5mm, % Diminui o tamanho dos meses e ano
         title label font=\tiny\bfseries,
         group label font=\footnotesize\bfseries,
         bar label font=\scriptsize,
@@ -455,13 +455,13 @@ A utilização deste diagrama permite uma gestão eficiente do cronograma do pro
 \section{Tarefas principais}
 
 \begin{compactitem}
-    \item Implementação de um sistema de importação de dados \glsxtrshort{xml} do padrão \glsxtrshort{itc}~2019;
+    \item Implementação de um sistema de importação de dados \gls{xml} do padrão \gls{itc}~2019;
     \item Permitir a importação manual dos dados;
     \item Apresentação de erros ao utilizar caso ocorra alguma falha no funcionamento do sistema;
     \item Apresentação de conflitos no caso de impossibilidade de criação de horários;
     \item Criação de uma interface gráfica simples e fácil de utilizar;
     \item Permitir ajustes manuais aos horários gerados;
-    \item Implementação e otimização dos parâmetros do algoritmo \glsxtrshort{sa};
+    \item Implementação e otimização dos parâmetros do algoritmo \gls{sa};
     \item Implementação de uma base de dados para a persistência dos dados da aplicação;
     \item Apresentação de feedback visual durante o processo de geração de horários.
 \end{compactitem}

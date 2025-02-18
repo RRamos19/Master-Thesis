@@ -13,33 +13,19 @@
 %%  ADD YOUR PACKAGES AND OTHER CUSTOMIZATIONS HERE
 %%============================================================
 
-\usepackage[T1]{fontenc}	% Both of these packages prevent the problem of scalable fonts
+\usepackage[T1]{fontenc}	% Ambos os pacotes previnem um problema relacionado com fonts
 \usepackage{lmodern}		%
 
-\usepackage{float}          % Positions the images and tables on the exact position text wise
+\usepackage{float}          % Posiciona imagens e tabelas na posição exata de acordo com o texto
 
-\usepackage{makecell}		% Multiline table cells and control vertical and horizontal alignment
+\usepackage{makecell}		% Tabelas com células em várias linhas. Controlo vertical e alinhamento horizontal
 
-\usepackage{amsmath}        % Math equation alignment
+\usepackage{amsmath}        % Alinhamento de equações matemáticas
 
-\usepackage{pgfgantt}       % Create high gantt diagrams
+\usepackage{pgfgantt}       % Cria diagramas de gantt de alta qualidade
 
 %------------------------------------------------------------------
 % Customization of some packages
 %------------------------------------------------------------------
 
-%%% ------
-% Where to look for figures
-% \prependtographicspath{{some-folder-here}}
-
-% Setup of listings, for more information check the 'listings' package manual
-% \lstset{
-%     captionpos=t,
-%     basicstyle={\ttfamily\footnotesize},
-%     numbers=left,
-%     numberstyle={\ttfamily\tiny},
-%     tabsize=2,
-%     language=Java,
-%     float,
-%     frame=single,
-% }
+\renewcommand{\printbib}{\printbibliography[title={Referências}]} % Muda a Bibliografia para Referências
