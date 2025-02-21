@@ -7,9 +7,21 @@
 \chapter{Trabalho realizado e por realizar}
 \label{capitulo:trabalho-realizado-e-por-realizar}
 
-Nesta secção, será apresentado o planeamento do projeto e trabalho feito, acompanhado de uma explicação detalhada das decisões tomadas ao longo do processo. Serão descritas as razões que orientaram cada escolha, de modo a garantir a coerência das estratégias adotadas.
+Esta secção descreve o progresso atual do trabalho, bem como os objetivos principais. Para além disso é apresentada a análise do padrão dos dados e as funcionalidades previstas do sistema. O trabalho futuro incluirá o desenvolvimento das soluções propostas, com a implementação dos algoritmos e a realização de testes para avaliar a eficácia e a viabilidade do sistema.
 
-% TODO: Resumir todas as secções
+Na Secção~\ref{capitulo3:Diagrama-blocos}, é apresentado o diagrama de blocos do sistema a desenvolver. Este diagrama proporciona uma estrutura organizada ao projeto e oferece uma visão abrangente dos seus principais componentes.
+
+Na Secção~\ref{capitulo3:Requisitos-funcionais-nao-funcionais}, são definidos os requisitos funcionais e não funcionais do sistema. A especificação destes requisitos permite clarificar as funcionalidades previstas, bem como estabelecer a respetiva prioridade de implementação.
+
+A Secção~\ref{capitulo3:Padrao-itc2019} apresenta uma análise detalhada do padrão adotado no projeto. Adicionalmente, são discutidas as adaptações realizadas para alinhar o padrão com os requisitos específicos do sistema em desenvolvimento.
+
+Na Secção~\ref{capitulo3:Casos-util}, são descritos os casos de utilização, que representam os diferentes cenários de interação entre o utilizador e o sistema. Estes casos são fundamentais para compreender o funcionamento da aplicação, ajudando a validar os requisitos definidos e a garantir que todas as funcionalidades essenciais são consideradas no desenvolvimento.
+
+A Secção~\ref{capitulo3:Restricoes} aborda as restrições consideradas na geração dos horários. A definição destas restrições é crucial, uma vez que influenciam diretamente a qualidade e a viabilidade dos horários produzidos.
+
+A Secção~\ref{capitulo3:Diagrama-gantt} apresenta o diagrama de Gantt do projeto, onde é detalhado o planeamento das tarefas a realizar, incluindo a respetiva duração e dependências entre atividades.
+
+Por fim, na Secção~\ref{capitulo3:Tarefas-principais-secundarias}, são delineadas as tarefas principais e secundárias na implementação do sistema, justificando a distinção entre ambas. Além disso, é avaliada a complexidade das tarefas e identificados os aspetos mais desafiantes do projeto.
 
 \section{Diagrama de blocos do sistema}
 \label{capitulo3:Diagrama-blocos}
@@ -25,10 +37,18 @@ A Figura~\ref{fig:diagrama-blocos} apresenta o diagrama de blocos do sistema a d
     \label{fig:diagrama-blocos}
 \end{figure}
 
+A linguagem de programação escolhida para o desenvolvimento do sistema será Java, devido à sua capacidade de criar aplicações independentes do sistema operativo, ao vasto suporte proporcionado por bibliotecas e à sua eficiência na construção de soluções rápidas e robustas.
+
+A base de dados adotada será relacional, o que facilita a estruturação e normalização dos dados armazenados. Dado que os dados a serem armazenados estão inter-relacionados, a utilização de uma base de dados relacional permitirá uma gestão mais eficaz dessas relações.
+
+O sistema de gestão de base de dados selecionado é o PostgreSQL, reconhecido pela sua robustez e capacidade de lidar com grandes volumes de dados. À medida que o sistema crescer, a base de dados também se expandirá, sendo que o PostgreSQL assegura uma gestão eficaz mesmo em cenários de maior escala.
+
+Para a comunicação entre o sistema de geração de horários e o servidor PostgreSQL, será utilizado o \gls{jdbc}, garantindo uma integração eficiente e fiável entre a aplicação e a base de dados. O \gls{jdbc} permite escrever diretamente as consultas \gls{sql} sem aumentar a complexidade do sistema.
+
 \newpage % Correção temporária, serve para corrigir a colocação de tabelas e imagens
 
 \section{Requisitos funcionais e não funcionais do sistema}
-\label{capitulo3:requisitos-funcionais-nao-funcionais}
+\label{capitulo3:Requisitos-funcionais-nao-funcionais}
 
 A Tabela~\ref{tabela:requisitos-funcionais} apresenta os requisitos funcionais do sistema. Cada requisito é classificado como ''Obrigatório'' ou ''Opcional'', de acordo com a sua prioridade de implementação.
 
@@ -62,6 +82,8 @@ A Tabela~\ref{tabela:requisitos-funcionais} apresenta os requisitos funcionais d
 
 \newpage % Correção temporária, serve para corrigir a colocação de tabelas e imagens
 
+Na Tabela~\ref{tabela:requisitos-nao-funcionais} são apresentados os requisitos não funcionais do sistema.
+
 {
 \setlength{\tabcolsep}{.8em}
 \begin{table}[H]
@@ -82,7 +104,7 @@ A Tabela~\ref{tabela:requisitos-funcionais} apresenta os requisitos funcionais d
 }
 
 \section{Estrutura do padrão do concurso ITC 2019}
-\label{capitulo3:dados-itc2019}
+\label{capitulo3:Padrao-itc2019}
 
 A definição e representação dos horários serão feitas com base no padrão introduzido pelo concurso \gls{itc}~2019. Para que se possa concretizar a definição dos horários é necessário primeiro compreender o padrão.
 
@@ -199,7 +221,7 @@ Em seguida, são apresentadas pequenas descrições das várias restrições.
     \item MaxBlock(M,S) - Limita a quantidade de tempo (medida como M slots) que um conjunto de aulas pode ser agendado consecutivamente, cada uma separada por no máximo S slots.
 \end{compactitem}
 
-Sabendo as restrições suportadas pelo padrão é apresentado na Listagem\ref{listagem:exemplo-restricoes} um exemplo da definição das restrições. Cada restrição pode ser rígida ou flexível, sendo as suas definições `required="true"'' e `penalty="4"'' (ou outro valor) respetivamente.
+Sabendo as restrições suportadas pelo padrão é apresentado na Listagem~\ref{listagem:exemplo-restricoes} um exemplo da definição das restrições. Cada restrição pode ser rígida ou flexível, sendo as suas definições `required="true"'' e `penalty="4"'' (ou outro valor) respetivamente.
 
 \begin{lstlisting}[caption={Exemplo da definição das restrições}, label={listagem:exemplo-restricoes}]
 <distributions>
@@ -248,6 +270,7 @@ Para a criação dos horários é necessário incluir os dados relativos aos pro
 Cada professor pode lecionar várias disciplinas e também pode ter manchas de indisponibilidade. Para identificar cada professor é utilizado um identificador, que nas instituições de ensino costuma ser um número atribuido tanto aos docentes como aos estudantes. % TODO: completar
 
 \section{Casos de utilização}
+\label{capitulo3:Casos-util}
 
 Os casos de utilização descrevem, de forma precisa, as interações entre os diferentes tipos de usuários e o sistema, identificando funcionalidades específicas e seus objetivos.
 
@@ -422,6 +445,7 @@ Nesta secção serão definidas as restrições consideradas aquando na criaçã
 %TODO: Por preencher
 
 \section{Diagrama de Gantt - planeamento}
+\label{capitulo3:Diagrama-gantt}
 
 Na Figura~\ref{fig:diagrama-gantt}, apresenta-se o Diagrama de Gantt correspondente ao desenvolvimento deste projeto. Nele, estão detalhadas as principais fases, desde a análise inicial dos requisitos até à implementação e validação do sistema. Cada tarefa é representada por uma barra que indica o período de execução previsto, sendo que dentro de cada barra encontra-se o número de dias associado.
 
@@ -465,6 +489,7 @@ A utilização deste diagrama permite uma gestão eficiente do cronograma do pro
 \end{figure}
 
 \section{Tarefas principais e secundárias}
+\label{capitulo3:Tarefas-principais-secundarias}
 
 Identificam-se como tarefas principais do projeto:
 
@@ -480,4 +505,19 @@ Identificam-se como tarefas principais do projeto:
     \item Apresentação de feedback visual durante o processo de geração de horários.
 \end{compactitem}
 
-%TODO: Por terminar
+Identificam-se como tarefas secundárias do projeto:
+
+\begin{compactitem}
+    \item Definição de manchas de disponibilidade através da interface gráfica;
+    \item Definição de períodos para aulas partilhadas através da interface gráfica;
+    \item Criação de \textit{logs} detalhados do funcionamento do sistema;
+    \item Congelamento de salas e/ou professores no momento de geração de horários.
+\end{compactitem}
+
+A distinção entre as tarefas principais e secundárias é determinada pelo objetivo principal de garantir uma aplicação funcional. O foco principal consiste em otimizar a geração dos horários e permitir que o utilizador interaja eficazmente com os dados armazenados na base de dados. As tarefas secundárias visam melhorar a interação do utilizador com a aplicação.
+
+As tarefas que se preveem como mais simples e rápidas estão relacionadas com a implementação das bases de dados e do interpretador do padrão. Desde que o planeamento seja adequado, a implementação destas funcionalidades torna-se uma tarefa relativamente simples.
+
+Por outro lado, as tarefas mais complexas são aquelas relacionadas com a criação da interface gráfica e a otimização do algoritmo \gls{sa}. A necessidade de que a interface gráfica seja intuitiva, eficiente e capaz de apresentar uma grande quantidade de informação com poucos cliques torna a sua criação um processo desafiador. A otimização do \gls{sa} exige uma série de testes e comparações de resultados, o que pode implicar um tempo considerável até serem encontrados parâmetros satisfatórios.
+
+%TODO: Por terminar e melhorar
