@@ -163,7 +163,7 @@ Funcionamento do algoritmo:
     \item Redução da temperatura atual tendo em conta a taxa de arrefecimento antes de iniciar a próxima iteração. Existem vários métodos de fazer a redução mas a mais comum é a seguinte:
 
     \begin{equation}
-        T \leftarrow \alpha T, \quad \alpha \in \ \rbrack 0, \ 1 \lbrack
+        T \leftarrow \alpha T, \quad \alpha \in \ \rbrack 0, \ 1 \lbrack.
     \end{equation}
 
     \item Repetição do algoritmo até que os critérios de paragem sejam satisfeitos.
@@ -275,12 +275,12 @@ Na Tabela~\ref{tabela:resumo-grafo-simples-dewerra} são organizadas as relaçõ
     \label{tabela:resumo-grafo-simples-dewerra}
     \begin{tabular}{cccc}
         \toprule
-        Vértice & Curso & Disciplina & Período \\ \midrule
-        $m_{11}$  & $K_{1}$ & $l_{1}$      & 1       \\
-        $m_{21}$  & $K_{2}$ & $l_{1}$      & 2       \\
-        $m_{22}$  & $K_{2}$ & $l_{2}$      & 3       \\
-        $m_{31}$  & $K_{3}$ & $l_{1}$      & 1       \\
-        $m_{32}$  & $K_{3}$ & $l_{2}$      & 4       \\
+        \textbf{Vértice} & \textbf{Curso} & \textbf{Disciplina} & \textbf{Período} \\ \midrule
+        $m_{11}$         & $K_{1}$        & $l_{1}$             & 1                \\
+        $m_{21}$         & $K_{2}$        & $l_{1}$             & 2                \\
+        $m_{22}$         & $K_{2}$        & $l_{2}$             & 3                \\
+        $m_{31}$         & $K_{3}$        & $l_{1}$             & 1                \\
+        $m_{32}$         & $K_{3}$        & $l_{2}$             & 4                \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -336,7 +336,7 @@ Esta abordagem de resolução não tem garantias de convergência para ótimos g
 
 Schaerf~\cite{SurveyAutomatedTimetabling-Schaerf-1999} analisa diversas técnicas aplicadas à resolução deste tipo de problema. Inicialmente, destacam-se as \textit{direct heuristics}, que imitam a abordagem humana para solucionar o problema. Posteriormente, foram introduzidas abordagens mais generalistas, fundamentadas em técnicas como \textit{Integer Programming} e \textit{Network Flow}, entre outras. Por fim, o problema passou a ser frequentemente modelado como uma variante do problema de \textit{Graph Coloring}.
 
-Em~\cite{HybridSimulatedAnnealing-Tuga-2007} é apresentada uma solução híbrida com a utilização do \gls{sa}. Nesta solução, para além do uso do \gls{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe Chain Neighbourhood}, denominada de \textit{Pair-wise Kempe Chain}, incorporada no \gls{sa}, é possível minimizar o número de restrições flexíveis violadas, mas também melhorar as trocas de eventos em caso de conflitos, sem violar as restrições rígidas.
+Tuga, Berretta e Mendes~\cite{HybridSimulatedAnnealing-Tuga-2007} apresentam uma solução híbrida com a utilização do \gls{sa}. Nesta solução, para além do uso do \gls{sa}, foi utilizado um algoritmo heurístico baseado em grafos para criar uma solução inicial. Através de uma heurística baseada no \textit{Kempe Chain Neighbourhood}, denominada de \textit{Pair-wise Kempe Chain}, incorporada no \gls{sa}, é possível minimizar o número de restrições flexíveis violadas, mas também melhorar as trocas de eventos em caso de conflitos, sem violar as restrições rígidas.
 
 Para testar o algoritmo foram utilizadas 60 instâncias artificiais, projetadas para serem desafiadoras especialmente para heurísticas sequenciais. Os eventos devem ser agendados semanalmente e as instâncias podem ser divididas em três categorias distintas:
 
@@ -348,10 +348,10 @@ Para testar o algoritmo foram utilizadas 60 instâncias artificiais, projetadas 
     \label{tabela:categorias-instancias}
     \begin{tabular}{ccc}
     \toprule
-    Instâncias & Eventos     & Salas   \\ \midrule
-    Pequenas   & 200 a 225   & 5 a 6   \\
-    Médias     & 390 a 425   & 10 a 11 \\
-    Grandes    & 1000 a 1075 & 25 a 28 \\
+    \textbf{Instâncias} & \textbf{Eventos}     & \textbf{Salas}   \\ \midrule
+    Pequenas            & 200 a 225            & 5 a 6            \\
+    Médias              & 390 a 425            & 10 a 11          \\
+    Grandes             & 1000 a 1075          & 25 a 28          \\
     \bottomrule
     \end{tabular}
 \end{table}
@@ -393,7 +393,7 @@ Para o ajuste dos parâmetros do algoritmo, as instâncias foram divididas em tr
     \item O grupo de novas instâncias é utilizado como referência comparativa para estudos futuros.
 \end{compactenum}
 
-Através da aplicação dos métodos \textit{Feature-Based Tuning} e \textit{F-Race}~\cite{FRaceIterated-Birattari-2010}, foi possível identificar os melhores parâmetros para cada conjunto de dados. Em termos de desempenho, os resultados demonstram melhorias em 10 das 21 instâncias analisadas na literatura, evidenciando a eficácia do método proposto.
+Através da aplicação dos métodos \textit{Feature-Based Tuning} e \textit{F-Race}~\cite{FRaceIterated-Birattari-2010}, foi possível identificar os melhores parâmetros para cada conjunto de dados. Em termos de desempenho, os resultados indicam melhorias em 10 das 21 instâncias analisadas na literatura, evidenciando a eficácia do método proposto.
 
 %O artigo~\cite{Metaheuristicapproaches-Abdipoor-2023} apresenta uma descrição da literatura e dos métodos apresentados de modo a evidenciar a evolução que ocorreu ao longo dos tempos. Os métodos podem ser divididos em 5 categorias:
 

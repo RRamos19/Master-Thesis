@@ -47,7 +47,7 @@ Para a comunicação entre o sistema de geração de horários e o servidor Post
 
 \newpage % Correção temporária, serve para corrigir a colocação de tabelas e imagens
 
-\section{Requisitos funcionais e não funcionais do sistema}
+\section{Requisitos funcionais e não funcionais}
 \label{capitulo3:Requisitos-funcionais-nao-funcionais}
 
 Cada requisito é classificado como ''Obrigatório'' ou ''Opcional'', de acordo com a sua prioridade de implementação.
@@ -63,11 +63,11 @@ A Tabela~\ref{tabela:requisitos-funcionais} apresenta os requisitos funcionais d
 \setlength{\tabcolsep}{.8em}
 \begin{table}[H]
     \centering
-    \caption{Requisitos funcionais do sistema.}
+    \caption{Requisitos funcionais.}
     \label{tabela:requisitos-funcionais}
     \begin{tabular}{c p{0.6\linewidth} c}
         \toprule
-        Referência & \multicolumn{1}{c}{Descrição}                                                          & Classificação \\ \midrule
+        \textbf{Referência} & \multicolumn{1}{c}{\textbf{Descrição}} & \textbf{Classificação} \\ \midrule
         RF001      & Manipular os horários criados através da interface gráfica                             & Obrigatório   \\ \midrule
         RF002      & Persistência de dados, de entrada e saída, através de uma base de dados                & Obrigatório   \\ \midrule
         RF003      & Horários modificados devem ser guardados em ficheiros distintos dos originais          & Obrigatório   \\ \midrule
@@ -90,13 +90,13 @@ Na Tabela~\ref{tabela:requisitos-nao-funcionais} são listados os requisitos nã
 \setlength{\tabcolsep}{.8em}
 \begin{table}[htbp]
     \centering
-    \caption{Requisitos não funcionais do sistema.}
+    \caption{Requisitos não funcionais.}
     \label{tabela:requisitos-nao-funcionais}
     \begin{tabular}{c p{0.6\linewidth} c}
         \toprule
-        Referência & \multicolumn{1}{c}{Descrição}                                                            & Classificação \\ \midrule
+        \textbf{Referência} & \multicolumn{1}{c}{\textbf{Descrição}} & \textbf{Classificação} \\ \midrule
         RNF001     & A interface gráfica deve ser intuitiva e permitir a edição manual dos horários gerados   & Obrigatório   \\ \midrule
-        RNF002     & Existência de \textit{feedback} visual, como barras de progresso, durante a geração dos horários. & Obrigatório   \\ \midrule
+        RNF002     & Existência de \textit{feedback} visual, como barras de progresso, durante a geração dos horários & Obrigatório   \\ \midrule
         RNF003 &
         Exportação de dados nos formatos \gls{xml} e \gls{csv}, sendo os formatos \gls{png} e \gls{pdf} exclusivos para os horários &
         Obrigatório \\ \midrule
@@ -105,18 +105,18 @@ Na Tabela~\ref{tabela:requisitos-nao-funcionais} são listados os requisitos nã
 \end{table}
 }
 
-\section{Estrutura do padrão do concurso ITC 2019}
+\section{Estrutura do padrão da ITC 2019}
 \label{capitulo3:Padrao-itc2019}
 
-A definição e representação dos horários serão feitas com base no padrão introduzido pelo concurso \gls{itc}~2019. Para que se possa concretizar a definição dos horários é necessário primeiro compreender o padrão.
+A definição e representação dos horários serão feitas com base no padrão introduzido pela \gls{itc}~2019. Para que se possa concretizar a definição dos horários é necessário primeiro compreender o padrão.
 
-No concurso \gls{itc}~2019 são apresentados conjuntos de instâncias que podem ser utilizadas para testar o funcionamento do sistema. Os dados encontram-se no formato \gls{xml} e contêm \textit{tags} que permitem definir múltiplas informações, tais como horários de funcionamento, salas, cursos e estudantes.
+Na \gls{itc}~2019 são apresentados conjuntos de instâncias que podem ser utilizadas para testar o funcionamento do sistema. Os dados encontram-se no formato \gls{xml} e contêm \textit{tags} que permitem definir múltiplas informações, tais como horários de funcionamento, salas, cursos e estudantes.
 
 \subsection{Horários de funcionamento}
 
 A \textit{tag} principal apresenta o número de dias por semana, a quantidade de \textit{slots} diários e a duração do semestre, em semanas, que o horário deve conter.
 
-Entende-se como \textit{slot} um bloco ao qual se pode atribuir uma aula. Quanto mais \textit{slots} por dia maior é a granularidade no momento de atribuição das aulas aos vários períodos de tempo disponíveis. Para ajudar na compreensão encontra-se na Listagem~\ref{listagem:exemplo-duracao-semestre} um exemplo que se encontra na página do concurso \cite{itc2019-Website}.
+Entende-se como \textit{slot} um bloco ao qual se pode atribuir uma aula. Quanto mais \textit{slots} por dia maior é a granularidade no momento de atribuição das aulas aos vários períodos de tempo disponíveis. Para ajudar na compreensão encontra-se na Listagem~\ref{listagem:exemplo-duracao-semestre} um exemplo que se encontra na página da competição \cite{itc2019-Website}.
 
 \begin{minipage}[c]{\linewidth}
 \begin{lstlisting}[caption={Exemplo da definição da duração do semestre.}, label={listagem:exemplo-duracao-semestre}]
@@ -124,11 +124,11 @@ Entende-se como \textit{slot} um bloco ao qual se pode atribuir uma aula. Quanto
 \end{lstlisting}
 \end{minipage}
 
-Neste caso, cada semana tem 7 dias, o semestre letivo tem duração de 13 semanas e cada \textit{slot} tem duração de 5 minutos. Para obter a duração de cada \textit{slot} é necessário dividir o número de minutos, num único dia, pelo número de \textit{slots} totais, ou seja, $24*60/288 = 5$.
+Neste caso, cada semana tem 7 dias e o semestre letivo tem duração de 13 semanas. Para obter a duração de cada \textit{slot} é necessário dividir o número de minutos, num único dia, pelo número de \textit{slots} totais, ou seja, $24*60/288 = 5$. Verifica-se que cada \textit{slot} tem a duração de 5 minutos.
 
 \subsection{Aulas}
 
-Para definir os horários das aulas serão utilizados os \textit{slots} definidos anteriormente. Na Listagem~\ref{listagem:exemplo-aula} encontra-se um exemplo da definição de uma aula. A definição de cada aula deve ser efetuada no contexto da definição do respetivo curso, mas, neste caso simplificado apenas será mostrada a definição da aula.
+Para definir os horários das aulas serão utilizados os \textit{slots} definidos anteriormente. Na Listagem~\ref{listagem:exemplo-aula} encontra-se um exemplo da definição de uma aula. A definição de cada aula deve ser efetuada no contexto da definição do respetivo curso, mas neste caso simplificado, apenas será mostrada a definição da aula.
 
 \begin{minipage}[c]{\linewidth}
 \begin{lstlisting}[caption={Exemplo da definição de uma aula.}, label={listagem:exemplo-aula}]
@@ -143,13 +143,13 @@ Para definir os horários das aulas serão utilizados os \textit{slots} definido
 \end{lstlisting}
 \end{minipage}
 
-Na \textit{tag class} é definido o identificador da aula e a quantidade limite de estudantes que podem frequentar a aula. O limite apresentado apenas faz sentido no caso da criação dos horários ser feita após a inscrição dos estudantes, pois desta forma tem-se acesso à quantidade de estudantes que devem frequentar a disciplina em causa.
+Na \textit{tag class} é definido o identificador da aula e a quantidade limite de estudantes que podem frequentar a aula. O limite apresentado apenas faz sentido na formulação \gls{pe-ctt}, pois desta forma tem-se acesso à quantidade de estudantes que devem frequentar a disciplina em causa.
 
-A definição dos dias, em que a aula fica agendada, encontra-se num formato binário e inicia-se na segunda-feira. De acordo com o exemplo, a aula deve ocorrer na segunda-feira, quarta-feira ou sexta-feira.
+A definição dos dias em que a aula fica agendada encontra-se num formato binário e inicia-se na segunda-feira. De acordo com o exemplo, a aula deve ocorrer na segunda-feira, quarta-feira ou sexta-feira.
 
 Para calcular a hora de início da aula, é necessário multiplicar a duração de cada \textit{slot} pelo \textit{offset} apresentado no \textit{start} e de seguida converter para horas, ou seja, $início = 5*90/60 = 7,5$, de acordo com o resultado, a aula deve ter início às 7:30 da manhã.
 
-A duração da aula deve ser de 50 minutos e pode ser calculada da mesma forma que o início da aula, ou seja, $duração = 5*10 = 50$. É possível definir as semanas em que a aula deve ser agendada através de um formato binário. Neste exemplo, a aula deve estar agendada para todas as semanas. Por fim, é definida uma penalização caso o horário não siga a definição na sua totalidade. 
+A duração da aula deve ser de 1 hora e 50 minutos e pode ser calculada da mesma forma que o início da aula, ou seja, $duração = 5*22 = 110$. Verificando agora as semanas em que a aula deve ser agendada, verifica-se que esta deve estar agendada para todas as semanas. Por fim, é definida uma penalização caso o horário não siga a definição na sua totalidade.
 
 \subsection{Salas}
 
@@ -182,7 +182,7 @@ A lotação das salas não terá importância neste projeto pois os horários s�
 
 \subsection{Estudantes}
 
-A definição dos estudantes consiste na atribuição de um identificador único, normalmente o número de aluno, e dos cursos ao qual o estudante pertence. Na Listagem~\ref{listagem:exemplo-estudantes}, é apresentado um exemplo para demonstrar a definição dos estudantes.
+A definição dos estudantes consiste na atribuição de um identificador único, como o número mecanográfico do aluno, e na especificação dos cursos a que pertence. Na Listagem~\ref{listagem:exemplo-estudantes}, é apresentado um exemplo para ilustrar a definição dos estudantes.
 
 \begin{minipage}[c]{\linewidth}
 \begin{lstlisting}[caption={Exemplo da definição dos estudantes.}, label={listagem:exemplo-estudantes}]
@@ -198,58 +198,58 @@ Esta funcionalidade não será utilizada neste projeto devido ao \gls{isel} não
 
 \subsection{Restrições}
 
-No padrão podem ser definidas várias restrições, que são apresentadas na Figura~\ref{fig:restricoes-itc2019}.
+No padrão podem ser definidas várias restrições, apresentadas na Figura~\ref{fig:restricoes-itc2019}.
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=.75\linewidth]{restricoes-itc2019}
-    \caption{Restrições suportadas no padrão ITC 2019 (adaptado de \cite{itc2019-Website}).}
+    \caption{Restrições suportadas no padrão da ITC 2019 (adaptado de \cite{itc2019-Website}).}
     \label{fig:restricoes-itc2019}
 \end{figure}
 
 Em seguida, são apresentadas descrições das várias restrições, adaptadas de \cite{itc2019-Website}.
 
 \begin{compactitem}
-    \item SameStart - Todas as aulas presentes na restrição devem começar à mesma hora;
+    \item SameStart - Todas as aulas devem começar à mesma hora;
 
-    \item SameTime - Todas as aulas presentes na restrição devem ocorrer nos mesmos horários do dia exigidos pela aula mais longa do conjunto;
+    \item SameTime - Todas as aulas devem ocorrer nos mesmos horários do dia exigidos pela aula mais longa do conjunto;
 
-    \item DifferentTime - Todas as aulas presentes na restrição devem estar não sobrepostas;
+    \item DifferentTime - Todas as aulas devem estar não sobrepostas;
 
-    \item SameDays - Todas as aulas presentes na restrição devem ocorrer nos mesmos dias da semana. Caso uma das aulas seja lecionada num número reduzido de dias em relação às outras esta deve ser lecionada num subconjunto dos dias utilizados pela aula com maior número de dias;
+    \item SameDays - Todas as aulas devem ocorrer nos mesmos dias da semana. Caso uma das aulas seja lecionada num número reduzido de dias em relação às outras, esta deve ser lecionada num subconjunto dos dias utilizados pela aula com maior número de dias;
 
-    \item DifferentDays - Todas as aulas presentes na restrição devem ser lecionadas em dias da semana diferentes;
+    \item DifferentDays - Todas as aulas devem ser lecionadas em dias da semana diferentes;
 
-    \item SameWeeks - Todas as aulas presentes na restrição devem ser lecionadas nas mesmas semanas. Caso uma das aulas seja lecionada num número reduzido de semanas em relação às outras, esta deve ser lecionada num subconjunto das semanas utilizadas pela aula com maior número de semanas;
+    \item SameWeeks - Todas as aulas devem ser lecionadas nas mesmas semanas. Caso uma das aulas seja lecionada num número reduzido de semanas em relação às outras, esta deve ser lecionada num subconjunto das semanas utilizadas pela aula com maior número de semanas;
 
-    \item DifferentWeeks - Todas as aulas presentes na restrição devem ser lecionadas em semanas diferentes;
+    \item DifferentWeeks - Todas as aulas devem ser lecionadas em semanas diferentes;
 
-    \item SameRoom - Todas as aulas presentes na restrição devem ser lecionadas na mesma sala;
+    \item SameRoom - Todas as aulas devem ser lecionadas na mesma sala;
 
-    \item DifferentRoom - Todas as aulas presentes na restrição devem ser lecionadas em salas diferentes;
+    \item DifferentRoom - Todas as aulas devem ser lecionadas em salas diferentes;
 
     \item Overlap - Quaisquer duas aulas nesta restrição devem ter alguma sobreposição no tempo. Implica sobreposição no período do dia, nos dias da semana e semanas;
 
     \item NotOverlap - As duas aulas não se podem sobrepor no tempo;
 
-    \item SameAttendees - Todas as aulas presentes na restrição devem ocorrer em horários e locais tais que alguém que deva comparecer, seja capaz de assistir a todas as aulas;
+    \item SameAttendees - Todas as aulas devem ocorrer em horários e locais tais que alguém que deva comparecer seja capaz de assistir a todas as aulas;
 
     \item Precedence - Estabelece uma ordem que exige que a primeira reunião da primeira aula listada ocorra na sua totalidade antes da primeira reunião da aula que se segue na ordem, repetindo a lógica para as restantes aulas;
 
-    \item WorkDay(S) - Previne ou penaliza quando o número de períodos entre o início da primeira aula e fim da última aula excede o número de períodos ''S'' definido na restrição;
+    \item WorkDay(S) - Previne ou penaliza quando o número de períodos entre o início da primeira aula e o fim da última aula excede o número de períodos ''S'' definido na restrição;
 
-    \item MinGap(G) - Os horários atribuídos a quaisquer duas aulas nesta restrição que sejam colocadas no mesmo dia devem permitir pelo menos G slots entre o final da aula anterior e o início da aula posterior;
+    \item MinGap(G) - Os horários atribuídos a quaisquer duas aulas que sejam colocadas no mesmo dia devem permitir pelo menos ''G'' \textit{slots} entre o final da aula anterior e o início da aula posterior;
 
-    \item MaxDays(D) - As aulas nesta restrição não devem ser atribuídas a mais de D dias da semana independentemente de isso ocorrer durante a mesma semana de um período letivo;
+    \item MaxDays(D) - As aulas não podem ser distribuídas por mais de ''D'' dias diferentes da semana independentemente de estarem em semanas distintas do período letivo.
 
-    \item MaxDayLoad(S) - Limita a quantidade total de tempo atribuída ao conjunto de aulas listadas na restrição a não mais do que S intervalos de tempo por dia durante todo o semestre;
+    \item MaxDayLoad(S) - Limita a quantidade total de tempo atribuído ao conjunto de aulas a não mais do que ''S'' intervalos de tempo por dia, durante todo o semestre;
 
-    \item MaxBreaks(R,S) - Limita o número de intervalos entre aulas durante um dia. O número de intervalos deve exceder S intervalos de tempo mas não mais do que R por dia;
+    \item MaxBreaks(R,S) - Limita o número de intervalos entre aulas durante o dia que excedem ''S'' períodos de tempo, garantindo que não sejam superiores a ''R'' por dia;
 
-    \item MaxBlock(M,S) - Limita a quantidade de tempo (medida como M slots) que um conjunto de aulas pode ser agendado consecutivamente, cada uma separada por no máximo S slots.
+    \item MaxBlock(M,S) - Limita a quantidade de tempo (medida em ''M'' \textit{slots}) durante a qual um conjunto de aulas pode ser agendado de forma consecutiva, sendo que cada uma delas está separada por no máximo ''S'' \textit{slots}.
 \end{compactitem}
 
-Sabendo as restrições suportadas pelo padrão é apresentado na Listagem~\ref{listagem:exemplo-restricoes} um exemplo da definição das restrições. Cada restrição pode ser rígida ou flexível, sendo as suas definições `required="true"'' e `penalty="4"'' (ou outro valor) respetivamente.
+Sabendo as restrições suportadas pelo padrão, é apresentado na Listagem~\ref{listagem:exemplo-restricoes} um exemplo da definição das restrições. Cada restrição pode ser rígida ou flexível, sendo as suas definições `required="true"'' e `penalty="4"'' (ou outro valor) respetivamente.
 
 \begin{minipage}[c]{\linewidth}
 \begin{lstlisting}[caption={Exemplo da definição das restrições.}, label={listagem:exemplo-restricoes}]
@@ -277,7 +277,7 @@ No exemplo são apresentadas três restrições diferentes. Dentro de cada bloco
 
 \subsection{Modificações propostas}
 
-Para a criação dos horários é necessário incluir os dados relativos aos professores que irão lecionar as aulas agendadas. Para permitir a inclusão dessa informação será necessário incluir esses dados no padrão. Na Listagem~\ref{listagem:padrao-exemplo-professores} encontra-se um exemplo da definição dos dados relativos aos professores.
+Para a criação dos horários é necessário incluir os dados relativos aos professores que irão lecionar as aulas agendadas. Para permitir a inclusão dessa informação será necessário incluir esses dados no padrão. Na Listagem~\ref{listagem:padrao-exemplo-professores}, encontra-se um exemplo da definição dos dados relativos aos professores.
 
 \begin{minipage}[c]{\linewidth}
 \begin{lstlisting}[caption={Exemplo da informação relacionada com os professores.}, label={listagem:padrao-exemplo-professores}]
@@ -295,38 +295,45 @@ Para a criação dos horários é necessário incluir os dados relativos aos pro
 \end{lstlisting}
 \end{minipage}
 
-Cada professor pode lecionar várias disciplinas e também pode ter manchas de indisponibilidade. Para identificar cada professor é utilizado um identificador, que nas instituições de ensino costuma ser um número atribuido tanto aos docentes como aos estudantes. A definição das manchas de indisponibilidade seguem o formato estabelecido na definição das salas.
+Cada professor pode lecionar várias disciplinas e também pode ter manchas de indisponibilidade. Cada professor é identificado pelo seu número mecanográfico, atribuído pela instituição. A definição das manchas de indisponibilidade segue o formato estabelecido na definição das salas.
 
 \section{Casos de utilização}
 \label{capitulo3:Casos-util}
 
-Os casos de utilização descrevem, de forma precisa, as interações entre os diferentes tipos de usuários e o sistema, identificando funcionalidades específicas e seus objetivos.
-
-Todos os casos de utilização têm apenas um ator, sendo este o utilizador da aplicação.
+Os casos de utilização descrevem, de forma precisa, as interações entre o utilizador e o sistema, identificando funcionalidades específicas e os objetivos a serem alcançados. Em todos os casos de utilização apresentados, o ator principal é o utilizador da aplicação, que interage com o sistema para realizar tarefas como a inserção de dados, criação de horários e visualização de informações. Cada caso de utilização descreve os passos sequenciais que o utilizador deve seguir para completar uma tarefa específica.
 
 \subsection*{Caso de Utilização 1 - Inserção de dados através de ficheiro}
-Leitura de um ficheiro, organizado de acordo com o padrão do concurso \gls{itc} 2019, e armazenamento dos dados numa base de dados.
+Leitura de um ficheiro, organizado de acordo com o padrão da \gls{itc}~2019, e armazenamento dos dados numa base de dados.
 
 Cenário principal:
 
 \begin{compactenum}
     \item O caso de utilização inicia-se quando o utilizador pressiona o botão de inserção de dados através de ficheiro.
     \item O utilizador escolhe o ficheiro que deve ser lido por parte da aplicação. \label{casos-util-1:escolha-ficheiro}
-    \item A aplicação processa os dados e armazena-os na base de dados. \label{casos-util-1:processar-dados}
+    \item A aplicação processa os dados. \label{casos-util-1:processar-dados}
+    \item A aplicação armazena os dados na base de dados. \label{casos-util-1:armazenar-dados}
     \item O caso de utilização termina.
 \end{compactenum}
 
 Cenário alternativo 1:
 
 \begin{compactenum}
-    \item No passo~\ref{casos-util-1:escolha-ficheiro} o utilizador cancela a escolha do ficheiro.
+    \item No passo~\ref{casos-util-1:escolha-ficheiro}, o utilizador cancela a escolha do ficheiro.
     \item O caso de utilização termina.
 \end{compactenum}
 
 Cenário alternativo 2:
 
 \begin{compactenum}
-    \item No passo~\ref{casos-util-1:processar-dados} o ficheiro escolhido não segue o padrão do concurso \gls{itc} 2019.
+    \item No passo~\ref{casos-util-1:processar-dados}, o ficheiro escolhido não segue o padrão da \gls{itc}~2019.
+    \item Apresentação de uma mensagem de erro ao utilizador.
+    \item O caso de utilização termina.
+\end{compactenum}
+
+Cenário alternativo 3:
+
+\begin{compactenum}
+    \item No passo~\ref{casos-util-1:armazenar-dados}, ocorreu um erro no armazenamento dos dados, o qual não pôde ser resolvido.
     \item Apresentação de uma mensagem de erro ao utilizador.
     \item O caso de utilização termina.
 \end{compactenum}
@@ -339,21 +346,30 @@ Cenário principal:
 \begin{compactenum}
     \item O caso de utilização inicia-se quando o utilizador pressiona o botão de inserção de dados manual (este pode ser relativo a salas, professores ou disciplinas).
     \item O utilizador preenche a informação relativa à categoria escolhida. \label{casos-util-2:preench-dados}
-    \item A aplicação processa os dados recebidos e armazena-os na base de dados. \label{casos-util-2:processar-dados}
+    \item A aplicação processa os dados. \label{casos-util-2:processar-dados}
+    \item A aplicação armazena os dados na base de dados. \label{casos-util-2:armazenar-dados}
     \item O caso de utilização termina.
 \end{compactenum}
 
 Cenário alternativo 1:
 
 \begin{compactenum}
-    \item No passo~\ref{casos-util-2:preench-dados} o utilizador pressiona o botão para cancelar a inserção de dados.
+    \item No passo~\ref{casos-util-2:preench-dados}, o utilizador pressiona o botão para cancelar a inserção de dados.
     \item O caso de utilização termina.
 \end{compactenum}
 
 Cenário alternativo 2:
 
 \begin{compactenum}
-    \item No passo~\ref{casos-util-2:processar-dados} os dados introduzidos não estão de acordo com o esperado.
+    \item No passo~\ref{casos-util-2:processar-dados}, os dados introduzidos não estão de acordo com o padrão.
+    \item Apresentação de uma mensagem de erro ao utilizador.
+    \item O caso de utilização termina.
+\end{compactenum}
+
+Cenário alternativo 3:
+
+\begin{compactenum}
+    \item No passo~\ref{casos-util-2:armazenar-dados}, ocorreu um erro no armazenamento dos dados, o qual não pôde ser resolvido.
     \item Apresentação de uma mensagem de erro ao utilizador.
     \item O caso de utilização termina.
 \end{compactenum}
@@ -394,17 +410,17 @@ Cenário principal:
 \end{compactenum}
 
 \subsection*{Caso de Utilização 5 - Modificação de horário criado}
-Após selecionado um dos horários gerados, de uma lista de horários, apresentados na interface gráfica, deve ser apresentado o horário permitindo a modificação do mesmo.
+Após a seleção de um dos horários gerados de uma lista apresentada na interface gráfica, este deverá ser exibido, permitindo a sua modificação.
 
 Pré-condições: Existência de horários gerados previamente.
 
 Cenário principal:
 
 \begin{compactenum}
-    \item O caso de utilização inicia-se quando o utilizador seleciona um horário a partir de uma lista de horários gerados pela aplicação.
+    \item O caso de utilização tem início quando o utilizador seleciona um horário de uma lista de horários gerados pela aplicação.
     \item A aplicação apresenta o horário de forma ampliada ao utilizador.
     \item O utilizador modifica o horário ao mover as atribuições das aulas.
-    \item O utilizador confirma as modificações através do clique num botão. \label{casos-util-5:confirmar-alteracoes}
+    \item O utilizador confirma as modificações através de um clique no botão de confirmação. \label{casos-util-5:confirmar-alteracoes}
     \item A aplicação armazena as alterações num novo horário de modo a não se perder o horário original.
     \item O caso de utilização termina.
 \end{compactenum}
@@ -434,7 +450,7 @@ Cenário principal:
 \section{Restrições para a criação dos horários}
 \label{capitulo3:Restricoes}
 
-Nesta secção são estabelecidos as restrições a considerar na elaboração dos horários. As restrições rígidas correspondem a condições indispensáveis, cuja violação tornaria o horário inviável. Já as restrições flexíveis referem-se a situações que, idealmente, devem ser evitadas, mas que podem ser aceites caso não existam alternativas viáveis.
+Nesta secção são estabelecidas as restrições a considerar na elaboração dos horários. As restrições rígidas correspondem a condições indispensáveis, cuja violação tornaria o horário inviável. Já as restrições flexíveis referem-se a situações que, idealmente, devem ser evitadas, mas que podem ser aceites caso não existam alternativas viáveis.
 
 \subsection{Restrições rígidas}
 
@@ -442,13 +458,13 @@ As restrições rígidas incluem sobreposições de aulas, conflitos de salas e 
 
 \begin{compactenum}
     \item Ocupação de salas: Aulas agendadas no mesmo período devem ser concretizadas em salas distintas;
-    \item Conflitos de disciplinas obrigatórias: Não haver sobreposições entre disciplinas quando, pelo menos, uma delas é obrigatória;
-    \item Indisponibilidade dos professores: Caso os professores tenham algum período de indisponibilidade, não devem ser agendadas aulas nesse períodos para esses professores.
+    \item Conflitos de disciplinas obrigatórias: Não haver sobreposições entre disciplinas quando, pelo menos, uma delas for obrigatória;
+    \item Indisponibilidade dos professores: Caso os professores apresentem períodos de indisponibilidade, não deverão ser agendadas aulas nesses períodos para esses docentes.
 \end{compactenum}
 
 \subsection{Restrições flexíveis}
 
-As restrições flexíveis incluem redução do número de salas ocupadas e redução de intervalos entre aulas. Estas restrições pretendem aumentar o valor da solução final.
+As restrições flexíveis incluem redução do número de salas ocupadas e redução de intervalos entre aulas. Estas restrições pretendem aumentar a qualidade da solução final.
 
 \begin{compactenum}
     \item Número de salas: O número de salas distintas utilizadas pelo curso deve ser o menor possível;
@@ -524,7 +540,7 @@ A utilização deste diagrama permite uma gestão eficiente do cronograma do pro
 Identificam-se como tarefas principais do projeto:
 
 \begin{compactitem}
-    \item Implementação de um sistema de importação de dados \gls{xml} de acordo com o padrão \gls{itc}~2019;
+    \item Implementação de um sistema de importação de dados \gls{xml} de acordo com o padrão da \gls{itc}~2019;
     \item Disponibilizar a importação manual dos dados;
     \item Apresentação de erros ao utilizador caso ocorra alguma falha no funcionamento do sistema;
     \item Apresentação de conflitos no caso de impossibilidade de criação de horários;
@@ -532,7 +548,7 @@ Identificam-se como tarefas principais do projeto:
     \item Permitir ajustes manuais aos horários gerados;
     \item Implementação e otimização dos parâmetros do algoritmo \gls{sa};
     \item Implementação de base de dados para a persistência dos dados da aplicação;
-    \item Apresentação de feedback visual durante o processo de geração de horários.
+    \item Apresentação de \textit{feedback} visual durante o processo de geração de horários.
 \end{compactitem}
 
 Identificam-se como tarefas secundárias do projeto:
@@ -546,6 +562,6 @@ Identificam-se como tarefas secundárias do projeto:
 
 A distinção entre as tarefas principais e secundárias é determinada pelo objetivo principal de garantir uma aplicação funcional. O foco principal consiste em otimizar a geração dos horários e permitir que o utilizador interaja eficazmente com os dados armazenados na base de dados. As tarefas secundárias visam melhorar a interação do utilizador com a aplicação.
 
-As tarefas previstas como mais simples e rápidas estão relacionadas com a implementação da base de dados e com o desenvolvimento do interpretador do padrão. Desde que o planeamento seja adequado, a implementação destas funcionalidades torna-se uma tarefa relativamente simples.
+As tarefas previstas como mais simples e rápidas estão relacionadas com a implementação da base de dados e com o desenvolvimento do interpretador do padrão. Quando o planeamento é adequado, a implementação dessas funcionalidades torna-se uma tarefa relativamente simples.
 
-Por outro lado, as tarefas mais complexas estão relacionadas com o desenvolvimento da interface gráfica e com a implementação e otimização do algoritmo \gls{sa}. A necessidade de que a interface gráfica seja intuitiva, eficiente e capaz de apresentar uma grande quantidade de informação com poucos cliques torna o seu desenvolvimento um processo desafiador. A implementação do \gls{sa} exige o funcionamento do algoritmo para vários cronogramas de cursos em simultâneo, pois é necessário conciliar as restrições de cada um, de modo a ser possível gerar os horários para os diferentes cursos. A otimização do \gls{sa} requer múltiplos testes e comparações de resultados, o que implica um investimento considerável de tempo, com o objetivo de encontrar valores satisfatórios para os parâmetros do algoritmo.
+Por outro lado, as tarefas mais complexas estão relacionadas com o desenvolvimento da interface gráfica e com a implementação e otimização do algoritmo \gls{sa}. A necessidade de que a interface gráfica seja intuitiva, eficiente e capaz de apresentar uma grande quantidade de informação com poucos cliques torna o seu desenvolvimento um processo desafiador. A implementação do \gls{sa} exige o seu funcionamento para múltiplos cronogramas de cursos em simultâneo, de forma a conciliar as restrições de cada um, de modo a ser possível gerar os horários para os diversos cursos. A otimização do \gls{sa} requer múltiplos testes e comparações de resultados, o que implica um investimento significativo de tempo, com o objetivo de encontrar parâmetros satisfatórios para o algoritmo.
