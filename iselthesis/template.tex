@@ -94,14 +94,9 @@
 %%
 % --------------------------------------------------------
 
-%\AtEndEnvironment{figure}{\gdef\there@is@a@figure{}} 
-%\AtEndDocument{\ifdefined\there@is@a@figure\label{fig:was:used:in:doc}\fi} 
-%\newcommand{\conditionalLoF}{\@ifundefined{r@fig:was:used:in:doc}{}{\listoffigures}}%
+\renewcommand{\printbib}{\printbibliography[title={Referências}]} % Muda a Bibliografia para Referências
+\addtocontents{toc}{\protect{\pdfbookmark[0]{Índice}{toc}}} % Adicionar o Índice às bookmarks do leitor de pdfs
 
-
-%\renewcommand{\familydefault}{\sfdefault}
-%\usepackage{sansmathfonts}
-%\usepackage{helvet}
 %%==== DANGER ==== DANGER ==== DANGER ==== DANGER ==== DANGER ====
 %%==== DANGER ==== DANGER ==== DANGER ==== DANGER ==== DANGER ====
 %%==== DANGER ==== DANGER ==== DANGER ==== DANGER ==== DANGER ====

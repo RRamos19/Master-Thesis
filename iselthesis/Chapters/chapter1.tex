@@ -11,9 +11,14 @@ Os problemas de agendamento são uma classe de problemas de otimização combina
 
 A elaboração anual ou semestral de horários escolares é tipicamente feita de forma manual. Devido à existência de múltiplas soluções possíveis, esta atividade é muito demorada e complexa. Em certos casos, pode não ser possível criar um horário devido ao número de restrições presentes.
 
-As restrições podem ser rígidas ou flexíveis. Restrições rígidas são de cumprimento obrigatório não sendo possível criar um horário caso a restrição seja violada. Restrições flexíveis podem não ser cumpridas apesar de haver um incentivo para o cumprimento das mesmas. Caso as restrições flexíveis não sejam cumpridas, o horário é válido. A qualidade de uma solução de horário depende da quantidade de restrições flexíveis violadas.
+As restrições podem ser rígidas ou flexíveis. Restrições rígidas são de cumprimento obrigatório não sendo possível criar um horário caso a restrição seja violada. Restrições flexíveis podem não ser cumpridas apesar de haver um incentivo para o cumprimento das mesmas. A qualidade de uma solução de horário depende da quantidade de restrições flexíveis violadas.
 
-Os problemas de agendamento podem ser abordados por meio de duas subcategorias: Agendamento de Disciplinas Baseado no Currículo ou em inglês \gls{cb-ctt} e Agendamento de Disciplinas Após Inscrição ou em inglês \gls{pe-ctt}.
+Os problemas de agendamento podem ser abordados por meio de duas subcategorias:
+
+\begin{compactitem}
+    \item Agendamento de Disciplinas Baseado no Currículo ou, em inglês, \gls{cb-ctt}.
+    \item Agendamento de Disciplinas Após Inscrição ou, em inglês, \gls{pe-ctt}.
+\end{compactitem}
 
 A formulação \gls{cb-ctt} centra-se no planeamento de horários com base no currículo escolar, organizando disciplinas que compõem programas de estudo estruturados. Este tipo de abordagem é amplamente utilizado no ensino primário e secundário, mas também pode ser aplicado no ensino superior.
 
@@ -21,20 +26,20 @@ Por outro lado, a formulação \gls{pe-ctt} foca-se no planeamento de horários 
 
 \section{Objetivos}
 
-O projeto tem como objetivo principal o desenvolvimento de uma aplicação com interface gráfica que permita a criação de horários, a partir de uma configuração inicial acerca do ciclo (licenciatura, mestrado) do horário e os dados relativos às salas, disciplinas e professores. Para a criação dos horários será utilizada a meta heurística Têmpera simulada ou em inglês \gls{sa} e será seguido o padrão da \gls{itc}~2019 \cite{itc2019-Website}.
+O projeto tem como objetivo principal o desenvolvimento de uma aplicação com interface gráfica que permita a criação de horários, a partir de uma configuração inicial acerca do ciclo (licenciatura, mestrado) do horário e os dados relativos às salas, disciplinas e professores. Para a criação dos horários será utilizada a meta-heurística Têmpera simulada ou, em inglês, \gls{sa} e será seguido o padrão da \gls{itc}~2019 \cite{itc2019-Website}.
 
 A aplicação será desenvolvida de modo a ser utilizada pelo \gls{isel}, seguindo as normas estabelecidas pela instituição. Para a formulação do problema de agendamento, será adotada a abordagem \gls{cb-ctt}, uma vez que a inscrição dos estudantes ocorre após a criação dos horários.
 
-Pretende-se a utilização do padrão \gls{itc}~2019 de modo a simplificar o armazenamento e representação dos dados num formato definido e amplamente utilizado. A utilização de um padrão definido possui algumas vantagens, tais como: redução do tempo de implementação, fiabilidade e qualidade, facilidade de manutenção, atualização e minimização de erros de implementação.
+Pretende-se a utilização do padrão \gls{itc}~2019 de modo a simplificar o armazenamento e representação dos dados num formato definido e amplamente utilizado. A utilização de um padrão definido possui algumas vantagens, tais como: redução do tempo de implementação, fiabilidade e qualidade, facilidade de manutenção e minimização de erros de implementação.
 
-O projeto terá um foco na otimização do processo de geração de horários e haverá uma fase de modificação dos parâmetros do algoritmo \gls{sa}, comparando os tempos de execução e os resultados obtidos.
+O projeto terá um foco na otimização do processo de geração de horários e haverá uma fase de descoberta dos melhores parâmetros do algoritmo \gls{sa} para este caso em específico, comparando os tempos de execução e os resultados obtidos.
 
-Os dados utilizados por parte do projeto devem ser guardados de forma persistente para que os seus utilizadores não sejam obrigados a alimentar os mesmos dados entre utilizações. Será criada uma base de dados para armazenar os dados fornecidos de forma organizada e normalizada.
+Os dados utilizados por parte do projeto devem ser guardados de forma persistente para que os seus utilizadores não sejam obrigados a fornecer os mesmos dados entre utilizações. Será criada uma base de dados para armazenar os dados fornecidos de forma organizada e normalizada.
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{diagrama-geral}
-    \caption{Diagrama geral da aplicação a desenvolver}
+    \caption{Diagrama geral da aplicação a desenvolver.}
     \label{fig:diagrama-geral}
 \end{figure}
 
@@ -48,7 +53,7 @@ Quando o utilizador inicia o processo de geração de horários, a aplicação e
 
 Por fim, o utilizador pode optar por exportar os dados armazenados na base de dados. A exportação pode ser realizada nos formatos \gls{xml} e \gls{csv} para todos os dados, sendo os formatos \gls{png} e \gls{pdf} exclusivos para os horários.
 
-%TODO: Detalhar o que é exportado
+A exportação dos dados no formato \gls{xml} seguirão o padrão estabelecido pelo \gls{itc}~2019. No formato \gls{csv}, serão exportadas as tabelas presentes na base de dados. Já nos formatos \gls{png} e \gls{pdf}, serão exportados exclusivamente os horários, sendo apresentados por meio de uma imagem típica de horário. No formato \gls{pdf}, a imagem será gerada como um gráfico vetorial.
 
 \section{Organização do documento}
 
