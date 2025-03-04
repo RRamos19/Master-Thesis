@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "rdt_apresentacao"
+		}
+	],
+	"settings": {
+		"editor.wordWrap": "on",
+		"git.enabled": false,
+		"cSpell.language": "en,pt-PT",
+		"cSpell.words": [
+			"desejabilidade",
+			"fracionários",
+			"Gantt",
+			"intuitividade",
+			"ISEL",
+			"Kempe",
+			"Neighbourhood",
+			"overtuning",
+			"subgrafo",
+			"Vizing"
+		]
+	}

@@ -21,9 +21,6 @@ L:=latexmk $(F)
 DATE:=`date +%Y%m%d`
 AUXFILES:=$(shell ls $(B)*.* | fgrep -v .tex | fgrep -v $(B).pdf | sed 's: :\\ :g' | sed 's:(:\\(:g' | sed 's:):\\):g')
 
-$(T): $(S)
-	$(MAKE)
-
 .PHONY: pdf
 pdf: $(S)
 	$(L) -pdf -f $(SILENT) $(B)
