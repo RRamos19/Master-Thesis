@@ -11,16 +11,20 @@ public class GestorBDPostgreSQL implements GestorBaseDados {
     private String url;
     private String user;
     private String password;
-    private String nome_db_padrao = "agendamento_bd";
+    private String nome_bd;
     private String jdbcPostgres = "jdbc:postgresql:";
     private Connection conexao;
+
+    public GestorBDPostgreSQL(String nome_bd){
+        this.nome_bd = nome_bd;
+    }
 
     public void conectar(String url, String user, String password) throws SQLException {
         this.url = url;
         this.user = user;
         this.password = password;
 
-        String finalUrl = jdbcPostgres + "//" + url + "/" + nome_db_padrao;
+        String finalUrl = jdbcPostgres + "//" + url + "/" + nome_bd;
 
         conexao = DriverManager.getConnection(finalUrl, user, password);
     }
