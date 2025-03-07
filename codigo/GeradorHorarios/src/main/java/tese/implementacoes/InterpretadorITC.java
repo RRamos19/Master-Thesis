@@ -1,8 +1,8 @@
 package tese.implementacoes;
 
-import tese.interfaces.GestorFicheiros;
+import tese.interfaces.LeitorFicheiros;
 
-public class InterpretadorITC implements GestorFicheiros {
+public class InterpretadorITC implements LeitorFicheiros {
     public InterpretadorITC(){
 
     }
