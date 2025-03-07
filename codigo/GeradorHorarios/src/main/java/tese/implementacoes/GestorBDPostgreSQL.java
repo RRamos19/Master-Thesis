@@ -8,7 +8,8 @@ import java.util.Map;
 import tese.interfaces.GestorBaseDados;
 
 public class GestorBDPostgreSQL implements GestorBaseDados {
-    private String url;
+    private String ip;
+    private String port;
     private String user;
     private String password;
     private String nome_bd;
@@ -19,12 +20,13 @@ public class GestorBDPostgreSQL implements GestorBaseDados {
         this.nome_bd = nome_bd;
     }
 
-    public void conectar(String url, String user, String password) throws SQLException {
-        this.url = url;
+    public void conectar(String ip, String port, String user, String password) throws SQLException {
+        this.ip = ip;
+        this.port = port;
         this.user = user;
         this.password = password;
 
-        String finalUrl = jdbcPostgres + "//" + url + "/" + nome_bd;
+        String finalUrl = jdbcPostgres + "//" + ip + ":" + port + "/" + nome_bd;
 
         conexao = DriverManager.getConnection(finalUrl, user, password);
     }

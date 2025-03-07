@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class GeradorHorarios {
     public static void main(String[] args) {
-        GestorFicheiros gestorFicheiros = new InterpretadorITC();
+        LeitorFicheiros leitorFicheiros = new InterpretadorITC();
         GestorInterfaceGrafica gestorIG = new InterfaceGraficaSwing("Ferramenta de Geração de Horários");
         AlgoritmoHeuristico algoritmoH = new SimulatedAnnealing(null, 100, 0.99);
         GestorBaseDados gestorBD = new GestorBDPostgreSQL("bd_agendamento");
@@ -17,7 +17,7 @@ public class GeradorHorarios {
         Map<String, ArrayList<Object>> mapa = null;
 
         try {
-            gestorBD.conectar("localhost:5432", "postgres", "123");
+            gestorBD.conectar("localhost", "5432", "postgres", "123");
             System.out.println("Conectado");
 
             mapa = gestorBD.lerTabela("professor", "");
