@@ -1,16 +1,21 @@
-\documentclass[11]{beamer}
-\usepackage{hyperref}
-\usepackage{graphicx} % Allows including images
-\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
-\usepackage{pgfgantt}
-\usepackage[portuguese]{babel}
+%\documentclass[11]{beamer}
+\documentclass[aspectratio=169]{beamer}
+
+% Pacotes
+\usepackage[T1]{fontenc} 
+\usepackage[utf8]{inputenc} % Ambos corrigem os problemas de encoding
+\usepackage{lmodern}  % Font que tenta corrigir as alterações dos pacotes anteriores
+\usepackage[portuguese]{babel} % Modificar certos nomes para português
 \usepackage{ragged2e} % Justificar texto
 
 % Definições do tema
-\usetheme{copenhagen} % Pode ajustar para outro tema se necessário
+\usetheme{copenhagen}
 \usecolortheme{default}
+
+% Alterações ao template
 \setbeamertemplate{navigation symbols}{} % Remove os símbolos de navegação
 \setbeamertemplate{headline}{} % Remove o cabeçalho
+\setbeamertemplate{footline}[frame number] % Adiciona o número do slide ao canto inferior direito
 
 % Informação da capa:
 \title{Ferramenta para Geração de Horários de Cursos com Restrições}
@@ -20,7 +25,6 @@
 
 \institute[ISEL]{Instituto Superior de Engenharia de Lisboa}
 
-%\date{Março 01, 2025}
 \date{\today}
 
 \institute{
@@ -35,7 +39,7 @@
     %----------------------------------------------------------------------------------------
 
     % Slide de título
-    \begin{frame}
+    \begin{frame}[t,plain]
         \begin{center}
             \begin{beamercolorbox}[rounded=true, shadow=true, sep=10pt, center, wd=\linewidth]{title}
                 \color{white} \usebeamerfont{title} \textbf{\inserttitle} \\
@@ -69,33 +73,40 @@
     \section{Introdução}
     %------------------------------------------------
 
-    \begin{frame}{Problemas de Agendamento}
+    \begin{frame}{Problemas de Agendamento (1/2)}
         \justifying
-        Os problemas de agendamento são problemas de otimização combinatória muito complexos. Estes problemas existem em várias áreas como: Ensino, Medicina, Transporte, Logística, entre outros.
 
-        \vspace{.5em}
+        Os problemas de agendamento são da classe de otimização combinatória. Estes problemas existem em várias áreas como:
+        \begin{itemize}
+            \item Ensino
+            \item Medicina
+            \item Transporte
+            \item Logística
+        \end{itemize}
+        \vfill
+
         Na área de ensino, os problemas de agendamento podem ser abordados por meio de duas formulações:
-        
-        \vspace{.5em}
         \begin{itemize}
             \item Agendamento de Disciplinas Baseado no Currículo (CB-CTT)
             \item Agendamento de Disciplinas Após Inscrição (PE-CTT)
         \end{itemize}
+
+        \vfill
     \end{frame}
 
-    \begin{frame}
+    \begin{frame}{Problemas de Agendamento (2/2)}
         \justifying
-        Os problemas de agendamento escolar podem ainda ser divididos em três categorias:
 
-        \vspace{.5em}
+        Os problemas de agendamento escolar podem ainda ser divididos em três categorias:
         \begin{itemize}
             \item Agendamento Escolar (\textit{School Timetabling})
             \item Agendamento de Cursos Universitários (\textit{Course Timetabling})
             \item Agendamento de Exames (\textit{Examination Timetabling})
         \end{itemize}
-        \vspace{.5em}
+        
+        \vfill
 
-        Este projeto terá um foco na categoria de Agendamento de Cursos Universitários com a formulação Agendamento de Disciplinas Baseado no Currículo.
+        Este projeto terá como objetivo a criação de uma ferramenta com interface gráfica, que permita a criação de horários, com um foco na categoria de Agendamento de Cursos Universitários, com a formulação Agendamento de Disciplinas Baseado no Currículo.
     \end{frame}
 
     %------------------------------------------------
@@ -106,7 +117,8 @@
 
     \begin{frame}{Algoritmos tipicamente utilizados}
         \justifying
-        Algoritmos tipicamente utilizados na resolução de problemas de agendamento de cursos universitários. 
+
+        Algoritmos utilizados:
         \begin{itemize}
             \item Coloração de Grafos (\textit{Graph Coloring})
             \item Coloração de Arestas (\textit{Edge Coloring})
@@ -115,24 +127,64 @@
             \item Têmpera Simulada (\textit{Simulated Annealing})
         \end{itemize}
 
-        Nos últimos anos, tem-se verificado um aumento na utilização de algoritmos híbridos para a resolução deste tipo de problemas. Estes algoritmos visam combinar características específicas de diferentes abordagens, aumentando o seu desempenho e eficiência.
+        \vfill
+
+        Nos últimos anos, a utilização de algoritmos híbridos tem aumentado, combinando diferentes abordagens para melhorar o seu desempenho e a sua eficiência na resolução destes problemas.
     \end{frame}
 
     \subsection{Empresa \textit{Bullet Solutions}}
 
-    \begin{frame}{Empresa \textit{Bullet Solutions}}
+    \begin{frame}{Empresa \textit{Bullet Solutions} (1/2)}
         \justifying
+
         A empresa \textit{Bullet Solutions} é uma empresa tecnológica especializada no desenvolvimento de soluções para otimização de recursos e gestão de horários.
 
+        \vfill
+
+        A criação dos horários começa com uma solução inicial gerada através de uma heurística sequencial.
+
+        \vfill
+
+        A técnica de otimização é uma heurística criada e adaptada ao problema, utilizando conceitos e princípios de outras meta-heurísticas, sendo uma delas o \textit{Tabu Search}.
+
+        \vfill
+
         O projeto será desenvolvido com o objetivo de oferecer uma alternativa competitiva à aplicação disponibilizada pela \textit{Bullet Solutions}, que é atualmente utilizada no ISEL.
+
+        \vfill
     \end{frame}
 
-    \begin{frame}
+    \begin{frame}{Empresa \textit{Bullet Solutions} (2/2)}
         \justifying
         Solução disponibilizada pela \textit{Bullet Solutions}:
         \begin{center}
             \includegraphics[width=10cm]{img/exemplo-bullet-solutions-software.png}
         \end{center}
+    \end{frame}
+    
+    \subsection{ITC 2019}
+
+    \begin{frame}{ITC 2019}
+        \justifying
+        A ITC 2019 teve um foco na elaboração de horários em contextos educacionais, como a criação de horários para escolas e universidades.
+
+        \vfill
+        
+        Os participantes poderiam enviar a solução obtida através do site da competição, o qual também disponibiliza os dados a serem utilizados e o padrão a ser seguido.
+
+        \vfill
+        
+        O padrão disponibilizado pela competição permite o armazenamento dos dados seguintes:
+        \begin{itemize}
+            \item Cursos
+            \item Alunos
+            \item Disciplinas
+            \item Restrições
+        \end{itemize}
+
+        \vfill
+
+        Para permitir a utilização do padrão no projeto foi feita uma extensão do padrão para acrescentar os dados dos professores.
     \end{frame}
 
     %------------------------------------------------
@@ -141,27 +193,68 @@
 
     \subsection{Diagrama de blocos}
 
-    \begin{frame}
+    \begin{frame}{Diagrama de blocos}
         Diagrama de blocos:
         \begin{center}
-            \includegraphics[width=.85\linewidth]{img/diagrama-blocos.pdf}
+            \includegraphics[width=\linewidth]{img/diagrama-blocos-slides.pdf}
         \end{center}
+    \end{frame}
+
+    \subsection{Dados de entrada e saída}
+
+    \begin{frame}{Dados de entrada e saída}
+        \justifying
+
+        Tipo dos ficheiros de entrada:
+        \begin{itemize}
+            \item XML seguindo o padrão proposto
+        \end{itemize}
+
+        \vfill
+
+        Tipos dos ficheiros de saída:
+        \begin{itemize}
+            \item CSV e XML para todos os dados armazenados
+            \item PNG e PDF apenas para os horários gerados
+        \end{itemize}
+
+        \vfill
+    \end{frame}
+
+    \subsection{Tecnologias a utilizar}
+
+    \begin{frame}{Tecnologias a utilizar} %TODO: Terminar
+        \justifying
+        A linguagem Java proporciona 
+
+        \vfill
+
+        JDBC (Java Database Connectivity)
+
+        \vfill
+
+        PostgreSQL
+
+        \vfill
     \end{frame}
 
     \subsection{Tarefas realizadas}
 
-    \begin{frame}
+    \begin{frame}{Tarefas realizadas}
         \justifying
+
         Tarefas realizadas:
         \begin{itemize}
             \item Definição do contexto e objetivos do projeto
             \item Análise das técnicas propostas na literatura
             \item Definição do diagrama de blocos
             \item Definição dos requisitos funcionais e não funcionais
-            \item Análise detalhada do padrão proposto
+            \item Análise detalhada do padrão proposto na ITC 2019
+            \item Extensão do padrão para incluir dados relativos aos docentes
             \item Definição dos casos de utilização
             \item Definição das restrições dos horários
         \end{itemize}
+
     \end{frame}
 
     %------------------------------------------------
@@ -172,27 +265,48 @@
 
     \begin{frame}{Diagrama de Gantt}
         \justifying
+
         \begin{figure}
-            \includegraphics[width=\linewidth]{img/Diagrama-Gantt.png}
-            %\caption{Diagrama de Gantt}
+            \includegraphics[width=.85\linewidth]{img/Diagrama-Gantt.png}
         \end{figure}
+
+        \vfill
+
+        Maiores riscos:
+        \begin{itemize}
+            \item Criação de uma interface gráfica eficiente e intuitiva
+            \item Implementação do \textit{Simulated Annealing} e lógica de criação de horários
+        \end{itemize}
+
+        \vfill
     \end{frame}
 
     \subsection{Tarefas Principais}
 
-    \begin{frame}{Tarefas Principais}
+    \begin{frame}{Tarefas Principais (1/2)} %TODO: simplificar o texto para ocupar apenas uma linha
         \justifying
         \begin{enumerate}
-            \item Implementação de um sistema de importação de dados XML de acordo com o padrão da ITC 2019
+            \item Implementação de um sistema para importar dados XML que sigam o padrão proposto
             \item Disponibilizar a importação manual dos dados
-            \item Apresentação de erros ao utilizador caso ocorra alguma falha no funcionamento do sistema
-            \item Apresentação de conflitos no caso de impossibilidade de criação de horários
-            \item Criação de interface gráfica simples e fácil de utilizar
+            \item Apresentação de erros ao utilizador em caso de falha no sistema
+            \item Apresentação dos conflitos no caso de impossibilidade de criação de horários
+            \item Desenvolvimento de interface gráfica intuitiva e eficiente
+            
+            \newcounter{tarefasPrincipais}
+            \setcounter{tarefasPrincipais}{\value{enumi}}
+        \end{enumerate}
+    \end{frame}
+
+    \begin{frame}{Tarefas Principais (2/2)}
+        \justifying
+        \begin{enumerate}
+            \setcounter{enumi}{\value{tarefasPrincipais}}
+
             \item Permitir ajustes manuais aos horários gerados
             \item Implementação e otimização dos parâmetros do algoritmo SA
-            \item Implementação de base de dados para a persistência dos dados da aplicação
-            \item Apresentação de \textit{feedback} visual durante o processo de geração de horários
-        \end{enumerate}
+            \item Implementação de base de dados para a persistência dos dados
+            \item Apresentação de retorno visual durante o processo de geração de horários
+        \end{enumerate} %TODO: Confirmar a alteração de feedback para retorno
     \end{frame}
 
     \subsection{Tarefas Secundárias}
@@ -202,7 +316,7 @@
         \begin{enumerate}
             \item Definição de manchas de disponibilidade através da interface gráfica
             \item Definição de períodos para aulas partilhadas através da interface gráfica
-            \item Criação de \textit{logs} detalhados do funcionamento do sistema
+            \item Criação de registos detalhados do funcionamento do sistema
             \item Congelamento de salas e/ou professores no momento de geração de horários
         \end{enumerate}
     \end{frame}
