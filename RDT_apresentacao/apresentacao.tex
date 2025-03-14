@@ -90,8 +90,6 @@
             \item Agendamento de Disciplinas Baseado no Currículo (CB-CTT)
             \item Agendamento de Disciplinas Após Inscrição (PE-CTT)
         \end{itemize}
-
-        \vfill
     \end{frame}
 
     \begin{frame}{Problemas de Agendamento (2/2)}
@@ -129,7 +127,7 @@
 
         \vfill
 
-        Nos últimos anos, a utilização de algoritmos híbridos tem aumentado, combinando diferentes abordagens para melhorar o seu desempenho e a sua eficiência na resolução destes problemas.
+        Nos últimos anos, a utilização de algoritmos híbridos tem aumentado, combinando diferentes técnicas para melhorar o seu desempenho e a sua eficiência na resolução destes problemas.
     \end{frame}
 
     \subsection{Empresa \textit{Bullet Solutions}}
@@ -141,7 +139,7 @@
 
         \vfill
 
-        A criação dos horários começa com uma solução inicial gerada através de uma heurística sequencial.
+        A criação dos horários começa com uma solução inicial, gerada através de uma heurística sequencial.
 
         \vfill
 
@@ -150,8 +148,6 @@
         \vfill
 
         O projeto será desenvolvido com o objetivo de oferecer uma alternativa competitiva à aplicação disponibilizada pela \textit{Bullet Solutions}, que é atualmente utilizada no ISEL.
-
-        \vfill
     \end{frame}
 
     \begin{frame}{Empresa \textit{Bullet Solutions} (2/2)}
@@ -170,11 +166,11 @@
 
         \vfill
         
-        Os participantes poderiam enviar a solução obtida através do site da competição, o qual também disponibiliza os dados a serem utilizados e o padrão a ser seguido.
+        A competição disponibiliza o padrão a ser utilizado e alguns dados para efeitos de comparação de resultados.
 
         \vfill
         
-        O padrão disponibilizado pela competição permite o armazenamento dos dados seguintes:
+        O padrão disponibilizado permite o armazenamento dos seguintes dados:
         \begin{itemize}
             \item Cursos
             \item Alunos
@@ -184,7 +180,7 @@
 
         \vfill
 
-        Para permitir a utilização do padrão no projeto foi feita uma extensão do padrão para acrescentar os dados dos professores.
+        Para permitir a utilização do padrão no projeto, foi feita uma extensão para acrescentar os dados dos professores.
     \end{frame}
 
     %------------------------------------------------
@@ -194,7 +190,7 @@
     \subsection{Diagrama de blocos}
 
     \begin{frame}{Diagrama de blocos}
-        Diagrama de blocos:
+        %Diagrama de blocos:
         \begin{center}
             \includegraphics[width=\linewidth]{img/diagrama-blocos-slides.pdf}
         \end{center}
@@ -217,25 +213,36 @@
             \item CSV e XML para todos os dados armazenados
             \item PNG e PDF apenas para os horários gerados
         \end{itemize}
-
-        \vfill
     \end{frame}
 
-    \subsection{Tecnologias a utilizar}
+    \subsection{Vantagens das tecnologias a utilizar}
 
-    \begin{frame}{Tecnologias a utilizar} %TODO: Terminar
+    \begin{frame}{Vantagens das tecnologias a utilizar (1/2)}
         \justifying
-        A linguagem Java proporciona 
+        Vantagens da linguagem Java:
+        \begin{itemize}
+            \item O programa pode ser executado em qualquer sistema operativo
+            \item Vasta coleção de bibliotecas
+            \item Rápido e eficiente
+        \end{itemize} 
 
         \vfill
 
-        JDBC (Java Database Connectivity)
+        A utilização do JDBC tem as seguintes vantagens:
+        \begin{itemize}
+            \item Simplicidade de implementação
+            \item Controlo total nas transações
+        \end{itemize}
+    \end{frame}
 
-        \vfill
-
-        PostgreSQL
-
-        \vfill
+    \begin{frame}{Vantagens das tecnologias a utilizar (2/2)}
+        \justifying
+        As vantagens da utilização do PostgreSQL são as seguintes:
+        \begin{itemize}
+            \item Eficiente e escalável para grandes volumes de dados
+            \item Suporta replicação
+            \item Suporta transações concorrentes
+        \end{itemize}
     \end{frame}
 
     \subsection{Tarefas realizadas}
@@ -243,14 +250,14 @@
     \begin{frame}{Tarefas realizadas}
         \justifying
 
-        Tarefas realizadas:
+        %Tarefas realizadas:
         \begin{itemize}
             \item Definição do contexto e objetivos do projeto
             \item Análise das técnicas propostas na literatura
             \item Definição do diagrama de blocos
             \item Definição dos requisitos funcionais e não funcionais
             \item Análise detalhada do padrão proposto na ITC 2019
-            \item Extensão do padrão para incluir dados relativos aos docentes
+            \item Extensão do padrão
             \item Definição dos casos de utilização
             \item Definição das restrições dos horários
         \end{itemize}
@@ -283,14 +290,16 @@
 
     \subsection{Tarefas Principais}
 
-    \begin{frame}{Tarefas Principais (1/2)} %TODO: simplificar o texto para ocupar apenas uma linha
+    \begin{frame}{Tarefas Principais (1/2)}
         \justifying
+
+        Implementações previstas:
         \begin{enumerate}
-            \item Implementação de um sistema para importar dados XML que sigam o padrão proposto
-            \item Disponibilizar a importação manual dos dados
+            \item Sistema para importação de dados XML que sigam o padrão proposto
+            \item Importação manual dos dados
             \item Apresentação de erros ao utilizador em caso de falha no sistema
             \item Apresentação dos conflitos no caso de impossibilidade de criação de horários
-            \item Desenvolvimento de interface gráfica intuitiva e eficiente
+            \item Interface gráfica intuitiva e eficiente
             
             \newcounter{tarefasPrincipais}
             \setcounter{tarefasPrincipais}{\value{enumi}}
@@ -299,12 +308,13 @@
 
     \begin{frame}{Tarefas Principais (2/2)}
         \justifying
+        Implementações previstas:
         \begin{enumerate}
             \setcounter{enumi}{\value{tarefasPrincipais}}
 
             \item Permitir ajustes manuais aos horários gerados
-            \item Implementação e otimização dos parâmetros do algoritmo SA
-            \item Implementação de base de dados para a persistência dos dados
+            \item Algoritmo SA e otimização dos seus parâmetros 
+            \item Base de dados para a persistência dos dados
             \item Apresentação de retorno visual durante o processo de geração de horários
         \end{enumerate} %TODO: Confirmar a alteração de feedback para retorno
     \end{frame}
@@ -313,6 +323,8 @@
 
     \begin{frame}{Tarefas Secundárias}
         \justifying
+
+        Implementações previstas caso as tarefas principais estejam concluidas:
         \begin{enumerate}
             \item Definição de manchas de disponibilidade através da interface gráfica
             \item Definição de períodos para aulas partilhadas através da interface gráfica
