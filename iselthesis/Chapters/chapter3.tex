@@ -282,12 +282,12 @@ Para a criação dos horários é necessário incluir os dados relativos aos pro
 \begin{minipage}[c]{\linewidth}
 \begin{lstlisting}[caption={Exemplo da informação relacionada com os professores.}, label={listagem:padrao-exemplo-professores}]
 <teachers>
-    <teacher id="1">
+    <teacher id="1" name="Rui Antunes">
         <class id="1"/>
         <class id="2"/>
         <unavailable days="0010000" start="222" length="36" weeks="111111111111111"/>
     </teacher>
-    <teacher id="2">
+    <teacher id="2" name="João Rodrigues">
         <class id="3"/>
         <class id="4"/>
     </teacher>
@@ -295,7 +295,7 @@ Para a criação dos horários é necessário incluir os dados relativos aos pro
 \end{lstlisting}
 \end{minipage}
 
-Cada professor pode lecionar várias disciplinas e também pode ter manchas de indisponibilidade. Cada professor é identificado pelo seu número mecanográfico, atribuído pela instituição. A definição das manchas de indisponibilidade segue o formato estabelecido na definição das salas.
+Cada professor pode lecionar várias disciplinas e também pode ter manchas de indisponibilidade. Cada professor é identificado pelo seu número mecanográfico, atribuído pela instituição, e pelo seu nome. A definição das manchas de indisponibilidade segue o formato estabelecido na definição das salas.
 
 \section{Casos de utilização}
 \label{capitulo3:Casos-util}
