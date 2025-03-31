@@ -1,7 +1,7 @@
 {
 	"folders": [
 		{
-			"path": "iselthesis"
+			"path": "../rdt_apresentacao"
 		}
 	],
 	"settings": {
@@ -21,4 +21,3 @@
 			"Vizing"
 		]
 	}
-}
