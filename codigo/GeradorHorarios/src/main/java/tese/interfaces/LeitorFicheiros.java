@@ -1,4 +1,7 @@
 package tese.interfaces;
 
-public interface LeitorFicheiros {
+import tese.estruturas.DadosAgendamento;
+
+public interface LeitorFicheiros<T> {
+    T lerFicheiro(String caminhoFicheiro);
 }

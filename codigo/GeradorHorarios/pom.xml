@@ -17,11 +17,18 @@
     </properties>
 
     <dependencies>
-        <!-- Dependência PostgreSQL -->
+        <!-- Dependência Driver PostgreSQL -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.7.3</version>
+        </dependency>
+
+        <!-- Dependência JavaFX-->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>11</version>
         </dependency>
     </dependencies>
 
