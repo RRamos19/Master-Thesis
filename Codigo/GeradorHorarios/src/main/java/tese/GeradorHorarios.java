@@ -13,7 +13,7 @@ public class GeradorHorarios {
         //IGJavaFX testeIG = new IGJavaFX();
         //testeIG.iniciarInterface("Ferramenta de Geração de Horários");
 
-        leitorFicheiros.lerFicheiro("C:\\Users\\Ricardo\\Desktop\\lums-sum17.xml");
+        leitorFicheiros.lerFicheiro("./lums-sum17.xml");
 
 //        Map<String, ArrayList<Object>> mapa = null;
 

@@ -3,6 +3,7 @@ package tese.implementacoes;
 import tese.estruturas.DadosAgendamento;
 import tese.interfaces.LeitorFicheiros;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -73,6 +74,15 @@ public class InterpretadorITC implements LeitorFicheiros {
                         switch (qName) {
                             case TAG_OTIMIZACAO:
                                 // TODO: Guardar valores de otimização
+                                int pesoTempo = 0, pesoSala = 0, pesoDistribuicao = 0;
+
+                                String startElementName = startElement.getName().getLocalPart();
+
+                                pesoTempo = Integer.valueOf(startElement.getAttributeByName(QName.valueOf("time")).getValue());
+                                pesoSala = Integer.valueOf(startElement.getAttributeByName(QName.valueOf("room")).getValue());
+                                pesoDistribuicao = Integer.valueOf(startElement.getAttributeByName(QName.valueOf("distribution")).getValue());
+
+                                dados.armazenarOtimizacao(pesoTempo, pesoSala, pesoDistribuicao);
                                 break;
                             case TAG_SALAS:
                                 lerSalas(eventReader);
