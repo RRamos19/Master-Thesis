@@ -1,4 +1,4 @@
-package tese.implementacoes;
+package thesis.implementations;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -7,7 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class IGJavaFX extends Application {
+public class JavaFXInterface extends Application {
     private static String nomeAplicacao;
 
     public static void iniciarInterface(String nome) {

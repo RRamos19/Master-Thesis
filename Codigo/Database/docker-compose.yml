@@ -1,7 +1,7 @@
 services:
   database:
     image: postgres:15
-    container_name: bd_agendamento
+    container_name: timetabling_db
     restart: always
     ports:
       - "127.0.0.1:5432:5432"
@@ -11,7 +11,7 @@ services:
       - ./setup-master:/docker-entrypoint-initdb.d
     environment:
       POSTGRES_PASSWORD: 123
-      POSTGRES_DB: bd_agendamento
+      POSTGRES_DB: timetabling_db
     healthcheck: #checks if db is operating normally, i.e. accepting connections. It is a readiness probe
        test: ["CMD-SHELL", "pg_isready -U postgres"]
        interval: 10s

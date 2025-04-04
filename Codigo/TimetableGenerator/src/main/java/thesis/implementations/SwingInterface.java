@@ -1,14 +1,13 @@
-package tese.implementacoes;
+package thesis.implementations;
 
-import tese.interfaces.GestorInterfaceGrafica;
+import thesis.interfaces.GraphicalInterface;
 
 import javax.swing.JFrame;
-import javax.swing.JButton;
 
-public class InterfaceGraficaSwing implements GestorInterfaceGrafica {
+public class SwingInterface implements GraphicalInterface {
     JFrame frameInicial;
 
-    public InterfaceGraficaSwing(String tituloApp){
+    public SwingInterface(String tituloApp){
         // Creating instance of JFrame
         frameInicial = new JFrame(tituloApp);
 

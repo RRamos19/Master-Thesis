@@ -17,14 +17,14 @@
     </properties>
 
     <dependencies>
-        <!-- Dependência Driver PostgreSQL -->
+        <!-- PostgreSQL Driver Dependency -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.7.3</version>
         </dependency>
 
-        <!-- Dependência JavaFX-->
+        <!-- JavaFX GUI Dependency -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
@@ -48,7 +48,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        tese.GeradorHorarios
+                                        thesis.TimetableGenerator
                                     </mainClass>
                                 </manifest>
                             </archive>
