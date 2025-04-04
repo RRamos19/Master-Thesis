@@ -1,56 +1,56 @@
-package tese.implementacoes;
+package thesis.implementations;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import tese.interfaces.GestorBaseDados;
+import thesis.interfaces.DBManager;
 
-public class GestorBDPostgreSQL implements GestorBaseDados {
+public class DBPostgreSQLManager implements DBManager {
     private String ip;
     private String port;
     private String user;
     private String password;
-    private String nome_bd;
+    private String db_name;
     private String jdbcPostgres = "jdbc:postgresql:";
-    private Connection conexao;
+    private Connection connection;
 
-    public GestorBDPostgreSQL(String nome_bd){
-        this.nome_bd = nome_bd;
+    public DBPostgreSQLManager(String db_name){
+        this.db_name = db_name;
     }
 
-    public void conectar(String ip, String port, String user, String password) throws SQLException {
+    public void connect(String ip, String port, String user, String password) throws SQLException {
         this.ip = ip;
         this.port = port;
         this.user = user;
         this.password = password;
 
-        String finalUrl = jdbcPostgres + "//" + ip + ":" + port + "/" + nome_bd;
+        String finalUrl = jdbcPostgres + "//" + ip + ":" + port + "/" + db_name;
 
-        conexao = DriverManager.getConnection(finalUrl, user, password);
+        connection = DriverManager.getConnection(finalUrl, user, password);
     }
 
-    public void desconectar() throws SQLException{
-        conexao.close();
+    public void disconnect() throws SQLException{
+        connection.close();
     }
 
-    public void criar(String nomeTabela, Map<String, Object> dados) throws SQLException{
+    public void create(String tableName, Map<String, Object> data) throws SQLException{
 
     }
 
-    public Map<String, ArrayList<Object>> lerTabela(String nomeTabela, String condicao) throws SQLException{
+    public Map<String, ArrayList<Object>> read(String tableName, String condition) throws SQLException{
         // TODO: Falta verificar o nomeTabela e condicao para evitar SQLInjection
 
-        String sqlQuery = "SELECT * FROM " + nomeTabela;
-        if(!condicao.isEmpty()){
-            sqlQuery += " WHERE " + condicao;
+        String sqlQuery = "SELECT * FROM " + tableName;
+        if(!condition.isEmpty()){
+            sqlQuery += " WHERE " + condition;
         }
 
-        PreparedStatement stmt = conexao.prepareStatement(sqlQuery);
+        PreparedStatement stmt = connection.prepareStatement(sqlQuery);
         ResultSet rs = stmt.executeQuery();
 
-        Map<String, ArrayList<Object>> mapa = conversaoResultSetParaMap(rs);
+        Map<String, ArrayList<Object>> mapa = convertResultSetToMap(rs);
 
         rs.close();
         stmt.close();
@@ -58,15 +58,15 @@ public class GestorBDPostgreSQL implements GestorBaseDados {
         return mapa;
     }
 
-    public void atualizar(String nomeTabela, Map<String, Object> dados, String condicao) throws SQLException{
+    public void update(String tableName, Map<String, Object> data, String condition) throws SQLException{
 
     }
 
-    public void remover(String nomeTabela, String condicao) throws SQLException{
+    public void remove(String tableName, String condition) throws SQLException{
 
     }
 
-    private Map<String, ArrayList<Object>> conversaoResultSetParaMap(ResultSet rs) throws SQLException{
+    private Map<String, ArrayList<Object>> convertResultSetToMap(ResultSet rs) throws SQLException{
         // collect column names
         ArrayList<String> columnNames = new ArrayList<>();
         ResultSetMetaData rsmd = rs.getMetaData();

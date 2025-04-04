@@ -1,7 +1,7 @@
-package tese.implementacoes;
+package thesis.implementations;
 
-import tese.estruturas.DadosAgendamento;
-import tese.interfaces.LeitorFicheiros;
+import thesis.structures.TimetablingData;
+import thesis.interfaces.InputFileReader;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -14,39 +14,39 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
-public class InterpretadorITC implements LeitorFicheiros {
+public class ITCFormatParser implements InputFileReader {
 
-    // Tags principais
-    private final String TAG_PROFESSORES       = "teachers";
-    private final String TAG_CURSOS            = "courses";
-    private final String TAG_SALAS             = "rooms";
-    private final String TAG_RESTRICOES        = "distributions";
-    private final String TAG_OTIMIZACAO        = "optimization";
+    // Principal Tags
+    private final String TEACHERS_TAG          = "teachers";
+    private final String COURSES_TAG           = "courses";
+    private final String ROOMS_TAG             = "rooms";
+    private final String RESTRICTIONS_TAG      = "distributions";
+    private final String OPTIMIZATION_TAG      = "optimization";
 
-    // Tags secundárias
-    private final String TAG_SALA              = "room";
-    private final String TAG_PROFESSOR         = "teacher";
-    private final String TAG_CURSO             = "course";
-    private final String TAG_CONFIG            = "config";
-    private final String TAG_SUBPARTE          = "subpart";
-    private final String TAG_RESTRICAO         = "distribution";
+    // Secondary Tags
+    private final String ROOM_TAG              = "room";
+    private final String TEACHER_TAG           = "teacher";
+    private final String COURSE_TAG            = "course";
+    private final String CONFIG_TAG            = "config";
+    private final String SUBPART_TAG           = "subpart";
+    private final String RESTRICTION_TAG       = "distribution";
 
-    // Tags de configuração
-    private final String TAG_DISTANCIA         = "travel";
-    private final String TAG_INDISPONIBILIDADE = "unavailable";
-    private final String TAG_DISCIPLINA        = "class";
-    private final String TAG_TEMPO             = "time";
+    // Configuration Tags
+    private final String TRAVEL_TAG            = "travel";
+    private final String UNAVAILABILITY_TAG    = "unavailable";
+    private final String CLASS_TAG             = "class";
+    private final String TIME_TAG              = "time";
 
     @Override
-    public DadosAgendamento lerFicheiro(String caminhoFicheiro) {
-        DadosAgendamento dados = new DadosAgendamento();
+    public TimetablingData readFile(String filePath) {
+        TimetablingData data = new TimetablingData();
 
-        FileInputStream ficheiro;
-        InputStreamReader leitorFicheiro;
+        FileInputStream inputFile;
+        InputStreamReader inputFileReader;
 
         try {
-            ficheiro = new FileInputStream(caminhoFicheiro);
-            leitorFicheiro = new InputStreamReader(ficheiro, StandardCharsets.UTF_8);
+            inputFile = new FileInputStream(filePath);
+            inputFileReader = new InputStreamReader(inputFile, StandardCharsets.UTF_8);
         } catch (FileNotFoundException e) {
             // TODO: Alterar para mostrar uma mensagem de erro
             throw new RuntimeException(e);
@@ -55,7 +55,7 @@ public class InterpretadorITC implements LeitorFicheiros {
         XMLInputFactory factory = XMLInputFactory.newInstance();
         XMLEventReader eventReader;
         try {
-            eventReader = factory.createXMLEventReader(leitorFicheiro);
+            eventReader = factory.createXMLEventReader(inputFileReader);
         } catch (XMLStreamException e) {
             // TODO: Alterar para mostrar uma mensagem de erro
             throw new RuntimeException(e);
@@ -72,29 +72,26 @@ public class InterpretadorITC implements LeitorFicheiros {
                         String qName = startElement.getName().getLocalPart();
 
                         switch (qName) {
-                            case TAG_OTIMIZACAO:
-                                // TODO: Guardar valores de otimização
-                                int pesoTempo = 0, pesoSala = 0, pesoDistribuicao = 0;
+                            case OPTIMIZATION_TAG:
+                                int timeWeight = 0, roomWeight = 0, distributionWeight = 0;
 
-                                String startElementName = startElement.getName().getLocalPart();
+                                timeWeight = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("time")).getValue());
+                                roomWeight = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("room")).getValue());
+                                distributionWeight = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("distribution")).getValue());
 
-                                pesoTempo = Integer.valueOf(startElement.getAttributeByName(QName.valueOf("time")).getValue());
-                                pesoSala = Integer.valueOf(startElement.getAttributeByName(QName.valueOf("room")).getValue());
-                                pesoDistribuicao = Integer.valueOf(startElement.getAttributeByName(QName.valueOf("distribution")).getValue());
-
-                                dados.armazenarOtimizacao(pesoTempo, pesoSala, pesoDistribuicao);
+                                data.storeOptimization(timeWeight, roomWeight, distributionWeight);
                                 break;
-                            case TAG_SALAS:
-                                lerSalas(eventReader);
+                            case ROOMS_TAG:
+                                readRooms(eventReader);
                                 break;
-                            case TAG_RESTRICOES:
-                                lerRestricoes(eventReader);
+                            case RESTRICTIONS_TAG:
+                                readRestrictions(eventReader);
                                 break;
-                            case TAG_CURSOS:
-                                lerCursos(eventReader);
+                            case COURSES_TAG:
+                                readCourses(eventReader);
                                 break;
-                            case TAG_PROFESSORES:
-                                lerProfessores(eventReader);
+                            case TEACHERS_TAG:
+                                readTeachers(eventReader);
                                 break;
                         }
                         break;
@@ -107,8 +104,8 @@ public class InterpretadorITC implements LeitorFicheiros {
 
         try {
             eventReader.close();
-            leitorFicheiro.close();
-            ficheiro.close();
+            inputFileReader.close();
+            inputFile.close();
         } catch (XMLStreamException xml_e) {
             // TODO: Alterar para mostrar uma mensagem de erro
             throw new RuntimeException(xml_e);
@@ -117,14 +114,14 @@ public class InterpretadorITC implements LeitorFicheiros {
             throw new RuntimeException(io_e);
         }
 
-        return dados;
+        return data;
     }
 
     /**
-     * Deve ser feita a leitura de todas as salas até se encontrar o terminador da tag
+     * All the rooms should be read before encountering the termination tag
      * @param eventReader
      */
-    private void lerSalas(XMLEventReader eventReader) throws XMLStreamException {
+    private void readRooms(XMLEventReader eventReader) throws XMLStreamException {
         while (eventReader.hasNext()) {
             XMLEvent event;
             event = eventReader.nextEvent();
@@ -135,9 +132,9 @@ public class InterpretadorITC implements LeitorFicheiros {
                     String startElementName = startElement.getName().getLocalPart();
 
                     switch (startElementName) {
-                        case TAG_DISTANCIA:
+                        case TRAVEL_TAG:
                             break;
-                        case TAG_INDISPONIBILIDADE:
+                        case UNAVAILABILITY_TAG:
                             break;
                     }
                     break;
@@ -147,7 +144,7 @@ public class InterpretadorITC implements LeitorFicheiros {
                     String endElementName = endElement.getName().getLocalPart();
 
                     // Se o terminador da tag das salas for encontrado a função termina
-                    if (endElementName.equals(TAG_SALAS)) {
+                    if (endElementName.equals(ROOMS_TAG)) {
                         return;
                     }
                     break;
@@ -156,10 +153,10 @@ public class InterpretadorITC implements LeitorFicheiros {
     }
 
     /**
-     * Deve ser feita a leitura de todos os cursos até se encontrar o terminador da tag
+     * All the courses should be read before encountering the termination tag
      * @param eventReader
      */
-    private void lerCursos(XMLEventReader eventReader) throws XMLStreamException {
+    private void readCourses(XMLEventReader eventReader) throws XMLStreamException {
         while (eventReader.hasNext()) {
             XMLEvent event;
             event = eventReader.nextEvent();
@@ -170,17 +167,17 @@ public class InterpretadorITC implements LeitorFicheiros {
                     String startElementName = startElement.getName().getLocalPart();
 
                     switch (startElementName) {
-                        case TAG_CURSO:
+                        case COURSE_TAG:
                             break;
-                        case TAG_CONFIG:
+                        case CONFIG_TAG:
                             break;
-                        case TAG_SUBPARTE:
+                        case SUBPART_TAG:
                             break;
-                        case TAG_DISCIPLINA:
+                        case CLASS_TAG:
                             break;
-                        case TAG_SALA:
+                        case ROOM_TAG:
                             break;
-                        case TAG_TEMPO:
+                        case TIME_TAG:
                             break;
                     }
                     break;
@@ -190,7 +187,7 @@ public class InterpretadorITC implements LeitorFicheiros {
                     String endElementName = endElement.getName().getLocalPart();
 
                     // Se o terminador da tag dos cursos for encontrado a função termina
-                    if (endElementName.equals(TAG_CURSOS)) {
+                    if (endElementName.equals(COURSES_TAG)) {
                         return;
                     }
                     break;
@@ -199,10 +196,10 @@ public class InterpretadorITC implements LeitorFicheiros {
     }
 
     /**
-     * Deve ser feita a leitura de todos os professores até se encontrar o terminador da tag
+     * All the teachers should be read before encountering the termination tag
      * @param eventReader
      */
-    private void lerProfessores(XMLEventReader eventReader) throws XMLStreamException {
+    private void readTeachers(XMLEventReader eventReader) throws XMLStreamException {
         while (eventReader.hasNext()) {
             XMLEvent event;
             event = eventReader.nextEvent();
@@ -213,9 +210,9 @@ public class InterpretadorITC implements LeitorFicheiros {
                     String startElementName = startElement.getName().getLocalPart();
 
                     switch (startElementName) {
-                        case TAG_PROFESSOR:
+                        case TEACHER_TAG:
                             break;
-                        case TAG_INDISPONIBILIDADE:
+                        case UNAVAILABILITY_TAG:
                             break;
                     }
                     break;
@@ -225,7 +222,7 @@ public class InterpretadorITC implements LeitorFicheiros {
                     String endElementName = endElement.getName().getLocalPart();
 
                     // Se o terminador da tag dos professores for encontrado a função termina
-                    if (endElementName.equals(TAG_PROFESSORES)) {
+                    if (endElementName.equals(TEACHERS_TAG)) {
                         return;
                     }
                     break;
@@ -234,10 +231,10 @@ public class InterpretadorITC implements LeitorFicheiros {
     }
 
     /**
-     * Deve ser feita a leitura de todas as restrições até se encontrar o terminador da tag
+     * All the restrictions should be read before encountering the termination tag
      * @param eventReader
      */
-    private void lerRestricoes(XMLEventReader eventReader) throws XMLStreamException {
+    private void readRestrictions(XMLEventReader eventReader) throws XMLStreamException {
         while (eventReader.hasNext()) {
             XMLEvent event;
             event = eventReader.nextEvent();
@@ -248,9 +245,9 @@ public class InterpretadorITC implements LeitorFicheiros {
                     String startElementName = startElement.getName().getLocalPart();
 
                     switch (startElementName) {
-                        case TAG_RESTRICAO:
+                        case RESTRICTION_TAG:
                             break;
-                        case TAG_DISCIPLINA:
+                        case CLASS_TAG:
                             break;
                     }
                     break;
@@ -260,7 +257,7 @@ public class InterpretadorITC implements LeitorFicheiros {
                     String endElementName = endElement.getName().getLocalPart();
 
                     // Se o terminador da tag das restrições for encontrado a função termina
-                    if (endElementName.equals(TAG_RESTRICOES)) {
+                    if (endElementName.equals(RESTRICTIONS_TAG)) {
                         return;
                     }
                     break;

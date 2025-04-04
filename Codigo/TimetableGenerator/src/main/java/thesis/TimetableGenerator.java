@@ -1,19 +1,19 @@
-package tese;
+package thesis;
 
-import tese.implementacoes.*;
-import tese.interfaces.*;
+import thesis.implementations.*;
+import thesis.interfaces.*;
+import thesis.structures.TimetablingData;
 
-public class GeradorHorarios {
+public class TimetableGenerator {
     public static void main(String[] args) {
-        LeitorFicheiros leitorFicheiros = new InterpretadorITC();
-        //GestorInterfaceGrafica gestorIG = new InterfaceGraficaSwing("Ferramenta de Geração de Horários");
-        AlgoritmoHeuristico algoritmoH = new SimulatedAnnealing(null, 100, 0.99);
-        GestorBaseDados gestorBD = new GestorBDPostgreSQL("bd_agendamento");
-
+        InputFileReader<TimetablingData> inputFileReader = new ITCFormatParser();
+        //GraphicalInterface graphicalManager = new InterfaceGraficaSwing("Ferramenta de Geração de Horários");
         //IGJavaFX testeIG = new IGJavaFX();
         //testeIG.iniciarInterface("Ferramenta de Geração de Horários");
+        HeuristicAlgorithm heuristicAlgorithm = new SimulatedAnnealing(null, 100, 0.99);
+        //DBManager dbManager = new DBPostgreSQLManager("timetabling_db");
 
-        leitorFicheiros.lerFicheiro("./lums-sum17.xml");
+        TimetablingData timetablingData = inputFileReader.readFile("./lums-sum17.xml");
 
 //        Map<String, ArrayList<Object>> mapa = null;
 
