@@ -1,8 +1,5 @@
 package thesis.implementations;
 
-import thesis.structures.TimetablingData;
-import thesis.interfaces.InputFileReader;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -11,31 +8,40 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
-import java.io.*;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-public class ITCFormatParser implements InputFileReader {
+import thesis.interfaces.InputFileReader;
+import thesis.structures.*;
+import thesis.structures.Class;
+
+public class ITCFormatParser implements InputFileReader<TimetablingData> {
 
     // Principal Tags
-    private final String TEACHERS_TAG          = "teachers";
-    private final String COURSES_TAG           = "courses";
-    private final String ROOMS_TAG             = "rooms";
-    private final String RESTRICTIONS_TAG      = "distributions";
-    private final String OPTIMIZATION_TAG      = "optimization";
+    private static final String TEACHERS_TAG          = "teachers";
+    private static final String COURSES_TAG           = "courses";
+    private static final String ROOMS_TAG             = "rooms";
+    private static final String DISTRIBUTIONS_TAG     = "distributions";
+    private static final String OPTIMIZATION_TAG      = "optimization";
+    private static final String PROBLEM_TAG           = "problem";
 
     // Secondary Tags
-    private final String ROOM_TAG              = "room";
-    private final String TEACHER_TAG           = "teacher";
-    private final String COURSE_TAG            = "course";
-    private final String CONFIG_TAG            = "config";
-    private final String SUBPART_TAG           = "subpart";
-    private final String RESTRICTION_TAG       = "distribution";
+    private static final String ROOM_TAG              = "room";
+    private static final String TEACHER_TAG           = "teacher";
+    private static final String COURSE_TAG            = "course";
+    private static final String CONFIG_TAG            = "config";
+    private static final String SUBPART_TAG           = "subpart";
+    private static final String DISTRIBUTION_TAG      = "distribution";
 
     // Configuration Tags
-    private final String TRAVEL_TAG            = "travel";
-    private final String UNAVAILABILITY_TAG    = "unavailable";
-    private final String CLASS_TAG             = "class";
-    private final String TIME_TAG              = "time";
+    private static final String TRAVEL_TAG            = "travel";
+    private static final String UNAVAILABILITY_TAG    = "unavailable";
+    private static final String CLASS_TAG             = "class";
+    private static final String TIME_TAG              = "time";
 
     @Override
     public TimetablingData readFile(String filePath) {
@@ -66,35 +72,38 @@ public class ITCFormatParser implements InputFileReader {
             try {
                 event = eventReader.nextEvent();
 
-                switch (event.getEventType()) {
-                    case XMLStreamConstants.START_ELEMENT:
-                        StartElement startElement = event.asStartElement();
-                        String qName = startElement.getName().getLocalPart();
+                if (event.getEventType() == XMLStreamConstants.START_ELEMENT) {
+                    StartElement startElement = event.asStartElement();
+                    String qName = startElement.getName().getLocalPart();
 
-                        switch (qName) {
-                            case OPTIMIZATION_TAG:
-                                int timeWeight = 0, roomWeight = 0, distributionWeight = 0;
+                    switch (qName) {
+                        case PROBLEM_TAG:
+                            int nrDays = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("nrDays")).getValue());
+                            int slotsPerDay = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("slotsPerDay")).getValue());
+                            int nrWeeks = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("nrWeeks")).getValue());
 
-                                timeWeight = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("time")).getValue());
-                                roomWeight = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("room")).getValue());
-                                distributionWeight = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("distribution")).getValue());
+                            data.storeTimetableConfiguration(nrDays, slotsPerDay, nrWeeks);
+                            break;
+                        case OPTIMIZATION_TAG:
+                            int timeWeight = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("time")).getValue());
+                            int roomWeight = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("room")).getValue());
+                            int distributionWeight = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("distribution")).getValue());
 
-                                data.storeOptimization(timeWeight, roomWeight, distributionWeight);
-                                break;
-                            case ROOMS_TAG:
-                                readRooms(eventReader);
-                                break;
-                            case RESTRICTIONS_TAG:
-                                readRestrictions(eventReader);
-                                break;
-                            case COURSES_TAG:
-                                readCourses(eventReader);
-                                break;
-                            case TEACHERS_TAG:
-                                readTeachers(eventReader);
-                                break;
-                        }
-                        break;
+                            data.storeOptimization(timeWeight, roomWeight, distributionWeight);
+                            break;
+                        case ROOMS_TAG:
+                            readRooms(eventReader, data);
+                            break;
+                        case DISTRIBUTIONS_TAG:
+                            readRestrictions(eventReader, data);
+                            break;
+                        case COURSES_TAG:
+                            readCourses(eventReader, data);
+                            break;
+                        case TEACHERS_TAG:
+                            readTeachers(eventReader, data);
+                            break;
+                    }
                 }
             } catch (XMLStreamException e) {
                 // TODO: Alterar para mostrar uma mensagem de erro
@@ -119,9 +128,10 @@ public class ITCFormatParser implements InputFileReader {
 
     /**
      * All the rooms should be read before encountering the termination tag
-     * @param eventReader
      */
-    private void readRooms(XMLEventReader eventReader) throws XMLStreamException {
+    private void readRooms(XMLEventReader eventReader, TimetablingData data) throws XMLStreamException {
+        Room room = null;
+
         while (eventReader.hasNext()) {
             XMLEvent event;
             event = eventReader.nextEvent();
@@ -132,9 +142,35 @@ public class ITCFormatParser implements InputFileReader {
                     String startElementName = startElement.getName().getLocalPart();
 
                     switch (startElementName) {
+                        case ROOM_TAG:
+                            String roomId = startElement.getAttributeByName(QName.valueOf("id")).getValue();
+
+                            room = new Room(roomId);
+                            break;
                         case TRAVEL_TAG:
+                            String travelRoomId = startElement.getAttributeByName(QName.valueOf("room")).getValue();
+                            int travelPenalization = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("value")).getValue());
+
+                            // TODO: Confirmar se faz sentido utilizar runtime exceptions
+                            if(room == null){
+                                throw new RuntimeException();
+                            }
+
+                            room.addTravel(travelRoomId, travelPenalization);
                             break;
                         case UNAVAILABILITY_TAG:
+                            String days = startElement.getAttributeByName(QName.valueOf("days")).getValue();
+                            int start = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("start")).getValue());
+                            int length = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("length")).getValue());
+                            String weeks = startElement.getAttributeByName(QName.valueOf("weeks")).getValue();
+
+
+                            // TODO: Confirmar se faz sentido utilizar runtime exceptions
+                            if(room == null){
+                                throw new RuntimeException();
+                            }
+                            Time unavail = new Time(days, start, length, weeks);
+                            room.addUnavailability(unavail);
                             break;
                     }
                     break;
@@ -143,9 +179,20 @@ public class ITCFormatParser implements InputFileReader {
                     EndElement endElement = event.asEndElement();
                     String endElementName = endElement.getName().getLocalPart();
 
-                    // Se o terminador da tag das salas for encontrado a função termina
-                    if (endElementName.equals(ROOMS_TAG)) {
-                        return;
+                    switch (endElementName){
+                        case ROOM_TAG:
+                            // If the end of the tag of a room is found
+                            // its necessary to add said room to the data
+
+                            if(room != null) {
+                                data.storeRoom(room);
+                            }
+                            room = null;
+
+                            break;
+                        case ROOMS_TAG:
+                            // If the end of the tag of rooms is found the function ends
+                            return;
                     }
                     break;
             }
@@ -154,9 +201,13 @@ public class ITCFormatParser implements InputFileReader {
 
     /**
      * All the courses should be read before encountering the termination tag
-     * @param eventReader
      */
-    private void readCourses(XMLEventReader eventReader) throws XMLStreamException {
+    private void readCourses(XMLEventReader eventReader, TimetablingData data) throws XMLStreamException {
+        Course course = null;
+        Config config = null;
+        Subpart subpart = null;
+        Class cls = null;
+
         while (eventReader.hasNext()) {
             XMLEvent event;
             event = eventReader.nextEvent();
@@ -168,16 +219,52 @@ public class ITCFormatParser implements InputFileReader {
 
                     switch (startElementName) {
                         case COURSE_TAG:
+                            String courseId = startElement.getAttributeByName(QName.valueOf("id")).getValue();
+
+                            course = new Course(courseId);
                             break;
                         case CONFIG_TAG:
+                            String configId = startElement.getAttributeByName(QName.valueOf("id")).getValue();
+
+                            config = new Config(configId);
                             break;
                         case SUBPART_TAG:
+                            String subpartId = startElement.getAttributeByName(QName.valueOf("id")).getValue();
+
+                            subpart = new Subpart(subpartId);
                             break;
                         case CLASS_TAG:
+                            String classId = startElement.getAttributeByName(QName.valueOf("id")).getValue();
+
+                            cls = new Class(classId);
                             break;
                         case ROOM_TAG:
+                            if(cls == null) {
+                                // Only happens if the file isn't structured correctly
+                                throw new RuntimeException();
+                            }
+                            String roomId = startElement.getAttributeByName(QName.valueOf("id")).getValue();
+                            int roomPenalty = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("penalty")).getValue());
+
+                            Room room = new Room(roomId);
+
+                            cls.addRoom(room, roomPenalty);
                             break;
                         case TIME_TAG:
+                            if(cls == null) {
+                                // Only happens if the file isn't structured correctly
+                                throw new RuntimeException();
+                            }
+
+                            String days = startElement.getAttributeByName(QName.valueOf("days")).getValue();
+                            int start = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("start")).getValue());
+                            int length = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("length")).getValue());
+                            String weeks = startElement.getAttributeByName(QName.valueOf("weeks")).getValue();
+
+                            Time time = new Time(days, start, length, weeks);
+                            int timePenalty = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("penalty")).getValue());
+                            
+                            cls.addTime(time, timePenalty);
                             break;
                     }
                     break;
@@ -186,10 +273,52 @@ public class ITCFormatParser implements InputFileReader {
                     EndElement endElement = event.asEndElement();
                     String endElementName = endElement.getName().getLocalPart();
 
-                    // Se o terminador da tag dos cursos for encontrado a função termina
-                    if (endElementName.equals(COURSES_TAG)) {
-                        return;
+                    switch(endElementName){
+                        case COURSE_TAG:
+                            // If the end of the tag of a course is found
+                            // its necessary to add said course to the data
+
+                            if(course != null) {
+                                data.storeCourse(course);
+                            }
+                            course = null;
+
+                            break;
+                        case CONFIG_TAG:
+                            // If the end of the tag of a config is found
+                            // its necessary to add said config to the course
+
+                            if(course != null && config != null) {
+                                course.addConfig(config);
+                            }
+                            config = null;
+
+                            break;
+                        case SUBPART_TAG:
+                            // If the end of the tag of a subpart is found
+                            // its necessary to add said subpart to the config
+
+                            if(config != null && subpart != null) {
+                                config.addSubpart(subpart);
+                            }
+                            subpart = null;
+
+                            break;
+                        case CLASS_TAG:
+                            // If the end of the tag of a class is found
+                            // its necessary to add said class to the subpart
+
+                            if(subpart != null && cls != null) {
+                                subpart.addClass(cls);
+                            }
+                            cls = null;
+
+                            break;
+                        case COURSES_TAG:
+                            // If the courses tag terminator is found the function ends
+                            return;
                     }
+
                     break;
             }
         }
@@ -197,9 +326,10 @@ public class ITCFormatParser implements InputFileReader {
 
     /**
      * All the teachers should be read before encountering the termination tag
-     * @param eventReader
      */
-    private void readTeachers(XMLEventReader eventReader) throws XMLStreamException {
+    private void readTeachers(XMLEventReader eventReader, TimetablingData data) throws XMLStreamException {
+        Teacher teacher = null;
+
         while (eventReader.hasNext()) {
             XMLEvent event;
             event = eventReader.nextEvent();
@@ -211,8 +341,24 @@ public class ITCFormatParser implements InputFileReader {
 
                     switch (startElementName) {
                         case TEACHER_TAG:
+                            int teacherId = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("id")).getValue());
+                            String teacherName = startElement.getAttributeByName(QName.valueOf("name")).getValue();
+
+                            teacher = new Teacher(teacherId, teacherName);
                             break;
                         case UNAVAILABILITY_TAG:
+                            // TODO: Confirmar se faz sentido utilizar runtime exceptions
+                            if(teacher == null){
+                                throw new RuntimeException();
+                            }
+
+                            String days = startElement.getAttributeByName(QName.valueOf("days")).getValue();
+                            int start = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("start")).getValue());
+                            int length = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("length")).getValue());
+                            String weeks = startElement.getAttributeByName(QName.valueOf("weeks")).getValue();
+
+                            Time unavail = new Time(days, start, length, weeks);
+                            teacher.addUnavailability(unavail);
                             break;
                     }
                     break;
@@ -221,10 +367,22 @@ public class ITCFormatParser implements InputFileReader {
                     EndElement endElement = event.asEndElement();
                     String endElementName = endElement.getName().getLocalPart();
 
-                    // Se o terminador da tag dos professores for encontrado a função termina
-                    if (endElementName.equals(TEACHERS_TAG)) {
-                        return;
+                    switch(endElementName){
+                        case TEACHER_TAG:
+                            // If the end of the tag of a teacher is found
+                            // its necessary to add said teacher to the data
+
+                            if(teacher != null) {
+                                data.storeTeacher(teacher);
+                            }
+                            teacher = null;
+
+                            break;
+                        case TEACHERS_TAG:
+                            // If the teachers tag terminator is found the function ends
+                            return;
                     }
+
                     break;
             }
         }
@@ -232,9 +390,10 @@ public class ITCFormatParser implements InputFileReader {
 
     /**
      * All the restrictions should be read before encountering the termination tag
-     * @param eventReader
      */
-    private void readRestrictions(XMLEventReader eventReader) throws XMLStreamException {
+    private void readRestrictions(XMLEventReader eventReader, TimetablingData data) throws XMLStreamException {
+        Distribution distribution = null;
+
         while (eventReader.hasNext()) {
             XMLEvent event;
             event = eventReader.nextEvent();
@@ -245,9 +404,19 @@ public class ITCFormatParser implements InputFileReader {
                     String startElementName = startElement.getName().getLocalPart();
 
                     switch (startElementName) {
-                        case RESTRICTION_TAG:
+                        case DISTRIBUTION_TAG:
+                            String distType = startElement.getAttributeByName(QName.valueOf("type")).getValue();
+                            Boolean distRequired = Boolean.valueOf(startElement.getAttributeByName(QName.valueOf("required")).getValue());
+
+                            distribution = new Distribution(distType, distRequired);
                             break;
                         case CLASS_TAG:
+                            // TODO: Confirmar se faz sentido utilizar runtime exceptions
+                            if(distribution == null){
+                                throw new RuntimeException();
+                            }
+                            int classId = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("id")).getValue());
+                            distribution.addClassId(classId);
                             break;
                     }
                     break;
@@ -256,10 +425,22 @@ public class ITCFormatParser implements InputFileReader {
                     EndElement endElement = event.asEndElement();
                     String endElementName = endElement.getName().getLocalPart();
 
-                    // Se o terminador da tag das restrições for encontrado a função termina
-                    if (endElementName.equals(RESTRICTIONS_TAG)) {
-                        return;
+                    switch(endElementName){
+                        case DISTRIBUTION_TAG:
+                            // If the end of the tag of a distribution is found
+                            // its necessary to add said distribution to the data
+
+                            if(distribution != null){
+                                data.storeDistribution(distribution);
+                            }
+                            distribution = null;
+
+                            break;
+                        case DISTRIBUTIONS_TAG:
+                            // If the distributions tag terminator is found the function ends
+                            return;
                     }
+
                     break;
             }
         }

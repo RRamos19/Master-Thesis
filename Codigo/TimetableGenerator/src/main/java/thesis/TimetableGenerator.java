@@ -13,7 +13,8 @@ public class TimetableGenerator {
         HeuristicAlgorithm heuristicAlgorithm = new SimulatedAnnealing(null, 100, 0.99);
         //DBManager dbManager = new DBPostgreSQLManager("timetabling_db");
 
-        TimetablingData timetablingData = inputFileReader.readFile("./lums-sum17.xml");
+        TimetablingData timetablingData = inputFileReader.readFile("../lums-sum17.xml");
+        System.out.println(timetablingData);
 
 //        Map<String, ArrayList<Object>> mapa = null;
 
