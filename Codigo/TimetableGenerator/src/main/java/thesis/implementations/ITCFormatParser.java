@@ -19,7 +19,7 @@ import thesis.interfaces.InputFileReader;
 import thesis.structures.*;
 import thesis.structures.Class;
 
-public class ITCFormatParser implements InputFileReader<TimetablingData> {
+public class ITCFormatParser implements InputFileReader<StructuredTimetablingData> {
 
     // Principal Tags
     private static final String TEACHERS_TAG          = "teachers";
@@ -44,8 +44,8 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
     private static final String TIME_TAG              = "time";
 
     @Override
-    public TimetablingData readFile(String filePath) {
-        TimetablingData data = new TimetablingData();
+    public StructuredTimetablingData readFile(String filePath) {
+        StructuredTimetablingData data = new StructuredTimetablingData();
 
         FileInputStream inputFile;
         InputStreamReader inputFileReader;
@@ -54,8 +54,7 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
             inputFile = new FileInputStream(filePath);
             inputFileReader = new InputStreamReader(inputFile, StandardCharsets.UTF_8);
         } catch (FileNotFoundException e) {
-            // TODO: Alterar para mostrar uma mensagem de erro
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error, the file was not found");
         }
 
         XMLInputFactory factory = XMLInputFactory.newInstance();
@@ -63,8 +62,7 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
         try {
             eventReader = factory.createXMLEventReader(inputFileReader);
         } catch (XMLStreamException e) {
-            // TODO: Alterar para mostrar uma mensagem de erro
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error while processing the XML file. Make sure the file is in UTF-8 format.");
         }
 
         while (eventReader.hasNext()) {
@@ -106,8 +104,7 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
                     }
                 }
             } catch (XMLStreamException e) {
-                // TODO: Alterar para mostrar uma mensagem de erro
-                throw new RuntimeException(e);
+                throw new RuntimeException("Error while processing the XML file. Make sure the file is in UTF-8 format.");
             }
         }
 
@@ -116,11 +113,9 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
             inputFileReader.close();
             inputFile.close();
         } catch (XMLStreamException xml_e) {
-            // TODO: Alterar para mostrar uma mensagem de erro
-            throw new RuntimeException(xml_e);
+            throw new RuntimeException("Error while closing the file");
         } catch (IOException io_e) {
-            // TODO: Alterar para mostrar uma mensagem de erro
-            throw new RuntimeException(io_e);
+            throw new RuntimeException("Error while closing the file");
         }
 
         return data;
@@ -129,7 +124,7 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
     /**
      * All the rooms should be read before encountering the termination tag
      */
-    private void readRooms(XMLEventReader eventReader, TimetablingData data) throws XMLStreamException {
+    private void readRooms(XMLEventReader eventReader, StructuredTimetablingData data) throws XMLStreamException {
         Room room = null;
 
         while (eventReader.hasNext()) {
@@ -151,9 +146,9 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
                             String travelRoomId = startElement.getAttributeByName(QName.valueOf("room")).getValue();
                             int travelPenalization = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("value")).getValue());
 
-                            // TODO: Confirmar se faz sentido utilizar runtime exceptions
                             if(room == null){
-                                throw new RuntimeException();
+                                // Only happens if the file isn't structured correctly
+                                throw new RuntimeException("There is a travel tag before a room tag in line " + event.getLocation().getLineNumber());
                             }
 
                             room.addTravel(travelRoomId, travelPenalization);
@@ -164,11 +159,11 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
                             int length = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("length")).getValue());
                             String weeks = startElement.getAttributeByName(QName.valueOf("weeks")).getValue();
 
-
-                            // TODO: Confirmar se faz sentido utilizar runtime exceptions
                             if(room == null){
-                                throw new RuntimeException();
+                                // Only happens if the file isn't structured correctly
+                                throw new RuntimeException("There is an unavailability tag before a room tag in line " + event.getLocation().getLineNumber());
                             }
+
                             Time unavail = new Time(days, start, length, weeks);
                             room.addUnavailability(unavail);
                             break;
@@ -186,8 +181,8 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
 
                             if(room != null) {
                                 data.storeRoom(room);
+                                room = null;
                             }
-                            room = null;
 
                             break;
                         case ROOMS_TAG:
@@ -202,7 +197,7 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
     /**
      * All the courses should be read before encountering the termination tag
      */
-    private void readCourses(XMLEventReader eventReader, TimetablingData data) throws XMLStreamException {
+    private void readCourses(XMLEventReader eventReader, StructuredTimetablingData data) throws XMLStreamException {
         Course course = null;
         Config config = null;
         Subpart subpart = null;
@@ -234,26 +229,30 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
                             subpart = new Subpart(subpartId);
                             break;
                         case CLASS_TAG:
+                            if(subpart == null) {
+                                // Only happens if the file isn't structured correctly
+                                throw new RuntimeException("There is a class tag that appears before a subpart tag in line " + event.getLocation().getLineNumber());
+                            }
                             String classId = startElement.getAttributeByName(QName.valueOf("id")).getValue();
 
                             cls = new Class(classId);
+                            subpart.addClass(cls);
+
                             break;
                         case ROOM_TAG:
                             if(cls == null) {
                                 // Only happens if the file isn't structured correctly
-                                throw new RuntimeException();
+                                throw new RuntimeException("There is a room tag that appears before a class tag in line " + event.getLocation().getLineNumber());
                             }
                             String roomId = startElement.getAttributeByName(QName.valueOf("id")).getValue();
                             int roomPenalty = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("penalty")).getValue());
 
-                            Room room = new Room(roomId);
-
-                            cls.addRoom(room, roomPenalty);
+                            cls.addRoom(roomId, roomPenalty);
                             break;
                         case TIME_TAG:
                             if(cls == null) {
                                 // Only happens if the file isn't structured correctly
-                                throw new RuntimeException();
+                                throw new RuntimeException("There is a time tag that appears before a class tag in line " + event.getLocation().getLineNumber());
                             }
 
                             String days = startElement.getAttributeByName(QName.valueOf("days")).getValue();
@@ -280,8 +279,8 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
 
                             if(course != null) {
                                 data.storeCourse(course);
+                                course = null;
                             }
-                            course = null;
 
                             break;
                         case CONFIG_TAG:
@@ -290,8 +289,8 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
 
                             if(course != null && config != null) {
                                 course.addConfig(config);
+                                config = null;
                             }
-                            config = null;
 
                             break;
                         case SUBPART_TAG:
@@ -300,8 +299,8 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
 
                             if(config != null && subpart != null) {
                                 config.addSubpart(subpart);
+                                subpart = null;
                             }
-                            subpart = null;
 
                             break;
                         case CLASS_TAG:
@@ -310,8 +309,8 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
 
                             if(subpart != null && cls != null) {
                                 subpart.addClass(cls);
+                                cls = null;
                             }
-                            cls = null;
 
                             break;
                         case COURSES_TAG:
@@ -327,7 +326,7 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
     /**
      * All the teachers should be read before encountering the termination tag
      */
-    private void readTeachers(XMLEventReader eventReader, TimetablingData data) throws XMLStreamException {
+    private void readTeachers(XMLEventReader eventReader, StructuredTimetablingData data) throws XMLStreamException {
         Teacher teacher = null;
 
         while (eventReader.hasNext()) {
@@ -347,9 +346,9 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
                             teacher = new Teacher(teacherId, teacherName);
                             break;
                         case UNAVAILABILITY_TAG:
-                            // TODO: Confirmar se faz sentido utilizar runtime exceptions
                             if(teacher == null){
-                                throw new RuntimeException();
+                                // Only happens if the file isn't structured correctly
+                                throw new RuntimeException("There is an unavailability tag before a teacher tag in line " + event.getLocation().getLineNumber());
                             }
 
                             String days = startElement.getAttributeByName(QName.valueOf("days")).getValue();
@@ -374,8 +373,8 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
 
                             if(teacher != null) {
                                 data.storeTeacher(teacher);
+                                teacher = null;
                             }
-                            teacher = null;
 
                             break;
                         case TEACHERS_TAG:
@@ -391,7 +390,7 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
     /**
      * All the restrictions should be read before encountering the termination tag
      */
-    private void readRestrictions(XMLEventReader eventReader, TimetablingData data) throws XMLStreamException {
+    private void readRestrictions(XMLEventReader eventReader, StructuredTimetablingData data) throws XMLStreamException {
         Distribution distribution = null;
 
         while (eventReader.hasNext()) {
@@ -411,9 +410,9 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
                             distribution = new Distribution(distType, distRequired);
                             break;
                         case CLASS_TAG:
-                            // TODO: Confirmar se faz sentido utilizar runtime exceptions
                             if(distribution == null){
-                                throw new RuntimeException();
+                                // Only happens if the file isn't structured correctly
+                                throw new RuntimeException("There is a class tag before a distribution tag in line " + event.getLocation().getLineNumber());
                             }
                             int classId = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("id")).getValue());
                             distribution.addClassId(classId);
@@ -432,8 +431,8 @@ public class ITCFormatParser implements InputFileReader<TimetablingData> {
 
                             if(distribution != null){
                                 data.storeDistribution(distribution);
+                                distribution = null;
                             }
-                            distribution = null;
 
                             break;
                         case DISTRIBUTIONS_TAG:

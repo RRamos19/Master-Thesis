@@ -8,10 +8,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class JavaFXInterface extends Application {
-    private static String nomeAplicacao;
+    private static String applicationName;
 
-    public static void iniciarInterface(String nome) {
-        nomeAplicacao = nome;
+    public static void instantiateGUI(String name) {
+        applicationName = name;
         launch();
     }
 
@@ -32,7 +32,7 @@ public class JavaFXInterface extends Application {
         Scene scene = new Scene(vbox, 400, 200);
 
         primaryStage.setScene(scene);
-        primaryStage.setTitle(nomeAplicacao);
+        primaryStage.setTitle(applicationName);
         primaryStage.show();
     }
 }
