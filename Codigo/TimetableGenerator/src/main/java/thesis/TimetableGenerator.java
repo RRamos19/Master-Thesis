@@ -2,19 +2,32 @@ package thesis;
 
 import thesis.implementations.*;
 import thesis.interfaces.*;
-import thesis.structures.TimetablingData;
+import thesis.structures.StructuredTimetablingData;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class TimetableGenerator {
     public static void main(String[] args) {
-        InputFileReader<TimetablingData> inputFileReader = new ITCFormatParser();
-        //GraphicalInterface graphicalManager = new InterfaceGraficaSwing("Ferramenta de Geração de Horários");
+        InputFileReader<StructuredTimetablingData> inputFileReader = new ITCFormatParser();
+        //GraphicalInterface graphicalManager = new InterfaceGraficaSwing("Ferramenta para Geração de Horários");
         //IGJavaFX testeIG = new IGJavaFX();
-        //testeIG.iniciarInterface("Ferramenta de Geração de Horários");
-        HeuristicAlgorithm heuristicAlgorithm = new SimulatedAnnealing(null, 100, 0.99);
-        //DBManager dbManager = new DBPostgreSQLManager("timetabling_db");
+        //testeIG.instantiateGUI("Ferramenta para Geração de Horários");
+        DBManager dbManager = new DBPostgreSQLManager("timetabling_db");
 
-        TimetablingData timetablingData = inputFileReader.readFile("../lums-sum17.xml");
-        System.out.println(timetablingData);
+        StructuredTimetablingData structuredTimetablingData = inputFileReader.readFile("../lums-sum17.xml");
+        System.out.println(structuredTimetablingData);
+
+        try {
+            dbManager.connect("localhost", "5432", "postgres", "123");
+            HashMap<String, ArrayList<Object>> teste = (HashMap<String, ArrayList<Object>>) dbManager.read("room");
+
+            System.out.println(teste);
+            dbManager.disconnect();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
 //        Map<String, ArrayList<Object>> mapa = null;
 

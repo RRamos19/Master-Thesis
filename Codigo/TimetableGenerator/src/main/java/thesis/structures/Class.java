@@ -3,12 +3,11 @@ package thesis.structures;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Class {
     private final String classId;
-    private final HashMap<String, Pair<Room, Integer>> rooms = new HashMap<>(); // RoomId: (Room, Penalty)
-    private final ArrayList<Pair<Time, Integer>> times = new ArrayList<>();     // (Time, Penalty)
+    private final ArrayList<Pair<String, Integer>> rooms = new ArrayList<>(); // (RoomId, Penalty)
+    private final ArrayList<Pair<Time, Integer>> times = new ArrayList<>(); // (Time, Penalty)
 
     public Class(String classId){
         this.classId = classId;
@@ -22,7 +21,7 @@ public class Class {
         times.add(new Pair<>(time, penalty));
     }
 
-    public void addRoom(Room room, int penalty){
-        rooms.put(room.getId(), new Pair<>(room, penalty));
+    public void addRoom(String roomId, int penalty){
+        rooms.add(new Pair<>(roomId, penalty));
     }
 }

@@ -6,15 +6,19 @@ public class Subpart {
     private final String subpartId;
     private final HashMap<String, Class> classes = new HashMap<>();
 
-    public Subpart(String subpartId){
+    public Subpart(String subpartId) {
         this.subpartId = subpartId;
     }
 
-    public void addClass(Class cls){
+    public HashMap<String, Class> getClasses() {
+        return classes;
+    }
+
+    public void addClass(Class cls) {
         classes.put(cls.getId(), cls);
     }
 
-    public String getId(){
+    public String getId() {
         return subpartId;
     }
 }

@@ -3,8 +3,10 @@ package thesis.implementations;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import javafx.util.Pair;
 import thesis.interfaces.DBManager;
 
 public class DBPostgreSQLManager implements DBManager {
@@ -31,31 +33,82 @@ public class DBPostgreSQLManager implements DBManager {
         connection = DriverManager.getConnection(finalUrl, user, password);
     }
 
+    /**
+     * Disconnects the connection to the database
+     * @throws SQLException
+     */
     public void disconnect() throws SQLException{
         connection.close();
     }
 
     public void create(String tableName, Map<String, Object> data) throws SQLException{
-
+        
     }
 
-    public Map<String, ArrayList<Object>> read(String tableName, String condition) throws SQLException{
-        // TODO: Falta verificar o nomeTabela e condicao para evitar SQLInjection
+    /**
+     * Reads every instance and every column of the provided table name
+     * @param tableName Name of the table present in the database
+     * @return A map that contains the instances present on the table present in the database
+     * @throws SQLException
+     */
+    public Map<String, ArrayList<Object>> read(String tableName) throws SQLException{
+        return read(tableName, null);
+    }
 
-        String sqlQuery = "SELECT * FROM " + tableName;
-        if(!condition.isEmpty()){
-            sqlQuery += " WHERE " + condition;
+    /**
+     * Checks if the table name only contains letters to avoid SQL Injections
+     * @param tableName Name of the table present in the database
+     * @return True if tableName only contains letters, False otherwise
+     */
+    public boolean isTableNameValid(String tableName) {
+        return tableName.matches("^[a-zA-Z]+$");
+    }
+
+    /**
+     * Reads every instance and every column of the provided table name considering the conditions present
+     * @param tableName Name of the table present in the database
+     * @param conditions List of conditions to apply on the query
+     * @return A map that contains the instances present on the table present in the database
+     * @throws SQLException
+     */
+    public Map<String, ArrayList<Object>> read(String tableName, List<String> conditions) throws SQLException{
+        // By using preparedStatement and inserting the parameters where the character ? is
+        // the possibility of SQL Injection is avoided
+
+        if(!isTableNameValid(tableName)){
+            throw new RuntimeException("The table name provided can only contain letters");
         }
 
-        PreparedStatement stmt = connection.prepareStatement(sqlQuery);
+        StringBuilder sqlQuery = new StringBuilder("SELECT * FROM ").append(tableName);
+
+//        if(conditions != null){
+//            // The inclusion of WHERE 1=1 eases the logic of inclusion of the rest of the conditions
+//            sqlQuery.append("WHERE 1=1");
+//
+//            // Adds the conditions dinamically
+//            for (String entry : conditions) {
+//                sqlQuery.append(" ").append(entry);
+//            }
+//        }
+
+        PreparedStatement stmt = connection.prepareStatement(sqlQuery.toString());
+
+//        if(conditions != null) {
+//            // Defines the conditions dinamically
+//            int paramIndex = 1;
+//            for (Map.Entry<String, String> entry : conditions.entrySet()) {
+//                stmt.setString(paramIndex++, entry.getValue());
+//            }
+//        }
+
         ResultSet rs = stmt.executeQuery();
 
-        Map<String, ArrayList<Object>> mapa = convertResultSetToMap(rs);
+        Map<String, ArrayList<Object>> results = convertResultSetToMap(rs);
 
         rs.close();
         stmt.close();
 
-        return mapa;
+        return results;
     }
 
     public void update(String tableName, Map<String, Object> data, String condition) throws SQLException{
