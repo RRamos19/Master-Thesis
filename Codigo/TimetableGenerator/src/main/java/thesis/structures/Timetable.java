@@ -1,7 +1,7 @@
 package thesis.structures;
 
 public class Timetable {
-    private String timetableId;
+    private final String timetableId;
 
     public Timetable(String timetableId){
         this.timetableId = timetableId;

@@ -2,12 +2,14 @@ package thesis.structures;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Room {
     private final String roomId;
 
-    private HashMap<String, Integer> travelPenalization = new HashMap<>();  // RoomId: Penalization
-    private ArrayList<Time> unavails = new ArrayList<>();
+    private Map<String, Integer> travelPenalization = new HashMap<>();  // RoomId: Penalization
+    private List<Time> unavails = new ArrayList<>();
 
     public Room(String roomId){
         this.roomId = roomId;

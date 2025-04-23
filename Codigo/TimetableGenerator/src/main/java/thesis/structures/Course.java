@@ -1,16 +1,17 @@
 package thesis.structures;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class Course {
     private final String courseId;
-    private final HashMap<String, Config> configs = new HashMap<>();
+    private final Map<String, Config> configs = new HashMap<>();
 
     public Course(String courseId) {
         this.courseId = courseId;
     }
 
-    public HashMap<String, Config> getConfigs() {
+    public Map<String, Config> getConfigs() {
         return configs;
     }
 

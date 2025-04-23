@@ -19,7 +19,7 @@ import thesis.interfaces.InputFileReader;
 import thesis.structures.*;
 import thesis.structures.Class;
 
-public class ITCFormatParser implements InputFileReader<StructuredTimetablingData> {
+public class ITCFormatParser implements InputFileReader<StructuredTimetableData> {
 
     // Principal Tags
     private static final String TEACHERS_TAG          = "teachers";
@@ -44,8 +44,8 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetablingDat
     private static final String TIME_TAG              = "time";
 
     @Override
-    public StructuredTimetablingData readFile(String filePath) {
-        StructuredTimetablingData data = new StructuredTimetablingData();
+    public StructuredTimetableData readFile(String filePath) {
+        StructuredTimetableData data = new StructuredTimetableData();
 
         FileInputStream inputFile;
         InputStreamReader inputFileReader;
@@ -80,7 +80,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetablingDat
                             int slotsPerDay = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("slotsPerDay")).getValue());
                             int nrWeeks = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("nrWeeks")).getValue());
 
-                            data.storeTimetableConfiguration(nrDays, slotsPerDay, nrWeeks);
+                            data.storeConfiguration(nrDays, slotsPerDay, nrWeeks);
                             break;
                         case OPTIMIZATION_TAG:
                             int timeWeight = Integer.parseInt(startElement.getAttributeByName(QName.valueOf("time")).getValue());
@@ -124,7 +124,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetablingDat
     /**
      * All the rooms should be read before encountering the termination tag
      */
-    private void readRooms(XMLEventReader eventReader, StructuredTimetablingData data) throws XMLStreamException {
+    private void readRooms(XMLEventReader eventReader, StructuredTimetableData data) throws XMLStreamException {
         Room room = null;
 
         while (eventReader.hasNext()) {
@@ -197,7 +197,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetablingDat
     /**
      * All the courses should be read before encountering the termination tag
      */
-    private void readCourses(XMLEventReader eventReader, StructuredTimetablingData data) throws XMLStreamException {
+    private void readCourses(XMLEventReader eventReader, StructuredTimetableData data) throws XMLStreamException {
         Course course = null;
         Config config = null;
         Subpart subpart = null;
@@ -326,7 +326,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetablingDat
     /**
      * All the teachers should be read before encountering the termination tag
      */
-    private void readTeachers(XMLEventReader eventReader, StructuredTimetablingData data) throws XMLStreamException {
+    private void readTeachers(XMLEventReader eventReader, StructuredTimetableData data) throws XMLStreamException {
         Teacher teacher = null;
 
         while (eventReader.hasNext()) {
@@ -390,7 +390,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetablingDat
     /**
      * All the restrictions should be read before encountering the termination tag
      */
-    private void readRestrictions(XMLEventReader eventReader, StructuredTimetablingData data) throws XMLStreamException {
+    private void readRestrictions(XMLEventReader eventReader, StructuredTimetableData data) throws XMLStreamException {
         Distribution distribution = null;
 
         while (eventReader.hasNext()) {
