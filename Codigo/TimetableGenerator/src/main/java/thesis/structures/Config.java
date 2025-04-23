@@ -1,16 +1,17 @@
 package thesis.structures;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class Config {
     private final String configId;
-    private final HashMap<String, Subpart> subparts = new HashMap<>();
+    private final Map<String, Subpart> subparts = new HashMap<>();
 
     public Config(String configId) {
         this.configId = configId;
     }
 
-    public HashMap<String, Subpart> getSubparts() {
+    public Map<String, Subpart> getSubparts() {
         return subparts;
     }
 

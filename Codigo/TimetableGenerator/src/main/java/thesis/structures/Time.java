@@ -5,21 +5,20 @@ import java.util.regex.Pattern;
 public class Time {
     private static final Pattern VALID_CHARS_PATTERN = Pattern.compile("^[01]+$");
 
-    private String days;
-    private int start;
-    private int length;
-    private String weeks;
+    private final String days;
+    private final int start;
+    private final int duration;
+    private final String weeks;
 
-    public Time(String days, int start, int length, String weeks){
+    public Time(String days, int start, int duration, String weeks){
         // If the arguments days or weeks contain an invalid string an exception is thrown
         if(!validBinaryString(days) || !validBinaryString(weeks)){
-            // TODO: Confirmar isto
-            throw new RuntimeException();
+            throw new RuntimeException("The binary representation of days or weeks doesn't make sense");
         }
 
         this.days = days;
         this.start = start;
-        this.length = length;
+        this.duration = duration;
         this.weeks = weeks;
     }
 

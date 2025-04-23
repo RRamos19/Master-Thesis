@@ -48,7 +48,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        thesis.TimetableGenerator
+                                        thesis.Main
                                     </mainClass>
                                 </manifest>
                             </archive>

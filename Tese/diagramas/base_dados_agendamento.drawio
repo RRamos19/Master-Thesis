@@ -240,13 +240,13 @@
           <mxGeometry x="-676" y="231.75" width="165" height="35" as="geometry" />
         </mxCell>
         <mxCell id="xcnXYv3SaFBbOcyUdqIz-56" value="start_slot" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="-645" y="318" width="90" height="40" as="geometry" />
+          <mxGeometry x="-700" y="328" width="90" height="40" as="geometry" />
         </mxCell>
         <mxCell id="xcnXYv3SaFBbOcyUdqIz-57" value="duration" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="-790" y="302" width="90" height="40" as="geometry" />
         </mxCell>
         <mxCell id="xcnXYv3SaFBbOcyUdqIz-58" value="weeks" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="-534" y="323" width="90" height="40" as="geometry" />
+          <mxGeometry x="-595" y="326" width="90" height="40" as="geometry" />
         </mxCell>
         <mxCell id="xcnXYv3SaFBbOcyUdqIz-59" value="" style="endArrow=none;html=1;rounded=0;" parent="1" source="xcnXYv3SaFBbOcyUdqIz-58" target="xcnXYv3SaFBbOcyUdqIz-55" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
@@ -735,6 +735,24 @@
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="886" y="703" as="sourcePoint" />
             <mxPoint x="819" y="808" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vkLdFg2dgFDLmTg8ppV9-1" value="days" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1133" y="737" width="65" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="vkLdFg2dgFDLmTg8ppV9-2" value="" style="endArrow=none;html=1;rounded=0;" edge="1" parent="1" source="vkLdFg2dgFDLmTg8ppV9-1" target="xcnXYv3SaFBbOcyUdqIz-14">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1009" y="640" as="sourcePoint" />
+            <mxPoint x="1041" y="681" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vkLdFg2dgFDLmTg8ppV9-4" value="days" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-500" y="303" width="58" height="33" as="geometry" />
+        </mxCell>
+        <mxCell id="vkLdFg2dgFDLmTg8ppV9-5" value="" style="endArrow=none;html=1;rounded=0;" edge="1" parent="1" source="vkLdFg2dgFDLmTg8ppV9-4" target="xcnXYv3SaFBbOcyUdqIz-55">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-549" y="336" as="sourcePoint" />
+            <mxPoint x="-576" y="277" as="targetPoint" />
           </mxGeometry>
         </mxCell>
       </root>

@@ -1,5 +1,6 @@
 package thesis;
 
-public class UsefulMethods {
+import thesis.structures.StructuredTimetableData;
 
+public class UsefulMethods {
 }

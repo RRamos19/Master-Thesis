@@ -3,11 +3,12 @@ package thesis.structures;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Class {
     private final String classId;
-    private final ArrayList<Pair<String, Integer>> rooms = new ArrayList<>(); // (RoomId, Penalty)
-    private final ArrayList<Pair<Time, Integer>> times = new ArrayList<>(); // (Time, Penalty)
+    private final List<Pair<String, Integer>> rooms = new ArrayList<>(); // (RoomId, Penalty)
+    private final List<Pair<Time, Integer>> times = new ArrayList<>(); // (Time, Penalty)
 
     public Class(String classId){
         this.classId = classId;

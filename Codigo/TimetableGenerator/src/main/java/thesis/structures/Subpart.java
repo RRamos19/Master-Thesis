@@ -1,16 +1,17 @@
 package thesis.structures;
 
+import java.util.Map;
 import java.util.HashMap;
 
 public class Subpart {
     private final String subpartId;
-    private final HashMap<String, Class> classes = new HashMap<>();
+    private final Map<String, Class> classes = new HashMap<>();
 
     public Subpart(String subpartId) {
         this.subpartId = subpartId;
     }
 
-    public HashMap<String, Class> getClasses() {
+    public Map<String, Class> getClasses() {
         return classes;
     }
 

@@ -3,7 +3,7 @@ CREATE TABLE subject (
 );
 
 CREATE TABLE teacher (
-    id CHAR(10) PRIMARY KEY,
+    id INT PRIMARY KEY,
     name VARCHAR(30) NOT NULL
 );
 
@@ -41,8 +41,9 @@ CREATE TABLE teacher_unavailability (
 	id SERIAL PRIMARY KEY,
 	duration INT NOT NULL,
 	start_slot INT NOT NULL,
+	days VARCHAR(7) NOT NULL,
 	weeks VARCHAR(15) NOT NULL,
-	teacher_id CHAR(10) NOT NULL,
+	teacher_id INT NOT NULL,
 	CONSTRAINT teacher_unavailability_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id)
 );
 
@@ -54,9 +55,9 @@ CREATE TABLE class_subject (
 );
 
 CREATE TABLE teacher_class (
-	teacher_id CHAR(10),
+	teacher_id INT,
 	class_id CHAR(10) NOT NULL,
-	subject_id char(10) NOT NULL,
+	subject_id CHAR(10) NOT NULL,
 	CONSTRAINT teacher_class_class_subject_fk FOREIGN KEY (class_id, subject_id) REFERENCES class_subject(class_id, subject_id),
 	CONSTRAINT teacher_class_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id),
 	CONSTRAINT teacher_class_pk PRIMARY KEY (teacher_id, class_id, subject_id)
@@ -103,6 +104,7 @@ CREATE TABLE room_distance (
 CREATE TABLE room_unavailability (
 	id SERIAL PRIMARY KEY,
 	room_id CHAR(6) NOT NULL,
+	days VARCHAR(7) NOT NULL,
 	weeks VARCHAR(15) NOT NULL,
 	start_slot INT NOT NULL,
 	duration INT NOT NULL,
@@ -123,7 +125,7 @@ CREATE TABLE subject_time (
 CREATE TABLE scheduled_lesson (
 	id SERIAL PRIMARY KEY,
     subject_id CHAR(10) NOT NULL,
-    teacher_id CHAR(10) NOT NULL,
+    teacher_id INT NOT NULL,
 	room_id CHAR(6) NOT NULL,
 	timetable_id INT NOT NULL,
 	days VARCHAR(7) NOT NULL,
