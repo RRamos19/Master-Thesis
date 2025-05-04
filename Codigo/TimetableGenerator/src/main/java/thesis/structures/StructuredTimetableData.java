@@ -143,9 +143,9 @@ public class StructuredTimetableData {
         int nrConfigs = 0, nrSubparts = 0, nrClasses = 0;
 
         for (Course c : courses.values()){
-            for(Config conf : c.getConfigs().values()){
+            for(Course.Config conf : c.getConfigs().values()){
                 nrConfigs++;
-                for(Subpart s : conf.getSubparts().values()){
+                for(Course.Config.Subpart s : conf.getSubparts().values()){
                     nrSubparts++;
                     for(Class ignored : s.getClasses().values()){
                         nrClasses++;

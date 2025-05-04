@@ -268,8 +268,8 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
      */
     private void readCourses(XMLEventReader eventReader, StructuredTimetableData data) throws XMLStreamException {
         Course course = null;
-        Config config = null;
-        Subpart subpart = null;
+        Course.Config config = null;
+        Course.Config.Subpart subpart = null;
         Class cls = null;
 
         while (eventReader.hasNext()) {
@@ -290,12 +290,12 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                         case CONFIG_TAG:
                             String configId = getAttributeValue(startElement, "id");
 
-                            config = new Config(configId);
+                            config = new Course.Config(configId);
                             break;
                         case SUBPART_TAG:
                             String subpartId = getAttributeValue(startElement, "id");
 
-                            subpart = new Subpart(subpartId);
+                            subpart = new Course.Config.Subpart(subpartId);
                             break;
                         case CLASS_TAG:
                             if(subpart == null) {
