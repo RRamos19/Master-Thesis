@@ -108,23 +108,14 @@ public class StructuredTimetableData {
     }
 
     /**
-     * Merges this instance with another instance. Values that are already present on the first are overwritten with the second,
-     * @param timetableData Second instance mentioned on the summary of the method.
+     * Merges this instance with another instance. Values that are already present on this object are overwritten with the one passed in the parameters. The values of optimization or configuration are not merged.
+     * @param timetableData Instance of StructuredTimetableData to be merged with.
      */
     public void mergeWithTimetable(StructuredTimetableData timetableData) {
         if(timetableData == null) {
             // Should never happen
             throw new RuntimeException("The timetable provided is null");
         }
-
-        // Each property present in timetableData must be stored in this instance
-        int[] configuration = timetableData.getConfiguration();
-
-        storeConfiguration(configuration[0], configuration[1], configuration[2]);
-
-        int[] optimization = timetableData.getOptimization();
-
-        storeOptimization(optimization[0], optimization[1], optimization[2]);
 
         for(Course c : timetableData.getCourses().values()) {
             storeCourse(c);

@@ -10,16 +10,32 @@ public class Time {
     private final int duration;
     private final String weeks;
 
-    public Time(String days, int start, int duration, String weeks){
+    public Time(String days, int start, int duration, String weeks) throws IllegalArgumentException{
         // If the arguments days or weeks contain an invalid string an exception is thrown
         if(!validBinaryString(days) || !validBinaryString(weeks)){
-            throw new RuntimeException("The binary representation of days or weeks doesn't make sense");
+            throw new IllegalArgumentException("The binary representation of days or weeks doesn't make sense");
         }
 
         this.days = days;
         this.start = start;
         this.duration = duration;
         this.weeks = weeks;
+    }
+
+    public String getDays() {
+        return days;
+    }
+
+    public int getStart() {
+        return start;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public String getWeeks() {
+        return weeks;
     }
 
     private Boolean validBinaryString(String str){

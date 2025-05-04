@@ -16,7 +16,7 @@ public class Main {
         //testeIG.instantiateGUI("Ferramenta para Geração de Horários");
 
         DBManager dbManager = new DBPostgreSQLManager("timetabling_db");
-        DBTimetableRepository timetableRepository;
+        DBTimetableRepository timetableRepository = null;
         StructuredTimetableData timetableData = null;
         try {
             timetableRepository = new DBTimetableRepository(dbManager);
@@ -27,18 +27,31 @@ public class Main {
             System.out.println(timetableData);
             System.out.println();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.out.println(e);
+            timetableRepository = null;
         }
 
         StructuredTimetableData structuredTimetableData = inputFileReader.readFile("../lums-sum17.xml");
         System.out.println(structuredTimetableData);
         System.out.println();
 
-        timetableData.mergeWithTimetable(structuredTimetableData);
+        StructuredTimetableData solutionTimetableData = inputFileReader.readFile("../solution-agh-fis-spr17.xml");
+
+        if(timetableData != null) {
+            timetableData.mergeWithTimetable(structuredTimetableData);
+            System.out.println(timetableData);
+            System.out.println();
+        } else {
+            timetableData = structuredTimetableData;
+        }
+
+        timetableData.mergeWithTimetable(solutionTimetableData);
         System.out.println(timetableData);
 
         try {
-            timetableRepository.disconnect();
+            if(timetableRepository != null) {
+                timetableRepository.disconnect();
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
