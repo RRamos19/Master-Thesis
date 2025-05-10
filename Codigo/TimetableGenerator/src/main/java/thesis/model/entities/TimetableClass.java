@@ -1,16 +1,16 @@
-package thesis.structures;
+package thesis.model.entities;
 
 import javafx.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Class {
+public class TimetableClass {
     private final String classId;
     private final List<Pair<String, Integer>> rooms = new ArrayList<>(); // (RoomId, Penalty)
     private final List<Pair<Time, Integer>> times = new ArrayList<>(); // (Time, Penalty)
 
-    public Class(String classId){
+    public TimetableClass(String classId){
         this.classId = classId;
     }
 

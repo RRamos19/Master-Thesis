@@ -63,16 +63,16 @@ CREATE TABLE teacher_class (
 	CONSTRAINT teacher_class_pk PRIMARY KEY (teacher_id, class_id, subject_id)
 );
 
-CREATE TABLE configuration (
+CREATE TABLE config (
 	id CHAR(10) PRIMARY KEY,
 	course_id CHAR(10) NOT NULL,
-	CONSTRAINT configuration_course_fk FOREIGN KEY (course_id) REFERENCES course(id)
+	CONSTRAINT config_course_fk FOREIGN KEY (course_id) REFERENCES course(id)
 );
 
 CREATE TABLE subpart (
 	id CHAR(10) PRIMARY KEY,
-	configuration_id CHAR(10) NOT NULL,
-	CONSTRAINT subpart_configuration_fk FOREIGN KEY (configuration_id) REFERENCES configuration(id)
+	config_id CHAR(10) NOT NULL,
+	CONSTRAINT subpart_config_fk FOREIGN KEY (config_id) REFERENCES config(id)
 );
 
 CREATE TABLE subject_subpart (

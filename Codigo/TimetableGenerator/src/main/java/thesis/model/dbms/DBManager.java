@@ -1,5 +1,6 @@
-package thesis.interfaces;
+package thesis.model.dbms;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,7 @@ public interface DBManager {
      * @param password Password used to establish the connection
      * @throws SQLException
      */
-    void connect(String ip, String port, String user, String password) throws SQLException;
+    Connection connect(String ip, String port, String user, String password) throws SQLException;
 
     /**
      * Disconnects the connection to the database
@@ -28,7 +29,7 @@ public interface DBManager {
      * @param data data that is to be inserted into the table
      * @throws SQLException
      */
-    void insert(String tableName, List<Object> data) throws SQLException;
+    void insert(String tableName, Map<String, List<?>> data, boolean updateConflicts) throws SQLException;
 
     /**
      * Reads every instance and every column of the provided table name
@@ -37,8 +38,6 @@ public interface DBManager {
      * @throws SQLException
      */
     Map<String, List<Object>> read(String tableName) throws SQLException;
-
-    void update(String tableName, Map<String, Object> data, String condition) throws SQLException;
 
     void remove(String tableName, String condition) throws SQLException;
 }

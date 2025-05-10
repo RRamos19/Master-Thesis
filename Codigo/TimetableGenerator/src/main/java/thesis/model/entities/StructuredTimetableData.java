@@ -1,4 +1,4 @@
-package thesis.structures;
+package thesis.model.entities;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,8 +59,8 @@ public class StructuredTimetableData {
         return courses.get(courseId);
     }
 
-    public Map<String, Course> getCourses() {
-        return courses;
+    public List<Course> getCourses() {
+        return new ArrayList<>(courses.values());
     }
 
     public void storeTeacher(Teacher teacher) {
@@ -71,8 +71,8 @@ public class StructuredTimetableData {
         return teachers.get(teacherId);
     }
 
-    public Map<Integer, Teacher> getTeachers() {
-        return teachers;
+    public List<Teacher> getTeachers() {
+        return new ArrayList<>(teachers.values());
     }
 
     public void storeDistribution(Distribution distribution) {
@@ -91,8 +91,8 @@ public class StructuredTimetableData {
         return timetables.get(timetableId);
     }
 
-    public Map<String, Timetable> getTimetables() {
-        return timetables;
+    public List<Timetable> getTimetables() {
+        return new ArrayList<>(timetables.values());
     }
 
     public void storeRoom(Room room) {
@@ -103,8 +103,8 @@ public class StructuredTimetableData {
         return rooms.get(roomId);
     }
 
-    public Map<String, Room> getRooms() {
-        return rooms;
+    public List<Room> getRooms() {
+        return new ArrayList<>(rooms.values());
     }
 
     /**
@@ -117,11 +117,11 @@ public class StructuredTimetableData {
             throw new RuntimeException("The timetable provided is null");
         }
 
-        for(Course c : timetableData.getCourses().values()) {
+        for(Course c : timetableData.getCourses()) {
             storeCourse(c);
         }
 
-        for(Teacher t : timetableData.getTeachers().values()) {
+        for(Teacher t : timetableData.getTeachers()) {
             storeTeacher(t);
         }
 
@@ -129,11 +129,11 @@ public class StructuredTimetableData {
             storeDistribution(d);
         }
 
-        for(Timetable t : timetableData.getTimetables().values()) {
+        for(Timetable t : timetableData.getTimetables()) {
             storeTimetable(t);
         }
 
-        for(Room r : timetableData.getRooms().values()) {
+        for(Room r : timetableData.getRooms()) {
             storeRoom(r);
         }
     }
@@ -143,11 +143,11 @@ public class StructuredTimetableData {
         int nrConfigs = 0, nrSubparts = 0, nrClasses = 0;
 
         for (Course c : courses.values()){
-            for(Course.Config conf : c.getConfigs().values()){
+            for(Config conf : c.getConfigs()){
                 nrConfigs++;
-                for(Course.Config.Subpart s : conf.getSubparts().values()){
+                for(Subpart s : conf.getSubparts()){
                     nrSubparts++;
-                    for(Class ignored : s.getClasses().values()){
+                    for(TimetableClass ignored : s.getClasses()){
                         nrClasses++;
                     }
                 }

@@ -1,9 +1,10 @@
 package thesis;
 
-import thesis.abstractions.DBTimetableRepository;
-import thesis.implementations.*;
-import thesis.interfaces.*;
-import thesis.structures.StructuredTimetableData;
+import thesis.model.dbms.DBTimetableRepository;
+import thesis.model.dbms.DBPostgreSQLManager;
+import thesis.model.parser.ITCFormatParser;
+import thesis.model.parser.InputFileReader;
+import thesis.model.entities.StructuredTimetableData;
 
 import java.sql.SQLException;
 
@@ -15,41 +16,34 @@ public class Main {
         //IGJavaFX testeIG = new IGJavaFX();
         //testeIG.instantiateGUI("Ferramenta para Geração de Horários");
 
-        DBManager dbManager = new DBPostgreSQLManager("timetabling_db");
-        DBTimetableRepository timetableRepository = null;
-        StructuredTimetableData timetableData = null;
-        try {
-            timetableRepository = new DBTimetableRepository(dbManager);
+        DBTimetableRepository timetableRepository = new DBTimetableRepository(new DBPostgreSQLManager("timetabling_db"));
+        StructuredTimetableData timetableData = new StructuredTimetableData();
 
+        try {
             timetableRepository.connect("localhost", "5432", "postgres", "123");
 
-            timetableData = timetableRepository.fetchTimetableData();
+            timetableData.mergeWithTimetable(timetableRepository.fetchTimetableData());
             System.out.println(timetableData);
-            System.out.println();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.out.println(e);
-            timetableRepository = null;
         }
+        System.out.println();
 
         StructuredTimetableData structuredTimetableData = inputFileReader.readFile("../lums-sum17.xml");
-        System.out.println(structuredTimetableData);
+
+        timetableData.mergeWithTimetable(structuredTimetableData);
+        System.out.println(timetableData);
         System.out.println();
 
         StructuredTimetableData solutionTimetableData = inputFileReader.readFile("../solution-agh-fis-spr17.xml");
-
-        if(timetableData != null) {
-            timetableData.mergeWithTimetable(structuredTimetableData);
-            System.out.println(timetableData);
-            System.out.println();
-        } else {
-            timetableData = structuredTimetableData;
-        }
 
         timetableData.mergeWithTimetable(solutionTimetableData);
         System.out.println(timetableData);
 
         try {
-            if(timetableRepository != null) {
+            timetableRepository.storeTimetableData(timetableData);
+
+            if(timetableRepository.isConnected()) {
                 timetableRepository.disconnect();
             }
         } catch (SQLException e) {

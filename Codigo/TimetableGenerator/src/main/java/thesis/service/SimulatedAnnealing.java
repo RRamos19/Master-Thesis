@@ -1,7 +1,6 @@
-package thesis.implementations;
+package thesis.service;
 
-import thesis.structures.Timetable;
-import thesis.interfaces.HeuristicAlgorithm;
+import thesis.model.entities.Timetable;
 
 public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
     Timetable initialSolution;

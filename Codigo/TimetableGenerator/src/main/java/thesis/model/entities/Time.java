@@ -1,4 +1,4 @@
-package thesis.structures;
+package thesis.model.entities;
 
 import java.util.regex.Pattern;
 

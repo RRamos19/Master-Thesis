@@ -1,4 +1,4 @@
-package thesis.interfaces;
+package thesis.view;
 
 public interface GraphicalInterface {
 }
