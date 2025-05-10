@@ -1,4 +1,4 @@
-package thesis.implementations;
+package thesis.view;
 
 import javafx.application.Application;
 import javafx.scene.Scene;

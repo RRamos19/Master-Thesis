@@ -1,4 +1,4 @@
-package thesis.implementations;
+package thesis.model.parser;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -16,9 +16,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-import thesis.interfaces.InputFileReader;
-import thesis.structures.*;
-import thesis.structures.Class;
+import thesis.model.entities.*;
 
 public class ITCFormatParser implements InputFileReader<StructuredTimetableData> {
 
@@ -268,9 +266,9 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
      */
     private void readCourses(XMLEventReader eventReader, StructuredTimetableData data) throws XMLStreamException {
         Course course = null;
-        Course.Config config = null;
-        Course.Config.Subpart subpart = null;
-        Class cls = null;
+        Config config = null;
+        Subpart subpart = null;
+        TimetableClass cls = null;
 
         while (eventReader.hasNext()) {
             XMLEvent event;
@@ -290,12 +288,12 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                         case CONFIG_TAG:
                             String configId = getAttributeValue(startElement, "id");
 
-                            config = new Course.Config(configId);
+                            config = new Config(configId);
                             break;
                         case SUBPART_TAG:
                             String subpartId = getAttributeValue(startElement, "id");
 
-                            subpart = new Course.Config.Subpart(subpartId);
+                            subpart = new Subpart(subpartId);
                             break;
                         case CLASS_TAG:
                             if(subpart == null) {
@@ -304,7 +302,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                             }
                             String classId = getAttributeValue(startElement, "id");
 
-                            cls = new Class(classId);
+                            cls = new TimetableClass(classId);
                             subpart.addClass(cls);
 
                             break;

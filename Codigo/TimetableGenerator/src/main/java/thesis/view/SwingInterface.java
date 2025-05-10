@@ -1,6 +1,4 @@
-package thesis.implementations;
-
-import thesis.interfaces.GraphicalInterface;
+package thesis.view;
 
 import javax.swing.JFrame;
 

@@ -1,21 +1,35 @@
-package thesis.abstractions;
+package thesis.model.dbms;
 
-import thesis.interfaces.DBManager;
-import thesis.structures.Room;
-import thesis.structures.StructuredTimetableData;
-import thesis.structures.Teacher;
-import thesis.structures.Time;
+import thesis.model.entities.*;
 
+import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DBTimetableRepository {
+    private final int DEFAULT_TIMEOUT = 200;
     private final DBManager dbManager;
+    private Connection connection = null;
 
     public DBTimetableRepository(DBManager dbManager) {
         this.dbManager = dbManager;
+    }
+
+    public void connect(String ip, String port, String user, String password) throws SQLException {
+        connection = dbManager.connect(ip, port, user, password);
+    }
+
+    public void disconnect() throws SQLException {
+        dbManager.disconnect();
+        connection = null;
+    }
+
+    public boolean isConnected() throws SQLException {
+        if(connection == null) {
+            return false;
+        }
+
+        return connection.isValid(DEFAULT_TIMEOUT);
     }
 
     /**
@@ -39,19 +53,44 @@ public class DBTimetableRepository {
     }
 
     /**
-     * Stores the data provided in the database
+     * Stores the data provided in the database. This operation is done in a database transaction.
      * @param timetableData An aggregation of the data present in the application
      */
-    public void storeTimetableData(StructuredTimetableData timetableData) {
+    public void storeTimetableData(StructuredTimetableData timetableData) throws SQLException {
+        connection.setAutoCommit(false);
 
-    }
+        // Insert courses, configs and subparts
+        Map<String, List<?>> courses = new HashMap<>();
+        Map<String, List<?>> configs = new HashMap<>();
+        Map<String, List<?>> subparts = new HashMap<>();
 
-    public void connect(String ip, String port, String user, String password) throws SQLException {
-        dbManager.connect(ip, port, user, password);
-    }
+        List<String> courseIds = new ArrayList<>();
+        List<String> configIds = new ArrayList<>();
+        List<String> cIds = new ArrayList<>();
+        List<String> subpartsIds = new ArrayList<>();
+        List<String> confIds = new ArrayList<>();
+        for(Course course : timetableData.getCourses()) {
+            courseIds.add(course.getId());
+            for(Config conf : course.getConfigs()) {
+                configIds.add(conf.getId());
+                cIds.add(course.getId());
+                for(Subpart subpart : conf.getSubparts()) {
+                    subpartsIds.add(subpart.getId());
+                    confIds.add(conf.getId());
+                }
+            }
+        }
+        courses.put("id", courseIds);
+        configs.put("id", configIds);
+        configs.put("course_id", cIds);
+        subparts.put("id", subpartsIds);
+        subparts.put("config_id", confIds);
 
-    public void disconnect() throws SQLException {
-        dbManager.disconnect();
+        dbManager.insert("course", courses, true);
+        dbManager.insert("config", configs, true);
+        dbManager.insert("subpart", subparts, true);
+
+        connection.setAutoCommit(true);
     }
 
     private void getTimetableConfiguration(StructuredTimetableData data) throws SQLException {
