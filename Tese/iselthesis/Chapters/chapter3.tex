@@ -112,11 +112,13 @@ A definição e representação dos horários serão feitas com base no padrão 
 
 Na \gls{itc}~2019 são apresentados conjuntos de instâncias que podem ser utilizadas para testar o funcionamento do sistema. Os dados encontram-se no formato \gls{xml} e contêm \textit{tags} que permitem definir múltiplas informações, tais como horários de funcionamento, salas, cursos e estudantes.
 
+Os exemplos apresentados encontram-se diretamente na página da competição \cite{itc2019-Website}, ou nas instâncias lá disponibilizadas.
+
 \subsection{Horários de funcionamento}
 
 A \textit{tag} principal apresenta o número de dias por semana, a quantidade de \textit{slots} diários e a duração do semestre, em semanas, que o horário deve conter.
 
-Entende-se como \textit{slot} um bloco ao qual se pode atribuir uma aula. Quanto mais \textit{slots} por dia maior é a granularidade no momento de atribuição das aulas aos vários períodos de tempo disponíveis. Para ajudar na compreensão encontra-se na Listagem~\ref{listagem:exemplo-duracao-semestre} um exemplo que se encontra na página da competição \cite{itc2019-Website}.
+Entende-se como \textit{slot} um bloco ao qual se pode atribuir uma aula. Quanto mais \textit{slots} por dia maior é a granularidade no momento de atribuição das aulas aos vários períodos de tempo disponíveis. Para ajudar na compreensão encontra-se na Listagem~\ref{listagem:exemplo-duracao-semestre} um exemplo.
 
 \begin{minipage}[c]{\linewidth}
 \begin{lstlisting}[caption={Exemplo da definição da duração do semestre.}, label={listagem:exemplo-duracao-semestre}]
@@ -176,7 +178,50 @@ Os períodos de indisponibilidade são definidos de forma muito semelhante aos h
 
 A lotação das salas não terá importância neste projeto pois os horários são criados antes das inscrições dos estudantes, o que impossibilita a utilização desta restrição.
 
-%\subsection{Cursos}
+\subsection{Cursos}
+
+A definição dos cursos pode ter uma hierarquia complexa de aulas. Para que a hierarquia possa ser representada, o padrão permite a declaração dos cursos através da criação de configurações e subpartes. Cada curso pode ter várias configurações e cada configuração pode ter várias subpartes, sendo que apenas as subpartes devem conter as aulas.
+
+Cada aluno deve assistir a uma das aulas presentes em cada subparte numa única configuração. Cada aula pode ainda ter um progenitor, o que indica que para assistir dita aula é necessário assistir também à aula progenitora.
+
+É apresentado um exemplo da definição dos cursos na Listagem~\ref{listagem:exemplo-cursos}.
+
+\begin{minipage}[c]{\linewidth}
+    \begin{lstlisting}[caption={Exemplo da definição dos cursos.}, label={listagem:exemplo-cursos}]
+<course id="ME 263">
+    <config id="1">
+        <subpart id="1_Lecture">
+            <class id="Lec1" limit="100"/>
+            <class id="Lec2" limit="100"/>
+        </subpart>
+        <subpart id="2_Recitation">
+            <class id="Rec1" limit="50"/>
+            <class id="Rec2" limit="50"/>
+            <class id="Rec3" limit="50"/>
+            <class id="Rec4" limit="50"/>
+        </subpart>
+    </config>
+    <config id="2">
+        <subpart id="3_Lecture">
+            <class id="Lec3" limit="100"/>
+            <class id="Lec4" limit="100"/>
+        </subpart>
+        <subpart id="4_Recitation">
+            <class id="Rec5" parent="Lec3" limit="50"/>
+            <class id="Rec6" parent="Lec3" limit="50"/>
+            <class id="Rec7" parent="Lec4" limit="50"/>
+            <class id="Rec8" parent="Lec4" limit="50"/>
+        </subpart>
+        <subpart id="5_Laboratory">
+            <class id="Lab1" parent="Rec5" limit="50"/>
+            <class id="Lab2" parent="Rec6" limit="50"/>
+            <class id="Lab3" parent="Rec7" limit="50"/>
+            <class id="Lab4" parent="Rec8" limit="50"/>
+        </subpart>
+    </config>
+</course>
+    \end{lstlisting}
+\end{minipage}
 
 %TODO: por fazer
 

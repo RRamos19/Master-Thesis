@@ -14,6 +14,8 @@ public class StructuredTimetableData {
 
     // Storage of the data present in the ITC Format and the Database
     private final Map<String, Course> courses = new HashMap<>();              // CourseId: Course
+    private final Map<String, Config> configs = new HashMap<>();              // ConfigId: Config (Only used to simplify the search of configs)
+    private final Map<String, Subpart> subparts = new HashMap<>();            // SubpartId: Subpart (Only used to simplify the search of subparts)
     private final Map<Integer, Teacher> teachers = new HashMap<>();           // TeacherId: Teacher
     private final Map<String, Timetable> timetables = new HashMap<>();        // TimetableId: Timetable
     private final Map<String, Room> rooms = new HashMap<>();                  // RoomId: Room
@@ -61,6 +63,32 @@ public class StructuredTimetableData {
 
     public List<Course> getCourses() {
         return new ArrayList<>(courses.values());
+    }
+
+    public void storeConfig(String courseId, Config config) {
+        getCourse(courseId).addConfig(config);
+        configs.put(config.getId(), config);
+    }
+
+    public Config getConfig(String configId) {
+        return configs.get(configId);
+    }
+
+    public List<Config> getConfigs() {
+        return new ArrayList<>(configs.values());
+    }
+
+    public void storeSubpart(String configId, Subpart subpart) {
+        getConfig(configId).addSubpart(subpart);
+        subparts.put(subpart.getId(), subpart);
+    }
+
+    public Subpart getSubpart(String subpartId) {
+        return subparts.get(subpartId);
+    }
+
+    public List<Subpart> getSubparts() {
+        return new ArrayList<>(subparts.values());
     }
 
     public void storeTeacher(Teacher teacher) {
@@ -147,7 +175,7 @@ public class StructuredTimetableData {
                 nrConfigs++;
                 for(Subpart s : conf.getSubparts()){
                     nrSubparts++;
-                    for(TimetableClass ignored : s.getClasses()){
+                    for(ClassUnit ignored : s.getClasses()){
                         nrClasses++;
                     }
                 }

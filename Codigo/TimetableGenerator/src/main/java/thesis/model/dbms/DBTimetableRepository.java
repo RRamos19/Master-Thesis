@@ -52,47 +52,6 @@ public class DBTimetableRepository {
         return data;
     }
 
-    /**
-     * Stores the data provided in the database. This operation is done in a database transaction.
-     * @param timetableData An aggregation of the data present in the application
-     */
-    public void storeTimetableData(StructuredTimetableData timetableData) throws SQLException {
-        connection.setAutoCommit(false);
-
-        // Insert courses, configs and subparts
-        Map<String, List<?>> courses = new HashMap<>();
-        Map<String, List<?>> configs = new HashMap<>();
-        Map<String, List<?>> subparts = new HashMap<>();
-
-        List<String> courseIds = new ArrayList<>();
-        List<String> configIds = new ArrayList<>();
-        List<String> cIds = new ArrayList<>();
-        List<String> subpartsIds = new ArrayList<>();
-        List<String> confIds = new ArrayList<>();
-        for(Course course : timetableData.getCourses()) {
-            courseIds.add(course.getId());
-            for(Config conf : course.getConfigs()) {
-                configIds.add(conf.getId());
-                cIds.add(course.getId());
-                for(Subpart subpart : conf.getSubparts()) {
-                    subpartsIds.add(subpart.getId());
-                    confIds.add(conf.getId());
-                }
-            }
-        }
-        courses.put("id", courseIds);
-        configs.put("id", configIds);
-        configs.put("course_id", cIds);
-        subparts.put("id", subpartsIds);
-        subparts.put("config_id", confIds);
-
-        dbManager.insert("course", courses, true);
-        dbManager.insert("config", configs, true);
-        dbManager.insert("subpart", subparts, true);
-
-        connection.setAutoCommit(true);
-    }
-
     private void getTimetableConfiguration(StructuredTimetableData data) throws SQLException {
         // Obtain the optimization parameters. Assuming the data is stored correctly there should only be 1 instance of values stored
         Map<String, List<Object>> queryResult = dbManager.read("optimization_parameters");
@@ -133,7 +92,10 @@ public class DBTimetableRepository {
 
         for(int i=0; i<teacherUnavailIds.size(); i++) {
             Teacher t = data.getTeacher((Integer) teacherUnavailIds.get(i));
-            t.addUnavailability(new Time((String) days.get(i), (int) startSlots.get(i), (int) durations.get(i), (String) weeks.get(i)));
+            t.addUnavailability(new Time((String) days.get(i),
+                                          (int) startSlots.get(i),
+                                          (int) durations.get(i),
+                                          (String) weeks.get(i)));
         }
 
         // Obtain the classes the teacher will teach
@@ -149,11 +111,66 @@ public class DBTimetableRepository {
     }
 
     private void getCourses(StructuredTimetableData data) throws SQLException {
+        // Obtain and store the courses
+        Map<String, List<Object>> queryResult = dbManager.read("course");
+        List<Object> courseIds = queryResult.get("id");
 
+        for(int i=0; i<courseIds.size(); i++) {
+            data.storeCourse(new Course((String) courseIds.get(i)));
+        }
+
+        // Obtain and store the Configs
+        queryResult = dbManager.read("config");
+        List<Object> configIds = queryResult.get("id");
+        List<Object> configCourseIds = queryResult.get("course_id");
+
+        for(int i=0; i<configIds.size(); i++) {
+            Config c = new Config((String) configIds.get(i));
+            data.storeConfig((String) configCourseIds.get(i), c);
+        }
+
+        // Obtain and store the Subparts
+        queryResult = dbManager.read("subpart");
+        List<Object> subpartIds = queryResult.get("id");
+        List<Object> subpartConfigIds = queryResult.get("config_id");
+
+        for(int i=0; i<subpartIds.size(); i++) {
+            Subpart s = new Subpart((String) subpartIds.get(i));
+            data.storeSubpart((String) subpartConfigIds.get(i), s);
+        }
     }
 
     private void getTimetables(StructuredTimetableData data) throws SQLException {
+        // Obtain and store the Timetables
+        Map<String, List<Object>> queryResult = dbManager.read("timetable");
 
+        List<Object> timetableId = queryResult.get("id");
+        List<Object> timetableCreationDate = queryResult.get("creation_date");
+        List<Object> timetableCourseId = queryResult.get("course_id");
+
+        for(int i=0; i<timetableId.size(); i++) {
+            data.storeTimetable(new Timetable((String) timetableId.get(i),
+                                              (String) timetableCreationDate.get(i),
+                                              (String) timetableCourseId.get(i)));
+        }
+
+        queryResult = dbManager.read("scheduled_lesson");
+
+        List<Object> classId = queryResult.get("id");
+        List<Object> classDays = queryResult.get("days");
+        List<Object> classWeeks = queryResult.get("weeks");
+        List<Object> classStart = queryResult.get("start_slot");
+        List<Object> classDuration = queryResult.get("duration");
+        List<Object> classRoom = queryResult.get("room_id");
+
+        for(int i=0; i<timetableId.size(); i++) {
+            data.getTimetable((String) timetableId.get(i)).storeAssignedClass((String) classId.get(i),
+                                                                              (String) classRoom.get(i),
+                                                                              (String) classDays.get(i),
+                                                                              (int) classStart.get(i),
+                                                                              (int) classDuration.get(i),
+                                                                              (String) classWeeks.get(i));
+        }
     }
 
     private void getRooms(StructuredTimetableData data) throws SQLException {
@@ -172,11 +189,7 @@ public class DBTimetableRepository {
         List<Object> penalizations = queryResult.get("distance");
 
         for(int i=0; i<rooms_1.size(); i++){
-            Object room1Id = rooms_1.get(i);
-            // Assuming the database is correctly configured this should never happen
-            assert(room1Id != null);
-
-            Room room1 = data.getRoom((String) room1Id);
+            Room room1 = data.getRoom((String) rooms_1.get(i));
             room1.addTravel((String) rooms_2.get(i), (Integer) penalizations.get(i));
         }
 
@@ -189,12 +202,228 @@ public class DBTimetableRepository {
         List<Object> roomUnavailDuration = queryResult.get("duration");
 
         for(int i=0; i<roomIds.size(); i++){
-            Object roomId = roomIds.get(i);
-            // Assuming the database is correctly configured this should never happen
-            assert(roomId != null);
-
-            Room room = data.getRoom((String) roomId);
-            room.addUnavailability(new Time((String) roomUnavailDays.get(i), (Integer) roomUnavailStart.get(i), (Integer) roomUnavailDuration.get(i), (String) roomsUnavailWeeks.get(i)));
+            Room room = data.getRoom((String) roomIds.get(i));
+            room.addUnavailability(new Time((String) roomUnavailDays.get(i),
+                                            (int) roomUnavailStart.get(i),
+                                            (int) roomUnavailDuration.get(i),
+                                            (String) roomsUnavailWeeks.get(i)));
         }
+    }
+
+    /**
+     * Stores the data provided in the database. This operation is done in a database transaction.
+     * @param timetableData An aggregation of the data present in the application
+     */
+    public void storeTimetableData(StructuredTimetableData timetableData, boolean overwriteValues) throws SQLException {
+        connection.setAutoCommit(false);
+
+        storeTimetableConfiguration(timetableData, overwriteValues);
+
+        storeTeachers(timetableData, overwriteValues);
+
+        storeRooms(timetableData, overwriteValues);
+
+        storeCourses(timetableData, overwriteValues);
+
+        storeTimetables(timetableData, overwriteValues);
+
+        connection.setAutoCommit(true);
+    }
+
+    private void storeTimetableConfiguration(StructuredTimetableData timetableData, boolean overwriteValues) throws SQLException {
+        // Store configurations and optimization parameters
+        Map<String, List<?>> timetable_configuration = Map.of(
+                "number_days", new ArrayList<Integer>(),
+                "number_weeks", new ArrayList<Integer>(),
+                "slots_per_day", new ArrayList<Integer>()
+        );
+
+        Map<String, List<?>> optimization_parameters = Map.of(
+                "time_weight", new ArrayList<Integer>(),
+                "room_weight", new ArrayList<Integer>(),
+                "distribution_weight", new ArrayList<Integer>()
+        );
+
+        List<Integer> numberDays = (List<Integer>) timetable_configuration.get("number_days");
+        List<Integer> numberWeeks = (List<Integer>) timetable_configuration.get("number_weeks");
+        List<Integer> slotsPerDay = (List<Integer>) timetable_configuration.get("slots_per_day");
+
+        List<Integer> timeWeight = (List<Integer>) optimization_parameters.get("time_weight");
+        List<Integer> roomWeight = (List<Integer>) optimization_parameters.get("room_weight");
+        List<Integer> distributionWeight = (List<Integer>) optimization_parameters.get("distribution_weight");
+
+        int[] conf = timetableData.getConfiguration();
+
+        numberDays.add(conf[0]);
+        slotsPerDay.add(conf[1]);
+        numberWeeks.add(conf[2]);
+
+        int[] optimiz = timetableData.getOptimization();
+
+        timeWeight.add(optimiz[0]);
+        roomWeight.add(optimiz[1]);
+        distributionWeight.add(optimiz[2]);
+
+        dbManager.insert("timetable_configuration", timetable_configuration, overwriteValues);
+        dbManager.insert("optimization_parameters", optimization_parameters, overwriteValues);
+    }
+
+    private void storeTeachers(StructuredTimetableData timetableData, boolean overwriteValues) throws SQLException {
+        // Store teachers and their unavailabilities
+        Map<String, List<?>> teachers = Map.of(
+                "id", new ArrayList<Integer>(),
+                "name", new ArrayList<String>()
+        );
+
+        Map<String, List<?>> teacherUnavailabilities = Map.of(
+                "id", new ArrayList<Integer>(),
+                "days", new ArrayList<String>(),
+                "weeks", new ArrayList<String>(),
+                "start_slot", new ArrayList<Integer>(),
+                "duration", new ArrayList<Integer>()
+        );
+
+        List<Integer> teacherIds = (List<Integer>) teachers.get("id");
+        List<String> teacherNames = (List<String>) teachers.get("name");
+
+        List<String> unavailDays = (List<String>) teacherUnavailabilities.get("days");
+        List<String> unavailWeeks = (List<String>) teacherUnavailabilities.get("weeks");
+        List<Integer> unavailDurations = (List<Integer>) teacherUnavailabilities.get("duration");
+        List<Integer> unavailStarts = (List<Integer>) teacherUnavailabilities.get("start_slot");
+        List<Integer> unavailIds = (List<Integer>) teacherUnavailabilities.get("id");
+
+        for (Teacher teacher : timetableData.getTeachers()) {
+            Integer id = teacher.getId();
+            teacherIds.add(id);
+            teacherNames.add(teacher.getTeacherName());
+
+            for (Time time : teacher.getUnavails()) {
+                unavailIds.add(id);
+                unavailDays.add(time.getDays());
+                unavailWeeks.add(time.getWeeks());
+                unavailDurations.add(time.getDuration());
+                unavailStarts.add(time.getStart());
+            }
+        }
+
+        dbManager.insert("teacher", teachers, overwriteValues);
+        dbManager.insert("teacher_unavailability", teacherUnavailabilities, overwriteValues);
+    }
+
+    private void storeRooms(StructuredTimetableData timetableData, boolean overwriteValues) throws SQLException {
+        // Store Rooms, their unavailabilities, the distances between them and the subjects per room
+        Map<String, List<?>> rooms = Map.of(
+                "id", new ArrayList<String>()
+        );
+
+        Map<String, List<?>> roomUnavails = Map.of(
+                "room_id", new ArrayList<String>(),
+                "days", new ArrayList<String>(),
+                "weeks", new ArrayList<String>(),
+                "start_slot", new ArrayList<Integer>(),
+                "duration", new ArrayList<Integer>()
+        );
+
+        Map<String, List<?>> roomDistances = Map.of(
+                "room_id_1", new ArrayList<String>(),
+                "room_id_2", new ArrayList<String>(),
+                "distance", new ArrayList<Integer>()
+        );
+
+//        Map<String, List<?>> subjectRooms = Map.of(
+//                "subject_id", new ArrayList<String>(),
+//                "room_id", new ArrayList<String>(),
+//                "penalty", new ArrayList<Integer>()
+//        );
+        // TODO: implementar subjectRooms
+
+        List<String> roomIds = (List<String>) rooms.get("id");
+
+        List<String> roomUnavailIds = (List<String>) roomUnavails.get("room_id");
+        List<String> roomUnavailDays = (List<String>) roomUnavails.get("days");
+        List<String> roomUnavailWeeks = (List<String>) roomUnavails.get("weeks");
+        List<Integer> roomUnavailStarts = (List<Integer>) roomUnavails.get("start_slot");
+        List<Integer> roomUnavailDurations = (List<Integer>) roomUnavails.get("duration");
+
+        List<String> room1Id = (List<String>) roomDistances.get("room_id_1");
+        List<String> room2Id = (List<String>) roomDistances.get("room_id_2");
+        List<Integer> roomDistance = (List<Integer>) roomDistances.get("distance");
+
+//        List<String> subjectIds = (List<String>) subjectRooms.get("subject_id");
+//        List<String> subjectRoomIds = (List<String>) subjectRooms.get("room_id");
+//        List<Integer> subjectRoomPenalty = (List<Integer>) subjectRooms.get("penalty");
+
+        for(Room r : timetableData.getRooms()) {
+            String roomId = r.getId();
+            roomIds.add(roomId);
+            for(Time unavail : r.getUnavailabilities()) {
+                roomUnavailIds.add(roomId);
+                roomUnavailDays.add(unavail.getDays());
+                roomUnavailWeeks.add(unavail.getWeeks());
+                roomUnavailStarts.add(unavail.getStart());
+                roomUnavailDurations.add(unavail.getDuration());
+            }
+            for(Map.Entry<String, Integer> entry : r.getTravelPenalizations().entrySet()) {
+                room1Id.add(roomId);
+                room2Id.add(entry.getKey());
+                roomDistance.add(entry.getValue());
+            }
+        }
+
+        dbManager.insert("room", rooms, overwriteValues);
+        dbManager.insert("room_unavailability", roomUnavails, overwriteValues);
+        dbManager.insert("room_distance", roomDistances, overwriteValues);
+    }
+
+    /**
+     *
+     * @param timetableData
+     * @param overwriteValues
+     * @throws SQLException
+     */
+    private void storeCourses(StructuredTimetableData timetableData, boolean overwriteValues) throws SQLException {
+        // Store courses, configs and subparts
+        Map<String, List<?>> courses = Map.of(
+                "id", new ArrayList<String>()
+        );
+
+        Map<String, List<?>> configs = Map.of(
+                "id", new ArrayList<String>(),
+                "course_id", new ArrayList<String>()
+        );
+
+        Map<String, List<?>> subparts = Map.of(
+                "id", new ArrayList<String>(),
+                "config_id", new ArrayList<String>()
+        );
+
+        List<String> courseIds = (List<String>) courses.get("id");
+
+        List<String> configIds = (List<String>) configs.get("id");
+        List<String> configCourseIds = (List<String>) configs.get("course_id");
+
+        List<String> subpartsIds = (List<String>) subparts.get("id");
+        List<String> confIds = (List<String>) subparts.get("config_id");
+
+        // store the corresponding data in each list
+        for(Course course : timetableData.getCourses()) {
+            courseIds.add(course.getId());
+            for(Config conf : course.getConfigs()) {
+                configIds.add(conf.getId());
+                configCourseIds.add(course.getId());
+                for(Subpart subpart : conf.getSubparts()) {
+                    subpartsIds.add(subpart.getId());
+                    confIds.add(conf.getId());
+                }
+            }
+        }
+
+        dbManager.insert("course", courses, overwriteValues);
+        dbManager.insert("config", configs, overwriteValues);
+        dbManager.insert("subpart", subparts, overwriteValues);
+    }
+
+    private void storeTimetables(StructuredTimetableData timetableData, boolean overwriteValues) throws SQLException {
+        //TODO
     }
 }

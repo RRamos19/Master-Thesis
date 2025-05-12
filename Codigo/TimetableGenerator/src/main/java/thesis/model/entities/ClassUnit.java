@@ -5,17 +5,28 @@ import javafx.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TimetableClass {
+public class ClassUnit {
     private final String classId;
+    private final String parentClassId;
     private final List<Pair<String, Integer>> rooms = new ArrayList<>(); // (RoomId, Penalty)
     private final List<Pair<Time, Integer>> times = new ArrayList<>(); // (Time, Penalty)
 
-    public TimetableClass(String classId){
+    public ClassUnit(String classId){
         this.classId = classId;
+        this.parentClassId = null;
+    }
+
+    public ClassUnit(String classId, String parentClassId){
+        this.classId = classId;
+        this.parentClassId = parentClassId;
     }
 
     public String getId(){
         return classId;
+    }
+
+    public String getParentClassId() {
+        return parentClassId;
     }
 
     public void addTime(Time time, int penalty){

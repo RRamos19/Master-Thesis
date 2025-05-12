@@ -27,6 +27,14 @@ public class Room {
         unavails.add(unavail);
     }
 
+    public List<Time> getUnavailabilities() {
+        return unavails;
+    }
+
+    public Map<String, Integer> getTravelPenalizations() {
+        return travelPenalization;
+    }
+
     public String getId(){
         return roomId;
     }

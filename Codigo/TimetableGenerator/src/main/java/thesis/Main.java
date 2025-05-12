@@ -41,7 +41,7 @@ public class Main {
         System.out.println(timetableData);
 
         try {
-            timetableRepository.storeTimetableData(timetableData);
+            timetableRepository.storeTimetableData(timetableData, true);
 
             if(timetableRepository.isConnected()) {
                 timetableRepository.disconnect();

@@ -45,6 +45,12 @@ public class DBPostgreSQLManager implements DBManager {
             throw new IllegalArgumentException("Data map has an inconsistent number of rows");
         }
 
+        int nDataRows = data.values().iterator().next().size();
+        // If there is no data to insert the method ends
+        if(nDataRows == 0) {
+            return;
+        }
+
         // Get the primary keys of the table
         ResultSet rs = meta.getPrimaryKeys(null, null, tableName);
         List<String> primaryKeyColumns = new ArrayList<>();
@@ -68,8 +74,6 @@ public class DBPostgreSQLManager implements DBManager {
             columns.append(columnName);
         }
 
-        int nDataRows = data.values().iterator().next().size();
-
         // Construction of the position of the values in the query using placeholders
         // The placeholders will later be replaced by the prepared statement
         for(int i=0; i<nDataRows; i++) {
@@ -88,30 +92,34 @@ public class DBPostgreSQLManager implements DBManager {
             placeholders.append(")");
         }
 
-        StringBuilder stringToFormat = new StringBuilder("INSERT INTO %s (%s) VALUES %s ON CONFLICT (");
+        StringBuilder stringToFormat = new StringBuilder("INSERT INTO %s (%s) VALUES %s");
 
-        // Add the primary key/s to the causes of the conflict
-        for (int i=0; i<primaryKeyColumns.size(); i++) {
-            stringToFormat.append(primaryKeyColumns.get(i));
-            if(i+1 < primaryKeyColumns.size()) {
-                stringToFormat.append(" ,");
-            }
-        }
-        stringToFormat.append(")");
+        if(!primaryKeyColumns.isEmpty()) {
+            stringToFormat.append(" ON CONFLICT (");
 
-        // Append the action to perform when there is a conflict
-        if(updateConflicts) {
-            stringToFormat.append(" DO UPDATE SET ");
-            int colNumber = 0;
-            for (String colName : data.keySet()) {
-                if(colNumber != 0) {
-                    stringToFormat.append(", ");
+            // Add the primary key/s to the causes of the conflict
+            for (int i = 0; i < primaryKeyColumns.size(); i++) {
+                stringToFormat.append(primaryKeyColumns.get(i));
+                if (i + 1 < primaryKeyColumns.size()) {
+                    stringToFormat.append(" ,");
                 }
-                stringToFormat.append(colName).append(" = EXCLUDED.").append(colName);
-                colNumber++;
             }
-        } else {
-            stringToFormat.append(" DO NOTHING");
+            stringToFormat.append(")");
+
+            // Append the action to perform when there is a conflict
+            if (updateConflicts) {
+                stringToFormat.append(" DO UPDATE SET ");
+                int colNumber = 0;
+                for (String colName : data.keySet()) {
+                    if (colNumber != 0) {
+                        stringToFormat.append(", ");
+                    }
+                    stringToFormat.append(colName).append(" = EXCLUDED.").append(colName);
+                    colNumber++;
+                }
+            } else {
+                stringToFormat.append(" DO NOTHING");
+            }
         }
 
         String sql = String.format(stringToFormat.toString(), tableName, columns, placeholders);
@@ -120,7 +128,8 @@ public class DBPostgreSQLManager implements DBManager {
             for (int i = 0; i < values.size(); i++) {
                 stmt.setObject(i + 1, values.get(i));
             }
-            System.out.println(stmt.toString());
+            //TODO: Apenas para debug. Remover quando não for mais necessário
+            //System.out.println(stmt.toString());
             stmt.executeUpdate();
         }
     }

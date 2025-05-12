@@ -1,15 +1,25 @@
 package thesis.model.entities;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Timetable {
     private final String timetableId;
-    private final Map<String, AssignedClass> assignedClasses;
+    private final String creationDate;
+    private final String courseId;
+    private final Map<String, AssignedClass> assignedClasses = new HashMap<>();
 
-    public Timetable(String timetableId){
+    public Timetable(String timetableId, String courseId){
         this.timetableId = timetableId;
-        assignedClasses = new HashMap<>();
+        this.creationDate = LocalDate.now().toString();
+        this.courseId = courseId;
+    }
+
+    public Timetable(String timetableId, String creationDate, String courseId){
+        this.timetableId = timetableId;
+        this.creationDate = creationDate;
+        this.courseId = courseId;
     }
 
     public void storeAssignedClass(String classId, AssignedClass assignedClass) {
@@ -24,8 +34,16 @@ public class Timetable {
         return timetableId;
     }
 
+    public String getCreationDate() {
+        return creationDate;
+    }
+
     public AssignedClass getAssignedClass(String classId) {
         return assignedClasses.get(classId);
+    }
+
+    public String getCourseId() {
+        return courseId;
     }
 
     public Map<String, AssignedClass> getAssignedClasses() {

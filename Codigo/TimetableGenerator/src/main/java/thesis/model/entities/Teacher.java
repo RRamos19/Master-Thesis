@@ -24,6 +24,10 @@ public class Teacher {
         return teacherName;
     }
 
+    public List<Time> getUnavails() {
+        return unavails;
+    }
+
     public void addUnavailability(Time unavail) {
         unavails.add(unavail);
     }
