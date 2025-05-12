@@ -111,8 +111,9 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                             break;
                         case SOLUTION_TAG:
                             String solutionName = getAttributeValue(startElement, "name");
+                            String courseId = getAttributeValue(startElement, "course");
 
-                            readSolution(eventReader, data, solutionName);
+                            readSolution(eventReader, data, solutionName, courseId);
                             break;
                     }
                 }
@@ -125,9 +126,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
             eventReader.close();
             inputFileReader.close();
             inputFile.close();
-        } catch (XMLStreamException xml_e) {
-            throw new RuntimeException("Error while closing the file");
-        } catch (IOException io_e) {
+        } catch (XMLStreamException | IOException xml_e) {
             throw new RuntimeException("Error while closing the file");
         }
 
@@ -137,8 +136,8 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
     /**
      * All the assigned classes should be read before encountering the termination tag
      */
-    private void readSolution(XMLEventReader eventReader, StructuredTimetableData data, String solutionName) throws XMLStreamException {
-        Timetable timetable = new Timetable(solutionName);
+    private void readSolution(XMLEventReader eventReader, StructuredTimetableData data, String solutionName, String courseId) throws XMLStreamException {
+        Timetable timetable = new Timetable(solutionName, courseId);
 
         while (eventReader.hasNext()) {
             XMLEvent event;
@@ -268,7 +267,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
         Course course = null;
         Config config = null;
         Subpart subpart = null;
-        TimetableClass cls = null;
+        ClassUnit cls = null;
 
         while (eventReader.hasNext()) {
             XMLEvent event;
@@ -302,7 +301,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                             }
                             String classId = getAttributeValue(startElement, "id");
 
-                            cls = new TimetableClass(classId);
+                            cls = new ClassUnit(classId);
                             subpart.addClass(cls);
 
                             break;

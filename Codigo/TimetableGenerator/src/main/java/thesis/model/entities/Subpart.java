@@ -7,21 +7,21 @@ import java.util.Map;
 
 public class Subpart {
     private final String subpartId;
-    private final Map<String, TimetableClass> classes = new HashMap<>();
+    private final Map<String, ClassUnit> classes = new HashMap<>();
 
     public Subpart(String subpartId) {
         this.subpartId = subpartId;
     }
 
-    public TimetableClass getClassUnit(String classId) {
+    public ClassUnit getClassUnit(String classId) {
         return classes.get(classId);
     }
 
-    public List<TimetableClass> getClasses() {
+    public List<ClassUnit> getClasses() {
         return new ArrayList<>(classes.values());
     }
 
-    public void addClass(TimetableClass cls) {
+    public void addClass(ClassUnit cls) {
         classes.put(cls.getId(), cls);
     }
 
