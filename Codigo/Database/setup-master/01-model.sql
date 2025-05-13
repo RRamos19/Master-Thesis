@@ -12,7 +12,7 @@ CREATE TABLE course (
 );
 
 CREATE TABLE timetable (
-    id SERIAL PRIMARY KEY,
+    id VARCHAR(128) PRIMARY KEY,
 	creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	course_id VARCHAR(10) NOT NULL,
 	CONSTRAINT timetable_course_fk FOREIGN KEY (course_id) REFERENCES course(id)
@@ -42,7 +42,7 @@ CREATE TABLE teacher_unavailability (
 	duration INT NOT NULL,
 	start_slot INT NOT NULL,
 	days VARCHAR(7) NOT NULL,
-	weeks VARCHAR(15) NOT NULL,
+	weeks VARCHAR(16) NOT NULL,
 	teacher_id INT NOT NULL,
 	CONSTRAINT teacher_unavailability_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id)
 );
@@ -108,7 +108,7 @@ CREATE TABLE room_unavailability (
 	id SERIAL PRIMARY KEY,
 	room_id VARCHAR(6) NOT NULL,
 	days VARCHAR(7) NOT NULL,
-	weeks VARCHAR(15) NOT NULL,
+	weeks VARCHAR(16) NOT NULL,
 	start_slot INT NOT NULL,
 	duration INT NOT NULL,
 	CONSTRAINT room_unavailability_room_fk FOREIGN KEY (room_id) REFERENCES room(id)
@@ -121,19 +121,20 @@ CREATE TABLE subject_time (
 	days VARCHAR(7) NOT NULL,
 	start_slot INT NOT NULL,
 	duration INT NOT NULL,
-	weeks VARCHAR(15) NOT NULL,
+	weeks VARCHAR(16) NOT NULL,
 	CONSTRAINT subject_time_subject_fk FOREIGN KEY (subject_id) REFERENCES subject(id)
 );
 
 CREATE TABLE scheduled_lesson (
-	id SERIAL PRIMARY KEY,
+	id VARCHAR(128) PRIMARY KEY,
     subject_id VARCHAR(10) NOT NULL,
     teacher_id INT NOT NULL,
 	room_id VARCHAR(6) NOT NULL,
-	timetable_id INT NOT NULL,
+	timetable_id VARCHAR(128) NOT NULL,
 	days VARCHAR(7) NOT NULL,
-	weeks VARCHAR(15) NOT NULL,
+	weeks VARCHAR(16) NOT NULL,
 	start_slot INT NOT NULL,
+	duration INT NOT NULL,
 	CONSTRAINT scheduled_lesson_subject_fk FOREIGN KEY (subject_id) REFERENCES subject(id),
 	CONSTRAINT scheduled_lesson_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id),
 	CONSTRAINT scheduled_lesson_room_fk FOREIGN KEY (room_id) REFERENCES room(id),
@@ -141,7 +142,7 @@ CREATE TABLE scheduled_lesson (
 );
 
 CREATE TABLE scheduled_lesson_teacher (
-	scheduled_lesson_id INT NOT NULL,
+	scheduled_lesson_id VARCHAR(128) NOT NULL,
 	teacher_id INT NOT NULL,
 	CONSTRAINT scheduled_lesson_id_fk FOREIGN KEY (scheduled_lesson_id) REFERENCES scheduled_lesson(id),
 	CONSTRAINT scheduled_lesson_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id),

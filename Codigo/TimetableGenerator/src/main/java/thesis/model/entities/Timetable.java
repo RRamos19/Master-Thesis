@@ -1,22 +1,33 @@
 package thesis.model.entities;
 
-import java.time.LocalDate;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class Timetable {
     private final String timetableId;
-    private final String creationDate;
+    private final Timestamp creationDate;
     private final String courseId;
     private final Map<String, AssignedClass> assignedClasses = new HashMap<>();
 
-    public Timetable(String timetableId, String courseId){
-        this.timetableId = timetableId;
-        this.creationDate = LocalDate.now().toString();
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    public Timetable(String courseId){
+        this.timetableId = UUID.randomUUID().toString();
+        this.creationDate = Timestamp.valueOf(LocalDateTime.now());
         this.courseId = courseId;
     }
 
-    public Timetable(String timetableId, String creationDate, String courseId){
+    public Timetable(String timetableId, String courseId){
+        this.timetableId = timetableId;
+        this.creationDate = Timestamp.valueOf(LocalDateTime.now());
+        this.courseId = courseId;
+    }
+
+    public Timetable(String timetableId, Timestamp creationDate, String courseId){
         this.timetableId = timetableId;
         this.creationDate = creationDate;
         this.courseId = courseId;
@@ -34,7 +45,7 @@ public class Timetable {
         return timetableId;
     }
 
-    public String getCreationDate() {
+    public Timestamp getCreationDate() {
         return creationDate;
     }
 
@@ -53,14 +64,20 @@ public class Timetable {
     public static class AssignedClass {
         private final String roomId;
         private final Time assignedTime;
+        private final String assignedClassId;
 
         public AssignedClass(String roomId, String days, int start, int duration, String weeks) {
             this.roomId = roomId;
             this.assignedTime = new Time(days, start, duration, weeks);
+            this.assignedClassId = UUID.randomUUID().toString();
         }
 
         public String getRoomId() {
             return roomId;
+        }
+
+        public String getAssignedClassId() {
+            return assignedClassId;
         }
 
         public Time getAssignedTime() {
