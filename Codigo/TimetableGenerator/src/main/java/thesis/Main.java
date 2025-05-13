@@ -17,12 +17,12 @@ public class Main {
         //testeIG.instantiateGUI("Ferramenta para Geração de Horários");
 
         DBTimetableRepository timetableRepository = new DBTimetableRepository(new DBPostgreSQLManager("timetabling_db"));
-        StructuredTimetableData timetableData = new StructuredTimetableData();
+        StructuredTimetableData timetableData = null;
 
         try {
             timetableRepository.connect("localhost", "5432", "postgres", "123");
 
-            timetableData.mergeWithTimetable(timetableRepository.fetchTimetableData());
+            timetableData = timetableRepository.fetchTimetableData();
             System.out.println(timetableData);
         } catch (Exception e) {
             System.out.println(e);
@@ -31,7 +31,12 @@ public class Main {
 
         StructuredTimetableData structuredTimetableData = inputFileReader.readFile("../lums-sum17.xml");
 
-        timetableData.mergeWithTimetable(structuredTimetableData);
+        if(timetableData == null) {
+            timetableData = structuredTimetableData;
+        } else {
+            timetableData.mergeWithTimetable(structuredTimetableData);
+        }
+
         System.out.println(timetableData);
         System.out.println();
 

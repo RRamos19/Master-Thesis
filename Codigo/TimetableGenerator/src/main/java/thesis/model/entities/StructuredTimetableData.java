@@ -14,17 +14,29 @@ public class StructuredTimetableData {
 
     // Storage of the data present in the ITC Format and the Database
     private final Map<String, Course> courses = new HashMap<>();              // CourseId: Course
-    private final Map<String, Config> configs = new HashMap<>();              // ConfigId: Config (Only used to simplify the search of configs)
-    private final Map<String, Subpart> subparts = new HashMap<>();            // SubpartId: Subpart (Only used to simplify the search of subparts)
     private final Map<Integer, Teacher> teachers = new HashMap<>();           // TeacherId: Teacher
     private final Map<String, Timetable> timetables = new HashMap<>();        // TimetableId: Timetable
     private final Map<String, Room> rooms = new HashMap<>();                  // RoomId: Room
     private final List<Distribution> distributions = new ArrayList<>();
 
+    // Only used to simplify the search of configs and subparts
+    private final Map<String, Config> configs = new HashMap<>();              // ConfigId: Config
+    private final Map<String, Subpart> subparts = new HashMap<>();            // SubpartId: Subpart
+
     public void storeConfiguration(int nrDays, int slotsPerDay, int nrWeeks) {
         this.nrDays = nrDays;
         this.slotsPerDay = slotsPerDay;
         this.nrWeeks = nrWeeks;
+    }
+
+    public void storeConfiguration(int[] configurationValues) {
+        if(configurationValues.length != 3) {
+            throw new IllegalArgumentException("Configuration array must have a length of 3 elements");
+        }
+
+        this.nrDays = configurationValues[0];
+        this.slotsPerDay = configurationValues[1];
+        this.nrWeeks = configurationValues[2];
     }
 
     public int[] getConfiguration() {
@@ -41,6 +53,16 @@ public class StructuredTimetableData {
         this.timeWeight = timeWeight;
         this.roomWeight = roomWeight;
         this.distributionWeight = distributionWeight;
+    }
+
+    public void storeOptimization(int[] optimizationValues) {
+        if(optimizationValues.length != 3) {
+            throw new IllegalArgumentException("Optimization array must have a length of 3 elements");
+        }
+
+        this.timeWeight = optimizationValues[0];
+        this.roomWeight = optimizationValues[1];
+        this.distributionWeight = optimizationValues[2];
     }
 
     public int[] getOptimization() {
@@ -142,7 +164,7 @@ public class StructuredTimetableData {
     public void mergeWithTimetable(StructuredTimetableData timetableData) {
         if(timetableData == null) {
             // Should never happen
-            throw new RuntimeException("The timetable provided is null");
+            throw new IllegalArgumentException("The timetable provided is null");
         }
 
         for(Course c : timetableData.getCourses()) {

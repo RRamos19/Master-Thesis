@@ -4,6 +4,7 @@ import thesis.model.entities.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
 
 public class DBTimetableRepository {
@@ -150,7 +151,7 @@ public class DBTimetableRepository {
 
         for(int i=0; i<timetableId.size(); i++) {
             data.storeTimetable(new Timetable((String) timetableId.get(i),
-                                              (String) timetableCreationDate.get(i),
+                                              (Timestamp) timetableCreationDate.get(i),
                                               (String) timetableCourseId.get(i)));
         }
 
@@ -424,6 +425,73 @@ public class DBTimetableRepository {
     }
 
     private void storeTimetables(StructuredTimetableData timetableData, boolean overwriteValues) throws SQLException {
-        //TODO
+        // Store timetables
+        Map<String, List<?>> timetables = Map.of(
+                "id", new ArrayList<String>(),
+                "creation_date", new ArrayList<String>(),
+                "course_id", new ArrayList<String>()
+        );
+
+        Map<String, List<?>> scheduledLessons = Map.of(
+                "id", new ArrayList<String>(),
+                "subject_id", new ArrayList<String>(),
+                "teacher_id", new ArrayList<Integer>(),
+                "room_id", new ArrayList<String>(),
+                "timetable_id", new ArrayList<String>(),
+                "days", new ArrayList<String>(),
+                "weeks", new ArrayList<String>(),
+                "start_slot", new ArrayList<Integer>(),
+                "duration", new ArrayList<Integer>()
+        );
+
+        Map<String, List<?>> scheduledLessonTeacher = Map.of(
+                "scheduled_lesson_id", new ArrayList<String>(),
+                "teacher_id", new ArrayList<Integer>()
+        );
+
+        List<String> timetableIds = (List<String>) timetables.get("id");
+        List<Timestamp> timetableCreationDates = (List<Timestamp>) timetables.get("creation_date");
+        List<String> timetableCourseIds = (List<String>) timetables.get("course_id");
+
+        List<String> scheduledLessonsIds = (List<String>) scheduledLessons.get("id");
+        List<String> scheduledLessonsSubjectIds = (List<String>) scheduledLessons.get("subject_id");
+        List<Integer> scheduledLessonsTeacherIds = (List<Integer>) scheduledLessons.get("teacher_id");
+        List<String> scheduledLessonsRoomIds = (List<String>) scheduledLessons.get("room_id");
+        List<String> scheduledLessonsTimetableIds = (List<String>) scheduledLessons.get("timetable_id");
+        List<String> scheduledLessonsDays = (List<String>) scheduledLessons.get("days");
+        List<String> scheduledLessonsWeeks = (List<String>) scheduledLessons.get("weeks");
+        List<Integer> scheduledLessonsStart = (List<Integer>) scheduledLessons.get("start_slot");
+        List<Integer> scheduledLessonsDuration = (List<Integer>) scheduledLessons.get("duration");
+
+        List<String> scheduledLessonTeacherLessonIds = (List<String>) scheduledLessonTeacher.get("scheduled_lesson_id");
+        List<String> scheduledLessonTeacherIds = (List<String>) scheduledLessonTeacher.get("teacher_id");
+
+        for(Timetable timetable : timetableData.getTimetables()) {
+            timetableIds.add(timetable.getId());
+            timetableCreationDates.add(timetable.getCreationDate());
+            timetableCourseIds.add(timetable.getCourseId());
+            for(Map.Entry<String, Timetable.AssignedClass> entry : timetable.getAssignedClasses().entrySet()) {
+                scheduledLessonsSubjectIds.add(entry.getKey());
+
+                Timetable.AssignedClass assignedClass = entry.getValue();
+                scheduledLessonsIds.add(assignedClass.getAssignedClassId());
+                // TODO: por terminar
+                //scheduledLessonsTeacherIds.add();
+                scheduledLessonsRoomIds.add(assignedClass.getRoomId());
+                scheduledLessonsTimetableIds.add(timetable.getId());
+
+                Time time = assignedClass.getAssignedTime();
+                scheduledLessonsDays.add(time.getDays());
+                scheduledLessonsWeeks.add(time.getWeeks());
+                scheduledLessonsStart.add(time.getStart());
+                scheduledLessonsDuration.add(time.getDuration());
+            }
+        }
+
+        //TODO: preencher as listas
+
+        dbManager.insert("timetable", timetables, overwriteValues);
+        //dbManager.insert("scheduled_lesson", scheduledLessons, overwriteValues);
+        //dbManager.insert("scheduled_lesson_teacher", scheduledLessonTeacher, overwriteValues);
     }
 }
