@@ -4,13 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Distribution {
-    private String type;
-    private Boolean required;
-    private List<String> involvedClasses = new ArrayList<>();
+    private final String type;
+    private final Boolean required;
+    private final List<String> involvedClasses = new ArrayList<>();
+    private final int penalty;
 
-    public Distribution(String type, Boolean required){
+    public Distribution(String type, Boolean required, int penalty){
         this.type = type;
         this.required = required;
+        this.penalty = penalty;
+    }
+
+    public Distribution(String type, Boolean required){
+        this(type, required, 0);
     }
 
     public void addClassId(String classId){
@@ -23,5 +29,13 @@ public class Distribution {
 
     public Boolean getRequired() {
         return required;
+    }
+
+    public List<String> getInvolvedClasses() {
+        return involvedClasses;
+    }
+
+    public int getPenalty() {
+        return penalty;
     }
 }

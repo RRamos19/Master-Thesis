@@ -1,4 +1,4 @@
-INSERT INTO room (id)
+INSERT INTO room (name)
 VALUES
 ('A0.1'),
 ('B0.1'),

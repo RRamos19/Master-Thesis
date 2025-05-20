@@ -1,10 +1,10 @@
 package thesis;
 
 import thesis.model.dbms.DBTimetableRepository;
-import thesis.model.dbms.DBPostgreSQLManager;
+import thesis.model.entities.Timetable;
 import thesis.model.parser.ITCFormatParser;
 import thesis.model.parser.InputFileReader;
-import thesis.model.entities.StructuredTimetableData;
+import thesis.model.aggregates.StructuredTimetableData;
 
 import java.sql.SQLException;
 
@@ -16,7 +16,7 @@ public class Main {
         //IGJavaFX testeIG = new IGJavaFX();
         //testeIG.instantiateGUI("Ferramenta para Geração de Horários");
 
-        DBTimetableRepository timetableRepository = new DBTimetableRepository(new DBPostgreSQLManager("timetabling_db"));
+        DBTimetableRepository timetableRepository = new DBTimetableRepository("timetabling_db");
         StructuredTimetableData timetableData = null;
 
         try {
@@ -45,10 +45,16 @@ public class Main {
         timetableData.mergeWithTimetable(solutionTimetableData);
         System.out.println(timetableData);
 
-        try {
-            timetableRepository.storeTimetableData(timetableData, true);
+        for(Timetable t : timetableData.getTimetables()) {
+            System.out.println();
+            t.printTimetable();
+            System.out.println();
+        }
 
+        try {
             if(timetableRepository.isConnected()) {
+                timetableRepository.storeTimetableData(timetableData, true);
+
                 timetableRepository.disconnect();
             }
         } catch (SQLException e) {

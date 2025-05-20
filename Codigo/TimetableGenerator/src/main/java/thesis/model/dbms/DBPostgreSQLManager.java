@@ -2,15 +2,18 @@ package thesis.model.dbms;
 
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DBPostgreSQLManager implements DBManager {
+    private final int DEFAULT_TIMEOUT = 200;
+
     private String ip;
     private String port;
     private String user;
     private String password;
     private String db_name;
     private String jdbcPostgres = "jdbc:postgresql:";
-    private Connection connection;
+    protected Connection connection;
     private DatabaseMetaData meta;
 
     public DBPostgreSQLManager(String db_name){
@@ -36,13 +39,23 @@ public class DBPostgreSQLManager implements DBManager {
     @Override
     public void disconnect() throws SQLException {
         connection.close();
+        connection = null;
     }
 
     @Override
-    public void insert(String tableName, Map<String, List<?>> data, boolean updateConflicts) throws SQLException, IllegalArgumentException {
+    public boolean isConnected() throws SQLException {
+        if(connection == null) {
+            return false;
+        }
+
+        return connection.isValid(DEFAULT_TIMEOUT);
+    }
+
+    @Override
+    public void insert(String tableName, Map<String, Collection<?>> data, boolean updateConflicts) throws SQLException, IllegalArgumentException {
         // Verify if the data map is consistent
         if(!verifyDataLists(data)) {
-            throw new IllegalArgumentException("Data map has an inconsistent number of rows");
+            throw new IllegalArgumentException("Insertion in table " + tableName + " failed. Data map has an inconsistent number of rows");
         }
 
         int nDataRows = data.values().iterator().next().size();
@@ -74,21 +87,28 @@ public class DBPostgreSQLManager implements DBManager {
             columns.append(columnName);
         }
 
-        // Construction of the position of the values in the query using placeholders
+        // Construction of the query using placeholders
         // The placeholders will later be replaced by the prepared statement
-        for(int i=0; i<nDataRows; i++) {
-            if(i != 0)
+        List<List<?>> collectionData = data.values().stream()
+                .map(ArrayList::new)  // Garante acesso por índice
+                .collect(Collectors.toList());
+
+        // The value i corresponds to the number of the row
+        // The value j corresponds to the number of the column
+        for (int i = 0; i < nDataRows; i++) {
+            if (i > 0) {
                 placeholders.append(", ");
+            }
             placeholders.append("(");
-            int columnNumber = 0;
-            for(List<?> dataPerColumn : data.values()) {
-                if (columnNumber > 0) {
+
+            for (int j = 0; j < collectionData.size(); j++) {
+                if (j > 0) {
                     placeholders.append(", ");
                 }
-                values.add(dataPerColumn.get(i));
+                values.add(collectionData.get(j).get(i));
                 placeholders.append("?");
-                columnNumber++;
             }
+
             placeholders.append(")");
         }
 
@@ -107,7 +127,7 @@ public class DBPostgreSQLManager implements DBManager {
             stringToFormat.append(")");
 
             // Append the action to perform when there is a conflict
-            if (updateConflicts) {
+            if (updateConflicts && primaryKeyColumns.size() > 1) {
                 stringToFormat.append(" DO UPDATE SET ");
                 int colNumber = 0;
                 for (String colName : data.keySet()) {
@@ -209,12 +229,12 @@ public class DBPostgreSQLManager implements DBManager {
      * @param data
      * @return
      */
-    private boolean verifyDataLists(Map<String, List<?>> data) {
+    private boolean verifyDataLists(Map<String, Collection<?>> data) {
         if (data.isEmpty()) return false;
 
         int expectedSize = -1;
 
-        for (List<?> list : data.values()) {
+        for (Collection<?> list : data.values()) {
             if (expectedSize == -1) {
                 expectedSize = list.size();
             } else if (list.size() != expectedSize) {
