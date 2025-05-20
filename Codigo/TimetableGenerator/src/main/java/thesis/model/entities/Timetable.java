@@ -1,31 +1,18 @@
 package thesis.model.entities;
 
+import thesis.model.aggregates.ScheduledClass;
+
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class Timetable {
     private final String timetableId;
     private final Timestamp creationDate;
-    private final String courseId;
-    private final Map<String, AssignedClass> assignedClasses = new HashMap<>();
+    private String courseId;
+    private final Map<String, ScheduledClass> assignedClasses = new HashMap<>();
 
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-    public Timetable(String courseId){
-        this.timetableId = UUID.randomUUID().toString();
-        this.creationDate = Timestamp.valueOf(LocalDateTime.now());
-        this.courseId = courseId;
-    }
-
-    public Timetable(String timetableId, String courseId){
-        this.timetableId = timetableId;
-        this.creationDate = Timestamp.valueOf(LocalDateTime.now());
-        this.courseId = courseId;
-    }
+    //private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public Timetable(String timetableId, Timestamp creationDate, String courseId){
         this.timetableId = timetableId;
@@ -33,12 +20,28 @@ public class Timetable {
         this.courseId = courseId;
     }
 
-    public void storeAssignedClass(String classId, AssignedClass assignedClass) {
-        assignedClasses.put(classId, assignedClass);
+    public Timetable(){
+        this(UUID.randomUUID().toString(), Timestamp.valueOf(LocalDateTime.now()), null);
+    }
+
+    public Timetable(String courseId){
+        this(UUID.randomUUID().toString(), Timestamp.valueOf(LocalDateTime.now()), courseId);
+    }
+
+    public Timetable(String timetableId, String courseId){
+        this(timetableId, Timestamp.valueOf(LocalDateTime.now()), courseId);
+    }
+
+    public void setCourseId(String courseId) {
+        this.courseId = courseId;
+    }
+
+    public void storeAssignedClass(String classId, ScheduledClass scheduledClass) {
+        assignedClasses.put(classId, scheduledClass);
     }
 
     public void storeAssignedClass(String classId, String roomId, String days, int start, int duration, String weeks) {
-        assignedClasses.put(classId, new AssignedClass(roomId, days, start, duration, weeks));
+        assignedClasses.put(classId, new ScheduledClass(classId, roomId, days, start, duration, weeks));
     }
 
     public String getId(){
@@ -49,7 +52,7 @@ public class Timetable {
         return creationDate;
     }
 
-    public AssignedClass getAssignedClass(String classId) {
+    public ScheduledClass getAssignedClass(String classId) {
         return assignedClasses.get(classId);
     }
 
@@ -57,31 +60,72 @@ public class Timetable {
         return courseId;
     }
 
-    public Map<String, AssignedClass> getAssignedClasses() {
+    public Map<String, ScheduledClass> getAssignedClasses() {
         return assignedClasses;
     }
 
-    public static class AssignedClass {
-        private final String roomId;
-        private final Time assignedTime;
-        private final String assignedClassId;
+    public boolean isScheduleComplete() {
+        // TODO: por implementar
+        return false;
+    }
 
-        public AssignedClass(String roomId, String days, int start, int duration, String weeks) {
-            this.roomId = roomId;
-            this.assignedTime = new Time(days, start, duration, weeks);
-            this.assignedClassId = UUID.randomUUID().toString();
+    // TODO: Temporário, eliminar quando deixar de ser necessário
+    public void printTimetable() {
+        // Organize lessons by [day][slot]
+        // The order goes from 0 to 5 from Monday to Saturday
+        String[] daysOfWeek = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+        int numberOfDays = daysOfWeek.length;
+        Map<Integer, Map<Integer, ScheduledClass>> schedule = new HashMap<>();
+        for (int i=0; i < numberOfDays; i++) {
+            schedule.put(i, new HashMap<>());
         }
 
-        public String getRoomId() {
-            return roomId;
+        for (ScheduledClass scheduledClass : assignedClasses.values()) {
+            String days = scheduledClass.getScheduledTime().getDays();
+            int dayslength = days.length();
+            if(numberOfDays != dayslength) {
+                throw new IllegalArgumentException("Days and numberOfDays are different");
+            }
+
+            Time assignedClassTime = scheduledClass.getScheduledTime();
+            for(int i=0; i < numberOfDays; i++) {
+                if(days.charAt(i) == '1') {
+                    schedule.get(i).put(assignedClassTime.getStart(), scheduledClass);
+                }
+            }
         }
 
-        public String getAssignedClassId() {
-            return assignedClassId;
+        // Header
+        StringBuilder header = new StringBuilder("| Start ");
+        for (String day : daysOfWeek) {
+            header.append(String.format("| %-15s | Room ", day));
+        }
+        System.out.println(header.append("|"));
+
+        // Separator
+        int columns = numberOfDays * 2 + 1;
+        System.out.println("|" + "-".repeat(7 * columns) + "|");
+
+        // Determine all slots used
+        Set<Integer> allSlots = new TreeSet<>();
+        for (Map<Integer, ScheduledClass> bySlot : schedule.values()) {
+            allSlots.addAll(bySlot.keySet());
         }
 
-        public Time getAssignedTime() {
-            return assignedTime;
+        // Print timetable per slot
+        for (int slot : allSlots) {
+            StringBuilder row = new StringBuilder();
+            row.append(String.format("| %-4d", slot));
+            for (int i=0; i<numberOfDays; i++) {
+                ScheduledClass lesson = schedule.get(i).get(slot);
+                if (lesson != null) {
+                    row.append(String.format("| %-15s | %-4s", lesson.getClassId(), lesson.getRoomId()));
+                } else {
+                    row.append("|                 |      ");
+                }
+            }
+            row.append("|");
+            System.out.println(row);
         }
     }
 }

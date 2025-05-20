@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
+import thesis.model.aggregates.StructuredTimetableData;
 import thesis.model.entities.*;
 
 public class ITCFormatParser implements InputFileReader<StructuredTimetableData> {
@@ -299,9 +300,16 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                                 // Only happens if the file isn't structured correctly
                                 throw new RuntimeException("There is a class tag that appears before a subpart tag in line " + event.getLocation().getLineNumber());
                             }
-                            String classId = getAttributeValue(startElement, "id");
+                            // TODO: Confirmar as turmas e as disciplinas
+                            String subjectId = getAttributeValue(startElement, "id");
+                            String classId = getAttributeValue(startElement, "class");
+                            String parentClassId = getAttributeValue(startElement, "parent");
 
-                            cls = new ClassUnit(classId);
+                            if(parentClassId == null) {
+                                cls = new ClassUnit(subjectId, classId);
+                            } else {
+                                cls = new ClassUnit(subjectId, classId, parentClassId);
+                            }
                             subpart.addClass(cls);
 
                             break;

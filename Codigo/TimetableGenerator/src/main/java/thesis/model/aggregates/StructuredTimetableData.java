@@ -1,4 +1,6 @@
-package thesis.model.entities;
+package thesis.model.aggregates;
+
+import thesis.model.entities.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
