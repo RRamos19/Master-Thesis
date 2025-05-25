@@ -1,4 +1,4 @@
-package thesis.model.entities;
+package thesis.model.dbms;
 
 import java.util.regex.Pattern;
 

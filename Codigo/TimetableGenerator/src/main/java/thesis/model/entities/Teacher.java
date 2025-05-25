@@ -1,38 +1,56 @@
 package thesis.model.entities;
 
-import javafx.util.Pair;
+import jakarta.persistence.*;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
+@Entity
+@Table(name = "teacher")
 public class Teacher {
-    private final int teacherId;
-    private final String teacherName;
-    private final List<Time> unavails = new ArrayList<>();
-    private final List<Pair<String, String>> classes = new ArrayList<>();
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
 
-    public Teacher(int teacherId, String teacherName) {
-        this.teacherId = teacherId;
-        this.teacherName = teacherName;
+    @Column(length = 30, nullable = false)
+    private String name;
+
+    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<TeacherUnavailability> teacherUnavailabilityList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<TeacherClass> teacherClassList = new ArrayList<>();
+
+    public Teacher() {}
+
+    public Teacher(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getId() {
-        return teacherId;
+        return id;
     }
 
-    public String getTeacherName() {
-        return teacherName;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public List<Time> getUnavails() {
-        return unavails;
+    public String getName() {
+        return name;
     }
 
-    public void addUnavailability(Time unavail) {
-        unavails.add(unavail);
+    public void addUnavailability(TeacherUnavailability teacherUnav) {
+        teacherUnavailabilityList.add(teacherUnav);
+        teacherUnav.setTeacher(this);
     }
 
-    public void addClass(String classId, String subjectId){
-        classes.add(new Pair<>(classId, subjectId));
+    public void addTeacherClass(TeacherClass teacherClass) {
+        teacherClassList.add(teacherClass);
+        teacherClass.setTeacher(this);
     }
 }

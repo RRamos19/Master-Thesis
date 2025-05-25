@@ -1,64 +1,31 @@
 package thesis;
 
-import thesis.model.dbms.DBTimetableRepository;
-import thesis.model.entities.Timetable;
-import thesis.model.parser.ITCFormatParser;
-import thesis.model.parser.InputFileReader;
-import thesis.model.aggregates.StructuredTimetableData;
-
-import java.sql.SQLException;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import thesis.model.dbms.HibernateUtil;
+import thesis.model.entities.Room;
+import thesis.model.entities.RoomUnavailability;
 
 public class Main {
     public static void main(String[] args) {
-        InputFileReader<StructuredTimetableData> inputFileReader = new ITCFormatParser();
+        //InputFileReader<StructuredTimetableData> inputFileReader = new ITCFormatParser();
 
         //GraphicalInterface graphicalManager = new InterfaceGraficaSwing("Ferramenta para Geração de Horários");
         //IGJavaFX testeIG = new IGJavaFX();
         //testeIG.instantiateGUI("Ferramenta para Geração de Horários");
 
-        DBTimetableRepository timetableRepository = new DBTimetableRepository("timetabling_db");
-        StructuredTimetableData timetableData = null;
+        HibernateUtil.init("timetabling_db", "localhost", "5432", "postgres", "123");
+        //DBTimetableRepository timetableRepository = new DBTimetableRepository("timetabling_db");
 
-        try {
-            timetableRepository.connect("localhost", "5432", "postgres", "123");
+        Room room = new Room("teste");
+        RoomUnavailability roomUnavailability = new RoomUnavailability(room, "0100000", "1111111111111111", 10, 50);
+        room.addRoomUnavailability(roomUnavailability);
 
-            timetableData = timetableRepository.fetchTimetableData();
-            System.out.println(timetableData);
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-        System.out.println();
-
-        StructuredTimetableData structuredTimetableData = inputFileReader.readFile("../lums-sum17.xml");
-
-        if(timetableData == null) {
-            timetableData = structuredTimetableData;
-        } else {
-            timetableData.mergeWithTimetable(structuredTimetableData);
-        }
-
-        System.out.println(timetableData);
-        System.out.println();
-
-        StructuredTimetableData solutionTimetableData = inputFileReader.readFile("../solution-agh-fis-spr17.xml");
-
-        timetableData.mergeWithTimetable(solutionTimetableData);
-        System.out.println(timetableData);
-
-        for(Timetable t : timetableData.getTimetables()) {
-            System.out.println();
-            t.printTimetable();
-            System.out.println();
-        }
-
-        try {
-            if(timetableRepository.isConnected()) {
-                timetableRepository.storeTimetableData(timetableData, true);
-
-                timetableRepository.disconnect();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        try(Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction tx = session.beginTransaction();
+            session.persist(room);
+            session.persist(roomUnavailability);
+            tx.commit();
         }
     }
 }
