@@ -64,7 +64,6 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, Structu
             temperature = coolingSchedule(iteration);
         }
 
-        // TODO: falta implementar
         return bestSolutionFound;
     }
 

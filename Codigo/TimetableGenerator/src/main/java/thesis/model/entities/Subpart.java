@@ -1,31 +1,52 @@
 package thesis.model.entities;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import jakarta.persistence.*;
+import thesis.model.entities.EmbeddableIds.SubpartPK;
 
+import java.util.UUID;
+
+@Entity
+@Table(name = "subpart")
 public class Subpart {
-    private final String subpartId;
-    private final Map<String, ClassUnit> classes = new HashMap<>();
+    @EmbeddedId
+    private SubpartPK id;
 
-    public Subpart(String subpartId) {
-        this.subpartId = subpartId;
+    @ManyToOne
+    @MapsId("configPK")
+    @JoinColumns({
+            @JoinColumn(name = "course_id", referencedColumnName = "course_id"),
+            @JoinColumn(name = "config_id", referencedColumnName = "config_id")
+    })
+    private Config config;
+
+    @Column(length = 10, unique = true, nullable = false)
+    private String name;
+
+    public Subpart() {}
+
+    public Subpart(Config config, String name) {
+        this.id = new SubpartPK(config.getId(), UUID.randomUUID());
+        this.config = config;
+        this.name = name;
     }
 
-    public ClassUnit getClassUnit(String classId) {
-        return classes.get(classId);
+    public SubpartPK getId() {
+        return id;
     }
 
-    public List<ClassUnit> getClasses() {
-        return new ArrayList<>(classes.values());
+    public Config getConfig() {
+        return config;
     }
 
-    public void addClass(ClassUnit cls) {
-        classes.put(cls.getId(), cls);
+    public void setConfig(Config config) {
+        this.config = config;
     }
 
-    public String getId() {
-        return subpartId;
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

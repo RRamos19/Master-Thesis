@@ -1,31 +1,49 @@
 package thesis.model.entities;
 
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
+@Entity
+@Table(name = "course")
 public class Course {
-    private final String courseId;
-    private final Map<String, Config> configs = new HashMap<>();
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "course_id")
+    private UUID id;
 
-    public Course(String courseId) {
-        this.courseId = courseId;
+    @Column(length = 10, unique = true, nullable = false)
+    private String name;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private final List<Config> configList = new ArrayList<>();
+
+    public Course() {}
+
+    public Course(String name) {
+        this.name = name;
     }
 
-    public Config getConfig(String configId) {
-        return configs.get(configId);
+    public UUID getId() {
+        return id;
     }
 
-    public List<Config> getConfigs() {
-        return new ArrayList<>(configs.values());
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<Config> getConfigList() {
+        return configList;
     }
 
     public void addConfig(Config config) {
-        configs.put(config.getId(), config);
-    }
-
-    public String getId() {
-        return courseId;
+        configList.add(config);
+        config.setCourse(this);
     }
 }

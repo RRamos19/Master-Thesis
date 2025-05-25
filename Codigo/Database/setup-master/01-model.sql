@@ -1,23 +1,49 @@
-CREATE TABLE subject (
-	id SERIAL PRIMARY KEY,
-    name VARCHAR(10) UNIQUE
-);
-
 CREATE TABLE teacher (
     id INT PRIMARY KEY,
     name VARCHAR(30) NOT NULL
 );
 
 CREATE TABLE course (
-	id SERIAL PRIMARY KEY,
-    name VARCHAR(10) UNIQUE
+	course_id UUID PRIMARY KEY,
+    name VARCHAR(10) NOT NULL UNIQUE
+);
+
+CREATE TABLE config (
+	course_id UUID,
+	config_id UUID,
+	name VARCHAR(10) NOT NULL UNIQUE,
+	CONSTRAINT config_course_fk FOREIGN KEY (course_id) REFERENCES course(course_id),
+	CONSTRAINT config_pk PRIMARY KEY (course_id, config_id)
+);
+
+CREATE TABLE subpart (
+	course_id UUID,
+	config_id UUID,
+	subpart_id UUID,
+	name VARCHAR(10) NOT NULL UNIQUE,
+	CONSTRAINT subpart_config_fk FOREIGN KEY (course_id, config_id) REFERENCES config(course_id, config_id),
+	CONSTRAINT subpart_pk PRIMARY KEY (course_id, config_id, subpart_id)
+);
+
+CREATE TABLE class_unit (
+	course_id UUID,
+	config_id UUID,
+	subpart_id UUID,
+	class_id UUID,
+    name VARCHAR(10) NOT NULL,
+	parent_class_course_id UUID,
+	parent_class_config_id UUID,
+	parent_class_subpart_id UUID,
+	parent_class_id UUID,
+	CONSTRAINT class_class_parent_fk FOREIGN KEY (parent_class_course_id, parent_class_config_id, parent_class_subpart_id, parent_class_id) REFERENCES class_unit(course_id, config_id, subpart_id, class_id),
+	CONSTRAINT class_subpart_fk FOREIGN KEY (course_id, config_id, subpart_id) REFERENCES subpart(course_id, config_id, subpart_id),
+	CONSTRAINT class_pk PRIMARY KEY (course_id, config_id, subpart_id, class_id)
 );
 
 CREATE TABLE timetable (
     id UUID PRIMARY KEY,
-	creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	course_id INT NOT NULL,
-	CONSTRAINT timetable_course_fk FOREIGN KEY (course_id) REFERENCES course(id)
+	program VARCHAR(10) NOT NULL,
+	creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE restriction (
@@ -25,75 +51,56 @@ CREATE TABLE restriction (
 	name VARCHAR(30) UNIQUE
 );
 
-CREATE TABLE room (
-	id SERIAL PRIMARY KEY,
-	name VARCHAR(6) UNIQUE
+CREATE TABLE class_restriction (
+	course_id UUID,
+	config_id UUID,
+	subpart_id UUID,
+	class_id UUID,
+	restriction_id INT,
+	penalty INT,
+	required BOOL NOT NULL,
+	CONSTRAINT class_restriction_class_fk FOREIGN KEY (course_id, config_id, subpart_id, class_id) REFERENCES class_unit(course_id, config_id, subpart_id, class_id),
+	CONSTRAINT class_restriction_restriction_fk FOREIGN KEY (restriction_id) REFERENCES restriction(id),
+	CONSTRAINT class_restriction_pk PRIMARY KEY (course_id, config_id, subpart_id, class_id, restriction_id)
 );
 
-CREATE TABLE restriction_subject (
-	subject_id INT,
-	restriction_id INT NOT NULL,
-	penalty INT,
-	hard BOOL NOT NULL,
-	CONSTRAINT restriction_subject_subject_fk FOREIGN KEY (subject_id) REFERENCES subject(id),
-	CONSTRAINT restriction_subject_restriction_fk FOREIGN KEY (restriction_id) REFERENCES restriction(id),
-	CONSTRAINT restriction_subject_pk PRIMARY KEY (subject_id, restriction_id)
+CREATE TABLE room (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(6) NOT NULL UNIQUE
 );
 
 CREATE TABLE teacher_unavailability (
+	id SERIAL,
 	teacher_id INT NOT NULL,
 	duration INT NOT NULL,
 	start_slot INT NOT NULL,
 	days VARCHAR(7) NOT NULL,
 	weeks VARCHAR(16) NOT NULL,
-	CONSTRAINT teacher_unavailability_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id)
-);
-
-CREATE TABLE class_subject (
-	class_id VARCHAR(10) UNIQUE NOT NULL,
-    subject_id INT NOT NULL,
-	parent_class VARCHAR(10),
-	CONSTRAINT class_subject_subject_fk FOREIGN KEY (subject_id) REFERENCES subject(id),
-	CONSTRAINT class_parent_class_fk FOREIGN KEY (parent_class) REFERENCES class_subject(class_id),
-	CONSTRAINT class_subject_pk PRIMARY KEY (class_id, subject_id)
+	CONSTRAINT teacher_unavailability_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id),
+	CONSTRAINT teacher_unavailability_pk PRIMARY KEY (id, teacher_id)
 );
 
 CREATE TABLE teacher_class (
 	teacher_id INT,
-	class_id VARCHAR(10) NOT NULL,
-	subject_id INT NOT NULL,
-	CONSTRAINT teacher_class_class_subject_fk FOREIGN KEY (class_id, subject_id) REFERENCES class_subject(class_id, subject_id),
+	course_id UUID,
+	config_id UUID,
+	subpart_id UUID,
+	class_id UUID,
+	CONSTRAINT teacher_class_class_fk FOREIGN KEY (course_id, config_id, subpart_id, class_id) REFERENCES class_unit(course_id, config_id, subpart_id, class_id),
 	CONSTRAINT teacher_class_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id),
-	CONSTRAINT teacher_class_pk PRIMARY KEY (teacher_id, class_id, subject_id)
+	CONSTRAINT teacher_class_pk PRIMARY KEY (teacher_id, course_id, config_id, subpart_id, class_id)
 );
 
-CREATE TABLE config (
-	id VARCHAR(10) PRIMARY KEY,
-	course_id INT NOT NULL,
-	CONSTRAINT config_course_fk FOREIGN KEY (course_id) REFERENCES course(id)
-);
-
-CREATE TABLE subpart (
-	id VARCHAR(10) PRIMARY KEY,
-	config_id VARCHAR(10) NOT NULL,
-	CONSTRAINT subpart_config_fk FOREIGN KEY (config_id) REFERENCES config(id)
-);
-
-CREATE TABLE subject_subpart (
-	subpart_id VARCHAR(10) NOT NULL,
-	subject_id INT NOT NULL,
-	CONSTRAINT subject_subpart_subpart_fk FOREIGN KEY (subpart_id) REFERENCES subpart(id),
-	CONSTRAINT subject_subpart_subject_fk FOREIGN KEY (subject_id) REFERENCES subject(id),
-	CONSTRAINT subject_subpart_pk PRIMARY KEY (subpart_id, subject_id)
-);
-
-CREATE TABLE subject_room (
-	subject_id INT,
+CREATE TABLE class_room (
+	course_id UUID,
+	config_id UUID,
+	subpart_id UUID,
+	class_id UUID,
 	room_id INT,
 	penalty INT NOT NULL,
-	CONSTRAINT subject_room_subject_fk FOREIGN KEY (subject_id) REFERENCES subject(id),
-	CONSTRAINT subject_room_room_fk FOREIGN KEY (room_id) REFERENCES room(id),
-	CONSTRAINT subject_room_pk PRIMARY KEY (subject_id, room_id)
+	CONSTRAINT class_room_class_fk FOREIGN KEY (course_id, config_id, subpart_id, class_id) REFERENCES class_unit(course_id, config_id, subpart_id, class_id),
+	CONSTRAINT class_room_room_fk FOREIGN KEY (room_id) REFERENCES room(id),
+	CONSTRAINT class_room_pk PRIMARY KEY (course_id, config_id, subpart_id, class_id, room_id)
 );
 
 CREATE TABLE room_distance (
@@ -106,6 +113,7 @@ CREATE TABLE room_distance (
 );
 
 CREATE TABLE room_unavailability (
+	id SERIAL PRIMARY KEY,
 	room_id INT NOT NULL,
 	days VARCHAR(7) NOT NULL,
 	weeks VARCHAR(16) NOT NULL,
@@ -114,39 +122,50 @@ CREATE TABLE room_unavailability (
 	CONSTRAINT room_unavailability_room_fk FOREIGN KEY (room_id) REFERENCES room(id)
 );
 
-CREATE TABLE subject_time (
-	subject_id INT NOT NULL,
+CREATE TABLE class_time (
+	id UUID,
+	course_id UUID,
+	config_id UUID,
+	subpart_id UUID,
+	class_id UUID,
 	penalty INT NOT NULL,
 	days VARCHAR(7) NOT NULL,
 	start_slot INT NOT NULL,
 	duration INT NOT NULL,
 	weeks VARCHAR(16) NOT NULL,
-	CONSTRAINT subject_time_subject_fk FOREIGN KEY (subject_id) REFERENCES subject(id)
+	CONSTRAINT class_time_class_fk FOREIGN KEY (course_id, config_id, subpart_id, class_id) REFERENCES class_unit(course_id, config_id, subpart_id, class_id),
+	CONSTRAINT class_time_pk PRIMARY KEY (id, course_id, config_id, subpart_id, class_id)
 );
 
 CREATE TABLE scheduled_lesson (
-	id UUID PRIMARY KEY,
-    subject_id INT NOT NULL,
-	room_id INT,
+	id UUID,
 	timetable_id UUID NOT NULL,
+    course_id UUID NOT NULL,
+	config_id UUID NOT NULL,
+	subpart_id UUID NOT NULL,
+	class_id UUID NOT NULL,
+	room_id INT,
 	days VARCHAR(7) NOT NULL,
 	weeks VARCHAR(16) NOT NULL,
 	start_slot INT NOT NULL,
 	duration INT NOT NULL,
-	CONSTRAINT scheduled_lesson_subject_fk FOREIGN KEY (subject_id) REFERENCES subject(id),
+	CONSTRAINT scheduled_lesson_class_fk FOREIGN KEY (course_id, config_id, subpart_id, class_id) REFERENCES class_unit(course_id, config_id, subpart_id, class_id),
 	CONSTRAINT scheduled_lesson_room_fk FOREIGN KEY (room_id) REFERENCES room(id),
-	CONSTRAINT scheduled_lesson_timetable_fk FOREIGN KEY (timetable_id) REFERENCES timetable(id)
+	CONSTRAINT scheduled_lesson_timetable_fk FOREIGN KEY (timetable_id) REFERENCES timetable(id),
+	CONSTRAINT scheduled_lesson_pk PRIMARY KEY (id, timetable_id)
 );
 
 CREATE TABLE scheduled_lesson_teacher (
 	scheduled_lesson_id UUID NOT NULL,
+	scheduled_lesson_timetable_id UUID NOT NULL,
 	teacher_id INT NOT NULL,
-	CONSTRAINT scheduled_lesson_id_fk FOREIGN KEY (scheduled_lesson_id) REFERENCES scheduled_lesson(id),
+	CONSTRAINT scheduled_lesson_teacher_lesson_id_fk FOREIGN KEY (scheduled_lesson_id, scheduled_lesson_timetable_id) REFERENCES scheduled_lesson(id, timetable_id),
 	CONSTRAINT scheduled_lesson_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id),
-	CONSTRAINT scheduled_lesson_pk PRIMARY KEY (scheduled_lesson_id, teacher_id)
+	CONSTRAINT scheduled_lesson_teacher_pk PRIMARY KEY (scheduled_lesson_id, scheduled_lesson_timetable_id, teacher_id)
 );
 
 CREATE TABLE optimization_parameters (
+	id SERIAL PRIMARY KEY,
 	time_weight INT NOT NULL,
 	room_weight INT NOT NULL,
 	distribution_weight INT NOT NULL,
@@ -154,6 +173,7 @@ CREATE TABLE optimization_parameters (
 );
 
 CREATE TABLE timetable_configuration (
+	id SERIAL PRIMARY KEY,
 	number_days INT NOT NULL,
 	number_weeks INT NOT NULL,
 	slots_per_day INT NOT NULL,

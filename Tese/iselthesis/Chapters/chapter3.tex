@@ -110,7 +110,7 @@ Na Tabela~\ref{tabela:requisitos-nao-funcionais} são listados os requisitos nã
 
 A definição e representação dos horários serão feitas com base no padrão introduzido pela \gls{itc}~2019. Para que se possa concretizar a definição dos horários é necessário primeiro compreender o padrão.
 
-Na \gls{itc}~2019 são apresentados conjuntos de instâncias que podem ser utilizadas para testar o funcionamento do sistema. Os dados encontram-se no formato \gls{xml} e contêm \textit{tags} que permitem definir múltiplas informações, tais como horários de funcionamento, salas, cursos e estudantes.
+Na \gls{itc}~2019 são apresentados conjuntos de instâncias que podem ser utilizadas para testar o funcionamento do sistema. Os dados encontram-se no formato \gls{xml} e contêm \textit{tags} que permitem definir múltiplas informações, tais como horários de funcionamento, salas, disciplinas e estudantes.
 
 Os exemplos apresentados encontram-se diretamente na página da competição \cite{itc2019-Website}, ou nas instâncias lá disponibilizadas.
 
@@ -130,7 +130,7 @@ Neste caso, cada semana tem 7 dias e o semestre letivo tem duração de 13 seman
 
 \subsection{Aulas}
 
-Para definir os horários das aulas serão utilizados os \textit{slots} definidos anteriormente. Na Listagem~\ref{listagem:exemplo-aula} encontra-se um exemplo da definição de uma aula. A definição de cada aula deve ser efetuada no contexto da definição do respetivo curso, mas neste caso simplificado, apenas será mostrada a definição da aula.
+Para definir os horários das aulas serão utilizados os \textit{slots} definidos anteriormente. Na Listagem~\ref{listagem:exemplo-aula} encontra-se um exemplo da definição de uma aula. A definição de cada aula deve ser efetuada no contexto da definição da respetiva disciplina, mas neste caso simplificado, apenas será mostrada a definição da aula.
 
 \begin{minipage}[c]{\linewidth}
 \begin{lstlisting}[caption={Exemplo da definição de uma aula.}, label={listagem:exemplo-aula}]
@@ -172,22 +172,22 @@ No momento de definição de salas é possível definir o seu identificador, a s
 \end{lstlisting}
 \end{minipage}
 
-No exemplo são definidas duas salas. A sala 1 tem lotação de 61 estudantes e a sala 2 tem lotação de 36 estudantes. Para cada sala, são apresentadas as distâncias às outras salas. A definição das distâncias é importante no caso de duas aulas consecutivas, por exemplo uma aula na sala 1 e de seguida uma aula na sala 2, pois os estudantes têm de fazer o percurso entre ambas as salas. É um atributo relevante para otimizar a seleção das salas, caso se encontrem muito afastadas.
+No exemplo apresentado são definidas duas salas. A sala 1 tem lotação de 61 estudantes e a sala 2 tem lotação de 36 estudantes. Para cada sala, são apresentadas as distâncias às outras salas. A definição das distâncias é importante no caso de duas aulas consecutivas, por exemplo uma aula na sala 1 e de seguida uma aula na sala 2, pois os estudantes têm de fazer o percurso entre ambas as salas. É um atributo relevante para otimizar a seleção das salas, caso se encontrem muito afastadas.
 
 Os períodos de indisponibilidade são definidos de forma muito semelhante aos horários de funcionamento das aulas.
 
 A lotação das salas não terá importância neste projeto pois os horários são criados antes das inscrições dos estudantes, o que impossibilita a utilização desta restrição.
 
-\subsection{Cursos}
+\subsection{Disciplinas}
 
-A definição dos cursos pode ter uma hierarquia complexa de aulas. Para que a hierarquia possa ser representada, o padrão permite a declaração dos cursos através da criação de configurações e subpartes. Cada curso pode ter várias configurações e cada configuração pode ter várias subpartes, sendo que apenas as subpartes devem conter as aulas.
+No padrão apresentado, a palavra \textit{course} refere-se a uma disciplina. A definição das disciplinas podem ter uma hierarquia complexa de aulas. Para que a hierarquia possa ser representada, o padrão permite a declaração das mesmas através da criação de configurações e subpartes. Cada disciplina pode ter várias configurações e cada configuração pode ter várias subpartes, sendo que apenas as subpartes devem conter as aulas.
 
-Cada aluno deve assistir a uma das aulas presentes em cada subparte numa única configuração. Cada aula pode ainda ter um progenitor, o que indica que para assistir dita aula é necessário assistir também à aula progenitora.
+Cada aluno deve assistir a uma das aulas presentes em cada subparte numa única configuração. Cada aula pode ainda ter um progenitor, o que indica que para assistir a dita aula é necessário assistir também à aula progenitora.
 
-É apresentado um exemplo da definição dos cursos na Listagem~\ref{listagem:exemplo-cursos}.
+É apresentado um exemplo da definição de uma disciplina na Listagem~\ref{listagem:exemplo-disciplinas}.
 
 \begin{minipage}[c]{\linewidth}
-    \begin{lstlisting}[caption={Exemplo da definição dos cursos.}, label={listagem:exemplo-cursos}]
+    \begin{lstlisting}[caption={Exemplo da definição de uma disciplina.}, label={listagem:exemplo-disciplinas}]
 <course id="ME 263">
     <config id="1">
         <subpart id="1_Lecture">
@@ -223,11 +223,11 @@ Cada aluno deve assistir a uma das aulas presentes em cada subparte numa única 
     \end{lstlisting}
 \end{minipage}
 
-%TODO: por fazer
+%TODO: por concluir
 
 \subsection{Estudantes}
 
-A definição dos estudantes consiste na atribuição de um identificador único, como o número mecanográfico do aluno, e na especificação dos cursos a que pertence. Na Listagem~\ref{listagem:exemplo-estudantes}, é apresentado um exemplo para ilustrar a definição dos estudantes.
+A definição dos estudantes consiste na atribuição de um identificador único, como o número mecanográfico do aluno, e na especificação das disciplinas a que se inscreveu. Na Listagem~\ref{listagem:exemplo-estudantes}, é apresentado um exemplo para ilustrar a definição dos estudantes.
 
 \begin{minipage}[c]{\linewidth}
 \begin{lstlisting}[caption={Exemplo da definição dos estudantes.}, label={listagem:exemplo-estudantes}]
@@ -512,9 +512,21 @@ As restrições rígidas incluem sobreposições de aulas, conflitos de salas e 
 As restrições flexíveis incluem redução do número de salas ocupadas e redução de intervalos entre aulas. Estas restrições pretendem aumentar a qualidade da solução final.
 
 \begin{compactenum}
-    \item Número de salas: O número de salas distintas utilizadas pelo curso deve ser o menor possível;
+    \item Número de salas: O número de salas distintas utilizadas pela disciplina deve ser o menor possível;
     \item Intervalos entre aulas: Evitar a existência de blocos de tempo sem aulas entre aulas consecutivas.
 \end{compactenum}
+
+\subsection{Decisões tomadas}
+
+\subsubsection{Definição dos cursos}
+
+O curso na base de dados é denominado de \textit{program} para não colidir com as disciplinas. Para que os dados fornecidos pelo padrão fiquem ligados a um curso é utilizada a \textit{tag} \textit{name}. É apresentado um exemplo na Listagem~\ref{listagem:identificacao-curso}.
+
+\begin{minipage}[c]{\linewidth}
+\begin{lstlisting}[caption={Exemplo da identificação do curso.}, label={listagem:identificacao-curso}]
+<problem name="MEIC" nrDays="7" slotsPerDay="288" nrWeeks="9">
+\end{lstlisting}
+\end{minipage}
 
 %TODO: Falta explicar e terminar até próxima entrega
 

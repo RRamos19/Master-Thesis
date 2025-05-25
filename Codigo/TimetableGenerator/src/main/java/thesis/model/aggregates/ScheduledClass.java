@@ -1,6 +1,6 @@
 package thesis.model.aggregates;
 
-import thesis.model.entities.Time;
+import thesis.model.dbms.Time;
 
 import java.util.ArrayList;
 import java.util.List;
