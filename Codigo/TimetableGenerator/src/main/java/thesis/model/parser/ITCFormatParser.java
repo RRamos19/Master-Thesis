@@ -16,11 +16,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-import thesis.model.aggregates.StructuredTimetableData;
-import thesis.model.dbms.Time;
-import thesis.model.entities.*;
+import thesis.model.domain.*;
 
-public class ITCFormatParser implements InputFileReader<StructuredTimetableData> {
+public class ITCFormatParser implements InputFileReader<DomainModel> {
 
     // Principal Tags
     private static final String TEACHERS_TAG          = "teachers";
@@ -46,8 +44,8 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
     private static final String TIME_TAG              = "time";
 
     @Override
-    public StructuredTimetableData readFile(String filePath) {
-        StructuredTimetableData data = new StructuredTimetableData();
+    public DomainModel readFile(String filePath) {
+        DomainModel data = new DomainModel();
 
         FileInputStream inputFile;
         InputStreamReader inputFileReader;
@@ -77,7 +75,15 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                     String qName = startElement.getName().getLocalPart();
 
                     switch (qName) {
+                        case SOLUTION_TAG:
+                            String solutionName = getAttributeValue(startElement, "name");
+
+                            data.setProblemName(solutionName);
+
+                            readSolution(eventReader, data);
+                            break;
                         case PROBLEM_TAG:
+                            String programName = getAttributeValue(startElement, "name");
                             String nrDaysString = getAttributeValue(startElement, "nrDays");
                             String slotsPerDayString = getAttributeValue(startElement, "slotsPerDay");
                             String nrWeeksString = getAttributeValue(startElement, "nrWeeks");
@@ -86,7 +92,9 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                             int slotsPerDay = slotsPerDayString != null ? Integer.parseInt(slotsPerDayString) : 0;
                             int nrWeeks = nrWeeksString != null ? Integer.parseInt(nrWeeksString) : 0;
 
-                            data.storeConfiguration(nrDays, slotsPerDay, nrWeeks);
+                            data.setProblemName(programName);
+
+                            data.setConfiguration(nrDays, nrWeeks, slotsPerDay);
                             break;
                         case OPTIMIZATION_TAG:
                             String timeWeightString = getAttributeValue(startElement, "time");
@@ -97,7 +105,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                             int roomWeight = roomWeightString != null ? Integer.parseInt(roomWeightString) : 0;
                             int distributionWeight = distributionWeightString != null ? Integer.parseInt(distributionWeightString) : 0;
 
-                            data.storeOptimization(timeWeight, roomWeight, distributionWeight);
+                            data.setOptimizationParameters(timeWeight, roomWeight, distributionWeight);
                             break;
                         case ROOMS_TAG:
                             readRooms(eventReader, data);
@@ -110,12 +118,6 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                             break;
                         case TEACHERS_TAG:
                             readTeachers(eventReader, data);
-                            break;
-                        case SOLUTION_TAG:
-                            String solutionName = getAttributeValue(startElement, "name");
-                            String courseId = getAttributeValue(startElement, "course");
-
-                            readSolution(eventReader, data, solutionName, courseId);
                             break;
                     }
                 }
@@ -136,10 +138,11 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
     }
 
     /**
-     * All the assigned classes should be read before encountering the termination tag
+     * All the scheduled lessons should be read before encountering the termination tag
      */
-    private void readSolution(XMLEventReader eventReader, StructuredTimetableData data, String solutionName, String courseId) throws XMLStreamException {
-        Timetable timetable = new Timetable(solutionName, courseId);
+    private void readSolution(XMLEventReader eventReader, DomainModel data) throws XMLStreamException {
+        Timetable timetable = new Timetable(data.getProblemName());
+        data.addTimetable(timetable);
 
         while (eventReader.hasNext()) {
             XMLEvent event;
@@ -150,20 +153,20 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                     StartElement startElement = event.asStartElement();
                     String startElementName = startElement.getName().getLocalPart();
 
-                    switch (startElementName) {
-                        case CLASS_TAG:
-                            String classId = getAttributeValue(startElement, "id");
-                            String roomId = getAttributeValue(startElement, "room");
-                            String days = getAttributeValue(startElement, "days");
-                            String startString = getAttributeValue(startElement, "start");
-                            String lengthString = getAttributeValue(startElement, "length");
-                            String weeks = getAttributeValue(startElement, "weeks");
+                    if (startElementName.equals(CLASS_TAG)) {
+                        String classId = getAttributeValue(startElement, "id");
+                        String roomId = getAttributeValue(startElement, "room");
+                        String days = getAttributeValue(startElement, "days");
+                        String startString = getAttributeValue(startElement, "start");
+                        String lengthString = getAttributeValue(startElement, "length");
+                        String weeks = getAttributeValue(startElement, "weeks");
 
-                            int start = startString != null ? Integer.parseInt(startString) : 0;
-                            int length = lengthString != null ? Integer.parseInt(lengthString) : 0;
+                        int start = startString != null ? Integer.parseInt(startString) : 0;
+                        int length = lengthString != null ? Integer.parseInt(lengthString) : 0;
 
-                            timetable.storeAssignedClass(classId, roomId, days, start, length, weeks);
-                            break;
+                        ScheduledLesson scheduledLesson = new ScheduledLesson(classId, roomId, days, weeks, start, length);
+
+                        timetable.addScheduledLesson(scheduledLesson);
                     }
                     break;
 
@@ -171,13 +174,9 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                     EndElement endElement = event.asEndElement();
                     String endElementName = endElement.getName().getLocalPart();
 
-                    switch (endElementName){
-                        case SOLUTION_TAG:
-                            // If the end of the tag solution is found the function ends and the timetable is stored
-
-                            data.storeTimetable(timetable);
-
-                            return;
+                    if (endElementName.equals(SOLUTION_TAG)) {
+                        // If the end of the tag solution is found the function ends
+                        return;
                     }
                     break;
             }
@@ -187,7 +186,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
     /**
      * All the rooms should be read before encountering the termination tag
      */
-    private void readRooms(XMLEventReader eventReader, StructuredTimetableData data) throws XMLStreamException {
+    private void readRooms(XMLEventReader eventReader, DomainModel data) throws XMLStreamException {
         Room room = null;
 
         while (eventReader.hasNext()) {
@@ -201,9 +200,9 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
 
                     switch (startElementName) {
                         case ROOM_TAG:
-                            String roomId = getAttributeValue(startElement, "id");
+                            String roomName = getAttributeValue(startElement, "id");
 
-                            room = new Room(roomId);
+                            room = new Room(roomName);
                             break;
                         case TRAVEL_TAG:
                             if(room == null){
@@ -216,7 +215,8 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
 
                             int travelPenalty = travelPenaltyString != null ? Integer.parseInt(travelPenaltyString) : 0;
 
-                            room.addTravel(travelRoomId, travelPenalty);
+                            room.addRoomDistance(travelRoomId, travelPenalty);
+
                             break;
                         case UNAVAILABILITY_TAG:
                             if(room == null){
@@ -232,8 +232,8 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                             int start = startString != null ? Integer.parseInt(startString) : 0;
                             int length = lengthString != null ? Integer.parseInt(lengthString) : 0;
 
-                            Time unavail = new Time(days, start, length, weeks);
-                            room.addUnavailability(unavail);
+                            room.addUnavailability(days, weeks, start, length);
+
                             break;
                     }
                     break;
@@ -248,7 +248,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                             // its necessary to add said room to the data
 
                             if(room != null) {
-                                data.storeRoom(room);
+                                data.addRoom(room);
                                 room = null;
                             }
 
@@ -265,7 +265,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
     /**
      * All the courses should be read before encountering the termination tag
      */
-    private void readCourses(XMLEventReader eventReader, StructuredTimetableData data) throws XMLStreamException {
+    private void readCourses(XMLEventReader eventReader, DomainModel data) throws XMLStreamException {
         Course course = null;
         Config config = null;
         Subpart subpart = null;
@@ -285,34 +285,50 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                             String courseId = getAttributeValue(startElement, "id");
 
                             course = new Course(courseId);
+                            data.addCourse(course);
+
                             break;
                         case CONFIG_TAG:
+                            if(course == null){
+                                // Only happens if the file isn't structured correctly
+                                throw new RuntimeException("There is a config tag before a course tag in line " + event.getLocation().getLineNumber());
+                            }
+
                             String configId = getAttributeValue(startElement, "id");
 
                             config = new Config(configId);
+                            course.addConfig(config);
+                            data.addConfig(config);
+
                             break;
                         case SUBPART_TAG:
+                            if(config == null){
+                                // Only happens if the file isn't structured correctly
+                                throw new RuntimeException("There is a subpart tag before a config tag in line " + event.getLocation().getLineNumber());
+                            }
                             String subpartId = getAttributeValue(startElement, "id");
 
                             subpart = new Subpart(subpartId);
+                            config.addSubpart(subpart);
+                            data.addSubpart(subpart);
+
                             break;
                         case CLASS_TAG:
                             if(subpart == null) {
                                 // Only happens if the file isn't structured correctly
-                                throw new RuntimeException("There is a class tag that appears before a subpart tag in line " + event.getLocation().getLineNumber());
+                                throw new RuntimeException("There is a class tag before a subpart tag in line " + event.getLocation().getLineNumber());
                             }
-                            // TODO: Confirmar as turmas e as disciplinas
-                            String subjectId = getAttributeValue(startElement, "id");
-                            String classId = getAttributeValue(startElement, "class");
+                            String classId = getAttributeValue(startElement, "id");
                             String parentClassId = getAttributeValue(startElement, "parent");
 
-                            if(parentClassId == null) {
-                                cls = new ClassUnit(subjectId, classId);
-                            } else {
-                                cls = new ClassUnit(subjectId, classId, parentClassId);
-                            }
-                            subpart.addClass(cls);
+                            cls = new ClassUnit(classId);
+                            data.addClassUnit(cls);
 
+                            if(parentClassId != null) {
+                                cls.setParentClassId(parentClassId);
+                            }
+
+                            subpart.addClassUnit(cls);
                             break;
                         case ROOM_TAG:
                             if(cls == null) {
@@ -325,6 +341,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                             int roomPenalty = roomPenaltyString != null ? Integer.parseInt(roomPenaltyString) : 0;
 
                             cls.addRoom(roomId, roomPenalty);
+
                             break;
                         case TIME_TAG:
                             if(cls == null) {
@@ -342,9 +359,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                             int length = lengthString != null ? Integer.parseInt(lengthString) : 0;
                             int timePenalty = timePenaltyString != null ? Integer.parseInt(timePenaltyString) : 0;
 
-                            Time time = new Time(days, start, length, weeks);
-
-                            cls.addTime(time, timePenalty);
+                            cls.addClassTime(days, weeks, start, length, timePenalty);
                             break;
                     }
                     break;
@@ -358,40 +373,28 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                             // If the end of the tag of a course is found
                             // its necessary to add said course to the data
 
-                            if(course != null) {
-                                data.storeCourse(course);
-                                course = null;
-                            }
+                            course = null;
 
                             break;
                         case CONFIG_TAG:
                             // If the end of the tag of a config is found
                             // its necessary to add said config to the course
 
-                            if(course != null && config != null) {
-                                course.addConfig(config);
-                                config = null;
-                            }
+                            config = null;
 
                             break;
                         case SUBPART_TAG:
                             // If the end of the tag of a subpart is found
                             // its necessary to add said subpart to the config
 
-                            if(config != null && subpart != null) {
-                                config.addSubpart(subpart);
-                                subpart = null;
-                            }
+                            subpart = null;
 
                             break;
                         case CLASS_TAG:
                             // If the end of the tag of a class is found
                             // its necessary to add said class to the subpart
 
-                            if(subpart != null && cls != null) {
-                                subpart.addClass(cls);
-                                cls = null;
-                            }
+                            cls = null;
 
                             break;
                         case COURSES_TAG:
@@ -407,7 +410,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
     /**
      * All the teachers should be read before encountering the termination tag
      */
-    private void readTeachers(XMLEventReader eventReader, StructuredTimetableData data) throws XMLStreamException {
+    private void readTeachers(XMLEventReader eventReader, DomainModel data) throws XMLStreamException {
         Teacher teacher = null;
 
         while (eventReader.hasNext()) {
@@ -422,11 +425,27 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                     switch (startElementName) {
                         case TEACHER_TAG:
                             String teacherIdString = getAttributeValue(startElement,"id");
-                            String teacherName = getAttributeValue(startElement,"name");;
+                            String teacherName = getAttributeValue(startElement,"name");
 
                             int teacherId = teacherIdString != null ? Integer.parseInt(teacherIdString) : 0;
 
                             teacher = new Teacher(teacherId, teacherName);
+                            data.addTeacher(teacher);
+
+                            break;
+                        case CLASS_TAG:
+                            if(teacher == null){
+                                // Only happens if the file isn't structured correctly
+                                throw new RuntimeException("There is a class tag before a teacher tag in line " + event.getLocation().getLineNumber());
+                            }
+                            String classId = getAttributeValue(startElement, "id");
+
+                            ClassUnit cls = data.getClassUnit(classId);
+                            if(cls == null) {
+                                throw new RuntimeException("The class specified in line " + event.getLocation().getLineNumber() + " wasn't defined");
+                            }
+                            cls.addTeacher(teacher.getId());
+
                             break;
                         case UNAVAILABILITY_TAG:
                             if(teacher == null){
@@ -442,9 +461,8 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                             int start = startString != null ? Integer.parseInt(startString) : 0;
                             int length = lengthString != null ? Integer.parseInt(lengthString) : 0;
 
-                            Time unavail = new Time(days, start, length, weeks);
+                            teacher.addUnavailability(days, weeks, start, length);
 
-                            teacher.addUnavailability(unavail);
                             break;
                     }
                     break;
@@ -458,10 +476,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                             // If the end of the tag of a teacher is found
                             // its necessary to add said teacher to the data
 
-                            if(teacher != null) {
-                                data.storeTeacher(teacher);
-                                teacher = null;
-                            }
+                            teacher = null;
 
                             break;
                         case TEACHERS_TAG:
@@ -477,8 +492,8 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
     /**
      * All the restrictions should be read before encountering the termination tag
      */
-    private void readRestrictions(XMLEventReader eventReader, StructuredTimetableData data) throws XMLStreamException {
-        Distribution distribution = null;
+    private void readRestrictions(XMLEventReader eventReader, DomainModel data) throws XMLStreamException {
+        Restriction restriction = null;
 
         while (eventReader.hasNext()) {
             XMLEvent event;
@@ -491,19 +506,27 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
 
                     switch (startElementName) {
                         case DISTRIBUTION_TAG:
-                            String distType = getAttributeValue(startElement, "type");
-                            String distRequired = getAttributeValue(startElement, "required");
+                            String restricType = getAttributeValue(startElement, "type");
+                            String restricRequired = getAttributeValue(startElement, "required");
+                            String restricPenalty = getAttributeValue(startElement, "penalty");
 
-                            distribution = new Distribution(distType, Boolean.parseBoolean(distRequired));
+                            boolean restrictionRequired = Boolean.parseBoolean(restricRequired);
+                            Integer restrictionPenalty = restricPenalty != null ? Integer.parseInt(restricPenalty) : null;
+
+                            restriction = new Restriction(restricType, restrictionPenalty, restrictionRequired);
+
+                            data.addRestriction(restriction);
+
                             break;
                         case CLASS_TAG:
-                            if(distribution == null){
+                            if(restriction == null){
                                 // Only happens if the file isn't structured correctly
                                 throw new RuntimeException("There is a class tag before a distribution tag in line " + event.getLocation().getLineNumber());
                             }
                             String classId = getAttributeValue(startElement, "id");
 
-                            distribution.addClassId(classId);
+                            restriction.addClassUnit(classId);
+
                             break;
                     }
                     break;
@@ -517,10 +540,7 @@ public class ITCFormatParser implements InputFileReader<StructuredTimetableData>
                             // If the end of the tag of a distribution is found
                             // its necessary to add said distribution to the data
 
-                            if(distribution != null){
-                                data.storeDistribution(distribution);
-                                distribution = null;
-                            }
+                            restriction = null;
 
                             break;
                         case DISTRIBUTIONS_TAG:

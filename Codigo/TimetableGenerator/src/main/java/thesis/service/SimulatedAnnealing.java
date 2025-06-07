@@ -1,32 +1,32 @@
 package thesis.service;
 
-import thesis.model.aggregates.StructuredTimetableData;
-import thesis.model.entities.Timetable;
+import thesis.model.domain.DomainModel;
+import thesis.model.persistence.entities.TimetableEntity;
 
-public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, StructuredTimetableData> {
-    private Timetable initialSolution;
+public class SimulatedAnnealing implements HeuristicAlgorithm<TimetableEntity, DomainModel> {
+    private final TimetableEntity initialSolution;
     private final double initialTemperature;
-    private double coolingRate;
-    private final String courseId;
+    private final double coolingRate;
+    private final String program;
     private final double minTemperature;
     private final int k;
 
-    public SimulatedAnnealing(StructuredTimetableData data, InitialSolutionGenerator<Timetable, StructuredTimetableData> initialSolutionGenerator, String courseId, int maxInitialSolutionIterations, double initialTemperature, double minTemperature, double coolingRate, int k) {
+    public SimulatedAnnealing(DomainModel data, InitialSolutionGenerator<TimetableEntity, DomainModel> initialSolutionGenerator, int maxInitialSolutionIterations, double initialTemperature, double minTemperature, double coolingRate, int k) {
         this.initialTemperature = initialTemperature;
         this.minTemperature = minTemperature;
         this.coolingRate = coolingRate;
         this.k = k;
-        this.courseId = courseId;
+        this.program = data.getProblemName();
 
         this.initialSolution = initialSolutionGenerator.generate(data, maxInitialSolutionIterations);
     }
 
     @Override
-    public Timetable execute() {
-        Timetable currentSolution = initialSolution;
+    public TimetableEntity execute() {
+        TimetableEntity currentSolution = initialSolution;
         int currentCost = costFunction(currentSolution);
 
-        Timetable bestSolutionFound = currentSolution;
+        TimetableEntity bestSolutionFound = currentSolution;
         int bestSolutionCost = currentCost;
 
         double temperature = initialTemperature;
@@ -34,7 +34,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, Structu
         int iteration = 0;
         while(temperature > minTemperature) {
             for(int i=0; i < k; i++) {
-                Timetable neighbor = neighborhoodFunction(currentSolution);
+                TimetableEntity neighbor = neighborhoodFunction(currentSolution);
                 int fv = costFunction(neighbor);
 
                 // Minimize the cost
@@ -67,7 +67,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, Structu
         return bestSolutionFound;
     }
 
-    private int costFunction(Timetable solution) {
+    private int costFunction(TimetableEntity solution) {
         // TODO: falta implementar
         return 0;
     }
@@ -81,7 +81,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, Structu
         return 0;
     }
 
-    private Timetable neighborhoodFunction(Timetable curr) {
+    private TimetableEntity neighborhoodFunction(TimetableEntity curr) {
         // TODO: falta implementar
         return null;
     }
