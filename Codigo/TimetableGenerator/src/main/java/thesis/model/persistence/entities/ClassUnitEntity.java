@@ -32,19 +32,19 @@ public class ClassUnitEntity {
             joinColumns = { @JoinColumn(name = "class_id") },
             inverseJoinColumns = { @JoinColumn(name = "teacher_id") }
     )
-    private List<TeacherEntity> teacherEntityClassList = new ArrayList<>();
+    private final List<TeacherEntity> teacherClassEntityList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "classUnit", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<ClassTimeEntity> classTimeEntityList = new ArrayList<>();
+    @OneToMany(mappedBy = "classUnitEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private final List<ClassTimeEntity> classTimeEntityList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "classUnit", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<ClassRoomEntity> classRoomEntityList = new ArrayList<>();
+    @OneToMany(mappedBy = "classUnitEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private final List<ClassRoomEntity> classRoomEntityList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "classUnit", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<ClassRestrictionEntity> classRestrictionEntityList = new ArrayList<>();
+    @OneToMany(mappedBy = "classUnitEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private final List<ClassRestrictionEntity> classRestrictionEntityList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "classUnit", orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<ScheduledLessonEntity> scheduledLessonEntityList = new ArrayList<>();
+    @OneToMany(mappedBy = "classUnitEntity", orphanRemoval = true, fetch = FetchType.EAGER)
+    private final List<ScheduledLessonEntity> scheduledLessonEntityList = new ArrayList<>();
 
     public ClassUnitEntity() {}
 
@@ -91,12 +91,28 @@ public class ClassUnitEntity {
         scheduledLessonEntity.setClassUnit(this);
     }
 
-//    public void addTeacherClass(TeacherClass teacherClass) {
-//        teacherClassList.add(teacherClass);
-//        teacherClass.setClassUnit(this);
-//    }
+    public List<TeacherEntity> getTeacherEntityClassList() {
+        return teacherClassEntityList;
+    }
+
+    public List<ClassTimeEntity> getClassTimeEntityList() {
+        return classTimeEntityList;
+    }
+
+    public List<ClassRoomEntity> getClassRoomEntityList() {
+        return classRoomEntityList;
+    }
+
+    public List<ClassRestrictionEntity> getClassRestrictionEntityList() {
+        return classRestrictionEntityList;
+    }
+
+    public List<ScheduledLessonEntity> getScheduledLessonEntityList() {
+        return scheduledLessonEntityList;
+    }
+
     public void addTeacherClass(TeacherEntity teacherEntity) {
-        teacherEntityClassList.add(teacherEntity);
+        teacherClassEntityList.add(teacherEntity);
     }
 
     public void addClassTime(ClassTimeEntity classTimeEntity) {

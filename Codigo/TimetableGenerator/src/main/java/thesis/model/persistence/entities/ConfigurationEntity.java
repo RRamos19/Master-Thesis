@@ -5,8 +5,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "timetable_configuration")
-public class TimetableConfigurationEntity {
+@Table(name = "configuration")
+public class ConfigurationEntity {
     @Id
     private int id;
 
@@ -22,9 +22,9 @@ public class TimetableConfigurationEntity {
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    public TimetableConfigurationEntity() {}
+    public ConfigurationEntity() {}
 
-    public TimetableConfigurationEntity(int numberDays, int numberWeeks, int slotsPerDay) {
+    public ConfigurationEntity(int numberDays, int numberWeeks, int slotsPerDay) {
         this.id = 0;
         this.numberDays = numberDays;
         this.numberWeeks = numberWeeks;

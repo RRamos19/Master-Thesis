@@ -5,7 +5,7 @@ import thesis.model.persistence.entities.EmbeddableIds.RoomDistancePK;
 
 @Entity
 @Table(name = "room_distance")
-public class RoomDistance {
+public class RoomDistanceEntity {
     @EmbeddedId
     private RoomDistancePK id;
 
@@ -22,9 +22,9 @@ public class RoomDistance {
     @Column(nullable = false)
     private int distance;
 
-    public RoomDistance() {}
+    public RoomDistanceEntity() {}
 
-    public RoomDistance(RoomEntity roomEntity1, RoomEntity roomEntity2, int travelDistance) {
+    public RoomDistanceEntity(RoomEntity roomEntity1, RoomEntity roomEntity2, int travelDistance) {
         this.id = new RoomDistancePK(roomEntity1.getId(), roomEntity2.getId());
         roomEntity1.addRoom1Distance(this);
         roomEntity2.addRoom2Distance(this);
@@ -43,6 +43,10 @@ public class RoomDistance {
 
     public RoomEntity getRoom1() {
         return roomEntity1;
+    }
+
+    public int getDistance() {
+        return distance;
     }
 
     public void setRoom1(RoomEntity roomEntity1) {

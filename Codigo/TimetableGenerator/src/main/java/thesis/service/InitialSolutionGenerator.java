@@ -1,9 +1,12 @@
 package thesis.service;
 
+import java.util.List;
+
 public interface InitialSolutionGenerator<T, S> {
     /**
      * Generates an initial solution
+     *
      * @return The solution generated
      */
-    T generate(S data, int maxIterations);
+    T generate(List<S> unscheduled, int maxIterations);
 }

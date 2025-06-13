@@ -20,8 +20,8 @@ public class SubpartEntity {
     @Column(length = 10, unique = true, nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "subpart", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<ClassUnitEntity> classUnitEntities = new ArrayList<>();
+    @OneToMany(mappedBy = "subpartEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private final List<ClassUnitEntity> classUnitEntities = new ArrayList<>();
 
     public SubpartEntity() {}
 

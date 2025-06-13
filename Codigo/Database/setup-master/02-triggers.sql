@@ -23,15 +23,15 @@ FOR EACH STATEMENT
 EXECUTE FUNCTION delete_oldest_optimization_parameters();
 
 -- Function to delete the timetable_configuration instances
-CREATE FUNCTION delete_oldest_timetable_configuration()
+CREATE FUNCTION delete_oldest_configuration()
 RETURNS TRIGGER AS $$
 BEGIN
-  IF (SELECT COUNT(*) FROM timetable_configuration) > 1 THEN
-    DELETE FROM timetable_configuration
+  IF (SELECT COUNT(*) FROM configuration) > 1 THEN
+    DELETE FROM configuration
     WHERE (number_days, number_weeks, slots_per_day) IN
 	(
       SELECT number_days, number_weeks, slots_per_day
-      FROM timetable_configuration
+      FROM configuration
       ORDER BY created_at ASC
       LIMIT 1
     );
@@ -41,7 +41,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger that prevents the table timetable_configuration from having more than 1 row
-CREATE TRIGGER trigger_delete_oldest_timetable_configuration
-AFTER INSERT ON timetable_configuration
+CREATE TRIGGER trigger_delete_oldest_configuration
+AFTER INSERT ON configuration
 FOR EACH STATEMENT
-EXECUTE FUNCTION delete_oldest_timetable_configuration();
+EXECUTE FUNCTION delete_oldest_configuration();

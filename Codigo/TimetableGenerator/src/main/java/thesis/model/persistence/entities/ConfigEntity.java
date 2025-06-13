@@ -18,7 +18,7 @@ public class ConfigEntity {
     @JoinColumn(name = "course_id", referencedColumnName = "id", nullable = false)
     private CourseEntity courseEntity;
 
-    @OneToMany(mappedBy = "config", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "configEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private final List<SubpartEntity> subpartEntityList = new ArrayList<>();
 
     private String name;

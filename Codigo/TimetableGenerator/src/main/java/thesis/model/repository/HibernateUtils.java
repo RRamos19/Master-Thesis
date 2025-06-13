@@ -32,7 +32,7 @@ public class HibernateUtils {
             cfg.addAnnotatedClass(OptimizationParametersEntity.class);
             cfg.addAnnotatedClass(RestrictionEntity.class);
             cfg.addAnnotatedClass(RoomEntity.class);
-            cfg.addAnnotatedClass(RoomDistance.class);
+            cfg.addAnnotatedClass(RoomDistanceEntity.class);
             cfg.addAnnotatedClass(RoomUnavailabilityEntity.class);
             cfg.addAnnotatedClass(ScheduledLessonEntity.class);
             cfg.addAnnotatedClass(ScheduledLessonTeacherEntity.class);
@@ -41,7 +41,7 @@ public class HibernateUtils {
             //cfg.addAnnotatedClass(TeacherClass.class);
             cfg.addAnnotatedClass(TeacherUnavailabilityEntity.class);
             cfg.addAnnotatedClass(TimetableEntity.class);
-            cfg.addAnnotatedClass(TimetableConfigurationEntity.class);
+            cfg.addAnnotatedClass(ConfigurationEntity.class);
 
             sessionFactory = cfg.buildSessionFactory();
         } catch (Exception ex) {

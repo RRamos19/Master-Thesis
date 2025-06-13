@@ -28,4 +28,9 @@ public class Time {
     public int getLength() {
         return length;
     }
+
+    public boolean checkOverlap(Time other) {
+        return this.startSlot < other.startSlot + other.length &&
+                other.startSlot < this.startSlot + this.length;
+    }
 }

@@ -3,6 +3,8 @@ package thesis.model.persistence.entities;
 import jakarta.persistence.*;
 import thesis.model.persistence.entities.EmbeddableIds.ClassRestrictionPK;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "class_restriction")
 public class ClassRestrictionEntity {
@@ -15,7 +17,6 @@ public class ClassRestrictionEntity {
     private ClassUnitEntity classUnitEntity;
 
     @ManyToOne
-    @MapsId("restrictionId")
     @JoinColumn(name = "restriction_id", referencedColumnName = "id")
     private RestrictionEntity restrictionEntity;
 
@@ -26,8 +27,8 @@ public class ClassRestrictionEntity {
 
     public ClassRestrictionEntity() {}
 
-    public ClassRestrictionEntity(ClassUnitEntity classUnitEntity, RestrictionEntity restrictionEntity, Integer penalty, boolean required) {
-        this.id = new ClassRestrictionPK(classUnitEntity.getId(), restrictionEntity.getId());
+    public ClassRestrictionEntity(UUID classRestrictionId, ClassUnitEntity classUnitEntity, RestrictionEntity restrictionEntity, Integer penalty, boolean required) {
+        this.id = new ClassRestrictionPK(classRestrictionId, classUnitEntity.getId());
         classUnitEntity.addClassRestriction(this);
         this.classUnitEntity = classUnitEntity;
         restrictionEntity.addClassRestriction(this);
@@ -38,10 +39,6 @@ public class ClassRestrictionEntity {
 
     public ClassRestrictionPK getId() {
         return id;
-    }
-
-    public void setId(ClassRestrictionPK id) {
-        this.id = id;
     }
 
     public ClassUnitEntity getClassUnit() {
@@ -59,7 +56,6 @@ public class ClassRestrictionEntity {
 
     public void setRestriction(RestrictionEntity restrictionEntity) {
         this.restrictionEntity = restrictionEntity;
-        this.id.setRestrictionId(restrictionEntity.getId());
     }
 
     public void setPenalty(int penalty) {

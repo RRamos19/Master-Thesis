@@ -15,8 +15,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import thesis.model.domain.*;
+import thesis.model.domain.restrictions.Restriction;
+import thesis.model.domain.restrictions.RestrictionFactory;
 
 public class ITCFormatParser implements InputFileReader<DomainModel> {
 
@@ -44,7 +48,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
     private static final String TIME_TAG              = "time";
 
     @Override
-    public DomainModel readFile(String filePath) {
+    public DomainModel readFile(String filePath) throws ParsingException {
         DomainModel data = new DomainModel();
 
         FileInputStream inputFile;
@@ -78,6 +82,10 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                         case SOLUTION_TAG:
                             String solutionName = getAttributeValue(startElement, "name");
 
+                            if (solutionName == null) {
+                                throw new ParsingException(event.getLocation(), "A name must be specified in the solution tag");
+                            }
+
                             data.setProblemName(solutionName);
 
                             readSolution(eventReader, data);
@@ -88,9 +96,19 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                             String slotsPerDayString = getAttributeValue(startElement, "slotsPerDay");
                             String nrWeeksString = getAttributeValue(startElement, "nrWeeks");
 
-                            int nrDays = nrDaysString != null ? Integer.parseInt(nrDaysString) : 0;
-                            int slotsPerDay = slotsPerDayString != null ? Integer.parseInt(slotsPerDayString) : 0;
-                            int nrWeeks = nrWeeksString != null ? Integer.parseInt(nrWeeksString) : 0;
+                            int nrDays = nrDaysString != null ? Integer.parseInt(nrDaysString) : 7;                 // Default 7 days
+                            int slotsPerDay = slotsPerDayString != null ? Integer.parseInt(slotsPerDayString) : 9;  // Default 9 weeks
+                            int nrWeeks = nrWeeksString != null ? Integer.parseInt(nrWeeksString) : 16;             // Default 1h:30m for each slot
+
+                            List<String> problemTagErrors = new ArrayList<>();
+                            if (programName == null) problemTagErrors.add("name must be specified");
+                            if (nrDays < 1) problemTagErrors.add("nrDays >= 1");
+                            if (slotsPerDay <= 1) problemTagErrors.add("slotsPerDay > 1");
+                            if (nrWeeks < 1) problemTagErrors.add("nrWeeks >= 1");
+                            if (!problemTagErrors.isEmpty()) {
+                                String errorMessage = "The following conditions must be followed: " + String.join(", ", problemTagErrors);
+                                throw new ParsingException(event.getLocation(), errorMessage);
+                            }
 
                             data.setProblemName(programName);
 
@@ -101,9 +119,18 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                             String roomWeightString = getAttributeValue(startElement, "room");
                             String distributionWeightString = getAttributeValue(startElement, "distribution");
 
-                            int timeWeight = timeWeightString != null ? Integer.parseInt(timeWeightString) : 0;
-                            int roomWeight = roomWeightString != null ? Integer.parseInt(roomWeightString) : 0;
-                            int distributionWeight = distributionWeightString != null ? Integer.parseInt(distributionWeightString) : 0;
+                            int timeWeight = timeWeightString != null ? Integer.parseInt(timeWeightString) : 1;                         // Default 1
+                            int roomWeight = roomWeightString != null ? Integer.parseInt(roomWeightString) : 1;                         // Default 1
+                            int distributionWeight = distributionWeightString != null ? Integer.parseInt(distributionWeightString) : 1; // Default 1
+
+                            List<String> optimizationTagErrors = new ArrayList<>();
+                            if (timeWeight < 1) optimizationTagErrors.add("time >= 1");
+                            if (roomWeight < 1) optimizationTagErrors.add("room >= 1");
+                            if (distributionWeight < 1) optimizationTagErrors.add("distribution >= 1");
+                            if (!optimizationTagErrors.isEmpty()) {
+                                String errorMessage = "The following conditions must be followed: " + String.join(", ", optimizationTagErrors);
+                                throw new ParsingException(event.getLocation(), errorMessage);
+                            }
 
                             data.setOptimizationParameters(timeWeight, roomWeight, distributionWeight);
                             break;
@@ -122,7 +149,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                     }
                 }
             } catch (XMLStreamException e) {
-                throw new RuntimeException("Error while processing the XML file. Make sure the file is in UTF-8 format.");
+                throw new ParsingException("Error while processing the XML file. Make sure the file is in UTF-8 format.");
             }
         }
 
@@ -131,8 +158,10 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
             inputFileReader.close();
             inputFile.close();
         } catch (XMLStreamException | IOException xml_e) {
-            throw new RuntimeException("Error while closing the file");
+            throw new ParsingException("Error while closing the file");
         }
+
+        data.verifyValidity();
 
         return data;
     }
@@ -186,7 +215,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
     /**
      * All the rooms should be read before encountering the termination tag
      */
-    private void readRooms(XMLEventReader eventReader, DomainModel data) throws XMLStreamException {
+    private void readRooms(XMLEventReader eventReader, DomainModel data) throws XMLStreamException, ParsingException {
         Room room = null;
 
         while (eventReader.hasNext()) {
@@ -207,7 +236,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                         case TRAVEL_TAG:
                             if(room == null){
                                 // Only happens if the file isn't structured correctly
-                                throw new RuntimeException("There is a travel tag before a room tag in line " + event.getLocation().getLineNumber());
+                                throw new ParsingException(event.getLocation(), "There is a travel tag before a room tag");
                             }
 
                             String travelRoomId = getAttributeValue(startElement, "room");
@@ -221,7 +250,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                         case UNAVAILABILITY_TAG:
                             if(room == null){
                                 // Only happens if the file isn't structured correctly
-                                throw new RuntimeException("There is an unavailability tag before a room tag in line " + event.getLocation().getLineNumber());
+                                throw new ParsingException(event.getLocation(), "There is an unavailability tag before a room tag");
                             }
 
                             String days = getAttributeValue(startElement, "days");
@@ -265,7 +294,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
     /**
      * All the courses should be read before encountering the termination tag
      */
-    private void readCourses(XMLEventReader eventReader, DomainModel data) throws XMLStreamException {
+    private void readCourses(XMLEventReader eventReader, DomainModel data) throws XMLStreamException, ParsingException {
         Course course = null;
         Config config = null;
         Subpart subpart = null;
@@ -291,7 +320,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                         case CONFIG_TAG:
                             if(course == null){
                                 // Only happens if the file isn't structured correctly
-                                throw new RuntimeException("There is a config tag before a course tag in line " + event.getLocation().getLineNumber());
+                                throw new ParsingException(event.getLocation(), "There is a config tag before a course tag");
                             }
 
                             String configId = getAttributeValue(startElement, "id");
@@ -304,7 +333,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                         case SUBPART_TAG:
                             if(config == null){
                                 // Only happens if the file isn't structured correctly
-                                throw new RuntimeException("There is a subpart tag before a config tag in line " + event.getLocation().getLineNumber());
+                                throw new ParsingException(event.getLocation(), "There is a subpart tag before a config tag");
                             }
                             String subpartId = getAttributeValue(startElement, "id");
 
@@ -316,7 +345,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                         case CLASS_TAG:
                             if(subpart == null) {
                                 // Only happens if the file isn't structured correctly
-                                throw new RuntimeException("There is a class tag before a subpart tag in line " + event.getLocation().getLineNumber());
+                                throw new ParsingException(event.getLocation(), "There is a class tag before a subpart tag");
                             }
                             String classId = getAttributeValue(startElement, "id");
                             String parentClassId = getAttributeValue(startElement, "parent");
@@ -333,7 +362,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                         case ROOM_TAG:
                             if(cls == null) {
                                 // Only happens if the file isn't structured correctly
-                                throw new RuntimeException("There is a room tag that appears before a class tag in line " + event.getLocation().getLineNumber());
+                                throw new ParsingException(event.getLocation(), "There is a room tag that appears before a class tag");
                             }
                             String roomId = getAttributeValue(startElement, "id");
                             String roomPenaltyString = getAttributeValue(startElement, "penalty");
@@ -346,7 +375,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                         case TIME_TAG:
                             if(cls == null) {
                                 // Only happens if the file isn't structured correctly
-                                throw new RuntimeException("There is a time tag that appears before a class tag in line " + event.getLocation().getLineNumber());
+                                throw new ParsingException(event.getLocation(), "There is a time tag that appears before a class tag");
                             }
 
                             String days = getAttributeValue(startElement, "days");
@@ -410,7 +439,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
     /**
      * All the teachers should be read before encountering the termination tag
      */
-    private void readTeachers(XMLEventReader eventReader, DomainModel data) throws XMLStreamException {
+    private void readTeachers(XMLEventReader eventReader, DomainModel data) throws XMLStreamException, ParsingException {
         Teacher teacher = null;
 
         while (eventReader.hasNext()) {
@@ -436,13 +465,13 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                         case CLASS_TAG:
                             if(teacher == null){
                                 // Only happens if the file isn't structured correctly
-                                throw new RuntimeException("There is a class tag before a teacher tag in line " + event.getLocation().getLineNumber());
+                                throw new ParsingException(event.getLocation(), "There is a class tag before a teacher tag");
                             }
                             String classId = getAttributeValue(startElement, "id");
 
                             ClassUnit cls = data.getClassUnit(classId);
                             if(cls == null) {
-                                throw new RuntimeException("The class specified in line " + event.getLocation().getLineNumber() + " wasn't defined");
+                                throw new ParsingException(event.getLocation(), "The class " + classId + " wasn't defined previously");
                             }
                             cls.addTeacher(teacher.getId());
 
@@ -450,7 +479,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                         case UNAVAILABILITY_TAG:
                             if(teacher == null){
                                 // Only happens if the file isn't structured correctly
-                                throw new RuntimeException("There is an unavailability tag before a teacher tag in line " + event.getLocation().getLineNumber());
+                                throw new ParsingException(event.getLocation(), "There is an unavailability tag before a teacher tag");
                             }
 
                             String days = getAttributeValue(startElement,"days");
@@ -492,7 +521,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
     /**
      * All the restrictions should be read before encountering the termination tag
      */
-    private void readRestrictions(XMLEventReader eventReader, DomainModel data) throws XMLStreamException {
+    private void readRestrictions(XMLEventReader eventReader, DomainModel data) throws XMLStreamException, ParsingException {
         Restriction restriction = null;
 
         while (eventReader.hasNext()) {
@@ -513,19 +542,33 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                             boolean restrictionRequired = Boolean.parseBoolean(restricRequired);
                             Integer restrictionPenalty = restricPenalty != null ? Integer.parseInt(restricPenalty) : null;
 
-                            restriction = new Restriction(restricType, restrictionPenalty, restrictionRequired);
+                            if(restricType == null) {
+                                throw new ParsingException(event.getLocation(), "The restriction specified has no type");
+                            }
 
-                            data.addRestriction(restriction);
+                            try {
+                                restriction = RestrictionFactory.createRestriction(restricType, restrictionPenalty, restrictionRequired);
 
+                                data.addRestriction(restriction);
+                            } catch (Exception e) {
+                                // TODO: fazer log do erro (provavelmente deve-se ignorar as restricoes que não são suportadas)
+                                throw new ParsingException(event.getLocation(), e.getMessage());
+                            }
                             break;
                         case CLASS_TAG:
                             if(restriction == null){
                                 // Only happens if the file isn't structured correctly
-                                throw new RuntimeException("There is a class tag before a distribution tag in line " + event.getLocation().getLineNumber());
+                                throw new ParsingException(event.getLocation(), "There is a class tag before a distribution tag");
                             }
                             String classId = getAttributeValue(startElement, "id");
 
-                            restriction.addClassUnit(classId);
+                            restriction.addClassUnitId(classId);
+
+                            ClassUnit cls = data.getClassUnit(classId);
+                            if(cls == null) {
+                                throw new ParsingException(event.getLocation(), "The class id provided doesn't exist");
+                            }
+                            cls.addRestriction(restriction);
 
                             break;
                     }

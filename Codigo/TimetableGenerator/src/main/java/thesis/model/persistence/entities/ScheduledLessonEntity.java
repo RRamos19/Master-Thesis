@@ -3,6 +3,8 @@ package thesis.model.persistence.entities;
 import jakarta.persistence.*;
 import thesis.model.persistence.entities.EmbeddableIds.ScheduledLessonPK;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -23,6 +25,9 @@ public class ScheduledLessonEntity {
     @MapsId("timetableId")
     @JoinColumn(name = "timetable_id", referencedColumnName = "id", nullable = false)
     private TimetableEntity timetableEntity;
+
+    @OneToMany(mappedBy = "scheduledLessonEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private final List<ScheduledLessonTeacherEntity> scheduledLessonTeacherList = new ArrayList<>();
 
     @Column(length = 7)
     private String days;
@@ -77,6 +82,10 @@ public class ScheduledLessonEntity {
         return timetableEntity;
     }
 
+    public List<ScheduledLessonTeacherEntity> getScheduledLessonTeacherList() {
+        return scheduledLessonTeacherList;
+    }
+
     public void setTimetable(TimetableEntity timetableEntity) {
         timetableEntity.addScheduledLesson(this);
         this.timetableEntity = timetableEntity;
@@ -113,5 +122,9 @@ public class ScheduledLessonEntity {
 
     public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public void addScheduledLessonTeacherEntity(ScheduledLessonTeacherEntity scheduledLessonTeacherEntity) {
+        scheduledLessonTeacherList.add(scheduledLessonTeacherEntity);
     }
 }

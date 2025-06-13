@@ -6,7 +6,7 @@ import java.util.*;
 
 public class EntityModel {
     // Number of days, slots per day and weeks of the timetable
-    private TimetableConfigurationEntity timetableConfigurationEntity;
+    private ConfigurationEntity configurationEntity;
 
     // Optimization data
     private OptimizationParametersEntity optimizationParametersEntity;
@@ -23,12 +23,12 @@ public class EntityModel {
     private final Map<String, SubpartEntity> subparts = new HashMap<>();              // SubpartId: Subpart
     private final Map<String, ClassUnitEntity> classUnits = new HashMap<>();          // ClassId: ClassUnit
 
-    public void storeConfiguration(TimetableConfigurationEntity timetableConfigurationEntity) {
-        this.timetableConfigurationEntity = timetableConfigurationEntity;
+    public void storeConfiguration(ConfigurationEntity configurationEntity) {
+        this.configurationEntity = configurationEntity;
     }
 
-    public TimetableConfigurationEntity getConfiguration() {
-        return timetableConfigurationEntity;
+    public ConfigurationEntity getConfiguration() {
+        return configurationEntity;
     }
 
     public void storeOptimization(OptimizationParametersEntity optimizationParametersEntity) {
@@ -183,7 +183,7 @@ public class EntityModel {
         }
 
 
-        return String.format("nrDays = %d, slotsPerDay = %d, nrWeeks = %d", timetableConfigurationEntity.getNumberDays(), timetableConfigurationEntity.getSlotsPerDay(), timetableConfigurationEntity.getNumberWeeks()) + "\n" +
+        return String.format("nrDays = %d, slotsPerDay = %d, nrWeeks = %d", configurationEntity.getNumberDays(), configurationEntity.getSlotsPerDay(), configurationEntity.getNumberWeeks()) + "\n" +
                 String.format("timeWeight = %d, roomWeight = %d, distributionWeight = %d", optimizationParametersEntity.getTimeWeight(), optimizationParametersEntity.getRoomWeight(), optimizationParametersEntity.getDistributionWeight()) + "\n" +
                 String.format("nrCourses = %d, nrConfigs = %d, nrSubparts = %d, nrClasses = %d, nrTeachers = %d, nrTimetables = %d, nrRooms = %d, nrDist = %d",
                         courses.size(), nrConfigs, nrSubparts, nrClasses, teachers.size(), timetables.size(), rooms.size(), restrictions.size());
