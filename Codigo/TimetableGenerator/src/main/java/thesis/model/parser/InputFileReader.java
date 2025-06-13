@@ -1,5 +1,5 @@
 package thesis.model.parser;
 
 public interface InputFileReader<T> {
-    T readFile(String filePath);
+    T readFile(String filePath) throws ParsingException;
 }

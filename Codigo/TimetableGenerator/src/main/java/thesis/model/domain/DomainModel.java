@@ -1,5 +1,7 @@
 package thesis.model.domain;
 
+import thesis.model.domain.restrictions.Restriction;
+
 import java.util.*;
 
 public class DomainModel {
@@ -9,7 +11,7 @@ public class DomainModel {
     private final Map<String, Config> configMap = new HashMap<>();          // These three maps are used
     private final Map<String, Subpart> subpartMap = new HashMap<>();        // to simplify the search of
     private final Map<String, ClassUnit> classUnitMap = new HashMap<>();    // specific ids
-    private final Map<String, Restriction> restrictionMap = new HashMap<>();
+    private final List<Restriction> restrictionMap = new ArrayList<>();
     private final Map<String, Room> roomMap = new HashMap<>();
     private final Map<Integer, Teacher> teacherMap = new HashMap<>();
     private final List<Timetable> timetableList = new ArrayList<>();
@@ -39,11 +41,11 @@ public class DomainModel {
     public void setConfiguration(int numDays, int numWeeks, int slotPerDay) {
         timetableConfiguration.setNumDays(numDays);
         timetableConfiguration.setNumWeeks(numWeeks);
-        timetableConfiguration.setSlotPerDay(slotPerDay);
+        timetableConfiguration.setSlotsPerDay(slotPerDay);
     }
 
     public void addRestriction(Restriction restriction) {
-        restrictionMap.put(restriction.getName(), restriction);
+        restrictionMap.add(restriction);
     }
 
     public TimetableConfiguration getTimetableConfiguration() {
@@ -106,11 +108,49 @@ public class DomainModel {
         timetableList.add(timetable);
     }
 
-    public Restriction getRestriction(String restrictionName) {
-        return restrictionMap.get(restrictionName);
+    public List<Restriction> getRestrictions() {
+        return restrictionMap;
     }
 
-    public List<Restriction> getRestrictions() {
-        return new ArrayList<>(restrictionMap.values());
+    /**
+     * Verifies if all of the data present in the model makes sense, for example, the room ids of the classes are present in the Map.
+     * @return
+     */
+    public void verifyValidity() throws RuntimeException {
+        for(ClassUnit cls : classUnitMap.values()) {
+            for(int teacherId : cls.getClassTeacherList()) {
+                if(teacherMap.get(teacherId) == null) {
+                    throw new RuntimeException("ERROR: The teacherId " + teacherId + " in class " + cls.getClassId() + " is invalid!");
+                }
+            }
+            for(String roomId : cls.getRoomIds()) {
+                if(roomMap.get(roomId) == null) {
+                    throw new RuntimeException("ERROR: The roomId " + roomId + " in class " + cls.getClassId() + " is invalid!");
+                }
+            }
+        }
+    }
+
+    @Override
+    public String toString() {
+        int nrConfigs = 0, nrSubparts = 0, nrClasses = 0;
+
+        for (Course c : courseMap.values()){
+            for(Config conf : c.getConfigList()){
+                nrConfigs++;
+                for(Subpart s : conf.getSubpartList()){
+                    nrSubparts++;
+                    for(ClassUnit ignored : s.getClassUnitList()){
+                        nrClasses++;
+                    }
+                }
+            }
+        }
+
+
+        return String.format("nrDays = %d, slotsPerDay = %d, nrWeeks = %d", timetableConfiguration.getNumDays(), timetableConfiguration.getSlotsPerDay(), timetableConfiguration.getNumWeeks()) + "\n" +
+                String.format("timeWeight = %d, roomWeight = %d, distributionWeight = %d", timetableConfiguration.getTimeWeight(), timetableConfiguration.getRoomWeight(), timetableConfiguration.getDistribWeight()) + "\n" +
+                String.format("nrCourses = %d, nrConfigs = %d, nrSubparts = %d, nrClasses = %d, nrTeachers = %d, nrTimetables = %d, nrRooms = %d, nrDist = %d",
+                        courseMap.size(), nrConfigs, nrSubparts, nrClasses, teacherMap.size(), timetableList.size(), roomMap.size(), restrictionMap.size());
     }
 }

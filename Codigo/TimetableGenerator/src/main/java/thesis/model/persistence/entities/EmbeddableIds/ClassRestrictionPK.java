@@ -11,14 +11,14 @@ public class ClassRestrictionPK implements Serializable {
     @Column(name = "class_id")
     private UUID classUnitId;
 
-    @Column(name = "restriction_id")
-    private Integer restrictionId;
+    @Column(name = "id")
+    private UUID id;
 
     public ClassRestrictionPK() {}
 
-    public ClassRestrictionPK(UUID classUnitId, Integer restrictionId) {
+    public ClassRestrictionPK(UUID id, UUID classUnitId) {
+        this.id = id;
         this.classUnitId = classUnitId;
-        this.restrictionId = restrictionId;
     }
 
     public UUID getClassUnitId() {
@@ -29,23 +29,23 @@ public class ClassRestrictionPK implements Serializable {
         this.classUnitId = classUnitId;
     }
 
-    public int getRestrictionId() {
-        return restrictionId;
+    public UUID getId() {
+        return id;
     }
 
-    public void setRestrictionId(int restrictionId) {
-        this.restrictionId = restrictionId;
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     @Override
     public boolean equals(Object o) {
         if(!(o instanceof ClassRestrictionPK)) return false;
         ClassRestrictionPK classRestrictionPK = (ClassRestrictionPK) o;
-        return classUnitId == classRestrictionPK.classUnitId && Objects.equals(restrictionId, classRestrictionPK.restrictionId);
+        return classUnitId == classRestrictionPK.classUnitId && Objects.equals(id, classRestrictionPK.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(classUnitId, restrictionId);
+        return Objects.hash(classUnitId, id);
     }
 }

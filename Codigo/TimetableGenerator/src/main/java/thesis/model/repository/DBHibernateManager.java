@@ -14,48 +14,48 @@ public class DBHibernateManager implements DBManager<EntityModel> {
         try(Session session = HibernateUtils.getSessionFactory().openSession()) {
             Transaction tx = session.beginTransaction();
 
-            OptimizationParametersEntity optmizParams = session.createQuery("SELECT a from OptimizationParameters a", OptimizationParametersEntity.class).getResultList().get(0);
+            OptimizationParametersEntity optmizParams = genericSelectAllHibernateQuery(session, OptimizationParametersEntity.class).get(0);
             data.storeOptimization(optmizParams);
 
-            TimetableConfigurationEntity timetableConfig = session.createQuery("SELECT a from TimetableConfiguration a", TimetableConfigurationEntity.class).getResultList().get(0);
+            ConfigurationEntity timetableConfig =  genericSelectAllHibernateQuery(session, ConfigurationEntity.class).get(0);
             data.storeConfiguration(timetableConfig);
 
-            List<TeacherEntity> teacherEntityList = session.createQuery("SELECT a from Teacher a", TeacherEntity.class).getResultList();
+            List<TeacherEntity> teacherEntityList = genericSelectAllHibernateQuery(session, TeacherEntity.class);
             for(TeacherEntity t : teacherEntityList) {
                 data.storeTeacher(t);
             }
 
-            List<CourseEntity> courseEntityList = session.createQuery("SELECT a from Course a", CourseEntity.class).getResultList();
+            List<CourseEntity> courseEntityList = genericSelectAllHibernateQuery(session, CourseEntity.class);
             for(CourseEntity c : courseEntityList) {
                 data.storeCourse(c);
             }
 
-            List<ConfigEntity> configEntityList = session.createQuery("SELECT a from Config a", ConfigEntity.class).getResultList();
+            List<ConfigEntity> configEntityList = genericSelectAllHibernateQuery(session, ConfigEntity.class);
             for(ConfigEntity c : configEntityList) {
                 data.storeConfig(c);
             }
 
-            List<SubpartEntity> subpartEntityList = session.createQuery("SELECT a from Subpart a", SubpartEntity.class).getResultList();
+            List<SubpartEntity> subpartEntityList = genericSelectAllHibernateQuery(session, SubpartEntity.class);
             for(SubpartEntity s : subpartEntityList) {
                 data.storeSubpart(s);
             }
 
-            List<ClassUnitEntity> classList = session.createQuery("SELECT a from ClassUnit a", ClassUnitEntity.class).getResultList();
+            List<ClassUnitEntity> classList = genericSelectAllHibernateQuery(session, ClassUnitEntity.class);
             for(ClassUnitEntity c : classList) {
                 data.storeClassUnit(c);
             }
 
-            List<RestrictionEntity> restrictionEntityList = session.createQuery("SELECT a from Restriction a", RestrictionEntity.class).getResultList();
+            List<RestrictionEntity> restrictionEntityList = genericSelectAllHibernateQuery(session, RestrictionEntity.class);
             for(RestrictionEntity r : restrictionEntityList) {
                 data.storeRestriction(r);
             }
 
-            List<RoomEntity> roomEntityList = session.createQuery("SELECT a from Room a", RoomEntity.class).getResultList();
+            List<RoomEntity> roomEntityList = genericSelectAllHibernateQuery(session, RoomEntity.class);
             for(RoomEntity r : roomEntityList) {
                 data.storeRoom(r);
             }
 
-            List<TimetableEntity> timetableEntityList = session.createQuery("SELECT a from Timetable a", TimetableEntity.class).getResultList();
+            List<TimetableEntity> timetableEntityList = genericSelectAllHibernateQuery(session, TimetableEntity.class);
             for(TimetableEntity t : timetableEntityList) {
                 data.storeTimetable(t);
             }
@@ -65,6 +65,20 @@ public class DBHibernateManager implements DBManager<EntityModel> {
 
         return data;
     }
+
+
+    /**
+     * Simplifies the construction of the select all query for hibernate
+     * @param session Session used to connect to the database
+     * @param classTable Class of the table to be accessed
+     * @return List of objects present in the database
+     * @param <T> Generic type to simplify the input and output
+     */
+    private <T> List<T> genericSelectAllHibernateQuery(Session session, Class<T> classTable) {
+        String entityName = session.getMetamodel().entity(classTable).getName();
+        return session.createQuery("Select a from " + entityName + " a", classTable).getResultList();
+    }
+
 
     public void storeData(EntityModel data) {
         try(Session session = HibernateUtils.getSessionFactory().openSession()) {
@@ -130,9 +144,19 @@ public class DBHibernateManager implements DBManager<EntityModel> {
         }
     }
 
+
+    /**
+     * Saves or updates the data provided on the database
+     * @param session Session used to connect to the database
+     * @param o Object that is to be stored
+     * @param objId Primary key of the object provided
+     * @return Either the same object provided in the case of persist or the return of the merge
+     * @param <T> Type of the object provided
+     */
     private <T> T saveOnDatabase(Session session, T o, Object objId) {
-        // If the object isn't found then we need to persist to create the entity in the database
         if(objId == null || session.find(o.getClass(), objId) == null) {
+            // If the object isn't found in the DB then a persist
+            // is needed to create the entity in the database
             session.persist(o);
             return o;
         } else {

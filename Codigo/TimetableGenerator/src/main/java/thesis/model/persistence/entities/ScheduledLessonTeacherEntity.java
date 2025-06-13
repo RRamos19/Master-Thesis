@@ -26,7 +26,9 @@ public class ScheduledLessonTeacherEntity {
 
     public ScheduledLessonTeacherEntity(TeacherEntity teacherEntity, ScheduledLessonEntity scheduledLessonEntity) {
         this.id = new ScheduledLessonTeacherPK(scheduledLessonEntity.getId(), teacherEntity.getId());
+        teacherEntity.addScheduledLessonTeacherEntity(this);
         this.teacherEntity = teacherEntity;
+        scheduledLessonEntity.addScheduledLessonTeacherEntity(this);
         this.scheduledLessonEntity = scheduledLessonEntity;
     }
 

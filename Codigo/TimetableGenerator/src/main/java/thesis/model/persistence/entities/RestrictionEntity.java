@@ -15,8 +15,8 @@ public class RestrictionEntity {
     @Column(length = 30, unique = true)
     private String name;
 
-    @OneToMany(mappedBy = "restriction", orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<ClassRestrictionEntity> classRestrictionEntityList = new ArrayList<>();
+    @OneToMany(mappedBy = "restrictionEntity", orphanRemoval = true, fetch = FetchType.EAGER)
+    private final List<ClassRestrictionEntity> classRestrictionEntityList = new ArrayList<>();
 
     public RestrictionEntity() {}
 
@@ -39,5 +39,9 @@ public class RestrictionEntity {
     public void addClassRestriction(ClassRestrictionEntity classRestrictionEntity) {
         classRestrictionEntityList.add(classRestrictionEntity);
         classRestrictionEntity.setRestriction(this);
+    }
+
+    public List<ClassRestrictionEntity> getClassRestrictionEntityList() {
+        return classRestrictionEntityList;
     }
 }

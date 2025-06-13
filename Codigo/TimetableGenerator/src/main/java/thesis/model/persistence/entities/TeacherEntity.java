@@ -15,12 +15,14 @@ public class TeacherEntity {
     @Column(length = 30, nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<TeacherUnavailabilityEntity> teacherUnavailabilityEntityList = new ArrayList<>();
+    @OneToMany(mappedBy = "teacherEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private final List<TeacherUnavailabilityEntity> teacherUnavailabilityEntityList = new ArrayList<>();
 
-    //@OneToMany(mappedBy = "teacher", orphanRemoval = true, fetch = FetchType.EAGER)
-    @ManyToMany(mappedBy = "teacherClassList", fetch = FetchType.EAGER)
-    private List<ClassUnitEntity> teacherClassList = new ArrayList<>();
+    @ManyToMany(mappedBy = "teacherClassEntityList", fetch = FetchType.EAGER)
+    private final List<ClassUnitEntity> teacherClassList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "teacherEntity", orphanRemoval = true, fetch = FetchType.EAGER)
+    private final List<ScheduledLessonTeacherEntity> scheduledLessonTeacherEntityList = new ArrayList<>();
 
     public TeacherEntity() {}
 
@@ -46,11 +48,19 @@ public class TeacherEntity {
         teacherUnav.setTeacher(this);
     }
 
-//    public void addTeacherClass(TeacherClass teacherClass) {
-//        teacherClassList.add(teacherClass);
-//        teacherClass.setTeacher(this);
-//    }
+    public List<TeacherUnavailabilityEntity> getTeacherUnavailabilityEntityList() {
+        return teacherUnavailabilityEntityList;
+    }
+
+    public List<ClassUnitEntity> getTeacherClassList() {
+        return teacherClassList;
+    }
+
     public void addTeacherClass(ClassUnitEntity cls) {
         teacherClassList.add(cls);
+    }
+
+    public void addScheduledLessonTeacherEntity(ScheduledLessonTeacherEntity scheduledLessonTeacherEntity) {
+        scheduledLessonTeacherEntityList.add(scheduledLessonTeacherEntity);
     }
 }

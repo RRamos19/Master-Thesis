@@ -3,7 +3,7 @@ CREATE TABLE teacher (
     name VARCHAR(30) NOT NULL
 );
 
-CREATE TABLE course (
+CREATE TABLE course ( -- Por alterar
 	id UUID PRIMARY KEY,
     name VARCHAR(10) NOT NULL UNIQUE
 );
@@ -37,19 +37,20 @@ CREATE TABLE timetable (
 	creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE restriction (
+CREATE TABLE restriction ( -- Por alterar
 	id SERIAL PRIMARY KEY,
 	name VARCHAR(30) UNIQUE
 );
 
-CREATE TABLE class_restriction (
+CREATE TABLE class_restriction ( -- Por alterar
+	id UUID,
 	class_id UUID,
 	restriction_id INT,
 	penalty INT,
 	required BOOL NOT NULL,
 	CONSTRAINT class_restriction_class_fk FOREIGN KEY (class_id) REFERENCES class_unit(id),
 	CONSTRAINT class_restriction_restriction_fk FOREIGN KEY (restriction_id) REFERENCES restriction(id),
-	CONSTRAINT class_restriction_pk PRIMARY KEY (class_id, restriction_id)
+	CONSTRAINT class_restriction_pk PRIMARY KEY (id, class_id)
 );
 
 CREATE TABLE room (
@@ -148,7 +149,7 @@ CREATE TABLE optimization_parameters (
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE timetable_configuration (
+CREATE TABLE configuration (
 	id SERIAL PRIMARY KEY,
 	number_days INT NOT NULL,
 	number_weeks INT NOT NULL,

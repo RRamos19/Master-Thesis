@@ -18,8 +18,8 @@ public class TimetableEntity {
     @Column(length = 10, nullable = false)
     private String program;
 
-    @OneToMany(mappedBy = "timetable", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<ScheduledLessonEntity> scheduledLessonEntityList = new ArrayList<>();
+    @OneToMany(mappedBy = "timetableEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private final List<ScheduledLessonEntity> scheduledLessonEntityList = new ArrayList<>();
 
     public TimetableEntity() {}
 
@@ -37,6 +37,10 @@ public class TimetableEntity {
 
     public String getProgram() {
         return program;
+    }
+
+    public List<ScheduledLessonEntity> getScheduledLessonEntityList() {
+        return scheduledLessonEntityList;
     }
 
     public void setProgram(String program) {

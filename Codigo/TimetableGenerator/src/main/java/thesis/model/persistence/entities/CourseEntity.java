@@ -16,7 +16,7 @@ public class CourseEntity {
     @Column(length = 10, unique = true, nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "courseEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private final List<ConfigEntity> configEntityList = new ArrayList<>();
 
     public CourseEntity() {}

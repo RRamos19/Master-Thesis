@@ -15,20 +15,20 @@ public class RoomEntity {
     @Column(length = 6, unique = true, nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "room1", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<RoomDistance> room1DistanceList = new ArrayList<>();
+    @OneToMany(mappedBy = "roomEntity1", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private final List<RoomDistanceEntity> room1DistanceList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "room2", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<RoomDistance> room2DistanceList = new ArrayList<>();
+    @OneToMany(mappedBy = "roomEntity2", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private final List<RoomDistanceEntity> room2DistanceList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<RoomUnavailabilityEntity> roomUnavailabilityEntityList = new ArrayList<>();
+    @OneToMany(mappedBy = "roomEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private final List<RoomUnavailabilityEntity> roomUnavailabilityEntityList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "room", orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<ScheduledLessonEntity> scheduledLessonEntityList = new ArrayList<>();
+    @OneToMany(mappedBy = "roomEntity", orphanRemoval = true, fetch = FetchType.EAGER)
+    private final List<ScheduledLessonEntity> scheduledLessonEntityList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "room", orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<ClassRoomEntity> classRoomEntityList = new ArrayList<>();
+    @OneToMany(mappedBy = "roomEntity", orphanRemoval = true, fetch = FetchType.EAGER)
+    private final List<ClassRoomEntity> classRoomEntityList = new ArrayList<>();
 
     public RoomEntity() {}
 
@@ -48,11 +48,11 @@ public class RoomEntity {
         return name;
     }
 
-    public List<RoomDistance> getRoom1DistanceList() {
+    public List<RoomDistanceEntity> getRoom1DistanceList() {
         return room1DistanceList;
     }
 
-    public List<RoomDistance> getRoom2DistanceList() {
+    public List<RoomDistanceEntity> getRoom2DistanceList() {
         return room2DistanceList;
     }
 
@@ -64,14 +64,14 @@ public class RoomEntity {
         return scheduledLessonEntityList;
     }
 
-    public void addRoom1Distance(RoomDistance roomDistance) {
-        room1DistanceList.add(roomDistance);
-        roomDistance.setRoom1(this);
+    public void addRoom1Distance(RoomDistanceEntity roomDistanceEntity) {
+        room1DistanceList.add(roomDistanceEntity);
+        roomDistanceEntity.setRoom1(this);
     }
 
-    public void addRoom2Distance(RoomDistance roomDistance) {
-        room2DistanceList.add(roomDistance);
-        roomDistance.setRoom2(this);
+    public void addRoom2Distance(RoomDistanceEntity roomDistanceEntity) {
+        room2DistanceList.add(roomDistanceEntity);
+        roomDistanceEntity.setRoom2(this);
     }
 
     public void addRoomUnavailability(RoomUnavailabilityEntity roomUnavailabilityEntity) {

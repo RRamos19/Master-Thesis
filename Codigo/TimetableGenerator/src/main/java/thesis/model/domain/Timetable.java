@@ -1,28 +1,31 @@
 package thesis.model.domain;
 
-import thesis.model.persistence.entities.ScheduledLessonEntity;
-
 import java.util.*;
 
-public class Timetable {
-    private String name;
-    private final List<ScheduledLesson> scheduledLessonList = new ArrayList<>();
+public class Timetable implements Cloneable {
+    private String program;
+    private List<ScheduledLesson> scheduledLessonList = new ArrayList<>();
 
-    public Timetable(String name) {
-        this.name = name;
+    public Timetable() {}
+
+    public Timetable(String program) {
+        this.program = program;
     }
 
     public List<ScheduledLesson> getScheduledLessonList() {
         return scheduledLessonList;
     }
 
-    public void addScheduledLesson(ScheduledLesson scheduledLesson) {
-        scheduledLessonList.add(scheduledLesson);
+    public void setProgram(String program) {
+        this.program = program;
     }
 
-    public boolean isScheduleComplete() {
-        // TODO: por completar
-        return false;
+    public String getProgram() {
+        return program;
+    }
+
+    public void addScheduledLesson(ScheduledLesson scheduledLesson) {
+        scheduledLessonList.add(scheduledLesson);
     }
 
     // TODO: Temporário, eliminar quando deixar de ser necessário
@@ -81,6 +84,17 @@ public class Timetable {
             }
             row.append("|");
             System.out.println(row);
+        }
+    }
+
+    @Override
+    public Timetable clone() {
+        try {
+            Timetable clone = (Timetable) super.clone();
+            clone.scheduledLessonList = new ArrayList<>(scheduledLessonList);
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
         }
     }
 }

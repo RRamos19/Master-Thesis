@@ -6,7 +6,7 @@ public class TimetableConfiguration {
     private int distribWeight;
     private int numDays;
     private int numWeeks;
-    private int slotPerDay;
+    private int slotsPerDay;
 
     public int getTimeWeight() {
         return timeWeight;
@@ -48,11 +48,11 @@ public class TimetableConfiguration {
         this.numWeeks = numWeeks;
     }
 
-    public int getSlotPerDay() {
-        return slotPerDay;
+    public int getSlotsPerDay() {
+        return slotsPerDay;
     }
 
-    public void setSlotPerDay(int slotPerDay) {
-        this.slotPerDay = slotPerDay;
+    public void setSlotsPerDay(int slotsPerDay) {
+        this.slotsPerDay = slotsPerDay;
     }
 }

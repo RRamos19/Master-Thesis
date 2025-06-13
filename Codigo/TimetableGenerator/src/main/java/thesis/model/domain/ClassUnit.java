@@ -1,11 +1,9 @@
 package thesis.model.domain;
 
 import javafx.util.Pair;
+import thesis.model.domain.restrictions.Restriction;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ClassUnit {
     private String classId;
@@ -13,7 +11,8 @@ public class ClassUnit {
 
     private final List<Pair<Time, Integer>> classTimesList = new ArrayList<>(); // List of pairs of time and associated penalty
     private final List<Integer> classTeacherList = new ArrayList<>();
-    private final Map<String, Integer> classRoomIds = new HashMap<>(); // RoomId : penalty
+    private final Map<String, Integer> classRoomPenalties = new HashMap<>(); // RoomId : penalty
+    private final List<Restriction> restrictionList = new ArrayList<>();
 
     public ClassUnit(String classId) {
         this.classId = classId;
@@ -44,11 +43,15 @@ public class ClassUnit {
     }
 
     public void addRoom(String roomId, int penalty) {
-        classRoomIds.put(roomId, penalty);
+        classRoomPenalties.put(roomId, penalty);
     }
 
-    public Map<String, Integer> getRoomIds() {
-        return classRoomIds;
+    public Set<String> getRoomIds() {
+        return classRoomPenalties.keySet();
+    }
+
+    public Map<String, Integer> getClassRoomPenalties() {
+        return classRoomPenalties;
     }
 
     public void addTeacher(int teacherId) {
@@ -57,5 +60,13 @@ public class ClassUnit {
 
     public List<Integer> getClassTeacherList() {
         return classTeacherList;
+    }
+
+    public void addRestriction(Restriction r) {
+        restrictionList.add(r);
+    }
+
+    public List<Restriction> getRestrictionList() {
+        return restrictionList;
     }
 }
