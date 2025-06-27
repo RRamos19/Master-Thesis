@@ -1,7 +1,7 @@
 package thesis.model.persistence.entities;
 
 import jakarta.persistence.*;
-import thesis.model.persistence.entities.EmbeddableIds.ClassTimePK;
+import thesis.model.persistence.entities.embeddableids.ClassTimePK;
 
 import java.util.UUID;
 

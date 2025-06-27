@@ -41,7 +41,7 @@ public class ClassUnitEntity {
     private final List<ClassRoomEntity> classRoomEntityList = new ArrayList<>();
 
     @OneToMany(mappedBy = "classUnitEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private final List<ClassRestrictionEntity> classRestrictionEntityList = new ArrayList<>();
+    private final List<ClassConstraintEntity> classConstraintEntityList = new ArrayList<>();
 
     @OneToMany(mappedBy = "classUnitEntity", orphanRemoval = true, fetch = FetchType.EAGER)
     private final List<ScheduledLessonEntity> scheduledLessonEntityList = new ArrayList<>();
@@ -78,8 +78,8 @@ public class ClassUnitEntity {
         return parentClass;
     }
 
-    public List<ClassRestrictionEntity> getClassRestrictionList() {
-        return classRestrictionEntityList;
+    public List<ClassConstraintEntity> getClassRestrictionList() {
+        return classConstraintEntityList;
     }
 
     public SubpartEntity getSubpart() {
@@ -103,8 +103,8 @@ public class ClassUnitEntity {
         return classRoomEntityList;
     }
 
-    public List<ClassRestrictionEntity> getClassRestrictionEntityList() {
-        return classRestrictionEntityList;
+    public List<ClassConstraintEntity> getClassRestrictionEntityList() {
+        return classConstraintEntityList;
     }
 
     public List<ScheduledLessonEntity> getScheduledLessonEntityList() {
@@ -123,7 +123,7 @@ public class ClassUnitEntity {
         classRoomEntityList.add(classRoomEntity);
     }
 
-    public void addClassRestriction(ClassRestrictionEntity classRestrictionEntity) {
-        classRestrictionEntityList.add(classRestrictionEntity);
+    public void addClassConstraint(ClassConstraintEntity classConstraintEntity) {
+        classConstraintEntityList.add(classConstraintEntity);
     }
 }

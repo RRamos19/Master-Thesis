@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Subpart {
-    private String subpartId;
-    private List<ClassUnit> classUnitList = new ArrayList<>();
+    private final String subpartId;
+    private final List<ClassUnit> classUnitList = new ArrayList<>();
 
     public Subpart(String subpartId) {
         this.subpartId = subpartId;

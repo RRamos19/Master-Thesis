@@ -23,29 +23,29 @@ public class HibernateUtils {
             Configuration cfg = new Configuration();
             cfg.addProperties(props);
 
-            cfg.addAnnotatedClass(ClassRestrictionEntity.class);
+            cfg.addAnnotatedClass(ClassConstraintEntity.class);
             cfg.addAnnotatedClass(ClassRoomEntity.class);
             cfg.addAnnotatedClass(ClassTimeEntity.class);
             cfg.addAnnotatedClass(ClassUnitEntity.class);
             cfg.addAnnotatedClass(ConfigEntity.class);
+            cfg.addAnnotatedClass(ConfigurationEntity.class);
+            cfg.addAnnotatedClass(ConstraintEntity.class);
+            cfg.addAnnotatedClass(ConstraintTypeEntity.class);
             cfg.addAnnotatedClass(CourseEntity.class);
             cfg.addAnnotatedClass(OptimizationParametersEntity.class);
-            cfg.addAnnotatedClass(RestrictionEntity.class);
-            cfg.addAnnotatedClass(RoomEntity.class);
             cfg.addAnnotatedClass(RoomDistanceEntity.class);
+            cfg.addAnnotatedClass(RoomEntity.class);
             cfg.addAnnotatedClass(RoomUnavailabilityEntity.class);
             cfg.addAnnotatedClass(ScheduledLessonEntity.class);
             cfg.addAnnotatedClass(ScheduledLessonTeacherEntity.class);
             cfg.addAnnotatedClass(SubpartEntity.class);
             cfg.addAnnotatedClass(TeacherEntity.class);
-            //cfg.addAnnotatedClass(TeacherClass.class);
             cfg.addAnnotatedClass(TeacherUnavailabilityEntity.class);
             cfg.addAnnotatedClass(TimetableEntity.class);
-            cfg.addAnnotatedClass(ConfigurationEntity.class);
 
             sessionFactory = cfg.buildSessionFactory();
         } catch (Exception ex) {
-            throw new RuntimeException("Errow while loading Hibernate configuration: " + ex.getMessage(), ex);
+            throw new RuntimeException("Error while loading Hibernate configuration: " + ex.getMessage(), ex);
         }
     }
 

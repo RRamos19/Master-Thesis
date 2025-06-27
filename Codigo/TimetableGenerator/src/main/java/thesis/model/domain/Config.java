@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Config {
     private final String configId;
-    private List<Subpart> subpartList = new ArrayList<>();
+    private final List<Subpart> subpartList = new ArrayList<>();
 
     public Config(String configId) {
         this.configId = configId;

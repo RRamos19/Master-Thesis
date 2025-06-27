@@ -1,17 +1,19 @@
 package thesis;
 
+import thesis.model.domain.ClassUnit;
 import thesis.model.domain.DomainModel;
 import thesis.model.domain.Timetable;
 import thesis.model.mapper.ModelConverter;
-import thesis.model.parser.ParsingException;
+import thesis.model.domain.exceptions.ParsingException;
 import thesis.model.persistence.EntityModel;
 import thesis.model.repository.DBHibernateManager;
 import thesis.model.repository.DBManager;
 import thesis.model.repository.HibernateUtils;
 import thesis.model.parser.ITCFormatParser;
 import thesis.model.parser.InputFileReader;
-import thesis.service.MullerSolutionGenerator;
-import thesis.service.SimulatedAnnealing;
+import thesis.service.initialsolutiongenerator.InitialSolutionGenerator;
+import thesis.service.initialsolutiongenerator.MullerSolutionGenerator;
+import thesis.service.solutionoptimizer.SimulatedAnnealing;
 
 public class Main {
     public static void main(String[] args) {
@@ -33,6 +35,7 @@ public class Main {
         DomainModel data = null;
         try {
             data = inputFileReader.readFile("../../lums-sum17.xml");
+            //data = inputFileReader.readFile("../../pu-d9-fal19.xml");
 
             System.out.println(data);
             System.out.println();
@@ -40,20 +43,11 @@ public class Main {
             System.out.println(e.getMessage());
         }
 
-        try {
-            DomainModel solution = inputFileReader.readFile("../../solution-agh-fis-spr17.xml");
-
-            System.out.println(solution);
-            System.out.println();
-        } catch(ParsingException e) {
-            System.out.println(e.getMessage());
-        }
-
         assert(data != null);
 
-        MullerSolutionGenerator initialSolutionGen = new MullerSolutionGenerator(data);
+        InitialSolutionGenerator<Timetable, ClassUnit> initialSolutionGen = new MullerSolutionGenerator(data);
         SimulatedAnnealing simulatedAnnealing = new SimulatedAnnealing(data, initialSolutionGen, 1000, 1000, 0.001, 100, 5);
-        Timetable generatedSolution = simulatedAnnealing.execute();
+        //Timetable generatedSolution = simulatedAnnealing.execute();
 
         //dbHibernateManager.storeData(dBData);
 

@@ -1,8 +1,8 @@
 package thesis.model.mapper;
 
 import thesis.model.domain.*;
-import thesis.model.domain.restrictions.Restriction;
-import thesis.model.domain.restrictions.RestrictionFactory;
+import thesis.model.domain.Constraint;
+import thesis.model.domain.constraints.ConstraintFactory;
 import thesis.model.persistence.EntityModel;
 import thesis.model.persistence.entities.*;
 
@@ -53,7 +53,7 @@ public class ModelConverter {
                     config.addSubpart(subpart);
                     data.addSubpart(subpart);
                     for(ClassUnitEntity classUnitEntity : subpartEntity.getClassUnits()) {
-                        ClassUnit classUnit = new ClassUnit(classUnitEntity.getName());
+                        ClassUnit classUnit = new ClassUnit(data, classUnitEntity.getName());
                         subpart.addClassUnit(classUnit);
                         data.addClassUnit(classUnit);
                         for(TeacherEntity teacherEntity : classUnitEntity.getTeacherEntityClassList()) {
@@ -79,7 +79,7 @@ public class ModelConverter {
 
         // Add the timetables, scheduled lessons and respective teachers
         for(TimetableEntity timetableEntity : entityModel.getTimetables()) {
-            Timetable timetable = new Timetable(timetableEntity.getProgram());
+            Timetable timetable = new Timetable(data);
             data.addTimetable(timetable);
             for(ScheduledLessonEntity scheduledLessonEntity : timetableEntity.getScheduledLessonEntityList()) {
                 ScheduledLesson scheduledLesson = new ScheduledLesson(
@@ -96,12 +96,16 @@ public class ModelConverter {
             }
         }
 
-        for(RestrictionEntity restrictionEntity : entityModel.getRestrictions()) {
-            for(ClassRestrictionEntity classRestriction : restrictionEntity.getClassRestrictionEntityList()) {
-                Restriction restriction = RestrictionFactory.createRestriction(restrictionEntity.getName(), classRestriction.getPenalty(), classRestriction.getRequired());
+        for(ConstraintTypeEntity constraintTypeEntity : entityModel.getConstraintTypes()) {
+            for(ConstraintEntity constraintEntity : constraintTypeEntity.getConstraintEntityList()) {
+                for (ClassConstraintEntity classRestriction : constraintEntity.getClassRestrictionEntityList()) {
+                    Constraint constraint = ConstraintFactory.createConstraint(constraintEntity.getConstraintTypeEntity().getName(), constraintEntity.getPenalty(), constraintEntity.getRequired());
 
-                for(ClassUnitEntity classUnitEntity : entityModel.getClassUnits()) {
-                    // TODO: Fazer em conjunto com a alteração da BD
+                    data.addConstraint(constraint);
+
+                    for (ClassUnitEntity classUnitEntity : entityModel.getClassUnits()) {
+                        // TODO: Fazer em conjunto com a alteração da BD
+                    }
                 }
             }
         }

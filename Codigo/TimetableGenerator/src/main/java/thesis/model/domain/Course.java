@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Course {
     private final String courseId;
-    private List<Config> configList = new ArrayList<>();
+    private final List<Config> configList = new ArrayList<>();
 
     public Course(String courseId) {
         this.courseId = courseId;

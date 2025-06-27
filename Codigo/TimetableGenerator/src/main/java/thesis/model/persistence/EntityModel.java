@@ -16,7 +16,7 @@ public class EntityModel {
     private final Map<Integer, TeacherEntity> teachers = new HashMap<>();           // TeacherId: Teacher
     private final Map<UUID, TimetableEntity> timetables = new HashMap<>();          // TimetableId: Timetable
     private final Map<String, RoomEntity> rooms = new HashMap<>();                  // RoomName: Room
-    private final Map<String, RestrictionEntity> restrictions = new HashMap<>();    // RestrictionName: Restriction
+    private final Map<String, ConstraintTypeEntity> constraintTypes = new HashMap<>();    // RestrictionName: Restriction
 
     // Only used to simplify the search of configs, subparts and classes
     private final Map<String, ConfigEntity> configs = new HashMap<>();                // ConfigId: Config
@@ -99,23 +99,23 @@ public class EntityModel {
         return teachers.values();
     }
 
-    public void storeRestriction(RestrictionEntity restrictionEntity) {
-        restrictions.put(restrictionEntity.getName(), restrictionEntity);
+    public void storeConstraintType(ConstraintTypeEntity constraintTypeEntity) {
+        constraintTypes.put(constraintTypeEntity.getName(), constraintTypeEntity);
     }
 
-    public RestrictionEntity getRestriction(String restrictionName) {
-        return restrictions.get(restrictionName);
+    public ConstraintTypeEntity getConstraintType(String restrictionName) {
+        return constraintTypes.get(restrictionName);
     }
 
-    public List<RestrictionEntity> getRestrictions() {
-        return new ArrayList<>(restrictions.values());
+    public List<ConstraintTypeEntity> getConstraintTypes() {
+        return new ArrayList<>(constraintTypes.values());
     }
 
     public void storeTimetable(TimetableEntity timetableEntity) {
         timetables.put(timetableEntity.getId(), timetableEntity);
     }
 
-    public TimetableEntity getTimetable(String timetableId) {
+    public TimetableEntity getTimetable(UUID timetableId) {
         return timetables.get(timetableId);
     }
 
@@ -153,8 +153,8 @@ public class EntityModel {
             storeTeacher(t);
         }
 
-        for(RestrictionEntity r : timetableData.getRestrictions()) {
-            storeRestriction(r);
+        for(ConstraintTypeEntity r : timetableData.getConstraintTypes()) {
+            storeConstraintType(r);
         }
 
         for(TimetableEntity t : timetableData.getTimetables()) {
@@ -186,6 +186,6 @@ public class EntityModel {
         return String.format("nrDays = %d, slotsPerDay = %d, nrWeeks = %d", configurationEntity.getNumberDays(), configurationEntity.getSlotsPerDay(), configurationEntity.getNumberWeeks()) + "\n" +
                 String.format("timeWeight = %d, roomWeight = %d, distributionWeight = %d", optimizationParametersEntity.getTimeWeight(), optimizationParametersEntity.getRoomWeight(), optimizationParametersEntity.getDistributionWeight()) + "\n" +
                 String.format("nrCourses = %d, nrConfigs = %d, nrSubparts = %d, nrClasses = %d, nrTeachers = %d, nrTimetables = %d, nrRooms = %d, nrDist = %d",
-                        courses.size(), nrConfigs, nrSubparts, nrClasses, teachers.size(), timetables.size(), rooms.size(), restrictions.size());
+                        courses.size(), nrConfigs, nrSubparts, nrClasses, teachers.size(), timetables.size(), rooms.size(), constraintTypes.size());
     }
 }

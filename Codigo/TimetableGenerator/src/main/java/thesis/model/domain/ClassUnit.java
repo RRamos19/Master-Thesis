@@ -1,7 +1,7 @@
 package thesis.model.domain;
 
 import javafx.util.Pair;
-import thesis.model.domain.restrictions.Restriction;
+import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
 
 import java.util.*;
 
@@ -9,12 +9,17 @@ public class ClassUnit {
     private String classId;
     private String parentClassId;
 
+    // Model where the class is stored in. It is used for the creation of all the possible
+    // combinations of Time blocks, Rooms and Teachers for this class
+    private DomainModel model;
+
     private final List<Pair<Time, Integer>> classTimesList = new ArrayList<>(); // List of pairs of time and associated penalty
     private final List<Integer> classTeacherList = new ArrayList<>();
     private final Map<String, Integer> classRoomPenalties = new HashMap<>(); // RoomId : penalty
-    private final List<Restriction> restrictionList = new ArrayList<>();
+    private final List<Constraint> constraintList = new ArrayList<>();
 
-    public ClassUnit(String classId) {
+    public ClassUnit(DomainModel model, String classId) {
+        this.model = model;
         this.classId = classId;
     }
 
@@ -34,8 +39,8 @@ public class ClassUnit {
         this.parentClassId = parentClassId;
     }
 
-    public void addClassTime(String days, String weeks, int startSlot, int length, int penalty) {
-        classTimesList.add(new Pair<>(new Time(days, weeks, startSlot, length), penalty));
+    public void addClassTime(String days, String weeks, int startSlot, int length, int penalty) throws CheckedIllegalArgumentException {
+        classTimesList.add(new Pair<>(TimeFactory.create(days, weeks, startSlot, length), penalty));
     }
 
     public List<Pair<Time, Integer>> getClassTimesList() {
@@ -62,11 +67,19 @@ public class ClassUnit {
         return classTeacherList;
     }
 
-    public void addRestriction(Restriction r) {
-        restrictionList.add(r);
+    public void addConstraint(Constraint r) {
+        constraintList.add(r);
     }
 
-    public List<Restriction> getRestrictionList() {
-        return restrictionList;
+    public List<Constraint> getConstraintList() {
+        return constraintList;
+    }
+
+    public DomainModel getModel() {
+        return model;
+    }
+
+    public List<ScheduledLesson> values() {
+        return model.possibleSchedules(this);
     }
 }

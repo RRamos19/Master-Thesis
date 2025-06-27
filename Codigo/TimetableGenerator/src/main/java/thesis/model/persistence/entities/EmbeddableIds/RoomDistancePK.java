@@ -1,4 +1,4 @@
-package thesis.model.persistence.entities.EmbeddableIds;
+package thesis.model.persistence.entities.embeddableids;
 
 import jakarta.persistence.*;
 

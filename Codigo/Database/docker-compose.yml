@@ -1,3 +1,5 @@
+name: timetabling_db
+
 services:
   database:
     image: postgres:15

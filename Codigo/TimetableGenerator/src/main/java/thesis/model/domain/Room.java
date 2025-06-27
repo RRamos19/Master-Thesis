@@ -1,15 +1,17 @@
 package thesis.model.domain;
 
+import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Room {
-    private String roomId;
+    private final String roomId;
 
-    private List<Time> roomUnavailabilities = new ArrayList<>();
-    private Map<String, Integer> roomDistances = new HashMap<>(); // roomId : distance
+    private final List<Time> roomUnavailabilities = new ArrayList<>();
+    private final Map<String, Integer> roomDistances = new HashMap<>(); // roomId : distance
 
     public Room(String roomId) {
         this.roomId = roomId;
@@ -19,11 +21,19 @@ public class Room {
         return roomId;
     }
 
-    public void addUnavailability(String days, String weeks, int startSlot, int length) {
-        roomUnavailabilities.add(new Time(days, weeks, startSlot, length));
+    public void addUnavailability(String days, String weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
+        roomUnavailabilities.add(TimeFactory.create(days, weeks, startSlot, length));
     }
 
     public void addRoomDistance(String roomId, int distance) {
         roomDistances.put(roomId, distance);
+    }
+
+    public List<Time> getRoomUnavailabilities() {
+        return roomUnavailabilities;
+    }
+
+    public Map<String, Integer> getRoomDistances() {
+        return roomDistances;
     }
 }

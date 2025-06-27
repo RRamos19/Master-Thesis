@@ -1,7 +1,7 @@
 package thesis.model.persistence.entities;
 
 import jakarta.persistence.*;
-import thesis.model.persistence.entities.EmbeddableIds.ScheduledLessonTeacherPK;
+import thesis.model.persistence.entities.embeddableids.ScheduledLessonTeacherPK;
 
 @Entity
 @Table(name = "scheduled_lesson_teacher")

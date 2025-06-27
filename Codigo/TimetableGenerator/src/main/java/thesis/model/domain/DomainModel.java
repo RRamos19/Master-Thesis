@@ -1,6 +1,6 @@
 package thesis.model.domain;
 
-import thesis.model.domain.restrictions.Restriction;
+import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
 
 import java.util.*;
 
@@ -11,7 +11,7 @@ public class DomainModel {
     private final Map<String, Config> configMap = new HashMap<>();          // These three maps are used
     private final Map<String, Subpart> subpartMap = new HashMap<>();        // to simplify the search of
     private final Map<String, ClassUnit> classUnitMap = new HashMap<>();    // specific ids
-    private final List<Restriction> restrictionMap = new ArrayList<>();
+    private final List<Constraint> constraintMap = new ArrayList<>();
     private final Map<String, Room> roomMap = new HashMap<>();
     private final Map<Integer, Teacher> teacherMap = new HashMap<>();
     private final List<Timetable> timetableList = new ArrayList<>();
@@ -32,20 +32,20 @@ public class DomainModel {
         this.problemName = problemName;
     }
 
-    public void setOptimizationParameters(int timeWeight, int roomWeight, int distribWeight) {
+    public void setOptimizationParameters(short timeWeight, short roomWeight, short distribWeight) {
         timetableConfiguration.setTimeWeight(timeWeight);
         timetableConfiguration.setRoomWeight(roomWeight);
         timetableConfiguration.setDistribWeight(distribWeight);
     }
 
-    public void setConfiguration(int numDays, int numWeeks, int slotPerDay) {
+    public void setConfiguration(short numDays, int numWeeks, int slotPerDay) {
         timetableConfiguration.setNumDays(numDays);
         timetableConfiguration.setNumWeeks(numWeeks);
         timetableConfiguration.setSlotsPerDay(slotPerDay);
     }
 
-    public void addRestriction(Restriction restriction) {
-        restrictionMap.add(restriction);
+    public void addConstraint(Constraint constraint) {
+        constraintMap.add(constraint);
     }
 
     public TimetableConfiguration getTimetableConfiguration() {
@@ -108,15 +108,56 @@ public class DomainModel {
         timetableList.add(timetable);
     }
 
-    public List<Restriction> getRestrictions() {
-        return restrictionMap;
+    public List<Constraint> getConstraints() {
+        return constraintMap;
+    }
+
+    public Collection<String> conflictValues(ScheduledLesson scheduledLesson) {
+        HashSet<String> conflictClasses = new HashSet<>();
+        ClassUnit cls = classUnitMap.get(scheduledLesson.getClassId());
+        if(cls != null) {
+            for (Constraint c : cls.getConstraintList()){
+                c.computeConflicts(cls.getClassId(), conflictClasses);
+            }
+        }
+        return conflictClasses;
+    }
+
+    public List<ScheduledLesson> possibleSchedules(ClassUnit cls) {
+        List<ScheduledLesson> possibleSchedulesList = new ArrayList<>();
+
+        String classId = cls.getClassId();
+
+        for(Room r : roomMap.values()) {
+            for (byte days = 1; days <= timetableConfiguration.getNumDays(); days++) {
+                for (short weeks = 1; weeks <= timetableConfiguration.getNumWeeks(); weeks++) {
+                    for (int length = 1; length < timetableConfiguration.getSlotsPerDay(); length++) {
+                        for (int startSlot = 0; startSlot < timetableConfiguration.getSlotsPerDay() - length; startSlot++) {
+                            try {
+                                possibleSchedulesList.add(new ScheduledLesson(classId, r.getRoomId(), days, weeks, startSlot, length));
+                            } catch (CheckedIllegalArgumentException e) {
+                                // This should never happen
+                                System.out.println(e.getMessage());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.println("Número de valores possíveis: " + possibleSchedulesList.size());
+
+        return possibleSchedulesList;
     }
 
     /**
-     * Verifies if all of the data present in the model makes sense, for example, the room ids of the classes are present in the Map.
-     * @return
+     * Verifies if all of the data present in the model is coherent
      */
     public void verifyValidity() throws RuntimeException {
+        if(problemName == null) {
+            throw new RuntimeException("ERROR: This problem doesn't have a name");
+        }
+
         for(ClassUnit cls : classUnitMap.values()) {
             for(int teacherId : cls.getClassTeacherList()) {
                 if(teacherMap.get(teacherId) == null) {
@@ -151,6 +192,6 @@ public class DomainModel {
         return String.format("nrDays = %d, slotsPerDay = %d, nrWeeks = %d", timetableConfiguration.getNumDays(), timetableConfiguration.getSlotsPerDay(), timetableConfiguration.getNumWeeks()) + "\n" +
                 String.format("timeWeight = %d, roomWeight = %d, distributionWeight = %d", timetableConfiguration.getTimeWeight(), timetableConfiguration.getRoomWeight(), timetableConfiguration.getDistribWeight()) + "\n" +
                 String.format("nrCourses = %d, nrConfigs = %d, nrSubparts = %d, nrClasses = %d, nrTeachers = %d, nrTimetables = %d, nrRooms = %d, nrDist = %d",
-                        courseMap.size(), nrConfigs, nrSubparts, nrClasses, teacherMap.size(), timetableList.size(), roomMap.size(), restrictionMap.size());
+                        courseMap.size(), nrConfigs, nrSubparts, nrClasses, teacherMap.size(), timetableList.size(), roomMap.size(), constraintMap.size());
     }
 }
