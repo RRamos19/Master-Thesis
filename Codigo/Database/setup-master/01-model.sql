@@ -1,11 +1,18 @@
+CREATE TABLE program (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(30) NOT NULL UNIQUE
+);
+
 CREATE TABLE teacher (
     id INT PRIMARY KEY,
     name VARCHAR(30) NOT NULL
 );
 
-CREATE TABLE course ( -- Por alterar
+CREATE TABLE course (
 	id UUID PRIMARY KEY,
-    name VARCHAR(10) NOT NULL UNIQUE
+	program_id INT,
+    name VARCHAR(10) NOT NULL UNIQUE,
+	CONSTRAINT program_id_fk FOREIGN KEY (program_id) REFERENCES program(id)
 );
 
 CREATE TABLE config (
@@ -37,20 +44,26 @@ CREATE TABLE timetable (
 	creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE restriction ( -- Por alterar
+CREATE TABLE constraint_type (
 	id SERIAL PRIMARY KEY,
 	name VARCHAR(30) UNIQUE
 );
 
-CREATE TABLE class_restriction ( -- Por alterar
+CREATE TABLE timetable_constraint (
+	id SERIAL PRIMARY KEY,
+	constraint_type_id INT NOT NULL,
+	penalty INT,
+	required BOOL,
+	CONSTRAINT constraint_type_id_fk FOREIGN KEY (constraint_type_id) REFERENCES constraint_type(id)
+);
+
+CREATE TABLE class_constraint (
 	id UUID,
 	class_id UUID,
-	restriction_id INT,
-	penalty INT,
-	required BOOL NOT NULL,
-	CONSTRAINT class_restriction_class_fk FOREIGN KEY (class_id) REFERENCES class_unit(id),
-	CONSTRAINT class_restriction_restriction_fk FOREIGN KEY (restriction_id) REFERENCES restriction(id),
-	CONSTRAINT class_restriction_pk PRIMARY KEY (id, class_id)
+	constraint_id INT NOT NULL,
+	CONSTRAINT class_constraint_class_fk FOREIGN KEY (class_id) REFERENCES class_unit(id),
+	CONSTRAINT class_contraint_constraint_fk FOREIGN KEY (constraint_id) REFERENCES timetable_constraint(id),
+	CONSTRAINT class_contraint_pk PRIMARY KEY (id, class_id)
 );
 
 CREATE TABLE room (
@@ -143,15 +156,15 @@ CREATE TABLE scheduled_lesson_teacher (
 
 CREATE TABLE optimization_parameters (
 	id SERIAL PRIMARY KEY,
-	time_weight INT NOT NULL,
-	room_weight INT NOT NULL,
-	distribution_weight INT NOT NULL,
+	time_weight SMALLINT NOT NULL,
+	room_weight SMALLINT NOT NULL,
+	distribution_weight SMALLINT NOT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE configuration (
 	id SERIAL PRIMARY KEY,
-	number_days INT NOT NULL,
+	number_days SMALLINT NOT NULL,
 	number_weeks INT NOT NULL,
 	slots_per_day INT NOT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

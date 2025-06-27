@@ -4,16 +4,19 @@ import java.util.*;
 
 public class Timetable implements Cloneable {
     private String program;
-    private List<ScheduledLesson> scheduledLessonList = new ArrayList<>();
+    private Map<String, ScheduledLesson> scheduledLessonMap = new HashMap<>(); // ClassId : ScheduledLesson
 
-    public Timetable() {}
+    private List<ClassUnit> unscheduledLessons;
 
-    public Timetable(String program) {
-        this.program = program;
+    private DomainModel model;
+
+    public Timetable(DomainModel model) {
+        this.model = model;
+        this.program = model.getProblemName();
     }
 
     public List<ScheduledLesson> getScheduledLessonList() {
-        return scheduledLessonList;
+        return new ArrayList<>(scheduledLessonMap.values());
     }
 
     public void setProgram(String program) {
@@ -25,7 +28,55 @@ public class Timetable implements Cloneable {
     }
 
     public void addScheduledLesson(ScheduledLesson scheduledLesson) {
-        scheduledLessonList.add(scheduledLesson);
+        scheduledLessonMap.put(scheduledLesson.getClassId(), scheduledLesson);
+    }
+
+    public ScheduledLesson getScheduledLesson(String classId) {
+        return scheduledLessonMap.get(classId);
+    }
+
+    public void setUnscheduledLessons(List<ClassUnit> unscheduledLessons) {
+        this.unscheduledLessons = unscheduledLessons;
+    }
+
+    public List<ClassUnit> getUnscheduledLessons() {
+        return unscheduledLessons;
+    }
+
+    @Override
+    public Timetable clone() {
+        try {
+            Timetable clone = (Timetable) super.clone();
+            clone.program = program;
+            clone.scheduledLessonMap = new HashMap<>(scheduledLessonMap);
+            clone.unscheduledLessons = new ArrayList<>(unscheduledLessons);
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
+
+    public DomainModel getModel() {
+        return model;
+    }
+
+    public int getTotalValue() {
+        int total = 0;
+        for(ScheduledLesson scheduledLesson : scheduledLessonMap.values()) {
+            total += scheduledLesson.toInt();
+        }
+        return total;
+    }
+
+    public int getBestValue() {
+        Integer bestValue = null;
+        for(ScheduledLesson scheduledLesson : scheduledLessonMap.values()) {
+            int scheduledLessonValue = scheduledLesson.toInt();
+            if(bestValue == null || bestValue > scheduledLessonValue) {
+                bestValue = scheduledLessonValue;
+            }
+        }
+        return bestValue;
     }
 
     // TODO: Temporário, eliminar quando deixar de ser necessário
@@ -39,15 +90,11 @@ public class Timetable implements Cloneable {
             schedule.put(i, new HashMap<>());
         }
 
-        for (ScheduledLesson scheduledLesson : scheduledLessonList) {
-            String days = scheduledLesson.getDays();
-            int dayslength = days.length();
-            if(numberOfDays != dayslength) {
-                throw new IllegalArgumentException("Days and numberOfDays are different");
-            }
+        for (ScheduledLesson scheduledLesson : scheduledLessonMap.values()) {
+            short days = scheduledLesson.getDays();
 
             for(int i=0; i < numberOfDays; i++) {
-                if(days.charAt(i) == '1') {
+                if((days >> i & 1) == 1) {
                     schedule.get(i).put(scheduledLesson.getStartSlot(), scheduledLesson);
                 }
             }
@@ -84,17 +131,6 @@ public class Timetable implements Cloneable {
             }
             row.append("|");
             System.out.println(row);
-        }
-    }
-
-    @Override
-    public Timetable clone() {
-        try {
-            Timetable clone = (Timetable) super.clone();
-            clone.scheduledLessonList = new ArrayList<>(scheduledLessonList);
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
         }
     }
 }

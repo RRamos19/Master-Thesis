@@ -1,34 +1,34 @@
 package thesis.model.domain;
 
 public class TimetableConfiguration {
-    private int timeWeight;
-    private int roomWeight;
-    private int distribWeight;
-    private int numDays;
+    private short timeWeight;
+    private short roomWeight;
+    private short distribWeight;
+    private short numDays;
     private int numWeeks;
     private int slotsPerDay;
 
-    public int getTimeWeight() {
+    public short getTimeWeight() {
         return timeWeight;
     }
 
-    public void setTimeWeight(int timeWeight) {
+    public void setTimeWeight(short timeWeight) {
         this.timeWeight = timeWeight;
     }
 
-    public int getRoomWeight() {
+    public short getRoomWeight() {
         return roomWeight;
     }
 
-    public void setRoomWeight(int roomWeight) {
+    public void setRoomWeight(short roomWeight) {
         this.roomWeight = roomWeight;
     }
 
-    public int getDistribWeight() {
+    public short getDistribWeight() {
         return distribWeight;
     }
 
-    public void setDistribWeight(int distribWeight) {
+    public void setDistribWeight(short distribWeight) {
         this.distribWeight = distribWeight;
     }
 
@@ -36,7 +36,7 @@ public class TimetableConfiguration {
         return numDays;
     }
 
-    public void setNumDays(int numDays) {
+    public void setNumDays(short numDays) {
         this.numDays = numDays;
     }
 

@@ -45,9 +45,9 @@ public class DBHibernateManager implements DBManager<EntityModel> {
                 data.storeClassUnit(c);
             }
 
-            List<RestrictionEntity> restrictionEntityList = genericSelectAllHibernateQuery(session, RestrictionEntity.class);
-            for(RestrictionEntity r : restrictionEntityList) {
-                data.storeRestriction(r);
+            List<ConstraintTypeEntity> constraintTypeEntityList = genericSelectAllHibernateQuery(session, ConstraintTypeEntity.class);
+            for(ConstraintTypeEntity r : constraintTypeEntityList) {
+                data.storeConstraintType(r);
             }
 
             List<RoomEntity> roomEntityList = genericSelectAllHibernateQuery(session, RoomEntity.class);

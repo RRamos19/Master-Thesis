@@ -1,7 +1,7 @@
 package thesis.model.persistence.entities;
 
 import jakarta.persistence.*;
-import thesis.model.persistence.entities.EmbeddableIds.ScheduledLessonPK;
+import thesis.model.persistence.entities.embeddableids.ScheduledLessonPK;
 
 import java.util.ArrayList;
 import java.util.List;

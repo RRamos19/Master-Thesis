@@ -1,7 +1,7 @@
 package thesis.model.persistence.entities;
 
 import jakarta.persistence.*;
-import thesis.model.persistence.entities.EmbeddableIds.RoomDistancePK;
+import thesis.model.persistence.entities.embeddableids.RoomDistancePK;
 
 @Entity
 @Table(name = "room_distance")

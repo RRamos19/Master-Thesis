@@ -1,25 +1,43 @@
 package thesis.model.domain;
 
+import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class ScheduledLesson {
-    private List<Integer> teacherIds = new ArrayList<>();
+    private final List<Integer> teacherIds = new ArrayList<>();
     private Time scheduledTime;
     private String roomId;
     private String classId;
 
-    public ScheduledLesson(String classId, String roomId, String days, String weeks, int startSlot, int length) {
+    public ScheduledLesson(String classId, String roomId, Time time) {
         this.classId = classId;
         this.roomId = roomId;
-        this.scheduledTime = new Time(days, weeks, startSlot, length);
+        this.scheduledTime = time;
     }
 
-    public String getDays() {
+    public ScheduledLesson(String classId, String roomId, String days, String weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
+        this(classId, roomId, TimeFactory.create(days, weeks, startSlot, length));
+    }
+
+    public ScheduledLesson(String classId, String roomId, byte days, short weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
+        this(classId, roomId, TimeFactory.create(days, weeks, startSlot, length));
+    }
+
+    public int toInt() {
+        return classId.hashCode() + roomId.hashCode() + scheduledTime.toString().hashCode();
+    }
+
+    public Time getScheduledTime() {
+        return scheduledTime;
+    }
+
+    public short getDays() {
         return scheduledTime.getDays();
     }
 
-    public String getWeeks() {
+    public int getWeeks() {
         return scheduledTime.getWeeks();
     }
 

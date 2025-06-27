@@ -1,5 +1,7 @@
 package thesis.model.domain;
 
+import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +28,7 @@ public class Teacher {
         return teacherUnavailabilities;
     }
 
-    public void addUnavailability(String days, String weeks, int startSlot, int length) {
-        teacherUnavailabilities.add(new Time(days, weeks, startSlot, length));
+    public void addUnavailability(String days, String weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
+        teacherUnavailabilities.add(TimeFactory.create(days, weeks, startSlot, length));
     }
 }

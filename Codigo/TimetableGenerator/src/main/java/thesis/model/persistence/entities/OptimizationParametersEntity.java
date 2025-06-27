@@ -11,20 +11,20 @@ public class OptimizationParametersEntity {
     private int id;
 
     @Column(name = "time_weight")
-    private int timeWeight;
+    private short timeWeight;
 
     @Column(name = "room_weight")
-    private int roomWeight;
+    private short roomWeight;
 
     @Column(name = "distribution_weight")
-    private int distributionWeight;
+    private short distributionWeight;
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public OptimizationParametersEntity() {}
 
-    public OptimizationParametersEntity(int timeWeight, int roomWeight, int distributionWeight) {
+    public OptimizationParametersEntity(short timeWeight, short roomWeight, short distributionWeight) {
         this.id = 0;
         this.timeWeight = timeWeight;
         this.roomWeight = roomWeight;
@@ -35,27 +35,27 @@ public class OptimizationParametersEntity {
         return id;
     }
 
-    public int getTimeWeight() {
+    public short getTimeWeight() {
         return timeWeight;
     }
 
-    public void setTimeWeight(int timeWeight) {
+    public void setTimeWeight(short timeWeight) {
         this.timeWeight = timeWeight;
     }
 
-    public int getRoomWeight() {
+    public short getRoomWeight() {
         return roomWeight;
     }
 
-    public void setRoomWeight(int roomWeight) {
+    public void setRoomWeight(short roomWeight) {
         this.roomWeight = roomWeight;
     }
 
-    public int getDistributionWeight() {
+    public short getDistributionWeight() {
         return distributionWeight;
     }
 
-    public void setDistributionWeight(int distributionWeight) {
+    public void setDistributionWeight(short distributionWeight) {
         this.distributionWeight = distributionWeight;
     }
 

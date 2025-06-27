@@ -1,15 +1,19 @@
 package thesis.model.parser;
 
+import thesis.model.domain.*;
+import thesis.model.domain.constraints.ConstraintFactory;
+import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
+import thesis.model.domain.exceptions.ParsingException;
+
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
-import javax.xml.stream.events.Attribute;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,10 +21,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-
-import thesis.model.domain.*;
-import thesis.model.domain.restrictions.Restriction;
-import thesis.model.domain.restrictions.RestrictionFactory;
 
 public class ITCFormatParser implements InputFileReader<DomainModel> {
 
@@ -96,7 +96,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                             String slotsPerDayString = getAttributeValue(startElement, "slotsPerDay");
                             String nrWeeksString = getAttributeValue(startElement, "nrWeeks");
 
-                            int nrDays = nrDaysString != null ? Integer.parseInt(nrDaysString) : 7;                 // Default 7 days
+                            short nrDays = nrDaysString != null ? Short.parseShort(nrDaysString) : 7;                 // Default 7 days
                             int slotsPerDay = slotsPerDayString != null ? Integer.parseInt(slotsPerDayString) : 9;  // Default 9 weeks
                             int nrWeeks = nrWeeksString != null ? Integer.parseInt(nrWeeksString) : 16;             // Default 1h:30m for each slot
 
@@ -119,9 +119,9 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                             String roomWeightString = getAttributeValue(startElement, "room");
                             String distributionWeightString = getAttributeValue(startElement, "distribution");
 
-                            int timeWeight = timeWeightString != null ? Integer.parseInt(timeWeightString) : 1;                         // Default 1
-                            int roomWeight = roomWeightString != null ? Integer.parseInt(roomWeightString) : 1;                         // Default 1
-                            int distributionWeight = distributionWeightString != null ? Integer.parseInt(distributionWeightString) : 1; // Default 1
+                            short timeWeight = timeWeightString != null ? Short.parseShort(timeWeightString) : 1;                         // Default 1
+                            short roomWeight = roomWeightString != null ? Short.parseShort(roomWeightString) : 1;                         // Default 1
+                            short distributionWeight = distributionWeightString != null ? Short.parseShort(distributionWeightString) : 1; // Default 1
 
                             List<String> optimizationTagErrors = new ArrayList<>();
                             if (timeWeight < 1) optimizationTagErrors.add("time >= 1");
@@ -169,8 +169,8 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
     /**
      * All the scheduled lessons should be read before encountering the termination tag
      */
-    private void readSolution(XMLEventReader eventReader, DomainModel data) throws XMLStreamException {
-        Timetable timetable = new Timetable(data.getProblemName());
+    private void readSolution(XMLEventReader eventReader, DomainModel data) throws XMLStreamException, ParsingException {
+        Timetable timetable = new Timetable(data);
         data.addTimetable(timetable);
 
         while (eventReader.hasNext()) {
@@ -193,9 +193,13 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                         int start = startString != null ? Integer.parseInt(startString) : 0;
                         int length = lengthString != null ? Integer.parseInt(lengthString) : 0;
 
-                        ScheduledLesson scheduledLesson = new ScheduledLesson(classId, roomId, days, weeks, start, length);
+                        try {
+                            ScheduledLesson scheduledLesson = new ScheduledLesson(classId, roomId, days, weeks, start, length);
 
-                        timetable.addScheduledLesson(scheduledLesson);
+                            timetable.addScheduledLesson(scheduledLesson);
+                        } catch (CheckedIllegalArgumentException e) {
+                            throw new ParsingException(event.getLocation(), e.getMessage());
+                        }
                     }
                     break;
 
@@ -261,7 +265,11 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                             int start = startString != null ? Integer.parseInt(startString) : 0;
                             int length = lengthString != null ? Integer.parseInt(lengthString) : 0;
 
-                            room.addUnavailability(days, weeks, start, length);
+                            try {
+                                room.addUnavailability(days, weeks, start, length);
+                            } catch (Exception e) {
+                                throw new ParsingException(event.getLocation(), e.getMessage());
+                            }
 
                             break;
                     }
@@ -350,7 +358,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                             String classId = getAttributeValue(startElement, "id");
                             String parentClassId = getAttributeValue(startElement, "parent");
 
-                            cls = new ClassUnit(classId);
+                            cls = new ClassUnit(data, classId);
                             data.addClassUnit(cls);
 
                             if(parentClassId != null) {
@@ -388,7 +396,11 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                             int length = lengthString != null ? Integer.parseInt(lengthString) : 0;
                             int timePenalty = timePenaltyString != null ? Integer.parseInt(timePenaltyString) : 0;
 
-                            cls.addClassTime(days, weeks, start, length, timePenalty);
+                            try {
+                                cls.addClassTime(days, weeks, start, length, timePenalty);
+                            } catch (Exception e) {
+                                throw new ParsingException(event.getLocation(), e.getMessage());
+                            }
                             break;
                     }
                     break;
@@ -490,7 +502,11 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                             int start = startString != null ? Integer.parseInt(startString) : 0;
                             int length = lengthString != null ? Integer.parseInt(lengthString) : 0;
 
-                            teacher.addUnavailability(days, weeks, start, length);
+                            try {
+                                teacher.addUnavailability(days, weeks, start, length);
+                            } catch (CheckedIllegalArgumentException e) {
+                                throw new ParsingException(event.getLocation(), e.getMessage());
+                            }
 
                             break;
                     }
@@ -522,7 +538,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
      * All the restrictions should be read before encountering the termination tag
      */
     private void readRestrictions(XMLEventReader eventReader, DomainModel data) throws XMLStreamException, ParsingException {
-        Restriction restriction = null;
+        Constraint constraint = null;
 
         while (eventReader.hasNext()) {
             XMLEvent event;
@@ -547,28 +563,28 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                             }
 
                             try {
-                                restriction = RestrictionFactory.createRestriction(restricType, restrictionPenalty, restrictionRequired);
+                                constraint = ConstraintFactory.createConstraint(restricType, restrictionPenalty, restrictionRequired);
 
-                                data.addRestriction(restriction);
+                                data.addConstraint(constraint);
                             } catch (Exception e) {
                                 // TODO: fazer log do erro (provavelmente deve-se ignorar as restricoes que não são suportadas)
                                 throw new ParsingException(event.getLocation(), e.getMessage());
                             }
                             break;
                         case CLASS_TAG:
-                            if(restriction == null){
+                            if(constraint == null){
                                 // Only happens if the file isn't structured correctly
                                 throw new ParsingException(event.getLocation(), "There is a class tag before a distribution tag");
                             }
                             String classId = getAttributeValue(startElement, "id");
 
-                            restriction.addClassUnitId(classId);
+                            constraint.addClassUnitId(classId);
 
                             ClassUnit cls = data.getClassUnit(classId);
                             if(cls == null) {
                                 throw new ParsingException(event.getLocation(), "The class id provided doesn't exist");
                             }
-                            cls.addRestriction(restriction);
+                            cls.addConstraint(constraint);
 
                             break;
                     }
@@ -583,7 +599,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                             // If the end of the tag of a distribution is found
                             // its necessary to add said distribution to the data
 
-                            restriction = null;
+                            constraint = null;
 
                             break;
                         case DISTRIBUTIONS_TAG:
