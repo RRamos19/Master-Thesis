@@ -10,7 +10,7 @@ CREATE TABLE teacher (
 
 CREATE TABLE course (
 	id UUID PRIMARY KEY,
-	program_id INT,
+	program_id INT NOT NULL,
     name VARCHAR(10) NOT NULL UNIQUE,
 	CONSTRAINT program_id_fk FOREIGN KEY (program_id) REFERENCES program(id)
 );

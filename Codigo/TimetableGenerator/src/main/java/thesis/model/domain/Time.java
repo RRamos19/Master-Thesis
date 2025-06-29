@@ -1,18 +1,18 @@
 package thesis.model.domain;
 
-import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
-
 public class Time {
     private final byte days;
     private final int weeks;
     private final int startSlot;
     private final int length;
+    private final int endSlot;
 
     public Time(byte days, int weeks, int startSlot, int length) {
         this.days = days;
         this.weeks = weeks;
         this.startSlot = startSlot;
         this.length = length;
+        this.endSlot = startSlot + length;
     }
 
     public short getDays() {
@@ -29,6 +29,10 @@ public class Time {
 
     public int getLength() {
         return length;
+    }
+
+    public int getEndSlot() {
+        return endSlot;
     }
 
     /**
@@ -64,6 +68,6 @@ public class Time {
             return false;
         }
 
-        return this.startSlot + this.length < other.startSlot;
+        return this.endSlot < other.startSlot;
     }
 }

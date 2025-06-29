@@ -34,15 +34,7 @@ public class TimeFactory {
 
         String timeString = String.valueOf(days + weeks + startSlot + length);
 
-        WeakReference<Time> ref = timePool.get(timeString);
-        Time alreadyCreated = (ref == null) ? null : ref.get();
-
-        if (alreadyCreated != null) {
-            return alreadyCreated;
-        } else {
-            Time time = new Time(days, weeks, startSlot, length);
-            timePool.put(timeString, new WeakReference<>(time));
-            return time;
-        }
+        WeakReference<Time> ref = timePool.computeIfAbsent(timeString, t -> new WeakReference<>(new Time(days, weeks, startSlot, length)));
+        return ref.get();
     }
 }

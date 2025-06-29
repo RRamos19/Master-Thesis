@@ -1,11 +1,8 @@
 package thesis.model.domain.constraints;
 
-import javafx.util.Pair;
-import thesis.model.domain.Constraint;
-import thesis.model.domain.ScheduledLesson;
-import thesis.model.domain.Timetable;
+import thesis.model.domain.*;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -15,20 +12,31 @@ public class SameDaysConstraint extends Constraint {
     }
 
     @Override
-    public void computeConflicts(String cls, Set<String> classConflicts) {
-        // TODO: por fazer
-    }
-
-    @Override
-    public List<Pair<String, String>> getConflictingClasses(Timetable solution) {
-        List<Pair<String, String>> conflictingClasses = new ArrayList<>();
+    public Set<String> getConflictingClasses(Timetable solution) {
+        Set<String> conflictingClasses = new HashSet<>();
         List<String> scheduledClasses = this.getScheduledClasses(solution);
 
-        // There can only be a conflict if there are two or more classes present in this
-        // restriction that are scheduled
-        if(scheduledClasses.size() >= 2) {
+        int scheduledClassesSize = scheduledClasses.size();
 
+        for(int i=0; i<scheduledClassesSize-1; i++) {
+            ScheduledLesson scheduledLesson1 = solution.getScheduledLesson(scheduledClasses.get(i));
+            Time time1 = scheduledLesson1.getScheduledTime();
+
+            for(int j=i+1; j<scheduledClassesSize; j++) {
+                ScheduledLesson scheduledLesson2 = solution.getScheduledLesson(scheduledClasses.get(j));
+                Time time2 = scheduledLesson2.getScheduledTime();
+
+                int orDays = time1.getDays() | time2.getDays();
+
+                if (orDays == time1.getDays() || orDays == time2.getDays()) {
+                    continue;
+                }
+
+                conflictingClasses.add(scheduledLesson1.getClassId());
+                conflictingClasses.add(scheduledLesson2.getClassId());
+            }
         }
+
 
         return conflictingClasses;
     }

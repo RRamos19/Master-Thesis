@@ -8,10 +8,20 @@ public class RandomUtils {
      * Choose a random value present in the list provided
      * @param valueList List of values of which a random value must be chosen
      * @return A random value present in the list or null if the list provided is null
-     * @param <T> Type of the provided values
+     * @param <T> Type of the values provided
      */
     public static <T> T random(List<T> valueList) {
         return valueList == null ? null : valueList.get(ThreadLocalRandom.current().nextInt(valueList.size()));
+    }
+
+
+    /**
+     * Choose a random index from which a value is removed
+     * @param valueList List of values of which a random value is removed
+     * @param <T> Type of the values provided
+     */
+    public static <T> void removeRandom(List<T> valueList) {
+        valueList.remove(ThreadLocalRandom.current().nextInt(valueList.size()));
     }
 
 

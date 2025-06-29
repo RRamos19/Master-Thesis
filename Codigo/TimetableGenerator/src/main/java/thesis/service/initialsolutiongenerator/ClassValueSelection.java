@@ -30,6 +30,7 @@ public class ClassValueSelection implements ValueSelection<ScheduledLesson, Time
 //    private final MacPropagation iProp = null;                    // MAC: null if there is no arc-consistency
 //    private final boolean iAllowNoGood = false;                   // MAC: allow selection of removed values (MAC+)
 
+    private final short BEST_K_VALUES = 1000;
 
     private final HashMap<ClassUnit, ScheduledLesson> currentSchedules = new HashMap<>();
 
@@ -87,7 +88,7 @@ public class ClassValueSelection implements ValueSelection<ScheduledLesson, Time
                 continue;
             }
             //conflicting values
-            Collection<String> conf = solution.getModel().conflictValues(value);
+            Collection<String> conf = solution.getModel().conflictValues(solution, value);
             double weightedConflicts = 0.0; //CBS weighted conflicts
 //            if (iStat != null) {
 //                weightedConflicts = iStat.countRemovals(solution.getIteration(), conf, value));
@@ -128,6 +129,9 @@ public class ClassValueSelection implements ValueSelection<ScheduledLesson, Time
                 bestValues.add(value);
             } else if (bestWeightedSum == weightedSum) {
                 bestValues.add(value);
+                if(bestValues.size() > BEST_K_VALUES) {
+                    RandomUtils.removeRandom(bestValues);
+                }
             }
         } //end of the for cycle over all values
 

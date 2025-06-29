@@ -194,7 +194,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                         int length = lengthString != null ? Integer.parseInt(lengthString) : 0;
 
                         try {
-                            ScheduledLesson scheduledLesson = new ScheduledLesson(classId, roomId, days, weeks, start, length);
+                            ScheduledLesson scheduledLesson = new ScheduledLesson(data, classId, roomId, days, weeks, start, length);
 
                             timetable.addScheduledLesson(scheduledLesson);
                         } catch (CheckedIllegalArgumentException e) {

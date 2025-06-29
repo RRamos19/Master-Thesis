@@ -32,7 +32,8 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
             iter++;
             ClassUnit variable = selectVariable(schedule, unscheduled);
 
-            assert(variable != null); // Should be impossible because the list of unscheduled is based on the data in DomainModel
+            // Should be impossible because the list of unscheduled is based on the data in DomainModel
+            assert(variable != null);
 
             ScheduledLesson value = valueSelection.selectValue(schedule, variable);
 

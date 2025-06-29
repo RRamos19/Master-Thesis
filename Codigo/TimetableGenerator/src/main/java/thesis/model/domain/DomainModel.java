@@ -60,6 +60,10 @@ public class DomainModel {
         return new ArrayList<>(roomMap.values());
     }
 
+    public Room getRoom(String roomId) {
+        return roomMap.get(roomId);
+    }
+
     public void addTeacher(Teacher teacher) {
         teacherMap.put(teacher.getId(), teacher);
     }
@@ -112,12 +116,12 @@ public class DomainModel {
         return constraintMap;
     }
 
-    public Collection<String> conflictValues(ScheduledLesson scheduledLesson) {
+    public Collection<String> conflictValues(Timetable solution, ScheduledLesson scheduledLesson) {
         HashSet<String> conflictClasses = new HashSet<>();
         ClassUnit cls = classUnitMap.get(scheduledLesson.getClassId());
         if(cls != null) {
             for (Constraint c : cls.getConstraintList()){
-                c.computeConflicts(cls.getClassId(), conflictClasses);
+                c.computeConflicts(scheduledLesson, solution, conflictClasses);
             }
         }
         return conflictClasses;
@@ -134,7 +138,7 @@ public class DomainModel {
                     for (int length = 1; length < timetableConfiguration.getSlotsPerDay(); length++) {
                         for (int startSlot = 0; startSlot < timetableConfiguration.getSlotsPerDay() - length; startSlot++) {
                             try {
-                                possibleSchedulesList.add(new ScheduledLesson(classId, r.getRoomId(), days, weeks, startSlot, length));
+                                possibleSchedulesList.add(new ScheduledLesson(this, classId, r.getRoomId(), days, weeks, startSlot, length));
                             } catch (CheckedIllegalArgumentException e) {
                                 // This should never happen
                                 System.out.println(e.getMessage());

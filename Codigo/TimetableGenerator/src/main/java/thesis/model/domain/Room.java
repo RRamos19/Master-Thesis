@@ -36,4 +36,8 @@ public class Room {
     public Map<String, Integer> getRoomDistances() {
         return roomDistances;
     }
+
+    public int getRoomDistance(String room2Id) {
+        return roomDistances.get(room2Id);
+    }
 }
