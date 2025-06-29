@@ -1,14 +1,10 @@
 package thesis.model.domain.constraints;
 
-import javafx.util.Pair;
 import thesis.model.domain.Constraint;
 import thesis.model.domain.ScheduledLesson;
 import thesis.model.domain.Timetable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class DifferentRoomConstraint extends Constraint {
     public DifferentRoomConstraint(String type, Integer penalty, boolean required) {
@@ -16,31 +12,24 @@ public class DifferentRoomConstraint extends Constraint {
     }
 
     @Override
-    public void computeConflicts(String cls, Set<String> classConflicts) {
-        // TODO: por fazer
-    }
-
-    @Override
-    public List<Pair<String, String>> getConflictingClasses(Timetable solution) {
-        List<Pair<String, String>> conflictingClasses = new ArrayList<>();
+    public Set<String> getConflictingClasses(Timetable solution) {
+        Set<String> conflictingClasses = new HashSet<>();
         List<String> scheduledClasses = this.getScheduledClasses(solution);
 
-        // There can only be a conflict if there are two or more classes present in this
-        // restriction that are scheduled
         int scheduledClassesSize = scheduledClasses.size();
-        if(scheduledClassesSize >= 2) {
-            for(int i=0; i<scheduledClassesSize-1; i++) {
-                ScheduledLesson scheduledLesson1 = solution.getScheduledLesson(scheduledClasses.get(i));
 
-                for(int j=i+1; j<scheduledClassesSize; j++) {
-                    ScheduledLesson scheduledLesson2 = solution.getScheduledLesson(scheduledClasses.get(j));
+        for(int i=0; i<scheduledClassesSize-1; i++) {
+            ScheduledLesson scheduledLesson1 = solution.getScheduledLesson(scheduledClasses.get(i));
 
-                    if(!Objects.equals(scheduledLesson1.getRoomId(), scheduledLesson2.getRoomId())) {
-                        continue;
-                    }
+            for(int j=i+1; j<scheduledClassesSize; j++) {
+                ScheduledLesson scheduledLesson2 = solution.getScheduledLesson(scheduledClasses.get(j));
 
-                    conflictingClasses.add(new Pair<>(scheduledLesson1.getClassId(), scheduledLesson2.getClassId()));
+                if(!Objects.equals(scheduledLesson1.getRoomId(), scheduledLesson2.getRoomId())) {
+                    continue;
                 }
+
+                conflictingClasses.add(scheduledLesson1.getClassId());
+                conflictingClasses.add(scheduledLesson2.getClassId());
             }
         }
 

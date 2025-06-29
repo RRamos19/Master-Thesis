@@ -33,6 +33,7 @@ public class HibernateUtils {
             cfg.addAnnotatedClass(ConstraintTypeEntity.class);
             cfg.addAnnotatedClass(CourseEntity.class);
             cfg.addAnnotatedClass(OptimizationParametersEntity.class);
+            cfg.addAnnotatedClass(ProgramEntity.class);
             cfg.addAnnotatedClass(RoomDistanceEntity.class);
             cfg.addAnnotatedClass(RoomEntity.class);
             cfg.addAnnotatedClass(RoomUnavailabilityEntity.class);

@@ -1,11 +1,8 @@
 package thesis.model.domain.constraints;
 
-import javafx.util.Pair;
-import thesis.model.domain.Constraint;
-import thesis.model.domain.ScheduledLesson;
-import thesis.model.domain.Timetable;
+import thesis.model.domain.*;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -15,20 +12,36 @@ public class SameAttendeesConstraint extends Constraint {
     }
 
     @Override
-    public void computeConflicts(String cls, Set<String> classConflicts) {
-        // TODO: por fazer
-    }
-
-    @Override
-    public List<Pair<String, String>> getConflictingClasses(Timetable solution) {
-        List<Pair<String, String>> conflictingClasses = new ArrayList<>();
+    public Set<String> getConflictingClasses(Timetable solution) {
+        Set<String> conflictingClasses = new HashSet<>();
         List<String> scheduledClasses = this.getScheduledClasses(solution);
 
-        // There can only be a conflict if there are two or more classes present in this
-        // restriction that are scheduled
-        if(scheduledClasses.size() >= 2) {
+        int scheduledClassesSize = scheduledClasses.size();
 
+        for(int i=0; i<scheduledClassesSize-1; i++) {
+            ScheduledLesson scheduledLesson1 = solution.getScheduledLesson(scheduledClasses.get(i));
+            Room room1 = scheduledLesson1.getRoom();
+            Time time1 = scheduledLesson1.getScheduledTime();
+
+            for(int j=i+1; j<scheduledClassesSize; j++) {
+                ScheduledLesson scheduledLesson2 = solution.getScheduledLesson(scheduledClasses.get(j));
+                Room room2 = scheduledLesson2.getRoom();
+                Time time2 = scheduledLesson2.getScheduledTime();
+
+                int travel = room1 != null && room2 != null ? room1.getRoomDistance(room2.getRoomId()) : 0;
+
+                if (time1.getEndSlot() + travel <= time2.getStartSlot()
+                        || time2.getEndSlot() + travel <= time1.getStartSlot()
+                        || (time1.getDays() & time2.getDays()) == 0
+                        || (time1.getWeeks() & time2.getWeeks()) == 0) {
+                    continue;
+                }
+
+                conflictingClasses.add(scheduledLesson1.getClassId());
+                conflictingClasses.add(scheduledLesson2.getClassId());
+            }
         }
+
 
         return conflictingClasses;
     }

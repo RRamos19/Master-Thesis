@@ -1,7 +1,5 @@
 package thesis.model.domain;
 
-import javafx.util.Pair;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -11,15 +9,15 @@ public abstract class Constraint {
     protected final Integer penalty;
     protected final boolean required;
     protected final List<String> classUnitIdList = new ArrayList<>();
-    protected final Integer firstTimeslotParameter;
-    protected final Integer secondTimeslotParameter;
+    protected final Integer firstParam;
+    protected final Integer secondParam;
 
-    public Constraint(String type, Integer penalty, boolean required, Integer firstTimeslot, Integer secondTimeslot) {
+    public Constraint(String type, Integer penalty, boolean required, Integer firstParam, Integer secondParam) {
         this.type = type;
         this.penalty = penalty;
         this.required = required;
-        this.firstTimeslotParameter = firstTimeslot;
-        this.secondTimeslotParameter = secondTimeslot;
+        this.firstParam = firstParam;
+        this.secondParam = secondParam;
     }
 
     public Constraint(String type, Integer penalty, boolean required) {
@@ -42,12 +40,12 @@ public abstract class Constraint {
         return required;
     }
 
-    public Integer getFirstTimeslotParameter() {
-        return firstTimeslotParameter;
+    public Integer getFirstParameter() {
+        return firstParam;
     }
 
-    public Integer getSecondTimeslotParameter() {
-        return secondTimeslotParameter;
+    public Integer getSecondParameter() {
+        return secondParam;
     }
 
     public void addClassUnitId(String classUnitId) {
@@ -76,7 +74,22 @@ public abstract class Constraint {
         return scheduledClasses;
     }
 
-    public abstract void computeConflicts(String cls, Set<String> classConflicts);
 
-    public abstract List<Pair<String, String>> getConflictingClasses(Timetable solution);
+    public void computeConflicts(ScheduledLesson lessonToSchedule, Timetable currentSolution, Set<String> classConflicts) {
+        Timetable currentSolutionClone = currentSolution.clone();
+
+        currentSolutionClone.addScheduledLesson(lessonToSchedule);
+
+        if(required) {
+            Set<String> conflicts = getConflictingClasses(currentSolutionClone);
+
+            classConflicts.addAll(conflicts);
+        }
+    }
+
+
+    //public abstract int getConflictPenalty(ScheduledLesson scheduledLesson, Timetable currentSolution);
+
+
+    public abstract Set<String> getConflictingClasses(Timetable solution);
 }

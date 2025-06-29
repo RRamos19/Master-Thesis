@@ -43,7 +43,7 @@ public class VirtualScheduleClassValueList implements List<ScheduledLesson> {
         int roomIndex = index % roomList.size();
         Time t = timeList.get(timeIndex);
         Room r = roomList.get(roomIndex);
-        return new ScheduledLesson(classUnit.getClassId(), r.getRoomId(), t);
+        return new ScheduledLesson(classUnit.getModel(), classUnit.getClassId(), r.getRoomId(), t);
     }
 
     @Override

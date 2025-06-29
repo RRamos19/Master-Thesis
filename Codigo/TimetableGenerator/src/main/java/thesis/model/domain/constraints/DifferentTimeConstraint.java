@@ -6,6 +6,7 @@ import thesis.model.domain.ScheduledLesson;
 import thesis.model.domain.Timetable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -15,38 +16,31 @@ public class DifferentTimeConstraint extends Constraint {
     }
 
     @Override
-    public void computeConflicts(String cls, Set<String> classConflicts) {
-        // TODO: por fazer
-    }
-
-    @Override
-    public List<Pair<String, String>> getConflictingClasses(Timetable solution) {
-        List<Pair<String, String>> conflictingClasses = new ArrayList<>();
+    public Set<String> getConflictingClasses(Timetable solution) {
+        Set<String> conflictingClasses = new HashSet<>();
         List<String> scheduledClasses = this.getScheduledClasses(solution);
 
-        // There can only be a conflict if there are two or more classes present in this
-        // restriction that are scheduled
         int scheduledClassesSize = scheduledClasses.size();
-        if(scheduledClassesSize >= 2) {
-            for(int i=0; i<scheduledClassesSize-1; i++) {
-                ScheduledLesson scheduledLesson1 = solution.getScheduledLesson(scheduledClasses.get(i));
 
-                int scheduledLesson1Start = scheduledLesson1.getStartSlot();
-                int scheduledLesson1Length = scheduledLesson1.getLength();
+        for(int i=0; i<scheduledClassesSize-1; i++) {
+            ScheduledLesson scheduledLesson1 = solution.getScheduledLesson(scheduledClasses.get(i));
 
-                for(int j=i+1; j<scheduledClassesSize; j++) {
-                    ScheduledLesson scheduledLesson2 = solution.getScheduledLesson(scheduledClasses.get(j));
+            int scheduledLesson1Start = scheduledLesson1.getStartSlot();
+            int scheduledLesson1Length = scheduledLesson1.getLength();
 
-                    int scheduledLesson2Start = scheduledLesson2.getStartSlot();
-                    int scheduledLesson2Length = scheduledLesson2.getLength();
+            for(int j=i+1; j<scheduledClassesSize; j++) {
+                ScheduledLesson scheduledLesson2 = solution.getScheduledLesson(scheduledClasses.get(j));
 
-                    if(scheduledLesson1Start+scheduledLesson1Length <= scheduledLesson2Start ||
-                       scheduledLesson2Start+scheduledLesson2Length <= scheduledLesson1Start) {
-                        continue;
-                    }
+                int scheduledLesson2Start = scheduledLesson2.getStartSlot();
+                int scheduledLesson2Length = scheduledLesson2.getLength();
 
-                    conflictingClasses.add(new Pair<>(scheduledLesson1.getClassId(), scheduledLesson2.getClassId()));
+                if(scheduledLesson1Start+scheduledLesson1Length <= scheduledLesson2Start ||
+                   scheduledLesson2Start+scheduledLesson2Length <= scheduledLesson1Start) {
+                    continue;
                 }
+
+                conflictingClasses.add(scheduledLesson1.getClassId());
+                conflictingClasses.add(scheduledLesson2.getClassId());
             }
         }
 

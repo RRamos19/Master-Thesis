@@ -16,12 +16,18 @@ public class CourseEntity {
     @Column(length = 10, unique = true, nullable = false)
     private String name;
 
+    @ManyToOne
+    @JoinColumn(name = "program_id", referencedColumnName = "id", nullable = false)
+    private ProgramEntity programEntity;
+
     @OneToMany(mappedBy = "courseEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private final List<ConfigEntity> configEntityList = new ArrayList<>();
 
     public CourseEntity() {}
 
-    public CourseEntity(String name) {
+    public CourseEntity(ProgramEntity programEntity, String name) {
+        this.programEntity = programEntity;
+        programEntity.addCourse(this);
         this.name = name;
     }
 
@@ -35,6 +41,10 @@ public class CourseEntity {
 
     public String getName() {
         return name;
+    }
+
+    public ProgramEntity getProgramEntity() {
+        return programEntity;
     }
 
     public List<ConfigEntity> getConfigList() {

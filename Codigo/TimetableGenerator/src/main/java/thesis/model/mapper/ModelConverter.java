@@ -83,6 +83,7 @@ public class ModelConverter {
             data.addTimetable(timetable);
             for(ScheduledLessonEntity scheduledLessonEntity : timetableEntity.getScheduledLessonEntityList()) {
                 ScheduledLesson scheduledLesson = new ScheduledLesson(
+                        data,
                         scheduledLessonEntity.getClassUnit().getName(),
                         scheduledLessonEntity.getRoom().getName(),
                         scheduledLessonEntity.getDays(),
