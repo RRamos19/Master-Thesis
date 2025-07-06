@@ -1,7 +1,8 @@
-package thesis.service.solutionoptimizer;
+package thesis.solver.solutionoptimizer;
 
 import thesis.model.domain.*;
-import thesis.service.initialsolutiongenerator.InitialSolutionGenerator;
+import thesis.solver.initialsolutiongenerator.InitialSolutionGenerator;
+import thesis.solver.initialsolutiongenerator.MullerSolutionGenerator;
 import thesis.utils.RandomUtils;
 
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
             this::swapClasses
     );
 
-    public SimulatedAnnealing(DomainModel data, InitialSolutionGenerator<Timetable, ClassUnit> initialSolutionGenerator, int maxInitialSolutionIterations, double initialTemperature, double minTemperature, double coolingRate, int k) {
+    public SimulatedAnnealing(DomainModel data, int maxInitialSolutionIterations, double initialTemperature, double minTemperature, double coolingRate, int k) {
         this.initialTemperature = initialTemperature;
         this.minTemperature = minTemperature;
         this.coolingRate = coolingRate;
@@ -48,8 +49,18 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
             }
         }
 
-        this.initialSolution = initialSolutionGenerator.generate(classesToSchedule, maxInitialSolutionIterations);
-        this.initialSolution.setProgram(data.getProblemName());
+        InitialSolutionGenerator<Timetable> initialSolutionGen = new MullerSolutionGenerator(classesToSchedule);
+
+        long startTime = System.currentTimeMillis();
+        this.initialSolution = initialSolutionGen.generate(maxInitialSolutionIterations);
+        //this.initialSolution.printTimetable();
+        long endTime = System.currentTimeMillis();
+
+        long duration = (endTime - startTime);
+        System.out.println("Initial solution generation: " + duration/1000 + "s");
+
+        // TODO: temporário remover depois de avaliar os resultados
+        data.addTimetable(initialSolution);
     }
 
     @Override
@@ -78,7 +89,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
                     // Update the best solution found
                     if(currentCost < bestSolutionCost) {
                         bestSolutionCost = currentCost;
-                        bestSolutionFound = currentSolution;
+                        bestSolutionFound = currentSolution.clone();
                     }
                 } else {
                     // The neighbor is worse than the current solutions
@@ -101,7 +112,8 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
     private int costFunction(Timetable solution) {
         int cost = 0;
         for(ScheduledLesson scheduledLesson : solution.getScheduledLessonList()) {
-            //TODO: falta implementar
+            //TODO: falta confirmar se basta isto
+            cost += scheduledLesson.toInt();
         }
         return cost;
     }

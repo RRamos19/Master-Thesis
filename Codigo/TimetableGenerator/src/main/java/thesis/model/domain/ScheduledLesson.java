@@ -1,6 +1,7 @@
 package thesis.model.domain;
 
-import javafx.util.Pair;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
 
 import java.util.ArrayList;
@@ -12,14 +13,20 @@ public class ScheduledLesson {
     private Time scheduledTime;
     private String roomId;
     private String classId;
+    private final int nDays;
+    private final int nWeeks;
 
-    private DomainModel model;
+    private final DomainModel model;
 
     public ScheduledLesson(DomainModel model, String classId, String roomId, Time time) {
         this.model = model;
         this.classId = classId;
         this.roomId = roomId;
         this.scheduledTime = time;
+
+        TimetableConfiguration timetableConfiguration = model.getTimetableConfiguration();
+        this.nDays = timetableConfiguration.getNumDays();
+        this.nWeeks = timetableConfiguration.getNumWeeks();
     }
 
     public ScheduledLesson(DomainModel model, String classId, String roomId, String days, String weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
@@ -28,6 +35,31 @@ public class ScheduledLesson {
 
     public ScheduledLesson(DomainModel model, String classId, String roomId, byte days, short weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
         this(model, classId, roomId, TimeFactory.create(days, weeks, startSlot, length));
+    }
+
+    public boolean isAvailable() {
+        List<Teacher> teachers = getTeachers();
+        Room room = getRoom();
+
+        if(room != null) {
+            for(Time unavailability : room.getRoomUnavailabilities()) {
+                if(scheduledTime.overlaps(unavailability)) {
+                    return false;
+                }
+            }
+        }
+
+        if(teachers != null) {
+            for(Teacher teacher : teachers) {
+                for(Time unavailability : teacher.getTeacherUnavailabilities()) {
+                    if(scheduledTime.overlaps(unavailability)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
 
@@ -44,15 +76,26 @@ public class ScheduledLesson {
 
         int penalty = 0;
 
+        // Add all the room penalties
         for(Map.Entry<String, Integer> roomPenalties : cls.getClassRoomPenalties().entrySet()) {
             if(!roomId.equals(roomPenalties.getKey())) {
                 penalty += roomPenalties.getValue();
             }
         }
 
+        // Add all the time penalties
         for(Pair<Time, Integer> timePenalties : cls.getClassTimesList()) {
             if(!scheduledTime.equals(timePenalties.getKey())) {
                 penalty += timePenalties.getValue();
+            }
+        }
+
+        // Add all the teacher penalties
+        for(int teacherId : teacherIds) {
+            Teacher t = model.getTeacher(teacherId);
+
+            if(t != null) {
+                //TODO: Adicionar uma penalty tal como nos rooms
             }
         }
 
@@ -67,8 +110,16 @@ public class ScheduledLesson {
         return scheduledTime.getDays();
     }
 
+    public String getDaysBinaryString() {
+        return StringUtils.leftPad(Integer.toBinaryString(getDays()), nDays, "0");
+    }
+
     public int getWeeks() {
         return scheduledTime.getWeeks();
+    }
+
+    public String getWeeksBinaryString() {
+        return StringUtils.leftPad(Integer.toBinaryString(getWeeks()), nWeeks, "0");
     }
 
     public int getStartSlot() {
@@ -99,6 +150,18 @@ public class ScheduledLesson {
         return model.getRoom(roomId);
     }
 
+    public List<Teacher> getTeachers() {
+        ArrayList<Teacher> teachers = new ArrayList<>();
+
+        for(int teacherId : teacherIds) {
+            Teacher teacher = model.getTeacher(teacherId);
+            if(teacher != null)
+                teachers.add(teacher);
+        }
+
+        return teachers.isEmpty() ? null : teachers;
+    }
+
     public String getClassId() {
         return classId;
     }
@@ -107,11 +170,15 @@ public class ScheduledLesson {
         this.classId = classId;
     }
 
+    public void addTeacherId(int teacherId) {
+        teacherIds.add(teacherId);
+    }
+
     public List<Integer> getTeacherIds() {
         return teacherIds;
     }
 
-    public void addTeacher(int teacherId) {
-        teacherIds.add(teacherId);
+    public DomainModel getModel() {
+        return model;
     }
 }

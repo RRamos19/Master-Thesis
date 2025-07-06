@@ -96,9 +96,9 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                             String slotsPerDayString = getAttributeValue(startElement, "slotsPerDay");
                             String nrWeeksString = getAttributeValue(startElement, "nrWeeks");
 
-                            short nrDays = nrDaysString != null ? Short.parseShort(nrDaysString) : 7;                 // Default 7 days
-                            int slotsPerDay = slotsPerDayString != null ? Integer.parseInt(slotsPerDayString) : 9;  // Default 9 weeks
-                            int nrWeeks = nrWeeksString != null ? Integer.parseInt(nrWeeksString) : 16;             // Default 1h:30m for each slot
+                            byte nrDays = nrDaysString != null ? Byte.parseByte(nrDaysString) : 7;                  // Default 7 days
+                            int slotsPerDay = slotsPerDayString != null ? Integer.parseInt(slotsPerDayString) : 16; // Default 1h:30m for each slot
+                            int nrWeeks = nrWeeksString != null ? Integer.parseInt(nrWeeksString) : 9;              // Default 9 weeks
 
                             List<String> problemTagErrors = new ArrayList<>();
                             if (programName == null) problemTagErrors.add("name must be specified");
@@ -170,7 +170,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
      * All the scheduled lessons should be read before encountering the termination tag
      */
     private void readSolution(XMLEventReader eventReader, DomainModel data) throws XMLStreamException, ParsingException {
-        Timetable timetable = new Timetable(data);
+        Timetable timetable = new Timetable(data.getProblemName());
         data.addTimetable(timetable);
 
         while (eventReader.hasNext()) {

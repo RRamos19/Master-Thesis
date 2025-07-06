@@ -61,28 +61,29 @@ public abstract class Constraint {
      * @param solution
      * @return A list of the class ids that are scheduled and present in this restriction
      */
-    protected List<String> getScheduledClasses(Timetable solution) {
-        List<String> scheduledClasses = new ArrayList<>();
+    protected List<ScheduledLesson> getScheduledClasses(Timetable solution) {
+        List<ScheduledLesson> scheduledClasses = new ArrayList<>();
 
         for(ScheduledLesson scheduledLesson : solution.getScheduledLessonList()) {
             String classId = scheduledLesson.getClassId();
             if(this.getClassUnitIdList().contains(classId)) {
-                scheduledClasses.add(classId);
+                scheduledClasses.add(scheduledLesson);
             }
         }
 
         return scheduledClasses;
     }
 
-
     public void computeConflicts(ScheduledLesson lessonToSchedule, Timetable currentSolution, Set<String> classConflicts) {
-        Timetable currentSolutionClone = currentSolution.clone();
-
-        currentSolutionClone.addScheduledLesson(lessonToSchedule);
-
         if(required) {
-            Set<String> conflicts = getConflictingClasses(currentSolutionClone);
+            // Create a timetable with lessonToSchedule already scheduled
+            Timetable currentSolutionClone = currentSolution.clone();
+            currentSolutionClone.addScheduledLesson(lessonToSchedule);
 
+            // Get all the conflicts present in said timetable
+            Set<String> conflicts = getConflictingClasses(lessonToSchedule.getModel(), currentSolutionClone);
+
+            // Add all the conflicts to the set provided
             classConflicts.addAll(conflicts);
         }
     }
@@ -91,5 +92,5 @@ public abstract class Constraint {
     //public abstract int getConflictPenalty(ScheduledLesson scheduledLesson, Timetable currentSolution);
 
 
-    public abstract Set<String> getConflictingClasses(Timetable solution);
+    public abstract Set<String> getConflictingClasses(DomainModel model, Timetable solution);
 }

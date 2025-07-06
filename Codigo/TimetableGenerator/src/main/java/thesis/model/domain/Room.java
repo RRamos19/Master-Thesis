@@ -38,6 +38,7 @@ public class Room {
     }
 
     public int getRoomDistance(String room2Id) {
-        return roomDistances.get(room2Id);
+        Integer distance = roomDistances.get(room2Id);
+        return distance != null ? distance : 0;
     }
 }

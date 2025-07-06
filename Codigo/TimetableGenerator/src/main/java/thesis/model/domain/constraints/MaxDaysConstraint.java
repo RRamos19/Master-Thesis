@@ -1,6 +1,7 @@
 package thesis.model.domain.constraints;
 
 import thesis.model.domain.Constraint;
+import thesis.model.domain.DomainModel;
 import thesis.model.domain.ScheduledLesson;
 import thesis.model.domain.Timetable;
 
@@ -14,32 +15,22 @@ public class MaxDaysConstraint extends Constraint {
     }
 
     @Override
-    public Set<String> getConflictingClasses(Timetable solution) {
+    public Set<String> getConflictingClasses(DomainModel model, Timetable solution) {
         Set<String> conflictingClasses = new HashSet<>();
-        List<String> scheduledClasses = this.getScheduledClasses(solution);
+        List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
+        int D = firstParam;
+        int acc = 0;
 
-        int scheduledClassesSize = scheduledClasses.size();
+        for (ScheduledLesson scheduledLesson : scheduledClasses) {
+            acc |= scheduledLesson.getDays();
 
-        for(int i=0; i<scheduledClassesSize-1; i++) {
-            ScheduledLesson scheduledLesson1 = solution.getScheduledLesson(scheduledClasses.get(i));
+            conflictingClasses.add(scheduledLesson.getClassId());
+        }
 
-            int scheduledLesson1Start = scheduledLesson1.getStartSlot();
-            int scheduledLesson1Length = scheduledLesson1.getLength();
-
-            for(int j=i+1; j<scheduledClassesSize; j++) {
-                ScheduledLesson scheduledLesson2 = solution.getScheduledLesson(scheduledClasses.get(j));
-
-                int scheduledLesson2Start = scheduledLesson2.getStartSlot();
-                int scheduledLesson2Length = scheduledLesson2.getLength();
-
-                if(true){
-                    // TODO: falta terminar
-                    continue;
-                }
-
-                conflictingClasses.add(scheduledLesson1.getClassId());
-                conflictingClasses.add(scheduledLesson2.getClassId());
-            }
+        var count = Integer.bitCount(acc);
+        if (count <= D)
+        {
+            return new HashSet<>();
         }
 
         return conflictingClasses;

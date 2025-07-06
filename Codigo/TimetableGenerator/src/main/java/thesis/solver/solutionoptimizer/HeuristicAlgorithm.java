@@ -1,4 +1,4 @@
-package thesis.service.solutionoptimizer;
+package thesis.solver.solutionoptimizer;
 
 public interface HeuristicAlgorithm<T, S> {
     T execute();
