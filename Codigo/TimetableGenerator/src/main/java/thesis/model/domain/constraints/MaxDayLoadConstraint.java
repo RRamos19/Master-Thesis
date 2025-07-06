@@ -1,8 +1,6 @@
 package thesis.model.domain.constraints;
 
-import thesis.model.domain.Constraint;
-import thesis.model.domain.ScheduledLesson;
-import thesis.model.domain.Timetable;
+import thesis.model.domain.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -14,31 +12,29 @@ public class MaxDayLoadConstraint extends Constraint {
     }
 
     @Override
-    public Set<String> getConflictingClasses(Timetable solution) {
+    public Set<String> getConflictingClasses(DomainModel model, Timetable solution) {
         Set<String> conflictingClasses = new HashSet<>();
-        List<String> scheduledClasses = this.getScheduledClasses(solution);
+        List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
+        int S = firstParam;
+        TimetableConfiguration timetableConfiguration = model.getTimetableConfiguration();
+        int nrWeeks = timetableConfiguration.getNumWeeks();
+        short nrDays = timetableConfiguration.getNumDays();
+        int sum = 0;
 
-        int scheduledClassesSize = scheduledClasses.size();
+        for(int week=0; week<nrWeeks; week++) {
+            for(short day=0; day<nrDays; day++) {
+                int dayLoad = 0;
 
-        for(int i=0; i<scheduledClassesSize-1; i++) {
-            ScheduledLesson scheduledLesson1 = solution.getScheduledLesson(scheduledClasses.get(i));
-
-            int scheduledLesson1Start = scheduledLesson1.getStartSlot();
-            int scheduledLesson1Length = scheduledLesson1.getLength();
-
-            for(int j=i+1; j<scheduledClassesSize; j++) {
-                ScheduledLesson scheduledLesson2 = solution.getScheduledLesson(scheduledClasses.get(j));
-
-                int scheduledLesson2Start = scheduledLesson2.getStartSlot();
-                int scheduledLesson2Length = scheduledLesson2.getLength();
-
-                if(true){
-                    // TODO: falta terminar
-                    continue;
+                for (ScheduledLesson scheduledLesson : scheduledClasses) {
+                    if ((scheduledLesson.getDays() & (1 << day)) != 0 &&
+                        (scheduledLesson.getWeeks() & (1 << week)) != 0) {
+                        dayLoad += scheduledLesson.getLength();
+                    }
                 }
 
-                conflictingClasses.add(scheduledLesson1.getClassId());
-                conflictingClasses.add(scheduledLesson2.getClassId());
+                // TODO: falta adicionar os conflitos de aulas
+
+                sum += Math.max(dayLoad - S, 0);
             }
         }
 

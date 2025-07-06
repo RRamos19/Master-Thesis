@@ -8,6 +8,23 @@ import thesis.model.persistence.entities.*;
 import java.util.List;
 
 public class DBHibernateManager implements DBManager<EntityModel> {
+
+    /**
+     * Creates a connection to the database using Hibernate
+     * @param dbName Name of the database
+     * @param ip Ip of the system that is running the database
+     * @param port Port of the system that is running the database
+     * @param userName Name of the user that is connecting
+     * @param password Password to authenticate the connection
+     */
+    public DBHibernateManager(String dbName, String ip, String port, String userName, String password) {
+        HibernateUtils.init(dbName, ip, port, userName, password);
+    }
+
+    /**
+     * Selects all of the data available in the database and stores in its respective objects
+     * @return Aggregate of all the data stored in the database
+     */
     public EntityModel fetchData() {
         EntityModel data = new EntityModel();
 
@@ -80,9 +97,16 @@ public class DBHibernateManager implements DBManager<EntityModel> {
     }
 
 
+    /**
+     * Stores all data present in EntityModel into the database
+     * @param data Class that contains all of the data to be inserted
+     */
     public void storeData(EntityModel data) {
         try(Session session = HibernateUtils.getSessionFactory().openSession()) {
             Transaction tx = session.beginTransaction();
+
+            // TODO: corrigir esta função (tentar armazenar os dados que ainda não se encontram na BD e guardar os
+            //  dados já disponíveis numa queue para serem guardados posteriormente)
 
             for(TeacherEntity t : data.getTeachers()) {
                 //session.merge(t);

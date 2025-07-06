@@ -14,7 +14,6 @@ public class RandomUtils {
         return valueList == null ? null : valueList.get(ThreadLocalRandom.current().nextInt(valueList.size()));
     }
 
-
     /**
      * Choose a random index from which a value is removed
      * @param valueList List of values of which a random value is removed
@@ -24,7 +23,6 @@ public class RandomUtils {
         valueList.remove(ThreadLocalRandom.current().nextInt(valueList.size()));
     }
 
-
     /**
      * Generates a random value between 0 (inclusive) and 1 (exclusive)
      * @return The value generated
@@ -32,7 +30,6 @@ public class RandomUtils {
     public static float random() {
         return ThreadLocalRandom.current().nextFloat();
     }
-
 
     /**
      * Generates a random int value between the max (exclusive) and the min (inclusive).
@@ -43,7 +40,6 @@ public class RandomUtils {
     public static int random(int maxValue, int minValue) {
         return ThreadLocalRandom.current().nextInt(maxValue-minValue) + minValue;
     }
-
 
     /**
      * Generates a random int value between the max (exclusive) and zero (inclusive).

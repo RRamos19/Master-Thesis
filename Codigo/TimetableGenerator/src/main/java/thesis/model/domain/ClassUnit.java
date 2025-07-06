@@ -1,6 +1,7 @@
 package thesis.model.domain;
 
-import javafx.util.Pair;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
 
 import java.util.*;
@@ -40,7 +41,7 @@ public class ClassUnit {
     }
 
     public void addClassTime(String days, String weeks, int startSlot, int length, int penalty) throws CheckedIllegalArgumentException {
-        classTimesList.add(new Pair<>(TimeFactory.create(days, weeks, startSlot, length), penalty));
+        classTimesList.add(new ImmutablePair<>(TimeFactory.create(days, weeks, startSlot, length), penalty));
     }
 
     public List<Pair<Time, Integer>> getClassTimesList() {
@@ -77,9 +78,5 @@ public class ClassUnit {
 
     public DomainModel getModel() {
         return model;
-    }
-
-    public List<ScheduledLesson> values() {
-        return model.possibleSchedules(this);
     }
 }

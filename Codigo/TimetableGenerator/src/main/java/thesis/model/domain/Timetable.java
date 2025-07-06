@@ -6,25 +6,22 @@ public class Timetable implements Cloneable {
     private String program;
     private Map<String, ScheduledLesson> scheduledLessonMap = new HashMap<>(); // ClassId : ScheduledLesson
 
-    private List<ClassUnit> unscheduledLessons;
-
-    private DomainModel model;
-
-    public Timetable(DomainModel model) {
-        this.model = model;
-        this.program = model.getProblemName();
+    public Timetable(String programName) {
+        this.program = programName;
     }
+
+    public Timetable() {}
 
     public List<ScheduledLesson> getScheduledLessonList() {
         return new ArrayList<>(scheduledLessonMap.values());
     }
 
-    public void setProgram(String program) {
-        this.program = program;
-    }
-
     public String getProgram() {
         return program;
+    }
+
+    public void setProgram(String program) {
+        this.program = program;
     }
 
     public void addScheduledLesson(ScheduledLesson scheduledLesson) {
@@ -35,57 +32,26 @@ public class Timetable implements Cloneable {
         return scheduledLessonMap.get(classId);
     }
 
-    public void setUnscheduledLessons(List<ClassUnit> unscheduledLessons) {
-        this.unscheduledLessons = unscheduledLessons;
-    }
-
-    public List<ClassUnit> getUnscheduledLessons() {
-        return unscheduledLessons;
-    }
-
     @Override
     public Timetable clone() {
         try {
             Timetable clone = (Timetable) super.clone();
             clone.program = program;
             clone.scheduledLessonMap = new HashMap<>(scheduledLessonMap);
-            clone.unscheduledLessons = new ArrayList<>(unscheduledLessons);
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
         }
     }
 
-    public DomainModel getModel() {
-        return model;
-    }
-
-    public int getTotalValue() {
-        int total = 0;
-        for(ScheduledLesson scheduledLesson : scheduledLessonMap.values()) {
-            total += scheduledLesson.toInt();
-        }
-        return total;
-    }
-
-    public int getBestValue() {
-        Integer bestValue = null;
-        for(ScheduledLesson scheduledLesson : scheduledLessonMap.values()) {
-            int scheduledLessonValue = scheduledLesson.toInt();
-            if(bestValue == null || bestValue > scheduledLessonValue) {
-                bestValue = scheduledLessonValue;
-            }
-        }
-        return bestValue;
-    }
 
     // TODO: Temporário, eliminar quando deixar de ser necessário
     public void printTimetable() {
         // Organize lessons by [day][slot]
-        // The order goes from 0 to 5 from Monday to Saturday
+        // The order goes from 0 to 6 from Monday to Sunday
         String[] daysOfWeek = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
         int numberOfDays = daysOfWeek.length;
-        Map<Integer, Map<Integer, ScheduledLesson>> schedule = new HashMap<>();
+        Map<Integer, Map<String, ScheduledLesson>> schedule = new HashMap<>();
         for (int i=0; i < numberOfDays; i++) {
             schedule.put(i, new HashMap<>());
         }
@@ -95,42 +61,35 @@ public class Timetable implements Cloneable {
 
             for(int i=0; i < numberOfDays; i++) {
                 if((days >> i & 1) == 1) {
-                    schedule.get(i).put(scheduledLesson.getStartSlot(), scheduledLesson);
+                    schedule.get(i).put(scheduledLesson.getStartSlot() + " - " + scheduledLesson.getEndSlot(), scheduledLesson);
                 }
             }
         }
 
-        // Header
-        StringBuilder header = new StringBuilder("| Start ");
-        for (String day : daysOfWeek) {
-            header.append(String.format("| %-15s | Room ", day));
-        }
-        System.out.println(header.append("|"));
+        for (int i=0; i<numberOfDays; i++) {
+            String day = daysOfWeek[i];
+            // Header
+            System.out.printf("| %-15s | Time | Room |\n", day);
 
-        // Separator
-        int columns = numberOfDays * 2 + 1;
-        System.out.println("|" + "-".repeat(7 * columns) + "|");
+            // Determine all slots used
+            Set<String> allSlots = new TreeSet<>();
+            for (Map<String, ScheduledLesson> bySlot : schedule.values()) {
+                allSlots.addAll(bySlot.keySet());
+            }
 
-        // Determine all slots used
-        Set<Integer> allSlots = new TreeSet<>();
-        for (Map<Integer, ScheduledLesson> bySlot : schedule.values()) {
-            allSlots.addAll(bySlot.keySet());
-        }
+            // Print timetable per slot
+            for (String slot : allSlots) {
+                StringBuilder row = new StringBuilder();
+                row.append(String.format("| %-15s ", slot));
 
-        // Print timetable per slot
-        for (int slot : allSlots) {
-            StringBuilder row = new StringBuilder();
-            row.append(String.format("| %-4d", slot));
-            for (int i=0; i<numberOfDays; i++) {
                 ScheduledLesson lesson = schedule.get(i).get(slot);
                 if (lesson != null) {
-                    row.append(String.format("| %-15s | %-4s", lesson.getClassId(), lesson.getRoomId()));
-                } else {
-                    row.append("|                 |      ");
+                    row.append(String.format("| %-5s | %-4s", lesson.getClassId(), lesson.getRoomId()));
                 }
+                row.append("|");
+
+                System.out.println(row);
             }
-            row.append("|");
-            System.out.println(row);
         }
     }
 }

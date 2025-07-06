@@ -2,6 +2,7 @@ package thesis.model.domain.constraints;
 
 import javafx.util.Pair;
 import thesis.model.domain.Constraint;
+import thesis.model.domain.DomainModel;
 import thesis.model.domain.ScheduledLesson;
 import thesis.model.domain.Timetable;
 
@@ -16,20 +17,20 @@ public class MaxBreaksConstraint extends Constraint {
     }
 
     @Override
-    public Set<String> getConflictingClasses(Timetable solution) {
+    public Set<String> getConflictingClasses(DomainModel model, Timetable solution) {
         Set<String> conflictingClasses = new HashSet<>();
-        List<String> scheduledClasses = this.getScheduledClasses(solution);
+        List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
 
         int scheduledClassesSize = scheduledClasses.size();
 
         for(int i=0; i<scheduledClassesSize-1; i++) {
-            ScheduledLesson scheduledLesson1 = solution.getScheduledLesson(scheduledClasses.get(i));
+            ScheduledLesson scheduledLesson1 = scheduledClasses.get(i);
 
             int scheduledLesson1Start = scheduledLesson1.getStartSlot();
             int scheduledLesson1Length = scheduledLesson1.getLength();
 
             for(int j=i+1; j<scheduledClassesSize; j++) {
-                ScheduledLesson scheduledLesson2 = solution.getScheduledLesson(scheduledClasses.get(j));
+                ScheduledLesson scheduledLesson2 = scheduledClasses.get(j);
 
                 int scheduledLesson2Start = scheduledLesson2.getStartSlot();
                 int scheduledLesson2Length = scheduledLesson2.getLength();

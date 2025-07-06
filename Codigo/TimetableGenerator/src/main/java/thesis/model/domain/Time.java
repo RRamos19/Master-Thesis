@@ -51,6 +51,13 @@ public class Time {
         return value & ~(value >> 1);
     }
 
+    /**
+     * Checks if this time block is earlier than another time block.
+     * The authors of this method are Edon Gashi and Kadri Sylejmani
+     * source: https://github.com/edongashi/itc-2019
+     * @param other Another time block of which is to be compared with this one
+     * @return True if this time block is earlier than the other one, false otherwise
+     */
     public boolean isEarlier(Time other) {
         int msbWeeksThis = mostSignificantBit(this.weeks);
         int msbWeeksOther = mostSignificantBit(other.weeks);
@@ -69,5 +76,19 @@ public class Time {
         }
 
         return this.endSlot < other.startSlot;
+    }
+
+    /**
+     * Checks if there is an overlap between this time block and another time block.
+     * The authors of this method are Edon Gashi and Kadri Sylejmani
+     * source: https://github.com/edongashi/itc-2019
+     * @param other Another time block of which the overlap is to be checked
+     * @return True if there is an overlap, false otherwise
+     */
+    public boolean overlaps(Time other) {
+        return other.startSlot < this.endSlot &&
+            this.startSlot < other.endSlot &&
+            (this.days & other.days) != 0 &&
+            (this.weeks & other.weeks) != 0;
     }
 }

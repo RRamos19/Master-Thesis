@@ -1,6 +1,7 @@
 package thesis.model.domain.constraints;
 
 import thesis.model.domain.Constraint;
+import thesis.model.domain.DomainModel;
 import thesis.model.domain.ScheduledLesson;
 import thesis.model.domain.Timetable;
 
@@ -14,17 +15,17 @@ public class SameWeeksConstraint extends Constraint {
     }
 
     @Override
-    public Set<String> getConflictingClasses(Timetable solution) {
+    public Set<String> getConflictingClasses(DomainModel model, Timetable solution) {
         Set<String> conflictingClasses = new HashSet<>();
-        List<String> scheduledClasses = this.getScheduledClasses(solution);
+        List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
 
         int scheduledClassesSize = scheduledClasses.size();
 
         for(int i=0; i<scheduledClassesSize-1; i++) {
-            ScheduledLesson scheduledLesson1 = solution.getScheduledLesson(scheduledClasses.get(i));
+            ScheduledLesson scheduledLesson1 = scheduledClasses.get(i);
 
             for(int j=i+1; j<scheduledClassesSize; j++) {
-                ScheduledLesson scheduledLesson2 = solution.getScheduledLesson(scheduledClasses.get(j));
+                ScheduledLesson scheduledLesson2 = scheduledClasses.get(j);
 
                 int orWeeks = scheduledLesson1.getWeeks() | scheduledLesson2.getWeeks();
 

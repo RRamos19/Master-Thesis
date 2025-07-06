@@ -12,18 +12,18 @@ public class SameDaysConstraint extends Constraint {
     }
 
     @Override
-    public Set<String> getConflictingClasses(Timetable solution) {
+    public Set<String> getConflictingClasses(DomainModel model, Timetable solution) {
         Set<String> conflictingClasses = new HashSet<>();
-        List<String> scheduledClasses = this.getScheduledClasses(solution);
+        List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
 
         int scheduledClassesSize = scheduledClasses.size();
 
         for(int i=0; i<scheduledClassesSize-1; i++) {
-            ScheduledLesson scheduledLesson1 = solution.getScheduledLesson(scheduledClasses.get(i));
+            ScheduledLesson scheduledLesson1 = scheduledClasses.get(i);
             Time time1 = scheduledLesson1.getScheduledTime();
 
             for(int j=i+1; j<scheduledClassesSize; j++) {
-                ScheduledLesson scheduledLesson2 = solution.getScheduledLesson(scheduledClasses.get(j));
+                ScheduledLesson scheduledLesson2 = scheduledClasses.get(j);
                 Time time2 = scheduledLesson2.getScheduledTime();
 
                 int orDays = time1.getDays() | time2.getDays();

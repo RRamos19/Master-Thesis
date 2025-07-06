@@ -8,6 +8,7 @@ import thesis.model.persistence.entities.*;
 
 public class ModelConverter {
     public static DomainModel convertToDomain(EntityModel entityModel) throws Exception {
+        // TODO: atribuir programName ao domain
         DomainModel data = new DomainModel();
 
         // Set the optimization parameters and configurations of the timetable
@@ -79,7 +80,7 @@ public class ModelConverter {
 
         // Add the timetables, scheduled lessons and respective teachers
         for(TimetableEntity timetableEntity : entityModel.getTimetables()) {
-            Timetable timetable = new Timetable(data);
+            Timetable timetable = new Timetable(data.getProblemName());
             data.addTimetable(timetable);
             for(ScheduledLessonEntity scheduledLessonEntity : timetableEntity.getScheduledLessonEntityList()) {
                 ScheduledLesson scheduledLesson = new ScheduledLesson(
@@ -92,7 +93,7 @@ public class ModelConverter {
                         scheduledLessonEntity.getDuration());
                 timetable.addScheduledLesson(scheduledLesson);
                 for(ScheduledLessonTeacherEntity scheduledLessonTeacherEntity : scheduledLessonEntity.getScheduledLessonTeacherList()) {
-                    scheduledLesson.addTeacher(scheduledLessonTeacherEntity.getTeacher().getId());
+                    scheduledLesson.addTeacherId(scheduledLessonTeacherEntity.getTeacher().getId());
                 }
             }
         }

@@ -1,7 +1,5 @@
 package thesis.model.domain;
 
-import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
-
 import java.util.*;
 
 public class DomainModel {
@@ -38,7 +36,7 @@ public class DomainModel {
         timetableConfiguration.setDistribWeight(distribWeight);
     }
 
-    public void setConfiguration(short numDays, int numWeeks, int slotPerDay) {
+    public void setConfiguration(byte numDays, int numWeeks, int slotPerDay) {
         timetableConfiguration.setNumDays(numDays);
         timetableConfiguration.setNumWeeks(numWeeks);
         timetableConfiguration.setSlotsPerDay(slotPerDay);
@@ -109,6 +107,7 @@ public class DomainModel {
     }
 
     public void addTimetable(Timetable timetable) {
+        timetable.setProgram(problemName);
         timetableList.add(timetable);
     }
 
@@ -116,42 +115,8 @@ public class DomainModel {
         return constraintMap;
     }
 
-    public Collection<String> conflictValues(Timetable solution, ScheduledLesson scheduledLesson) {
-        HashSet<String> conflictClasses = new HashSet<>();
-        ClassUnit cls = classUnitMap.get(scheduledLesson.getClassId());
-        if(cls != null) {
-            for (Constraint c : cls.getConstraintList()){
-                c.computeConflicts(scheduledLesson, solution, conflictClasses);
-            }
-        }
-        return conflictClasses;
-    }
-
-    public List<ScheduledLesson> possibleSchedules(ClassUnit cls) {
-        List<ScheduledLesson> possibleSchedulesList = new ArrayList<>();
-
-        String classId = cls.getClassId();
-
-        for(Room r : roomMap.values()) {
-            for (byte days = 1; days <= timetableConfiguration.getNumDays(); days++) {
-                for (short weeks = 1; weeks <= timetableConfiguration.getNumWeeks(); weeks++) {
-                    for (int length = 1; length < timetableConfiguration.getSlotsPerDay(); length++) {
-                        for (int startSlot = 0; startSlot < timetableConfiguration.getSlotsPerDay() - length; startSlot++) {
-                            try {
-                                possibleSchedulesList.add(new ScheduledLesson(this, classId, r.getRoomId(), days, weeks, startSlot, length));
-                            } catch (CheckedIllegalArgumentException e) {
-                                // This should never happen
-                                System.out.println(e.getMessage());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        System.out.println("Número de valores possíveis: " + possibleSchedulesList.size());
-
-        return possibleSchedulesList;
+    public List<Timetable> getTimetableList() {
+        return timetableList;
     }
 
     /**
@@ -159,7 +124,7 @@ public class DomainModel {
      */
     public void verifyValidity() throws RuntimeException {
         if(problemName == null) {
-            throw new RuntimeException("ERROR: This problem doesn't have a name");
+            throw new RuntimeException("ERROR: This problem must have a name");
         }
 
         for(ClassUnit cls : classUnitMap.values()) {

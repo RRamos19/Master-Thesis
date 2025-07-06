@@ -2,12 +2,14 @@ package thesis.model.domain;
 
 import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
 
-import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
+import java.util.Collections;
+import java.util.Map;
 import java.util.WeakHashMap;
 
 public class TimeFactory {
     // Static pool to reduce multiple clone objects of Time
-    private static final WeakHashMap<String, WeakReference<Time>> timePool = new WeakHashMap<>();
+    private static final Map<String, SoftReference<Time>> timePool = Collections.synchronizedMap(new WeakHashMap<>());
 
     // Prevents instantiation
     private TimeFactory() {}
@@ -34,7 +36,7 @@ public class TimeFactory {
 
         String timeString = String.valueOf(days + weeks + startSlot + length);
 
-        WeakReference<Time> ref = timePool.computeIfAbsent(timeString, t -> new WeakReference<>(new Time(days, weeks, startSlot, length)));
+        SoftReference<Time> ref = timePool.computeIfAbsent(timeString, t -> new SoftReference<>(new Time(days, weeks, startSlot, length)));
         return ref.get();
     }
 }
