@@ -1,9 +1,11 @@
 package thesis.solver.initialsolutiongenerator.core;
 
+import thesis.model.domain.Time;
 import thesis.model.domain.Timetable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class DefaultISGSolution implements ISGSolution<DefaultISGModel> {
     private final List<DefaultISGVariable> variableList = new ArrayList<>();
@@ -21,7 +23,9 @@ public class DefaultISGSolution implements ISGSolution<DefaultISGModel> {
         Timetable timetable = new Timetable();
 
         for(DefaultISGVariable var : variableList) {
-            timetable.addScheduledLesson(var.getAssignment().value());
+            if(var.getAssignment() != null) {
+                timetable.addScheduledLesson(var.getAssignment().value());
+            }
         }
 
         return timetable;
@@ -106,5 +110,45 @@ public class DefaultISGSolution implements ISGSolution<DefaultISGModel> {
     @Override
     public void restoreBest() {
         model.restoreBest();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof DefaultISGSolution)) return false;
+        DefaultISGSolution that = (DefaultISGSolution) o;
+        return iteration == that.iteration &&
+                Double.compare(time, that.time) == 0 &&
+                Objects.equals(variableList, that.variableList) &&
+                Objects.equals(unassignedVariableList, that.unassignedVariableList) &&
+                Objects.equals(bestValue, that.bestValue);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(variableList, unassignedVariableList, model, bestValue, iteration, time);
+    }
+
+    public boolean isAvailable(DefaultISGValue defaultISGValue) {
+        String defaultISGValueRoomId = defaultISGValue.value().getRoomId();
+        Time defaultISGValueTime = defaultISGValue.value().getScheduledTime();
+
+        for(DefaultISGVariable var : variableList) {
+            DefaultISGValue value = var.getAssignment();
+
+            // If the values are the same ignore
+            if(Objects.equals(value, defaultISGValue))
+                continue;
+
+            String valueRoomId = value.value().getRoomId();
+            Time valueTime = value.value().getScheduledTime();
+
+            if(Objects.equals(valueRoomId, defaultISGValueRoomId)) {
+                if(defaultISGValueTime.overlaps(valueTime)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }

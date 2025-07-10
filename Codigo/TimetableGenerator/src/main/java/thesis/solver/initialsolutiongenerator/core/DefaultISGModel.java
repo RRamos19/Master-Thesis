@@ -1,11 +1,10 @@
 package thesis.solver.initialsolutiongenerator.core;
 
 import thesis.model.domain.Constraint;
+import thesis.model.domain.ScheduledLesson;
+import thesis.model.domain.Time;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class DefaultISGModel implements ISGModel<DefaultISGValue, DefaultISGVariable, Constraint> {
     private List<DefaultISGVariable> variableList;
@@ -47,29 +46,38 @@ public class DefaultISGModel implements ISGModel<DefaultISGValue, DefaultISGVari
     }
 
     @Override
-    public Set<DefaultISGValue> conflictValues(DefaultISGValue value) {
-        HashSet<DefaultISGValue> conflictValues = new HashSet<>();
+    public Set<String> conflictValues(DefaultISGValue value) {
         HashSet<String> conflictIds = new HashSet<>();
 
-        if(value.variable() != null) {
-            for (Constraint constraint : value.variable().variable().getConstraintList()) {
-                constraint.computeConflicts(value.value(), solution.solution(), conflictIds);
-            }
-
-            for (String str : conflictIds) {
-                // TODO: otimizar
-                for (DefaultISGVariable var : variableList) {
-                    String classId = var.variable().getClassId();
-
-                    if (classId.equals(str)) {
-                        conflictValues.add(var.getAssignment());
-                        break;
-                    }
-                }
-            }
+        for (Constraint constraint : value.variable().variable().getConstraintList()) {
+            constraint.computeConflicts(value.value(), solution.solution(), conflictIds);
         }
 
-        return conflictValues;
+        // TODO: Verificar isto (em teoria corrige os problemas das salas.
+        //  Na prática não consegue gerar os horários porque fica eternamente a coloar e retirar aulas)
+        // Add the room conflicts
+//        ScheduledLesson valueLesson = value.value();
+//        String valueClassId = valueLesson.getClassId();
+//        String valueRoomId = valueLesson.getRoomId();
+//        Time valueTime = valueLesson.getScheduledTime();
+//        for(DefaultISGVariable variable : solution.getVariableList()) {
+//            ScheduledLesson scheduledLesson = variable.getAssignment().value();
+//
+//            if(scheduledLesson != null) {
+//                String lessonRoomId = scheduledLesson.getRoomId();
+//                String lessonClassId = scheduledLesson.getClassId();
+//
+//                if (!Objects.equals(lessonClassId, valueClassId)) {
+//                    if (lessonRoomId != null && Objects.equals(lessonRoomId, valueRoomId)) {
+//                        if (scheduledLesson.getScheduledTime().overlaps(valueTime)) {
+//                            conflictIds.add(lessonClassId);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+
+        return conflictIds;
     }
 
     @Override

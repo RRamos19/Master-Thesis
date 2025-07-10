@@ -5,13 +5,17 @@ import thesis.model.domain.DomainModel;
 import thesis.model.domain.ScheduledLesson;
 import thesis.model.domain.Timetable;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class DifferentRoomConstraint extends Constraint {
     public DifferentRoomConstraint(String type, Integer penalty, boolean required) {
         super(type, penalty, required);
     }
 
+    // The authors of this method are Edon Gashi and Kadri Sylejmani
+    // source: https://github.com/edongashi/itc-2019
     @Override
     public Set<String> getConflictingClasses(DomainModel model, Timetable solution) {
         Set<String> conflictingClasses = new HashSet<>();

@@ -14,10 +14,7 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,11 +49,11 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
         DomainModel data = new DomainModel();
 
         FileInputStream inputFile;
-        InputStreamReader inputFileReader;
+        BufferedInputStream inputFileReader;
 
         try {
             inputFile = new FileInputStream(filePath);
-            inputFileReader = new InputStreamReader(inputFile, StandardCharsets.UTF_8);
+            inputFileReader = new BufferedInputStream(inputFile);
         } catch (FileNotFoundException e) {
             throw new RuntimeException("Error, the file was not found");
         }
@@ -98,13 +95,13 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
 
                             byte nrDays = nrDaysString != null ? Byte.parseByte(nrDaysString) : 7;                  // Default 7 days
                             int slotsPerDay = slotsPerDayString != null ? Integer.parseInt(slotsPerDayString) : 16; // Default 1h:30m for each slot
-                            int nrWeeks = nrWeeksString != null ? Integer.parseInt(nrWeeksString) : 9;              // Default 9 weeks
+                            short nrWeeks = nrWeeksString != null ? Short.parseShort(nrWeeksString) : 9;            // Default 9 weeks
 
                             List<String> problemTagErrors = new ArrayList<>();
                             if (programName == null) problemTagErrors.add("name must be specified");
-                            if (nrDays < 1) problemTagErrors.add("nrDays >= 1");
+                            if (nrDays == 0) problemTagErrors.add("nrDays >= 1");
                             if (slotsPerDay <= 1) problemTagErrors.add("slotsPerDay > 1");
-                            if (nrWeeks < 1) problemTagErrors.add("nrWeeks >= 1");
+                            if (nrWeeks == 0) problemTagErrors.add("nrWeeks >= 1");
                             if (!problemTagErrors.isEmpty()) {
                                 String errorMessage = "The following conditions must be followed: " + String.join(", ", problemTagErrors);
                                 throw new ParsingException(event.getLocation(), errorMessage);

@@ -2,6 +2,7 @@ package thesis.model.domain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public abstract class Constraint {
@@ -74,6 +75,12 @@ public abstract class Constraint {
         return scheduledClasses;
     }
 
+    /**
+     * Adds all the conflicts between classes if lessonToSchedule was scheduled to classConflicts.
+     * @param lessonToSchedule
+     * @param currentSolution
+     * @param classConflicts
+     */
     public void computeConflicts(ScheduledLesson lessonToSchedule, Timetable currentSolution, Set<String> classConflicts) {
         if(required) {
             // Create a timetable with lessonToSchedule already scheduled
@@ -82,6 +89,9 @@ public abstract class Constraint {
 
             // Get all the conflicts present in said timetable
             Set<String> conflicts = getConflictingClasses(lessonToSchedule.getModel(), currentSolutionClone);
+
+            // Remove the class to be scheduled to obtain only the classes it conflicts with
+            conflicts.remove(lessonToSchedule.getClassId());
 
             // Add all the conflicts to the set provided
             classConflicts.addAll(conflicts);
@@ -93,4 +103,21 @@ public abstract class Constraint {
 
 
     public abstract Set<String> getConflictingClasses(DomainModel model, Timetable solution);
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Constraint)) return false;
+        Constraint that = (Constraint) o;
+        return required == that.required &&
+                Objects.equals(type, that.type) &&
+                Objects.equals(penalty, that.penalty) &&
+                Objects.equals(classUnitIdList, that.classUnitIdList) &&
+                Objects.equals(firstParam, that.firstParam) &&
+                Objects.equals(secondParam, that.secondParam);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, penalty, required, classUnitIdList, firstParam, secondParam);
+    }
 }

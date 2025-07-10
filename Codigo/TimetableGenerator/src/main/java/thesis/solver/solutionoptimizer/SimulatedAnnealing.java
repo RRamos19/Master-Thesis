@@ -3,7 +3,7 @@ package thesis.solver.solutionoptimizer;
 import thesis.model.domain.*;
 import thesis.solver.initialsolutiongenerator.InitialSolutionGenerator;
 import thesis.solver.initialsolutiongenerator.MullerSolutionGenerator;
-import thesis.utils.RandomUtils;
+import thesis.utils.RandomToolkit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,31 +21,20 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
             this::swapClasses
     );
 
-    public SimulatedAnnealing(DomainModel data, int maxInitialSolutionIterations, double initialTemperature, double minTemperature, double coolingRate, int k) {
+    public SimulatedAnnealing(DomainModel data, Integer maxInitialSolutionIterations, double initialTemperature, double minTemperature, double coolingRate, int k) {
         this.initialTemperature = initialTemperature;
         this.minTemperature = minTemperature;
         this.coolingRate = coolingRate;
         this.k = k;
 
         List<ClassUnit> classesToSchedule = new ArrayList<>();
-        // For a given course a random configuration is chosen. In said configuration one of each
-        // class in a Subpart should be scheduled.
+        // Every class in every subpart must be allocated in the timetable. As such, every course
+        // config and subpart needs to be searched.
         for(Course course : data.getCourses()) {
-            List<Config> configList = course.getConfigList();
-
-            // If there are no configs in this course it is skipped
-            if(configList.isEmpty()) continue;
-
-            // Choose a random config. From each subpart a random class is chosen
-            Config chosenConfig = RandomUtils.random(configList);
-            for(Subpart subpart : chosenConfig.getSubpartList()) {
-                List<ClassUnit> classUnitList = subpart.getClassUnitList();
-
-                // If there are no classes in this subpart it is skipped
-                if(classUnitList.isEmpty()) continue;
-
-                // A random class, of this subpart, is chosen to be scheduled
-                classesToSchedule.add(RandomUtils.random(classUnitList));
+            for(Config config : course.getConfigList()) {
+                for (Subpart subpart : config.getSubpartList()) {
+                    classesToSchedule.addAll(subpart.getClassUnitList());
+                }
             }
         }
 
@@ -53,8 +42,9 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
 
         long startTime = System.currentTimeMillis();
         this.initialSolution = initialSolutionGen.generate(maxInitialSolutionIterations);
-        //this.initialSolution.printTimetable();
         long endTime = System.currentTimeMillis();
+
+        this.initialSolution.printTimetable();
 
         long duration = (endTime - startTime);
         System.out.println("Initial solution generation: " + duration/1000 + "s");
@@ -131,7 +121,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
             throw new IllegalStateException("There are no neighbor finding functions!");
         }
 
-        return RandomUtils.random(neighborFunctions).findNeighbor(curr);
+        return RandomToolkit.random(neighborFunctions).findNeighbor(curr);
     }
 
     private Timetable moveClass(Timetable solution) {

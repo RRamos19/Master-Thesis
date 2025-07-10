@@ -6,5 +6,5 @@ public interface InitialSolutionGenerator<T> {
      *
      * @return The solution generated
      */
-    T generate(int maxIterations);
+    T generate(Integer maxIterations);
 }

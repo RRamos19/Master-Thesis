@@ -93,39 +93,31 @@ public class ConstraintFactory {
                 if(ConstraintArray.length != 2) {
                     throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have only one parameter");
                 }
-                assert(str1 != null);
                 return new WorkDayConstraint(str0, str1, constraintPenalty, constraintRequired);
             case "MinGap":
                 if(ConstraintArray.length != 2) {
                     throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have only one parameter");
                 }
-                assert(str1 != null);
                 return new MinGapConstraint(str0, str1, constraintPenalty, constraintRequired);
             case "MaxDays":
                 if(ConstraintArray.length != 2) {
                     throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have only one parameter");
                 }
-                assert(str1 != null);
                 return new MaxDaysConstraint(str0, str1, constraintPenalty, constraintRequired);
             case "MaxDayLoad":
                 if(ConstraintArray.length != 2) {
                     throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have only one parameter");
                 }
-                assert(str1 != null);
                 return new MaxDayLoadConstraint(str0, str1, constraintPenalty, constraintRequired);
             case "MaxBreaks":
                 if(ConstraintArray.length != 3) {
                     throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have only two parameters");
                 }
-                assert(str1 != null);
-                assert(str2 != null);
                 return new MaxBreaksConstraint(str0, str1, str2, constraintPenalty, constraintRequired);
             case "MaxBlock":
                 if(ConstraintArray.length != 3) {
                     throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have only two parameters");
                 }
-                assert(str1 != null);
-                assert(str2 != null);
                 return new MaxBlockConstraint(str0, str1, str2, constraintPenalty, constraintRequired);
             default:
                 throw new CheckedIllegalArgumentException("The restriction of type: " + restrictionType + " is not supported");

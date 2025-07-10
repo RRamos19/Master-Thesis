@@ -2,7 +2,7 @@ package thesis.solver.initialsolutiongenerator;
 
 import thesis.model.domain.*;
 import thesis.solver.initialsolutiongenerator.core.*;
-import thesis.utils.RandomUtils;
+import thesis.utils.RandomToolkit;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
     }
 
 
-    public Timetable generate(int maxIterations) {
+    public Timetable generate(Integer maxIterations) {
         DefaultISGSolution solution = model.createInitialSolution();
 
         for(ClassUnit cls : unscheduled) {
@@ -35,12 +35,17 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
         }
 
         int iter = 0;
-        while(!solution.getUnassignedVariables().isEmpty() && iter < maxIterations && !interruptAlgorithm) {
+        while(!solution.getUnassignedVariables().isEmpty() && !interruptAlgorithm) {
+            if(maxIterations != null && iter >= maxIterations) {
+                break;
+            }
             iter++;
             DefaultISGVariable variable = selectVariable(solution);
 
             // Should be impossible because the list of unscheduled is based on the data in DomainModel
-            assert(variable.variable() != null);
+            if(variable.variable() == null) {
+                throw new RuntimeException("Initial Solution Generator: No class unit stored in variable");
+            }
 
             DefaultISGValue value = valueSelection.selectValue(solution, variable);
 
@@ -70,9 +75,9 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
         List<DefaultISGVariable> unassignedVariables = solution.getUnassignedVariables();
 
         if(!unassignedVariables.isEmpty()) {
-            return RandomUtils.random(unassignedVariables);
+            return RandomToolkit.random(unassignedVariables);
         } else {
-            return RandomUtils.random(solution.getAssignedVariables());
+            return RandomToolkit.random(solution.getAssignedVariables());
         }
     }
 
