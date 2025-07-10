@@ -3,7 +3,9 @@ package thesis.utils;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class RandomUtils {
+public class RandomToolkit {
+    private RandomToolkit() {}
+
     /**
      * Choose a random value present in the list provided
      * @param valueList List of values of which a random value must be chosen
@@ -11,7 +13,11 @@ public class RandomUtils {
      * @param <T> Type of the values provided
      */
     public static <T> T random(List<T> valueList) {
-        return valueList == null ? null : valueList.get(ThreadLocalRandom.current().nextInt(valueList.size()));
+        if(valueList == null || valueList.isEmpty()) {
+            return null;
+        }
+
+        return valueList.get(ThreadLocalRandom.current().nextInt(valueList.size()));
     }
 
     /**
@@ -38,6 +44,10 @@ public class RandomUtils {
      * @return The value generated
      */
     public static int random(int maxValue, int minValue) {
+        if(maxValue == minValue) {
+            return maxValue;
+        }
+
         return ThreadLocalRandom.current().nextInt(maxValue-minValue) + minValue;
     }
 
@@ -47,6 +57,29 @@ public class RandomUtils {
      * @return The value generated
      */
     public static int random(int maxValue) {
+        return random(maxValue, 0);
+    }
+
+    /**
+     * Generates a random long value between the max (exclusive) and the min (inclusive).
+     * @param maxValue Long value that defines the maximum of the random value generator
+     * @param minValue Long value that defines the minimum of the random value generator
+     * @return The value generated
+     */
+    public static long random(long maxValue, long minValue) {
+        if(maxValue == minValue) {
+            return maxValue;
+        }
+
+        return ThreadLocalRandom.current().nextLong(maxValue-minValue) + minValue;
+    }
+
+    /**
+     * Generates a random long value between the max (exclusive) and zero (inclusive).
+     * @param maxValue Long value that defines the maximum of the random value generator
+     * @return The value generated
+     */
+    public static long random(long maxValue) {
         return random(maxValue, 0);
     }
 }

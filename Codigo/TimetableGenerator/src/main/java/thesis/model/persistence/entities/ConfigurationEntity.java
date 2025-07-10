@@ -14,7 +14,7 @@ public class ConfigurationEntity {
     private byte numberDays;
 
     @Column(name = "number_weeks")
-    private int numberWeeks;
+    private short numberWeeks;
 
     @Column(name = "slots_per_day")
     private int slotsPerDay;
@@ -24,7 +24,7 @@ public class ConfigurationEntity {
 
     public ConfigurationEntity() {}
 
-    public ConfigurationEntity(byte numberDays, int numberWeeks, int slotsPerDay) {
+    public ConfigurationEntity(byte numberDays, short numberWeeks, int slotsPerDay) {
         this.id = 0;
         this.numberDays = numberDays;
         this.numberWeeks = numberWeeks;
@@ -43,11 +43,11 @@ public class ConfigurationEntity {
         this.numberDays = numberDays;
     }
 
-    public int getNumberWeeks() {
+    public short getNumberWeeks() {
         return numberWeeks;
     }
 
-    public void setNumberWeeks(int numberWeeks) {
+    public void setNumberWeeks(short numberWeeks) {
         this.numberWeeks = numberWeeks;
     }
 

@@ -12,7 +12,7 @@ public interface ISGModel<Val extends ISGValue<?, ?>, Var extends ISGVariable<?,
     void removeVariable(Var variable);
 
     //constraints
-    Set<Val> conflictValues(Val value);
+    Set<?> conflictValues(Val value);
 
     void saveBest();
     void restoreBest();

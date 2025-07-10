@@ -36,7 +36,7 @@ public class DomainModel {
         timetableConfiguration.setDistribWeight(distribWeight);
     }
 
-    public void setConfiguration(byte numDays, int numWeeks, int slotPerDay) {
+    public void setConfiguration(byte numDays, short numWeeks, int slotPerDay) {
         timetableConfiguration.setNumDays(numDays);
         timetableConfiguration.setNumWeeks(numWeeks);
         timetableConfiguration.setSlotsPerDay(slotPerDay);
@@ -128,7 +128,7 @@ public class DomainModel {
         }
 
         for(ClassUnit cls : classUnitMap.values()) {
-            for(int teacherId : cls.getClassTeacherList()) {
+            for(int teacherId : cls.getTeacherIdList()) {
                 if(teacherMap.get(teacherId) == null) {
                     throw new RuntimeException("ERROR: The teacherId " + teacherId + " in class " + cls.getClassId() + " is invalid!");
                 }

@@ -1,12 +1,11 @@
 package thesis.model.domain;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 public class ScheduledLesson {
     private final List<Integer> teacherIds = new ArrayList<>();
@@ -69,35 +68,19 @@ public class ScheduledLesson {
      */
     public int toInt() {
         ClassUnit cls = model.getClassUnit(classId);
-        // Should never happen but for security an exception is thrown instead of assertion
+
+        // Should never happen but for security an exception is thrown
         if(cls == null) {
             throw new RuntimeException("The scheduled lesson class id " + classId + " isn't present in the model");
         }
 
         int penalty = 0;
 
-        // Add all the room penalties
-        for(Map.Entry<String, Integer> roomPenalties : cls.getClassRoomPenalties().entrySet()) {
-            if(!roomId.equals(roomPenalties.getKey())) {
-                penalty += roomPenalties.getValue();
-            }
-        }
+        // Add the room penalty
+        penalty += cls.getRoomPenalty(roomId);
 
-        // Add all the time penalties
-        for(Pair<Time, Integer> timePenalties : cls.getClassTimesList()) {
-            if(!scheduledTime.equals(timePenalties.getKey())) {
-                penalty += timePenalties.getValue();
-            }
-        }
-
-        // Add all the teacher penalties
-        for(int teacherId : teacherIds) {
-            Teacher t = model.getTeacher(teacherId);
-
-            if(t != null) {
-                //TODO: Adicionar uma penalty tal como nos rooms
-            }
-        }
+        // Add the time penalty
+        penalty += cls.getTimePenalty(scheduledTime);
 
         return penalty;
     }
@@ -180,5 +163,27 @@ public class ScheduledLesson {
 
     public DomainModel getModel() {
         return model;
+    }
+
+    @Override
+    public String toString() {
+        return "ClassId: " + classId + "\n" +
+                "RoomId: " + roomId + "\n" +
+                scheduledTime;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ScheduledLesson)) return false;
+        ScheduledLesson that = (ScheduledLesson) o;
+        return Objects.equals(teacherIds, that.teacherIds) &&
+                Objects.equals(scheduledTime, that.scheduledTime) &&
+                Objects.equals(roomId, that.roomId) &&
+                Objects.equals(classId, that.classId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(teacherIds, scheduledTime, roomId, classId, nDays, nWeeks, model);
     }
 }

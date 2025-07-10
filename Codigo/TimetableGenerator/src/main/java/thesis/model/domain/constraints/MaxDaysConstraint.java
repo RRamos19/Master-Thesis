@@ -14,6 +14,8 @@ public class MaxDaysConstraint extends Constraint {
         super(restrictionType, penalty, required, Integer.valueOf(param1));
     }
 
+    // The authors of this method are Edon Gashi and Kadri Sylejmani
+    // source: https://github.com/edongashi/itc-2019
     @Override
     public Set<String> getConflictingClasses(DomainModel model, Timetable solution) {
         Set<String> conflictingClasses = new HashSet<>();

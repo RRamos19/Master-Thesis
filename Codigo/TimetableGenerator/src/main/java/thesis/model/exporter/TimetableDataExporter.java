@@ -20,12 +20,19 @@ public class TimetableDataExporter implements DataExporter<DomainModel> {
             String formattedNow = now.format(formatter);
             StringBuilder stringBuilder = new StringBuilder();
 
-            stringBuilder.append("<solution xsi:type=\"solution\" name=\"").append(data.getProblemName()).append("\" timeStampUTC12=\"").append(formattedNow).append("\">\n");
+            stringBuilder.append("<solution xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"solution\" name=\"")
+                    .append(data.getProblemName()).append("\" timeStampUTC12=\"")
+                    .append(formattedNow)
+                    .append("\">\n");
 
             for (ScheduledLesson scheduledLesson : timetable.getScheduledLessonList()) {
-                stringBuilder.append("  <class id=\"").append(scheduledLesson.getClassId()).append("\"")
-                        .append(" room=\"").append(scheduledLesson.getRoomId()).append("\"")
-                        .append(" days=\"").append(scheduledLesson.getDaysBinaryString()).append("\"")
+                stringBuilder.append("  <class id=\"").append(scheduledLesson.getClassId()).append("\"");
+
+                if(scheduledLesson.getRoomId() != null) {
+                    stringBuilder.append(" room=\"").append(scheduledLesson.getRoomId()).append("\"");
+                }
+
+                stringBuilder.append(" days=\"").append(scheduledLesson.getDaysBinaryString()).append("\"")
                         .append(" start=\"").append(scheduledLesson.getStartSlot()).append("\"")
                         .append(" weeks=\"").append(scheduledLesson.getWeeksBinaryString()).append("\"")
                         .append(" />\n");

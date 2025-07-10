@@ -1,13 +1,19 @@
 package thesis.model.domain;
 
+import thesis.utils.BitToolkit;
+
+import java.util.Objects;
+
 public class Time {
-    private final byte days;
+    // Days and weeks can be stored in smaller types, but doing it this way we can avoid problems
+    // with signed values
+    private final short days;
     private final int weeks;
     private final int startSlot;
     private final int length;
     private final int endSlot;
 
-    public Time(byte days, int weeks, int startSlot, int length) {
+    public Time(short days, int weeks, int startSlot, int length) {
         this.days = days;
         this.weeks = weeks;
         this.startSlot = startSlot;
@@ -36,22 +42,6 @@ public class Time {
     }
 
     /**
-     * Finds the most significant bit in a value.
-     * The authors of this method are Edon Gashi and Kadri Sylejmani
-     * source: https://github.com/edongashi/itc-2019
-     * @param value The value from which we want to discover the most significant bit
-     * @return Only the most significant bit
-     */
-    private int mostSignificantBit(int value) {
-        value |= value >> 1;
-        value |= value >> 2;
-        value |= value >> 4;
-        value |= value >> 8;
-        value |= value >> 16;
-        return value & ~(value >> 1);
-    }
-
-    /**
      * Checks if this time block is earlier than another time block.
      * The authors of this method are Edon Gashi and Kadri Sylejmani
      * source: https://github.com/edongashi/itc-2019
@@ -59,16 +49,16 @@ public class Time {
      * @return True if this time block is earlier than the other one, false otherwise
      */
     public boolean isEarlier(Time other) {
-        int msbWeeksThis = mostSignificantBit(this.weeks);
-        int msbWeeksOther = mostSignificantBit(other.weeks);
+        int msbWeeksThis = BitToolkit.mostSignificantBit(this.weeks);
+        int msbWeeksOther = BitToolkit.mostSignificantBit(other.weeks);
         if(msbWeeksThis > msbWeeksOther) {
             return true;
         } else if(msbWeeksOther > msbWeeksThis) {
             return false;
         }
 
-        int msbDaysThis = mostSignificantBit(this.days);
-        int msbDaysOther = mostSignificantBit(other.days);
+        int msbDaysThis = BitToolkit.mostSignificantBit(this.days);
+        int msbDaysOther = BitToolkit.mostSignificantBit(other.days);
         if(msbDaysThis > msbDaysOther) {
             return true;
         } else if(msbDaysOther > msbDaysThis) {
@@ -90,5 +80,29 @@ public class Time {
             this.startSlot < other.endSlot &&
             (this.days & other.days) != 0 &&
             (this.weeks & other.weeks) != 0;
+    }
+
+    @Override
+    public String toString() {
+        return "Days: " + Integer.toBinaryString(days) + "\n" +
+                "Weeks: " + Integer.toBinaryString(weeks) + "\n" +
+                "Start Slot: " + startSlot + "\n" +
+                "Length: " + length;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Time)) return false;
+        Time time = (Time) o;
+        return days == time.days &&
+                weeks == time.weeks &&
+                startSlot == time.startSlot &&
+                length == time.length &&
+                endSlot == time.endSlot;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(days, weeks, startSlot, length, endSlot);
     }
 }

@@ -5,7 +5,7 @@ public class TimetableConfiguration {
     private short roomWeight;
     private short distribWeight;
     private byte numDays;
-    private int numWeeks;
+    private short numWeeks;
     private int slotsPerDay;
 
     public short getTimeWeight() {
@@ -40,11 +40,11 @@ public class TimetableConfiguration {
         this.numDays = numDays;
     }
 
-    public int getNumWeeks() {
+    public short getNumWeeks() {
         return numWeeks;
     }
 
-    public void setNumWeeks(int numWeeks) {
+    public void setNumWeeks(short numWeeks) {
         this.numWeeks = numWeeks;
     }
 
