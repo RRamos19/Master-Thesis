@@ -8,15 +8,15 @@ import java.util.List;
 import java.util.Objects;
 
 public class DefaultValueSelection implements ValueSelection<DefaultISGValue, DefaultISGSolution, DefaultISGVariable> {
-    private final float iRandomWalkProb = 0.1F;                                  // random walk selection
-    private final float iWeightCoflicts = 1.0F;                                  // weight of a conflict
-    private final float iWeightValue = 1.0F;                                     // weight of a value (value.toInt())
+    private final float iRandomWalkProb = 0.1F;                           // random walk selection
+    private final float iWeightCoflicts = 1.0F;                           // weight of a conflict
+    private final float iWeightValue = 1.0F;                              // weight of a value (value.toInt())
 
-    private int iTabuSize = 1000;                                                // TABU-SEARCH: size of tabu-list
-    private final ArrayList<DefaultISGValue> iTabu = new ArrayList<>(iTabuSize); // TABU-SEARCH: tabu-list
-    private int iTabuPos = 0;                                                    // TABU-SEARCH: pointer to the last value in the tabu-list
+    private int iTabuSize = 0;                                            // TABU-SEARCH: size of tabu-list
+    private final ArrayList<DefaultISGValue> iTabu = null;                // TABU-SEARCH: tabu-list
+    private int iTabuPos = 0;                                             // TABU-SEARCH: pointer to the last value in the tabu-list
 
-    private final float iWeightWeightedCoflicts = 1.0F;                          // CBS: CBS weighted conflict weight
+    private final float iWeightWeightedCoflicts = 1.0F;                   // CBS: CBS weighted conflict weight
 
     public DefaultISGValue selectValue(DefaultISGSolution solution, DefaultISGVariable selectedVariable) {
         ISGVirtualValueList<DefaultISGValue> values = selectedVariable.getValues();
