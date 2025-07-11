@@ -47,7 +47,7 @@ public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValu
         solution.convertToUnassigned(this);
 
         // TODO: Debug remover quando deixar de ser necessário
-        System.out.println("Class " + classUnit.getClassId() + " Unassignment! Unassigned variables: " + solution.getUnassignedVariables().size());
+        // System.out.println("Class " + classUnit.getClassId() + " Unassignment! Unassigned variables: " + solution.getUnassignedVariables().size());
     }
 
     @Override
@@ -57,7 +57,7 @@ public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValu
         solution.convertToAssigned(this);
 
         // TODO: Debug remover quando deixar de ser necessário
-        System.out.println("Class " + classUnit.getClassId() + " Assignment! Unassigned variables: " + solution.getUnassignedVariables().size());
+        // System.out.println("Class " + classUnit.getClassId() + " Assignment! Unassigned variables: " + solution.getUnassignedVariables().size());
 
         Set<String> classConflicts = solution.getModel().conflictValues(value);
 

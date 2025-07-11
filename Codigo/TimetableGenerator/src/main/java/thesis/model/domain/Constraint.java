@@ -76,7 +76,7 @@ public abstract class Constraint {
     }
 
     /**
-     * Adds all the conflicts between classes if lessonToSchedule was scheduled to classConflicts.
+     * Adds all the hard conflicts between classes if lessonToSchedule was scheduled to classConflicts.
      * @param lessonToSchedule
      * @param currentSolution
      * @param classConflicts

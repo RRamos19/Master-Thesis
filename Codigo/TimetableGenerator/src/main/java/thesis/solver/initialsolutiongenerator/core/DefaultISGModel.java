@@ -49,33 +49,34 @@ public class DefaultISGModel implements ISGModel<DefaultISGValue, DefaultISGVari
     public Set<String> conflictValues(DefaultISGValue value) {
         HashSet<String> conflictIds = new HashSet<>();
 
+        // Add the constraint conflicts
         for (Constraint constraint : value.variable().variable().getConstraintList()) {
             constraint.computeConflicts(value.value(), solution.solution(), conflictIds);
         }
 
-        // TODO: Verificar isto (em teoria corrige os problemas das salas.
-        //  Na prática não consegue gerar os horários porque fica eternamente a coloar e retirar aulas)
+        // Variables to avoid multiple method calls in the for loop
+        ScheduledLesson valueLesson = value.value();
+        String valueClassId = valueLesson.getClassId();
+        String valueRoomId = valueLesson.getRoomId();
+        Time valueTime = valueLesson.getScheduledTime();
+
         // Add the room conflicts
-//        ScheduledLesson valueLesson = value.value();
-//        String valueClassId = valueLesson.getClassId();
-//        String valueRoomId = valueLesson.getRoomId();
-//        Time valueTime = valueLesson.getScheduledTime();
-//        for(DefaultISGVariable variable : solution.getVariableList()) {
-//            ScheduledLesson scheduledLesson = variable.getAssignment().value();
-//
-//            if(scheduledLesson != null) {
-//                String lessonRoomId = scheduledLesson.getRoomId();
-//                String lessonClassId = scheduledLesson.getClassId();
-//
-//                if (!Objects.equals(lessonClassId, valueClassId)) {
-//                    if (lessonRoomId != null && Objects.equals(lessonRoomId, valueRoomId)) {
-//                        if (scheduledLesson.getScheduledTime().overlaps(valueTime)) {
-//                            conflictIds.add(lessonClassId);
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        for(DefaultISGVariable variable : solution.getVariableList()) {
+            ScheduledLesson scheduledLesson = variable.getAssignment().value();
+
+            if(scheduledLesson != null) {
+                String lessonRoomId = scheduledLesson.getRoomId();
+                String lessonClassId = scheduledLesson.getClassId();
+
+                if (!Objects.equals(lessonClassId, valueClassId)) {
+                    if (lessonRoomId != null && Objects.equals(lessonRoomId, valueRoomId)) {
+                        if (scheduledLesson.getScheduledTime().overlaps(valueTime)) {
+                            conflictIds.add(lessonClassId);
+                        }
+                    }
+                }
+            }
+        }
 
         return conflictIds;
     }
