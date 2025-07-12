@@ -6,43 +6,23 @@ import thesis.model.domain.Time;
 
 import java.util.*;
 
-public class DefaultISGModel implements ISGModel<DefaultISGValue, DefaultISGVariable, Constraint> {
+public class DefaultISGModel implements ISGModel<DefaultISGValue, DefaultISGVariable, DefaultISGSolution> {
     private List<DefaultISGVariable> variableList;
     private List<DefaultISGVariable> unassignedVariableList;
     private List<DefaultISGVariable> bestUnassignedVariableList = null;
     private DefaultISGSolution solution;
 
     @Override
-    public List<DefaultISGVariable> variables() {
-        return variableList;
-    }
-
-    @Override
-    public void addVariable(DefaultISGVariable variable) {
-        variableList.add(variable);
-    }
-
     public DefaultISGSolution createInitialSolution() {
         solution = new DefaultISGSolution(this);
-        variableList = solution.getVariableList();
+        variableList = solution.getAssignedVariables();
         unassignedVariableList = solution.getUnassignedVariables();
         return solution;
     }
 
+    @Override
     public List<DefaultISGVariable> getBestUnassignedVariables() {
         return bestUnassignedVariableList;
-    }
-
-    @Override
-    public void removeVariable(DefaultISGVariable variable) {
-        // TODO: otimizar se necessário
-        for(int i=0; i<variableList.size(); i++) {
-            DefaultISGVariable var = variableList.get(i);
-            if(variable.equals(var)) {
-                variableList.remove(i);
-                return;
-            }
-        }
     }
 
     @Override
@@ -61,7 +41,7 @@ public class DefaultISGModel implements ISGModel<DefaultISGValue, DefaultISGVari
         Time valueTime = valueLesson.getScheduledTime();
 
         // Add the room conflicts
-        for(DefaultISGVariable variable : solution.getVariableList()) {
+        for(DefaultISGVariable variable : solution.getAssignedVariables()) {
             ScheduledLesson scheduledLesson = variable.getAssignment().value();
 
             if(scheduledLesson != null) {

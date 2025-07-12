@@ -18,6 +18,7 @@ public class DefaultValueSelection implements ValueSelection<DefaultISGValue, De
 
     private final float iWeightWeightedCoflicts = 1.0F;                   // CBS: CBS weighted conflict weight
 
+    @Override
     public DefaultISGValue selectValue(DefaultISGSolution solution, DefaultISGVariable selectedVariable) {
         ISGVirtualValueList<DefaultISGValue> values = selectedVariable.getValues();
         if(RandomToolkit.random() <= iRandomWalkProb) {
@@ -53,13 +54,13 @@ public class DefaultValueSelection implements ValueSelection<DefaultISGValue, De
                 continue;
             }
 
-            //conflicting values
+            // Conflicting values
             Collection<String> conf = solution.getModel().conflictValues(value);
 
             double weightedConflicts = 0.0; //CBS weighted conflicts
             weightedConflicts = value.getRemovals();
 
-            //weighted sum of several criteria
+            // Weighted sum of several criteria
             double weightedSum = (iWeightWeightedCoflicts * weightedConflicts) +
                         (iWeightCoflicts * conf.size()) +
                         (iWeightValue * value.toInt());
