@@ -1,5 +1,5 @@
 package thesis.solver.initialsolutiongenerator.core;
 
-public interface ISGSolutionComparator<S> {
-    boolean isBetterThanBestSolution(S solution);
+public interface ISGSolutionComparator<Solution extends ISGSolution> {
+    boolean isBetterThanBestSolution(Solution solution);
 }

@@ -1,10 +1,17 @@
 package thesis.solver.initialsolutiongenerator.core;
 
-import java.util.List;
+public interface ISGVariable<DomainVariable, Value extends ISGValue, Solution extends ISGSolution> {
+    DomainVariable variable();
+    Value getAssignment();
 
-public interface ISGVariable<Var, Val extends ISGValue<?, ?>, Const> {
-    Var variable();
-    ISGVirtualValueList<Val> getValues();
+    void assign(Value value);
     void unassign();
-    void assign(Val value);
+    int getRemovals(Value value);
+
+    ISGVirtualValueList<Value> getValues();
+
+    void setSolution(Solution solution);
+
+    void saveBest();
+    void restoreBest();
 }

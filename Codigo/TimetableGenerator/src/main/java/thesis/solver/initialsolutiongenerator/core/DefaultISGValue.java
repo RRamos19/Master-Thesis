@@ -6,7 +6,7 @@ import java.util.Objects;
 
 public class DefaultISGValue implements ISGValue<ScheduledLesson, DefaultISGVariable> {
     private final ScheduledLesson scheduledLesson;
-    private DefaultISGVariable variable;
+    private final DefaultISGVariable variable;
 
     public DefaultISGValue(DefaultISGVariable variable, ScheduledLesson scheduledLesson) {
         this.variable = variable;
@@ -23,10 +23,12 @@ public class DefaultISGValue implements ISGValue<ScheduledLesson, DefaultISGVari
         return variable;
     }
 
+    @Override
     public boolean isAvailable() {
         return scheduledLesson.isAvailable();
     }
 
+    @Override
     public int getRemovals() {
         return variable.getRemovals(this);
     }

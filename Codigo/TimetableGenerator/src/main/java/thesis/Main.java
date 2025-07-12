@@ -33,8 +33,8 @@ public class Main {
         try {
             //data = inputFileReader.readFile("../../tg-spr18.xml");
             //data = inputFileReader.readFile("../../lums-spr18.xml");
-            data = inputFileReader.readFile("../../bet-sum18.xml");
-            //data = inputFileReader.readFile("../../pu-llr-spr07.xml");
+            //data = inputFileReader.readFile("../../bet-sum18.xml");
+            data = inputFileReader.readFile("../../pu-llr-spr07.xml");
 
             System.out.println(data);
             System.out.println();

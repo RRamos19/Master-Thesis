@@ -1,26 +1,26 @@
 package thesis.solver.initialsolutiongenerator.core;
 
 import thesis.model.domain.ClassUnit;
-import thesis.model.domain.Constraint;
 
 import java.util.*;
 
-public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValue, Constraint> {
+public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValue, DefaultISGSolution> {
     private final ClassUnit classUnit;                  // Assigned ClassUnit. Value will be linked to said class
     private DefaultISGValue iAssignment = null;         // Assigned value
     private DefaultISGValue iBestAssignment = null;     // Best assignment value
     private DefaultISGSolution solution;                // Solution of which the variable belongs to
-
-    private Map<DefaultISGValue, Integer> removalCount = new HashMap<>();
+    private final Map<DefaultISGValue, Integer> removalCount = new HashMap<>();
 
     public DefaultISGVariable(ClassUnit classUnit) {
         this.classUnit = classUnit;
     }
 
+    @Override
     public DefaultISGValue getAssignment() {
         return iAssignment;
     }
 
+    @Override
     public void setSolution(DefaultISGSolution solution) {
         this.solution = solution;
     }
@@ -30,6 +30,7 @@ public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValu
         return classUnit;
     }
 
+    @Override
     public int getRemovals(DefaultISGValue value) {
         return removalCount.getOrDefault(value, 0);
     }
@@ -41,8 +42,7 @@ public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValu
 
     @Override
     public void unassign() {
-        int rCount = getRemovals(iAssignment);
-        removalCount.put(iAssignment, ++rCount);
+        removalCount.put(iAssignment, getRemovals(iAssignment) + 1);
         iAssignment = null;
         solution.convertToUnassigned(this);
 
@@ -65,7 +65,7 @@ public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValu
         for(String classId : classConflicts) {
             // Usage of a snapshot of the variableList. The original will be modified by
             // the unassignment and this prevents a ConcurrentModificationException
-            for(DefaultISGVariable var : new ArrayList<>(solution.getVariableList())) {
+            for(DefaultISGVariable var : new ArrayList<>(solution.getAssignedVariables())) {
                 if(Objects.equals(var.classUnit.getClassId(), classId)) {
                     var.unassign();
                     break;
@@ -75,10 +75,12 @@ public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValu
 
     }
 
+    @Override
     public void saveBest() {
         iBestAssignment = iAssignment;
     }
 
+    @Override
     public void restoreBest() {
         iAssignment = iBestAssignment;
     }

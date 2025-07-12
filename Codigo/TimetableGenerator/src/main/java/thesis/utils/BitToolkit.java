@@ -31,10 +31,4 @@ public class BitToolkit {
 
         return value & ~(value >> 1);
     }
-
-    public static int shiftLeft(int value, int bits) {
-        int valueBits = Integer.highestOneBit(value);
-
-        return value << (bits - valueBits);
-    }
 }

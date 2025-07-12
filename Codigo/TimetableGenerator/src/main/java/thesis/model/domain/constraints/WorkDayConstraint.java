@@ -37,7 +37,7 @@ public class WorkDayConstraint extends Constraint {
 
                 if((scheduledLesson1.getDays() & scheduledLesson2.getDays()) == 0 ||
                    (scheduledLesson1.getWeeks() & scheduledLesson2.getWeeks()) == 0 ||
-                   (Math.max(scheduledLesson1End, scheduledLesson2End) - Math.max(scheduledLesson1Start, scheduledLesson2Start)) <= firstParam){
+                   Math.max(scheduledLesson1End, scheduledLesson2End) - Math.min(scheduledLesson1Start, scheduledLesson2Start) <= firstParam) {
                     continue;
                 }
 

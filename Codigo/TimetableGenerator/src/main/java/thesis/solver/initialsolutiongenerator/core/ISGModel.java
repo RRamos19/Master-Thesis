@@ -1,18 +1,15 @@
 package thesis.solver.initialsolutiongenerator.core;
 
-import thesis.model.domain.Constraint;
-
 import java.util.List;
 import java.util.Set;
 
-public interface ISGModel<Val extends ISGValue<?, ?>, Var extends ISGVariable<?, ?, ?>, Constr extends Constraint> {
-    //variables
-    List<Var> variables();
-    void addVariable(Var variable);
-    void removeVariable(Var variable);
+public interface ISGModel<Value extends ISGValue, Variable extends ISGVariable, Solution extends ISGSolution> {
+    List<Variable> getBestUnassignedVariables();
+
+    Solution createInitialSolution();
 
     //constraints
-    Set<?> conflictValues(Val value);
+    Set<?> conflictValues(Value value);
 
     void saveBest();
     void restoreBest();
