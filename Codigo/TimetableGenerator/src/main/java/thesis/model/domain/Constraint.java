@@ -1,9 +1,6 @@
 package thesis.model.domain;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public abstract class Constraint {
     protected final String type;
@@ -12,21 +9,27 @@ public abstract class Constraint {
     protected final List<String> classUnitIdList = new ArrayList<>();
     protected final Integer firstParam;
     protected final Integer secondParam;
+    protected final short distribWeight;
+    protected final int nrWeeks;
+    protected final short nrDays;
 
-    public Constraint(String type, Integer penalty, boolean required, Integer firstParam, Integer secondParam) {
+    public Constraint(String type, Integer penalty, boolean required, Integer firstParam, Integer secondParam, TimetableConfiguration timetableConfiguration) {
         this.type = type;
         this.penalty = penalty;
         this.required = required;
         this.firstParam = firstParam;
         this.secondParam = secondParam;
+        this.distribWeight = timetableConfiguration.getDistribWeight();
+        this.nrWeeks = timetableConfiguration.getNumWeeks();
+        this.nrDays = timetableConfiguration.getNumDays();
     }
 
-    public Constraint(String type, Integer penalty, boolean required) {
-        this(type, penalty, required, null, null);
+    public Constraint(String type, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
+        this(type, penalty, required, null, null, timetableConfiguration);
     }
 
-    public Constraint(String type, Integer penalty, boolean required, Integer firstTimeslot) {
-        this(type, penalty, required, firstTimeslot, null);
+    public Constraint(String type, Integer penalty, boolean required, Integer firstTimeslot, TimetableConfiguration timetableConfiguration) {
+        this(type, penalty, required, firstTimeslot, null, timetableConfiguration);
     }
 
     public String getType() {
@@ -54,7 +57,7 @@ public abstract class Constraint {
     }
 
     public List<String> getClassUnitIdList() {
-        return classUnitIdList;
+        return Collections.unmodifiableList(classUnitIdList);
     }
 
     /**
@@ -76,10 +79,10 @@ public abstract class Constraint {
     }
 
     /**
-     * Adds all the hard conflicts between classes if lessonToSchedule was scheduled to classConflicts.
-     * @param lessonToSchedule
-     * @param currentSolution
-     * @param classConflicts
+     * Adds all the hard conflicts between classes if lessonToSchedule was scheduled to classConflicts
+     * @param lessonToSchedule Lesson that is to be scheduled
+     * @param currentSolution Current timetable (before lessonToSchedule is scheduled)
+     * @param classConflicts Set of conflicting class ids
      */
     public void computeConflicts(ScheduledLesson lessonToSchedule, Timetable currentSolution, Set<String> classConflicts) {
         if(required) {
@@ -87,8 +90,10 @@ public abstract class Constraint {
             Timetable currentSolutionClone = currentSolution.clone();
             currentSolutionClone.addScheduledLesson(lessonToSchedule);
 
+            Set<String> conflicts = new HashSet<>();
+
             // Get all the conflicts present in said timetable
-            Set<String> conflicts = getConflictingClasses(lessonToSchedule.getModel(), currentSolutionClone);
+            getConflictingClasses(currentSolutionClone, (conflictIds -> conflicts.addAll(Arrays.asList(conflictIds))));
 
             // Remove the class to be scheduled to obtain only the classes it conflicts with
             conflicts.remove(lessonToSchedule.getClassId());
@@ -98,11 +103,27 @@ public abstract class Constraint {
         }
     }
 
+    /**
+     * Adds all the soft constraint penalties if there are conflicts between classes
+     * @param currentSolution Current timetable
+     * @return Sum of penalties for a specific constraint
+     */
+    public int computePenalties(Timetable currentSolution) {
+        // An array is used to allow the modification of the int inside the lambda function
+        int[] penaltySum = {0};
+        if(!required) {
+            // Get all the conflicts present in a given timetable
+            getConflictingClasses(currentSolution, (conflictIds) -> penaltySum[0] += penalty);
+        }
+        return penaltySum[0] * distribWeight;
+    }
 
-    //public abstract int getConflictPenalty(ScheduledLesson scheduledLesson, Timetable currentSolution);
+    @FunctionalInterface
+    protected interface conflictAction {
+        void apply(String ... conflictId);
+    }
 
-
-    public abstract Set<String> getConflictingClasses(DomainModel model, Timetable solution);
+    protected abstract void getConflictingClasses(Timetable solution, conflictAction action);
 
     @Override
     public boolean equals(Object o) {

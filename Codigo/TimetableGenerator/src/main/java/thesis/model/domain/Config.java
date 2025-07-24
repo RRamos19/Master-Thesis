@@ -1,6 +1,7 @@
 package thesis.model.domain;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Config {
@@ -20,6 +21,6 @@ public class Config {
     }
 
     public List<Subpart> getSubpartList() {
-        return subpartList;
+        return Collections.unmodifiableList(subpartList);
     }
 }

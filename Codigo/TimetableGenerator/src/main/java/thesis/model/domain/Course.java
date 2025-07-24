@@ -1,6 +1,7 @@
 package thesis.model.domain;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Course {
@@ -20,6 +21,6 @@ public class Course {
     }
 
     public List<Config> getConfigList() {
-        return configList;
+        return Collections.unmodifiableList(configList);
     }
 }

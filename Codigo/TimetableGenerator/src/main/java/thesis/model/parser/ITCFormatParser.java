@@ -15,7 +15,6 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,6 +62,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
         try {
             eventReader = factory.createXMLEventReader(inputFileReader);
         } catch (XMLStreamException e) {
+            e.printStackTrace();
             throw new RuntimeException("Error while processing the XML file. Make sure the file is in UTF-8 format.");
         }
 
@@ -83,7 +83,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                                 throw new ParsingException(event.getLocation(), "A name must be specified in the solution tag");
                             }
 
-                            data.setProblemName(solutionName);
+                            data.setProgramName(solutionName);
 
                             readSolution(eventReader, data);
                             break;
@@ -107,7 +107,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                                 throw new ParsingException(event.getLocation(), errorMessage);
                             }
 
-                            data.setProblemName(programName);
+                            data.setProgramName(programName);
 
                             data.setConfiguration(nrDays, nrWeeks, slotsPerDay);
                             break;
@@ -146,6 +146,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                     }
                 }
             } catch (XMLStreamException e) {
+                e.printStackTrace();
                 throw new ParsingException("Error while processing the XML file. Make sure the file is in UTF-8 format.");
             }
         }
@@ -167,7 +168,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
      * All the scheduled lessons should be read before encountering the termination tag
      */
     private void readSolution(XMLEventReader eventReader, DomainModel data) throws XMLStreamException, ParsingException {
-        Timetable timetable = new Timetable(data.getProblemName());
+        Timetable timetable = new Timetable(data.getProgramName());
         data.addTimetable(timetable);
 
         while (eventReader.hasNext()) {
@@ -332,7 +333,6 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
 
                             config = new Config(configId);
                             course.addConfig(config);
-                            data.addConfig(config);
 
                             break;
                         case SUBPART_TAG:
@@ -344,7 +344,6 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
 
                             subpart = new Subpart(subpartId);
                             config.addSubpart(subpart);
-                            data.addSubpart(subpart);
 
                             break;
                         case CLASS_TAG:
@@ -483,6 +482,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                                 throw new ParsingException(event.getLocation(), "The class " + classId + " wasn't defined previously");
                             }
                             cls.addTeacher(teacher.getId());
+                            teacher.addClassUnit(classId);
 
                             break;
                         case UNAVAILABILITY_TAG:
@@ -560,7 +560,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
                             }
 
                             try {
-                                constraint = ConstraintFactory.createConstraint(restricType, restrictionPenalty, restrictionRequired);
+                                constraint = ConstraintFactory.createConstraint(restricType, restrictionPenalty, restrictionRequired, data.getTimetableConfiguration());
 
                                 data.addConstraint(constraint);
                             } catch (Exception e) {

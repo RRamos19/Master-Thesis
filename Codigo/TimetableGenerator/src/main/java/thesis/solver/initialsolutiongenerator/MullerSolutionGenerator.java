@@ -4,6 +4,7 @@ import thesis.model.domain.*;
 import thesis.solver.initialsolutiongenerator.core.*;
 import thesis.utils.RandomToolkit;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,19 +19,28 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
     private final List<ClassUnit> unscheduled;
 
 
-    public MullerSolutionGenerator(List<ClassUnit> unscheduled) {
-        this.unscheduled = unscheduled;
-    }
+    public MullerSolutionGenerator(DomainModel data) {
+        this.unscheduled = new ArrayList<>();
 
+        // Every class in every subpart must be allocated in the timetable. As such, every course
+        // config and subpart needs to be searched.
+        for(Course course : data.getCourses()) {
+            for(Config config : course.getConfigList()) {
+                for (Subpart subpart : config.getSubpartList()) {
+                    this.unscheduled.addAll(subpart.getClassUnitList());
+                }
+            }
+        }
+    }
 
     public Timetable generate(Integer maxIterations) {
         DefaultISGSolution solution = model.createInitialSolution();
 
+        // For each unscheduled class a variable is made which represents the class
+        // Each variable is then assigned a value which represents the Room, Time and Teachers combination
         for(ClassUnit cls : unscheduled) {
-            solution.addUnassignedVariable(new DefaultISGVariable(cls));
-        }
-
-        for(DefaultISGVariable var : solution.getUnassignedVariables()) {
+            DefaultISGVariable var = new DefaultISGVariable(cls);
+            solution.addUnassignedVariable(var);
             var.setSolution(solution);
         }
 
@@ -65,7 +75,6 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
         return solution.solution();
     }
 
-
     /**
      * Choose a class at random. The list of unscheduled classes is prioritized if there are classes that still need to be scheduled. Otherwise, a random already scheduled class is chosen to be rescheduled.
      * @param solution Contains all of the data needed to create a solution.
@@ -80,7 +89,6 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
             return RandomToolkit.random(solution.getAssignedVariables());
         }
     }
-
 
     private void stopAlgorithm() {
         interruptAlgorithm = true;

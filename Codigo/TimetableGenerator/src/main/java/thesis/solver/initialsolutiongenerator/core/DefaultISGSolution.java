@@ -1,5 +1,6 @@
 package thesis.solver.initialsolutiongenerator.core;
 
+import thesis.model.domain.Constraint;
 import thesis.model.domain.Timetable;
 
 import java.util.ArrayList;
@@ -71,9 +72,20 @@ public class DefaultISGSolution implements ISGSolution<Timetable, DefaultISGMode
     @Override
     public int getTotalValue() {
         int total = 0;
+        List<Constraint> constraintList = new ArrayList<>();
+
+        // Sum the penalties of the time and room
         for(DefaultISGVariable var : variableList) {
             total += var.getAssignment().toInt();
+            constraintList.addAll(var.getConstraintList());
         }
+
+        // Sum the penalties of the violated soft constraints
+        Timetable currentSolution = solution();
+        for(Constraint constraint : constraintList) {
+            total += constraint.computePenalties(currentSolution);
+        }
+
         return total;
     }
 

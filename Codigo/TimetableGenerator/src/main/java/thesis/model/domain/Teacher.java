@@ -3,6 +3,7 @@ package thesis.model.domain;
 import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Teacher {
@@ -10,6 +11,7 @@ public class Teacher {
     private final String name;
 
     private final List<Time> teacherUnavailabilities = new ArrayList<>();
+    private final List<String> teacherClassList = new ArrayList<>();
 
     public Teacher(int id, String name) {
         this.id = id;
@@ -25,10 +27,18 @@ public class Teacher {
     }
 
     public List<Time> getTeacherUnavailabilities() {
-        return teacherUnavailabilities;
+        return Collections.unmodifiableList(teacherUnavailabilities);
+    }
+
+    public List<String> getTeacherClassList() {
+        return Collections.unmodifiableList(teacherClassList);
     }
 
     public void addUnavailability(String days, String weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
         teacherUnavailabilities.add(TimeFactory.create(days, weeks, startSlot, length));
+    }
+
+    public void addClassUnit(String classId) {
+        teacherClassList.add(classId);
     }
 }

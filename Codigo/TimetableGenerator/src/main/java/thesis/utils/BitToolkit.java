@@ -1,5 +1,7 @@
 package thesis.utils;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class BitToolkit {
     private BitToolkit() {}
 
@@ -30,5 +32,9 @@ public class BitToolkit {
         value = fillLowerBits(value);
 
         return value & ~(value >> 1);
+    }
+
+    public static String createSpecificSizeBinaryString(int size, int value) {
+        return StringUtils.leftPad(Integer.toBinaryString(value), size, "0");
     }
 }

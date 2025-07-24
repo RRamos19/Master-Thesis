@@ -5,12 +5,12 @@ import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
 import java.util.*;
 
 public class ClassUnit {
-    private String classId;
+    private final String classId;
     private String parentClassId;
 
     // Model where the class is stored in. It is used for the creation of all the possible
     // combinations of Time blocks, Rooms and Teachers for this class
-    private DomainModel model;
+    private final DomainModel model;
 
     private final Map<Time, Integer> classTimesList = new HashMap<>(); // List of pairs of time and associated penalty
     private final List<Integer> classTeacherList = new ArrayList<>();
@@ -24,10 +24,6 @@ public class ClassUnit {
 
     public String getClassId() {
         return classId;
-    }
-
-    public void setClassId(String classId) {
-        this.classId = classId;
     }
 
     public String getParentClassId() {
@@ -48,6 +44,10 @@ public class ClassUnit {
 
     public int getTimePenalty(Time time) {
         return classTimesList.getOrDefault(time, 0);
+    }
+
+    public Map<Time, Integer> getClassTimePenalties() {
+        return Collections.unmodifiableMap(classTimesList);
     }
 
     public void addRoom(String roomId, int penalty) {
@@ -84,7 +84,7 @@ public class ClassUnit {
     }
 
     public List<Integer> getTeacherIdList() {
-        return classTeacherList;
+        return Collections.unmodifiableList(classTeacherList);
     }
 
     public List<Teacher> getTeacherList() {
@@ -105,7 +105,7 @@ public class ClassUnit {
     }
 
     public List<Constraint> getConstraintList() {
-        return constraintList;
+        return Collections.unmodifiableList(constraintList);
     }
 
     public DomainModel getModel() {

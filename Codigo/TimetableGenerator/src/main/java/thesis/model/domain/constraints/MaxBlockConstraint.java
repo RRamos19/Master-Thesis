@@ -1,24 +1,19 @@
 package thesis.model.domain.constraints;
 
-import thesis.model.domain.Constraint;
-import thesis.model.domain.DomainModel;
-import thesis.model.domain.ScheduledLesson;
-import thesis.model.domain.Timetable;
+import thesis.model.domain.*;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class MaxBlockConstraint extends Constraint {
-    public MaxBlockConstraint(String restrictionType, String param1, String param2, Integer penalty, boolean required) {
-        super(restrictionType, penalty, required, Integer.parseInt(param1), Integer.parseInt(param2));
+    public MaxBlockConstraint(String restrictionType, String param1, String param2, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
+        super(restrictionType, penalty, required, Integer.parseInt(param1), Integer.parseInt(param2), timetableConfiguration);
     }
 
     // The authors of this method are Edon Gashi and Kadri Sylejmani
     // source: https://github.com/edongashi/itc-2019
     @Override
-    public Set<String> getConflictingClasses(DomainModel model, Timetable solution) {
-        Set<String> conflictingClasses = new HashSet<>();
+    protected void getConflictingClasses(Timetable solution, conflictAction action) {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
 
         int scheduledClassesSize = scheduledClasses.size();
@@ -26,6 +21,7 @@ public class MaxBlockConstraint extends Constraint {
         for(int i=0; i<scheduledClassesSize-1; i++) {
             ScheduledLesson scheduledLesson1 = scheduledClasses.get(i);
 
+            String scheduledClass1Id = scheduledLesson1.getClassId();
             int scheduledLesson1Start = scheduledLesson1.getStartSlot();
             int scheduledLesson1Length = scheduledLesson1.getLength();
 
@@ -40,11 +36,8 @@ public class MaxBlockConstraint extends Constraint {
                     continue;
                 }
 
-                //conflictingClasses.add(scheduledLesson1.getClassId());
-                //conflictingClasses.add(scheduledLesson2.getClassId());
+                action.apply(scheduledClass1Id, scheduledLesson2.getClassId());
             }
         }
-
-        return conflictingClasses;
     }
 }
