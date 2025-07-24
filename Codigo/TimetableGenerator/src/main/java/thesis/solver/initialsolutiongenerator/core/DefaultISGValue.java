@@ -1,7 +1,9 @@
 package thesis.solver.initialsolutiongenerator.core;
 
+import thesis.model.domain.Constraint;
 import thesis.model.domain.ScheduledLesson;
 
+import java.util.List;
 import java.util.Objects;
 
 public class DefaultISGValue implements ISGValue<ScheduledLesson, DefaultISGVariable> {

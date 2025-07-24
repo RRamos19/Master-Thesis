@@ -82,12 +82,19 @@ public class Time {
             (this.weeks & other.weeks) != 0;
     }
 
+    public String toString(byte numDays, short numWeeks) {
+        return "days=\"" + BitToolkit.createSpecificSizeBinaryString(numDays, days) + "\" " +
+                "start=\"" + startSlot + "\" " +
+                "length=\"" + length + "\" " +
+                "weeks=\"" + BitToolkit.createSpecificSizeBinaryString(numWeeks, weeks) + "\"";
+    }
+
     @Override
     public String toString() {
-        return "Days: " + Integer.toBinaryString(days) + "\n" +
-                "Weeks: " + Integer.toBinaryString(weeks) + "\n" +
-                "Start Slot: " + startSlot + "\n" +
-                "Length: " + length;
+        return "days=\"" + Integer.toBinaryString(days) + "\" " +
+                "start=\"" + startSlot + "\" " +
+                "length=\"" + length + "\" " +
+                "weeks=\"" + Integer.toBinaryString(weeks) + "\"";
     }
 
     @Override

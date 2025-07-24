@@ -48,11 +48,9 @@ public class ModelConverter {
             for(ConfigEntity configEntity : courseEntity.getConfigList()) {
                 Config config = new Config(configEntity.getName());
                 course.addConfig(config);
-                data.addConfig(config);
                 for(SubpartEntity subpartEntity : configEntity.getSubpartList()) {
                     Subpart subpart = new Subpart(subpartEntity.getName());
                     config.addSubpart(subpart);
-                    data.addSubpart(subpart);
                     for(ClassUnitEntity classUnitEntity : subpartEntity.getClassUnits()) {
                         ClassUnit classUnit = new ClassUnit(data, classUnitEntity.getName());
                         subpart.addClassUnit(classUnit);
@@ -80,7 +78,7 @@ public class ModelConverter {
 
         // Add the timetables, scheduled lessons and respective teachers
         for(TimetableEntity timetableEntity : entityModel.getTimetables()) {
-            Timetable timetable = new Timetable(data.getProblemName());
+            Timetable timetable = new Timetable(data.getProgramName());
             data.addTimetable(timetable);
             for(ScheduledLessonEntity scheduledLessonEntity : timetableEntity.getScheduledLessonEntityList()) {
                 ScheduledLesson scheduledLesson = new ScheduledLesson(
@@ -100,10 +98,10 @@ public class ModelConverter {
 
         for(ConstraintTypeEntity constraintTypeEntity : entityModel.getConstraintTypes()) {
             for(ConstraintEntity constraintEntity : constraintTypeEntity.getConstraintEntityList()) {
-                for (ClassConstraintEntity classRestriction : constraintEntity.getClassRestrictionEntityList()) {
-                    Constraint constraint = ConstraintFactory.createConstraint(constraintEntity.getConstraintTypeEntity().getName(), constraintEntity.getPenalty(), constraintEntity.getRequired());
+                Constraint constraint = ConstraintFactory.createConstraint(constraintEntity.getConstraintTypeEntity().getName(), constraintEntity.getPenalty(), constraintEntity.getRequired(), data.getTimetableConfiguration());
+                data.addConstraint(constraint);
 
-                    data.addConstraint(constraint);
+                for (ClassConstraintEntity classRestriction : constraintEntity.getClassRestrictionEntityList()) {
 
                     for (ClassUnitEntity classUnitEntity : entityModel.getClassUnits()) {
                         // TODO: Fazer em conjunto com a alteração da BD

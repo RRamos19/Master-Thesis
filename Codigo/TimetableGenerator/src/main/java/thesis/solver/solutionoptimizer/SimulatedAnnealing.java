@@ -1,8 +1,6 @@
 package thesis.solver.solutionoptimizer;
 
 import thesis.model.domain.*;
-import thesis.solver.initialsolutiongenerator.InitialSolutionGenerator;
-import thesis.solver.initialsolutiongenerator.MullerSolutionGenerator;
 import thesis.utils.RandomToolkit;
 
 import java.util.ArrayList;
@@ -17,40 +15,16 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
 
     // List of possible methods for neighbor finding
     private final List<neighborFindingMethod<Timetable>> neighborFunctions = List.of(
-            this::moveClass,
-            this::swapClasses
+            this::moveClass
+//            this::swapClasses
     );
 
-    public SimulatedAnnealing(DomainModel data, Integer maxInitialSolutionIterations, double initialTemperature, double minTemperature, double coolingRate, int k) {
+    public SimulatedAnnealing(Timetable initialSolution, double initialTemperature, double minTemperature, double coolingRate, int k) {
         this.initialTemperature = initialTemperature;
         this.minTemperature = minTemperature;
         this.coolingRate = coolingRate;
         this.k = k;
-
-        List<ClassUnit> classesToSchedule = new ArrayList<>();
-        // Every class in every subpart must be allocated in the timetable. As such, every course
-        // config and subpart needs to be searched.
-        for(Course course : data.getCourses()) {
-            for(Config config : course.getConfigList()) {
-                for (Subpart subpart : config.getSubpartList()) {
-                    classesToSchedule.addAll(subpart.getClassUnitList());
-                }
-            }
-        }
-
-        InitialSolutionGenerator<Timetable> initialSolutionGen = new MullerSolutionGenerator(classesToSchedule);
-
-        long startTime = System.currentTimeMillis();
-        this.initialSolution = initialSolutionGen.generate(maxInitialSolutionIterations);
-        long endTime = System.currentTimeMillis();
-
-        this.initialSolution.printTimetable();
-
-        long duration = (endTime - startTime);
-        System.out.println("Initial solution generation: " + duration/1000 + "s");
-
-        // TODO: temporário remover depois de avaliar os resultados
-        data.addTimetable(initialSolution);
+        this.initialSolution = initialSolution;
     }
 
     @Override
@@ -58,7 +32,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
         Timetable currentSolution = initialSolution;
         int currentCost = costFunction(currentSolution);
 
-        Timetable bestSolutionFound = currentSolution;
+        Timetable bestSolutionFound = currentSolution.clone();
         int bestSolutionCost = currentCost;
 
         double temperature = initialTemperature;
@@ -100,12 +74,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
     }
 
     private int costFunction(Timetable solution) {
-        int cost = 0;
-        for(ScheduledLesson scheduledLesson : solution.getScheduledLessonList()) {
-            //TODO: falta confirmar se basta isto
-            cost += scheduledLesson.toInt();
-        }
-        return cost;
+        return solution.cost();
     }
 
     private double coolingSchedule(int iter) {
@@ -127,7 +96,64 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
     private Timetable moveClass(Timetable solution) {
         Timetable neighbor = solution.clone();
 
-        System.out.println("MoveClass!");
+        int nTries = 0;
+        ScheduledLesson scheduledLesson;
+        List<Time> possibleMoves = new ArrayList<>();
+        do {
+            scheduledLesson = RandomToolkit.random(neighbor.getScheduledLessonList());
+            Time originalTime = scheduledLesson.getScheduledTime();
+            if(originalTime == null) {
+                System.out.println(scheduledLesson);
+            }
+            ClassUnit classUnit = scheduledLesson.getClassUnit();
+            Room room = scheduledLesson.getRoom();
+            List<Teacher> teachers = scheduledLesson.getTeachers();
+
+            if(classUnit != null) {
+                for (Time time : classUnit.getTimeSet()) {
+                    // Only all the possible moves different from current time
+                    if(time.equals(originalTime))
+                        continue;
+
+                    boolean timeUnavailable = false;
+                    if(room != null) {
+                        for (Time timeRoomUnavailabilities : room.getRoomUnavailabilities()) {
+                            if(timeRoomUnavailabilities.overlaps(time)) {
+                                timeUnavailable = true;
+                                break;
+                            }
+                        }
+
+                        if(timeUnavailable)
+                            continue;
+                    }
+
+                    if(teachers != null) {
+                        for(Teacher teacher : teachers) {
+                            for (Time timeTeacherUnavailabilities : teacher.getTeacherUnavailabilities()) {
+                                if(timeTeacherUnavailabilities.overlaps(time)) {
+                                    timeUnavailable = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if(timeUnavailable)
+                            continue;
+                    }
+
+                    if(solution.isTimeFree(time)) {
+                        possibleMoves.add(time);
+                    }
+                }
+            }
+            nTries++;
+        } while(possibleMoves.isEmpty() && nTries < 1000);
+
+        // Assign a random possible time to the lesson
+        if(!possibleMoves.isEmpty()) {
+            scheduledLesson.setScheduledTime(RandomToolkit.random(possibleMoves));
+        }
 
         return neighbor;
     }
@@ -135,7 +161,10 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
     private Timetable swapClasses(Timetable solution) {
         Timetable neighbor = solution.clone();
 
-        System.out.println("SwapClass!");
+        ScheduledLesson scheduledLesson;
+        do {
+            scheduledLesson = RandomToolkit.random(neighbor.getScheduledLessonList());
+        } while(false);
 
         return neighbor;
     }

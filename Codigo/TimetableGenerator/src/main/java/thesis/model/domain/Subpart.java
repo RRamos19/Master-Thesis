@@ -1,6 +1,7 @@
 package thesis.model.domain;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Subpart {
@@ -20,6 +21,6 @@ public class Subpart {
     }
 
     public List<ClassUnit> getClassUnitList() {
-        return classUnitList;
+        return Collections.unmodifiableList(classUnitList);
     }
 }

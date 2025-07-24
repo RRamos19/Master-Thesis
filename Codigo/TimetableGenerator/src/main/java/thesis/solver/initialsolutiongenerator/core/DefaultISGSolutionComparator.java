@@ -1,7 +1,6 @@
 package thesis.solver.initialsolutiongenerator.core;
 
 public class DefaultISGSolutionComparator implements ISGSolutionComparator<DefaultISGSolution> {
-
     @Override
     public boolean isBetterThanBestSolution(DefaultISGSolution solution) {
         if (solution.getBestInfo()==null) {

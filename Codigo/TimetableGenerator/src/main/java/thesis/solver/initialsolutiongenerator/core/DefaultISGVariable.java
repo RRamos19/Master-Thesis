@@ -1,6 +1,7 @@
 package thesis.solver.initialsolutiongenerator.core;
 
 import thesis.model.domain.ClassUnit;
+import thesis.model.domain.Constraint;
 
 import java.util.*;
 
@@ -36,8 +37,12 @@ public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValu
     }
 
     @Override
-    public ISGVirtualValueList<DefaultISGValue> getValues() {
-        return new VirtualScheduledClassList(this);
+    public ISGValueList<DefaultISGValue> getValues() {
+        return new ScheduledClassValueList(this);
+    }
+
+    public List<Constraint> getConstraintList() {
+        return classUnit.getConstraintList();
     }
 
     @Override
@@ -99,6 +104,7 @@ public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValu
         return Objects.hash(classUnit, iAssignment, iBestAssignment, solution);
     }
 
+    @Override
     public DefaultISGSolution getSolution() {
         return solution;
     }

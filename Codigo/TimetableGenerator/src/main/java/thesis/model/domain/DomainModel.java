@@ -3,31 +3,29 @@ package thesis.model.domain;
 import java.util.*;
 
 public class DomainModel {
-    private String problemName;
+    private String programName;
     private final TimetableConfiguration timetableConfiguration = new TimetableConfiguration();
     private final Map<String, Course> courseMap = new HashMap<>();
-    private final Map<String, Config> configMap = new HashMap<>();          // These three maps are used
-    private final Map<String, Subpart> subpartMap = new HashMap<>();        // to simplify the search of
-    private final Map<String, ClassUnit> classUnitMap = new HashMap<>();    // specific ids
+    private final Map<String, ClassUnit> classUnitMap = new HashMap<>(); // This map is used to simplify the search of specific ids
     private final List<Constraint> constraintMap = new ArrayList<>();
     private final Map<String, Room> roomMap = new HashMap<>();
     private final Map<Integer, Teacher> teacherMap = new HashMap<>();
     private final List<Timetable> timetableList = new ArrayList<>();
 
     public DomainModel() {
-        this.problemName = null;
+        this.programName = null;
     }
 
-    public DomainModel(String problemName) {
-        this.problemName = problemName;
+    public DomainModel(String programName) {
+        this.programName = programName;
     }
 
-    public String getProblemName() {
-        return problemName;
+    public String getProgramName() {
+        return programName;
     }
 
-    public void setProblemName(String problemName) {
-        this.problemName = problemName;
+    public void setProgramName(String programName) {
+        this.programName = programName;
     }
 
     public void setOptimizationParameters(short timeWeight, short roomWeight, short distribWeight) {
@@ -86,14 +84,6 @@ public class DomainModel {
         return new ArrayList<>(courseMap.values());
     }
 
-    public void addConfig(Config config) {
-        configMap.put(config.getConfigId(), config);
-    }
-
-    public void addSubpart(Subpart subpart) {
-        subpartMap.put(subpart.getSubpartId(), subpart);
-    }
-
     public void addClassUnit(ClassUnit classUnit) {
         classUnitMap.put(classUnit.getClassId(), classUnit);
     }
@@ -107,7 +97,7 @@ public class DomainModel {
     }
 
     public void addTimetable(Timetable timetable) {
-        timetable.setProgram(problemName);
+        timetable.setProgram(programName);
         timetableList.add(timetable);
     }
 
@@ -123,7 +113,7 @@ public class DomainModel {
      * Verifies if all of the data present in the model is coherent
      */
     public void verifyValidity() throws RuntimeException {
-        if(problemName == null) {
+        if(programName == null) {
             throw new RuntimeException("ERROR: This problem must have a name");
         }
 

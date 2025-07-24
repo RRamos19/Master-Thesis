@@ -8,9 +8,10 @@ public interface ISGVariable<DomainVariable, Value extends ISGValue, Solution ex
     void unassign();
     int getRemovals(Value value);
 
-    ISGVirtualValueList<Value> getValues();
+    ISGValueList<Value> getValues();
 
     void setSolution(Solution solution);
+    Solution getSolution();
 
     void saveBest();
     void restoreBest();

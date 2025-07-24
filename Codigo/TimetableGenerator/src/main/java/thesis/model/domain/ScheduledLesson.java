@@ -1,19 +1,22 @@
 package thesis.model.domain;
 
-import org.apache.commons.lang3.StringUtils;
 import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
+import thesis.utils.BitToolkit;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class ScheduledLesson {
     private final List<Integer> teacherIds = new ArrayList<>();
     private Time scheduledTime;
-    private String roomId;
-    private String classId;
+    private final String roomId;
+    private final String classId;
     private final int nDays;
     private final int nWeeks;
+    private final short timeWeight;
+    private final short roomWeight;
 
     private final DomainModel model;
 
@@ -26,6 +29,8 @@ public class ScheduledLesson {
         TimetableConfiguration timetableConfiguration = model.getTimetableConfiguration();
         this.nDays = timetableConfiguration.getNumDays();
         this.nWeeks = timetableConfiguration.getNumWeeks();
+        this.roomWeight = timetableConfiguration.getRoomWeight();
+        this.timeWeight = timetableConfiguration.getTimeWeight();
     }
 
     public ScheduledLesson(DomainModel model, String classId, String roomId, String days, String weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
@@ -63,24 +68,26 @@ public class ScheduledLesson {
 
 
     /**
-     * Calculates the penalty sum of the Time penalties and Room penalties of the class definition
+     * Calculates the penalty sum of the Time penalties and Room penalties of the class
      * @return The sum of penalties of a given class
      */
     public int toInt() {
         ClassUnit cls = model.getClassUnit(classId);
 
-        // Should never happen but for security an exception is thrown
+        // Should never happen but, for security, an exception is thrown
         if(cls == null) {
             throw new RuntimeException("The scheduled lesson class id " + classId + " isn't present in the model");
         }
 
         int penalty = 0;
 
-        // Add the room penalty
-        penalty += cls.getRoomPenalty(roomId);
+        if(roomId != null) {
+            // Add the room penalty
+            penalty += cls.getRoomPenalty(roomId) * roomWeight;
+        }
 
         // Add the time penalty
-        penalty += cls.getTimePenalty(scheduledTime);
+        penalty += cls.getTimePenalty(scheduledTime) * timeWeight;
 
         return penalty;
     }
@@ -94,7 +101,7 @@ public class ScheduledLesson {
     }
 
     public String getDaysBinaryString() {
-        return StringUtils.leftPad(Integer.toBinaryString(getDays()), nDays, "0");
+        return BitToolkit.createSpecificSizeBinaryString(nDays, getDays());
     }
 
     public int getWeeks() {
@@ -102,7 +109,7 @@ public class ScheduledLesson {
     }
 
     public String getWeeksBinaryString() {
-        return StringUtils.leftPad(Integer.toBinaryString(getWeeks()), nWeeks, "0");
+        return BitToolkit.createSpecificSizeBinaryString(nWeeks, getWeeks());
     }
 
     public int getStartSlot() {
@@ -125,12 +132,8 @@ public class ScheduledLesson {
         return roomId;
     }
 
-    public void setRoomId(String roomId) {
-        this.roomId = roomId;
-    }
-
     public Room getRoom() {
-        return model.getRoom(roomId);
+        return roomId != null ? model.getRoom(roomId) : null;
     }
 
     public List<Teacher> getTeachers() {
@@ -149,8 +152,8 @@ public class ScheduledLesson {
         return classId;
     }
 
-    public void setClassId(String classId) {
-        this.classId = classId;
+    public ClassUnit getClassUnit() {
+        return model.getClassUnit(classId);
     }
 
     public void addTeacherId(int teacherId) {
@@ -158,7 +161,7 @@ public class ScheduledLesson {
     }
 
     public List<Integer> getTeacherIds() {
-        return teacherIds;
+        return Collections.unmodifiableList(teacherIds);
     }
 
     public DomainModel getModel() {
@@ -167,8 +170,8 @@ public class ScheduledLesson {
 
     @Override
     public String toString() {
-        return "ClassId: " + classId + "\n" +
-                "RoomId: " + roomId + "\n" +
+        return "ClassId: " + classId + " " +
+                "RoomId: " + roomId + " " +
                 scheduledTime;
     }
 

@@ -2,25 +2,19 @@ package thesis.model.domain.constraints;
 
 import thesis.model.domain.*;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class MaxDayLoadConstraint extends Constraint {
-    public MaxDayLoadConstraint(String restrictionType, String param1, Integer penalty, boolean required) {
-        super(restrictionType, penalty, required, Integer.valueOf(param1));
+    public MaxDayLoadConstraint(String restrictionType, String param1, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
+        super(restrictionType, penalty, required, Integer.valueOf(param1), timetableConfiguration);
     }
 
     // The authors of this method are Edon Gashi and Kadri Sylejmani
     // source: https://github.com/edongashi/itc-2019
     @Override
-    public Set<String> getConflictingClasses(DomainModel model, Timetable solution) {
-        Set<String> conflictingClasses = new HashSet<>();
+    protected void getConflictingClasses(Timetable solution, conflictAction action) {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
         int S = firstParam;
-        TimetableConfiguration timetableConfiguration = model.getTimetableConfiguration();
-        int nrWeeks = timetableConfiguration.getNumWeeks();
-        short nrDays = timetableConfiguration.getNumDays();
         int sum = 0;
 
         for(int week=0; week<nrWeeks; week++) {
@@ -39,7 +33,5 @@ public class MaxDayLoadConstraint extends Constraint {
                 sum += Math.max(dayLoad - S, 0);
             }
         }
-
-        return conflictingClasses;
     }
 }

@@ -2,10 +2,7 @@ package thesis.model.domain;
 
 import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Room {
     private final String roomId;
@@ -30,11 +27,11 @@ public class Room {
     }
 
     public List<Time> getRoomUnavailabilities() {
-        return roomUnavailabilities;
+        return Collections.unmodifiableList(roomUnavailabilities);
     }
 
     public Map<String, Integer> getRoomDistances() {
-        return roomDistances;
+        return Collections.unmodifiableMap(roomDistances);
     }
 
     public int getRoomDistance(String room2Id) {

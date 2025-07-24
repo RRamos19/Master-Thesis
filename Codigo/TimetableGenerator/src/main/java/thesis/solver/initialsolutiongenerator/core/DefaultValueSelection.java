@@ -20,16 +20,10 @@ public class DefaultValueSelection implements ValueSelection<DefaultISGValue, De
 
     @Override
     public DefaultISGValue selectValue(DefaultISGSolution solution, DefaultISGVariable selectedVariable) {
-        ISGVirtualValueList<DefaultISGValue> values = selectedVariable.getValues();
+        ISGValueList<DefaultISGValue> values = selectedVariable.getValues();
         if(RandomToolkit.random() <= iRandomWalkProb) {
-            DefaultISGValue value;
-            do {
-                //random-walk
-                value = values.random();
-                // Only return the value if the rooms and teachers are available
-            } while(!value.isAvailable());
-
-            return value;
+            //random-walk
+            return values.random();
         }
 
         //values with the lowest weighted sum
@@ -37,12 +31,7 @@ public class DefaultValueSelection implements ValueSelection<DefaultISGValue, De
         double bestWeightedSum = 0;
 
         //go through all the values
-        for(DefaultISGValue value : values) {
-            if(!value.isAvailable()) {
-                // if the rooms or teachers are not available ignore
-                continue;
-            }
-
+        for(DefaultISGValue value : values.values()) {
             if(iTabu != null && iTabu.contains(value)) {
                 //value is in the tabu-list
                 continue;
@@ -80,11 +69,8 @@ public class DefaultValueSelection implements ValueSelection<DefaultISGValue, De
 
         DefaultISGValue selectedValue = RandomToolkit.random(bestValues);
         if(selectedValue == null) {
-            do {
-                //no value in the bestValues -> select randomly
-                selectedValue = values.random();
-                // Only return the value if the rooms and teachers are available
-            } while(!selectedValue.isAvailable());
+            //no value in the bestValues -> select randomly
+            selectedValue = values.random();
         }
 
         // In case of tabu-search, put into tabu-list
