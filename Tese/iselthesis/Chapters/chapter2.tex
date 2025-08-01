@@ -15,7 +15,7 @@ Na Secção~\ref{capitulo2:Problemas-agendamento}, é apresentada uma contextual
 
 Na Secção~\ref{capitulo2:Course-timetabling}, é feita uma análise aprofundada de uma das categorias específicas dos problemas de agendamento, explorando as suas características e complexidades. São discutidos os principais métodos e técnicas utilizadas na literatura, bem como os resultados obtidos.
 
-A Secção~\ref{capitulo2:ITC-2019} aborda a existência de uma competição de referência na área, cujo objetivo é incentivar o desenvolvimento de novos métodos e fomentar a pesquisa em problemas de agendamento, com foco particular no agendamento universitário.
+A Secção~\ref{capitulo2:ITC} aborda a existência de uma competição de referência na área, cujo objetivo é incentivar o desenvolvimento de novos métodos e fomentar a pesquisa em problemas de agendamento, com foco particular no agendamento universitário.
 
 Por fim, na Secção~\ref{capitulo2:Bullet-Solutions}, é apresentada a empresa \textit{Bullet Solutions}, especializada no desenvolvimento de aplicações para a gestão de horários académicos e administrativos. Nesta secção, são detalhadas as principais funcionalidades da solução oferecida pela empresa, bem como os objetivos do presente projeto em relação à ferramenta disponibilizada.
 
@@ -409,8 +409,8 @@ Através da aplicação dos métodos \textit{Feature-Based Tuning} e \textit{F-R
 %    \item Abordagens Híbridas (\textit{hybrid approaches})
 %\end{compactenum}
 
-\section{Competição Internacional de Elaboração de Horários 2019}
-\label{capitulo2:ITC-2019}
+\section{Competição Internacional de Elaboração de Horários}
+\label{capitulo2:ITC}
 
 A Competição Internacional de Elaboração de Horários (\gls{itc}) é uma competição que tem como objetivo incentivar a pesquisa e o desenvolvimento de métodos inovadores para resolver problemas complexos de criação de horários. Esta competição, organizou-se nos anos 2002, 2007~\cite{SecondInternationalTimetabling-Mccollum-2007}, 2011~\cite{ThirdInternationalTimetabling-Post-2013} e 2019~\cite{Realworlduniversity-Mueller-2024}. A organização das competições tem como objetivo promover avanços em algoritmos e heurísticas para a alocação de recursos no tempo.
 
@@ -419,6 +419,14 @@ A edição de 2019 teve um foco na elaboração de horários em contextos educac
 Os métodos avaliados incluíram algoritmos heurísticos e meta-heurísticos, como algoritmos genéticos, \gls{sa}, abordagens exatas baseadas em programação matemática, e métodos híbridos que integram aprendizagem automática e otimização. Os algoritmos submetidos foram avaliados com base na qualidade das soluções geradas e no tempo necessário para obtê-las, utilizando instâncias de problemas fornecidas pela organização.
 
 São disponibilizadas 36 instâncias no formato \gls{xml} no site da competição, sendo 6 de teste e as restantes 30 problemas da competição. Destas 30 instâncias ainda há uma divisão relativamente à data de publicação das instâncias, sendo as 10 primeiras consideradas do tipo ''cedo'', publicadas a 14/11/2018, sendo as que valem menos caso sejam resolvidas. As 10 instâncias seguintes foram publicadas a 18/09/2019, são do tipo ''meio'' e encontram-se no meio em termos de valor. Por fim, as 10 instâncias restantes são as que têm mais valor, são consideradas do tipo ''tarde'' e foram publicadas a 07/11/2019.
+
+Müller~\cite{ConstraintbasedTimetabling-Mueller}, um dos organizadores da competição, apresentou na sua tese de doutoramento um algoritmo denominado Busca Iterativa Progressiva (\textit{Iterative Forward Search}). As interfaces descritas na tese assentam nos conceitos de variáveis e valores. No contexto da criação de horários, uma variável pode ser interpretada como uma disciplina, e um valor como uma proposta de agendamento, isto é, uma combinação específica de disciplina, sala e horário. 
+
+O algoritmo, a cada iteração, seleciona para cada variável o valor com menor penalização. Se o valor escolhido entrar em conflito com outros já atribuídos, estes são removidos, privilegiando-se a manutenção do valor original. Para evitar ciclos de agendamento, por exemplo, quando o agendamento da variável v1 provoca a remoção de v2, e subsequentemente o agendamento de v2 leva à remoção de v1, foram introduzidas várias extensões ao algoritmo. Entre estas constam conceitos como lista tabu, Problema de Perturbação Mínima (\textit{Minimal Perturbation Problem}) e Satisfação Aleatória de Restrições (\textit{Random Constraint Satisfaction}), entre outros.
+
+O algoritmo revelou-se altamente eficaz na geração de horários, uma vez que se trata de uma abordagem exata, capaz de encontrar sempre uma solução viável, ainda que o tempo necessário para a sua obtenção possa, em alguns casos, ser elevado.
+
+Gashi, Sylejmani e Ymeri~\cite{Simulatedannealingpenalization-Sylejmani-2022}, que conquistaram o terceiro lugar na competição e foram distinguidos com o prémio de melhor solução em código aberto (\textit{open source}), apresentam no seu artigo uma proposta para o problema de agendamento. A solução utiliza uma versão modificada do \gls{sa}, complementada com uma função de avaliação adaptativa, concebida para ajustar dinamicamente os critérios de penalização durante o processo de otimização.
 
 \section{Empresa \textit{Bullet Solutions}}
 \label{capitulo2:Bullet-Solutions}
