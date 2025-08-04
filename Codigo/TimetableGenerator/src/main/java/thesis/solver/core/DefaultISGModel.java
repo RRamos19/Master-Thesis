@@ -1,4 +1,4 @@
-package thesis.solver.initialsolutiongenerator.core;
+package thesis.solver.core;
 
 import thesis.model.domain.Constraint;
 import thesis.model.domain.ScheduledLesson;
@@ -18,6 +18,12 @@ public class DefaultISGModel implements ISGModel<DefaultISGValue, DefaultISGVari
         variableList = solution.getAssignedVariables();
         unassignedVariableList = solution.getUnassignedVariables();
         return solution;
+    }
+
+    public void setSolution(DefaultISGSolution solution) {
+        this.solution = solution;
+        this.variableList = solution.getAssignedVariables();
+        this.unassignedVariableList = solution.getUnassignedVariables();
     }
 
     @Override

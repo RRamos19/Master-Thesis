@@ -1,4 +1,4 @@
-package thesis.solver.initialsolutiongenerator.core;
+package thesis.solver.core;
 
 import thesis.utils.RandomToolkit;
 

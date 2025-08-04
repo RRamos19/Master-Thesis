@@ -1,4 +1,4 @@
-package thesis.solver.initialsolutiongenerator.core;
+package thesis.solver.core;
 
 import thesis.model.domain.Constraint;
 import thesis.model.domain.Timetable;
@@ -7,13 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class DefaultISGSolution implements ISGSolution<Timetable, DefaultISGModel, DefaultISGVariable> {
-    private final List<DefaultISGVariable> variableList = new ArrayList<>();
-    private final List<DefaultISGVariable> unassignedVariableList = new ArrayList<>();
-    private final DefaultISGModel model;
+public class DefaultISGSolution implements ISGSolution<Timetable, DefaultISGModel, DefaultISGVariable>, Cloneable {
+    private List<DefaultISGVariable> variableList = new ArrayList<>();
+    private List<DefaultISGVariable> unassignedVariableList = new ArrayList<>();
+    private DefaultISGModel model;
     private Integer bestValue = null;
-    private long iteration = 0;
-    private double time = 0;
+    private int UNASSIGNED_PENALTY = 1000;
+//    private long iteration = 0;
+//    private double time = 0;
 
     public DefaultISGSolution(DefaultISGModel model) {
         this.model = model;
@@ -42,17 +43,17 @@ public class DefaultISGSolution implements ISGSolution<Timetable, DefaultISGMode
         return variableList;
     }
 
-    //current iteration
-    @Override
-    public long getIteration() {
-        return iteration;
-    }
-
-    //current solution time
-    @Override
-    public double getTime() {
-        return time;
-    }
+//    //current iteration
+//    @Override
+//    public long getIteration() {
+//        return iteration;
+//    }
+//
+//    //current solution time
+//    @Override
+//    public double getTime() {
+//        return time;
+//    }
 
     @Override
     public DefaultISGModel getModel() {
@@ -60,8 +61,8 @@ public class DefaultISGSolution implements ISGSolution<Timetable, DefaultISGMode
     }
 
     @Override
-    public Integer getBestInfo() {
-        return bestValue;
+    public Boolean wasBestSaved() {
+        return bestValue != null;
     }
 
     @Override
@@ -74,9 +75,15 @@ public class DefaultISGSolution implements ISGSolution<Timetable, DefaultISGMode
         int total = 0;
         List<Constraint> constraintList = new ArrayList<>();
 
-        // Sum the penalties of the time and room
+        // Sum the penalties of the time blocks and rooms
         for(DefaultISGVariable var : variableList) {
-            total += var.getAssignment().toInt();
+            DefaultISGValue value = var.getAssignment();
+            if(value == null) {
+                total += UNASSIGNED_PENALTY;
+                continue;
+            }
+
+            total += value.toInt();
             constraintList.addAll(var.getConstraintList());
         }
 
@@ -90,30 +97,35 @@ public class DefaultISGSolution implements ISGSolution<Timetable, DefaultISGMode
     }
 
     @Override
-    public void addUnassignedVariable(DefaultISGVariable variable) {
-        unassignedVariableList.add(variable);
+    public void addUnassignedVariable(DefaultISGVariable var) {
+        unassignedVariableList.add(var);
     }
 
     @Override
-    public void convertToAssigned(DefaultISGVariable variable) {
-        if(!unassignedVariableList.contains(variable)) {
+    public boolean isSolutionValid() {
+        return unassignedVariableList.isEmpty();
+    }
+
+    @Override
+    public void convertToAssigned(DefaultISGVariable var) {
+        if(!unassignedVariableList.contains(var)) {
             // Should be impossible, unless there is a bug
             throw new RuntimeException("Unassigned variable was not found!");
         }
 
-        unassignedVariableList.remove(variable);
-        variableList.add(variable);
+        unassignedVariableList.remove(var);
+        variableList.add(var);
     }
 
     @Override
-    public void convertToUnassigned(DefaultISGVariable variable) {
-        if(!variableList.contains(variable)) {
+    public void convertToUnassigned(DefaultISGVariable var) {
+        if(!variableList.contains(var)) {
             // Should be impossible, unless there is a bug
             throw new RuntimeException("Assigned variable was not found!");
         }
 
-        variableList.remove(variable);
-        unassignedVariableList.add(variable);
+        variableList.remove(var);
+        unassignedVariableList.add(var);
     }
 
     //store and restore the best solution
@@ -132,8 +144,8 @@ public class DefaultISGSolution implements ISGSolution<Timetable, DefaultISGMode
     public boolean equals(Object o) {
         if (!(o instanceof DefaultISGSolution)) return false;
         DefaultISGSolution that = (DefaultISGSolution) o;
-        return iteration == that.iteration &&
-                Double.compare(time, that.time) == 0 &&
+        return //iteration == that.iteration &&
+                //Double.compare(time, that.time) == 0 &&
                 Objects.equals(variableList, that.variableList) &&
                 Objects.equals(unassignedVariableList, that.unassignedVariableList) &&
                 Objects.equals(bestValue, that.bestValue);
@@ -141,6 +153,21 @@ public class DefaultISGSolution implements ISGSolution<Timetable, DefaultISGMode
 
     @Override
     public int hashCode() {
-        return Objects.hash(variableList, unassignedVariableList, model, bestValue, iteration, time);
+        return Objects.hash(variableList, unassignedVariableList, model, bestValue);//, iteration, time);
+    }
+
+    @Override
+    public DefaultISGSolution clone() {
+        try {
+            DefaultISGSolution clone = (DefaultISGSolution) super.clone();
+            clone.variableList = new ArrayList<>(this.variableList);
+            clone.unassignedVariableList = new ArrayList<>(this.unassignedVariableList);
+            clone.model = new DefaultISGModel();
+            clone.model.setSolution(clone);
+            clone.bestValue = this.bestValue;
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

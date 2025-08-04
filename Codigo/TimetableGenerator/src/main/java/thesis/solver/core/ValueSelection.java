@@ -1,4 +1,4 @@
-package thesis.solver.initialsolutiongenerator.core;
+package thesis.solver.core;
 
 public interface ValueSelection <VL, S, VR> {
     VL selectValue(S solution, VR selectedVariable);

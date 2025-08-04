@@ -1,9 +1,9 @@
-package thesis.solver.initialsolutiongenerator.core;
+package thesis.solver.core;
 
 public class DefaultISGSolutionComparator implements ISGSolutionComparator<DefaultISGSolution> {
     @Override
     public boolean isBetterThanBestSolution(DefaultISGSolution solution) {
-        if (solution.getBestInfo()==null) {
+        if (!solution.wasBestSaved()) {
             //there is no best solution yet saved
             return true;
         }

@@ -42,7 +42,7 @@ public class Main {
         System.out.println();
 
         long optimizedStart = System.currentTimeMillis();
-        SimulatedAnnealing simulatedAnnealing = new SimulatedAnnealing(initialSolution, 1000, 0.001, 100, 5);
+        SimulatedAnnealing simulatedAnnealing = new SimulatedAnnealing(initialSolution, 10000, 0.01, 0.001, 10);
         Timetable generatedSolution = simulatedAnnealing.execute();
         generatedSolution.setRuntime((System.currentTimeMillis() - start)/1000);
         System.out.println("Optimized solution time: " + (System.currentTimeMillis() - optimizedStart)/1000 + "s");
