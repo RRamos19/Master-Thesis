@@ -1,4 +1,4 @@
-package thesis.solver.initialsolutiongenerator.core;
+package thesis.solver.core;
 
 public interface ISGValue<DomainValue, Variable extends ISGVariable> {
     DomainValue value();

@@ -19,8 +19,10 @@ public class TimetableDataExporter implements DataExporter<DomainModel> {
     private File avoidFileOverwriting(String name) {
         int solutionExportNumber = 0;
         File file;
-        do { // Checks if the file exists. If the answer is true then a number between brackets is added to avoid overwriting an existing file
-            String exportNumberString = solutionExportNumber >= 1 ? "(" + solutionExportNumber + ")" : "";
+        do {
+            // Checks if the file exists. If the answer is true then a
+            // number between brackets is added to avoid overwriting an existing file
+            String exportNumberString = solutionExportNumber >= 1 ? " (" + solutionExportNumber + ")" : "";
             file = new File(name + exportNumberString + ".xml");
             solutionExportNumber++;
         } while(file.exists());

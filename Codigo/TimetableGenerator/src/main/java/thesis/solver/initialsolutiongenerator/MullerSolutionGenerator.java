@@ -1,7 +1,7 @@
 package thesis.solver.initialsolutiongenerator;
 
 import thesis.model.domain.*;
-import thesis.solver.initialsolutiongenerator.core.*;
+import thesis.solver.core.*;
 import thesis.utils.RandomToolkit;
 
 import java.util.ArrayList;

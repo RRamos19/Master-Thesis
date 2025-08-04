@@ -1,4 +1,4 @@
-package thesis.solver.initialsolutiongenerator.core;
+package thesis.solver.core;
 
 import thesis.model.domain.ClassUnit;
 import thesis.model.domain.Constraint;
@@ -50,9 +50,6 @@ public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValu
         removalCount.put(iAssignment, getRemovals(iAssignment) + 1);
         iAssignment = null;
         solution.convertToUnassigned(this);
-
-        // TODO: Debug remover quando deixar de ser necessário
-        // System.out.println("Class " + classUnit.getClassId() + " Unassignment! Unassigned variables: " + solution.getUnassignedVariables().size());
     }
 
     @Override
@@ -60,9 +57,6 @@ public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValu
         if (iAssignment != null) unassign();
         iAssignment = value;
         solution.convertToAssigned(this);
-
-        // TODO: Debug remover quando deixar de ser necessário
-        // System.out.println("Class " + classUnit.getClassId() + " Assignment! Unassigned variables: " + solution.getUnassignedVariables().size());
 
         Set<String> classConflicts = solution.getModel().conflictValues(value);
 
