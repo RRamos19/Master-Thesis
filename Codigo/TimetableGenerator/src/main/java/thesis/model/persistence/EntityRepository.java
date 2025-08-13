@@ -4,7 +4,10 @@ import thesis.model.persistence.entities.*;
 
 import java.util.*;
 
-public class EntityModel {
+public class EntityRepository {
+    // Name of the program the entity represents
+    private String programName;
+
     // Number of days, slots per day and weeks of the timetable
     private ConfigurationEntity configurationEntity;
 
@@ -22,6 +25,14 @@ public class EntityModel {
     private final Map<String, ConfigEntity> configs = new HashMap<>();                // ConfigId: Config
     private final Map<String, SubpartEntity> subparts = new HashMap<>();              // SubpartId: Subpart
     private final Map<String, ClassUnitEntity> classUnits = new HashMap<>();          // ClassId: ClassUnit
+
+    public void setProgramName(String programName) {
+        this.programName = programName;
+    }
+
+    public String getProgramName() {
+        return programName;
+    }
 
     public void storeConfiguration(ConfigurationEntity configurationEntity) {
         this.configurationEntity = configurationEntity;
@@ -139,7 +150,7 @@ public class EntityModel {
      * Merges this instance with another instance. Values that are already present on this object are overwritten with the one passed in the parameters. The values of optimization or configuration are not merged.
      * @param timetableData Instance of StructuredTimetableData to be merged with.
      */
-    public void mergeWithTimetable(EntityModel timetableData) {
+    public void mergeWithTimetable(EntityRepository timetableData) {
         if(timetableData == null) {
             // Should never happen
             throw new IllegalArgumentException("The timetable provided is null");

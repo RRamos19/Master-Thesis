@@ -10,7 +10,7 @@ public class ScheduledClassValueList implements ISGValueList<DefaultISGValue> {
 
     public ScheduledClassValueList(DefaultISGVariable selectedVariable) {
         ClassUnit classUnit = selectedVariable.variable();
-        DomainModel domainModel = classUnit.getModel();
+        DataRepository dataRepository = classUnit.getModel();
         String classId = classUnit.getClassId();
 
         // Copy of the original set to allow modifications
@@ -26,7 +26,7 @@ public class ScheduledClassValueList implements ISGValueList<DefaultISGValue> {
         // (The lesson is available only if the Room and Teachers are available at the scheduled time)
         for(String roomId : roomList) {
             for (Time time : classUnit.getTimeSet()) {
-                ScheduledLesson scheduledLesson = new ScheduledLesson(domainModel, classId, roomId, time);
+                ScheduledLesson scheduledLesson = new ScheduledLesson(dataRepository, classId, roomId, time);
 
                 if (scheduledLesson.isAvailable()) {
                     defaultISGValueList.add(new DefaultISGValue(selectedVariable, scheduledLesson));

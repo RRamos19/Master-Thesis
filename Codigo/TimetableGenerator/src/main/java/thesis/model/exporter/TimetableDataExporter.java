@@ -12,7 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TimetableDataExporter implements DataExporter<DomainModel> {
+public class TimetableDataExporter implements DataExporter<DataRepository> {
+    private final String EXPORT_LOCATION_PATH = "./exports/";
     private final int INDENT_SIZE = 2;
     private final Charset STANDARD_CHARSET = StandardCharsets.UTF_8;
 
@@ -23,7 +24,7 @@ public class TimetableDataExporter implements DataExporter<DomainModel> {
             // Checks if the file exists. If the answer is true then a
             // number between brackets is added to avoid overwriting an existing file
             String exportNumberString = solutionExportNumber >= 1 ? " (" + solutionExportNumber + ")" : "";
-            file = new File(name + exportNumberString + ".xml");
+            file = new File(EXPORT_LOCATION_PATH + name + exportNumberString + ".xml");
             solutionExportNumber++;
         } while(file.exists());
 
@@ -42,7 +43,7 @@ public class TimetableDataExporter implements DataExporter<DomainModel> {
     }
 
     @Override
-    public void exportSolutionsToITC(DomainModel data) throws IOException {
+    public void exportSolutionsToITC(DataRepository data) throws IOException {
         String fileName = "solution_" + data.getProgramName();
         for(Timetable timetable : data.getTimetableList()) {
             File file = avoidFileOverwriting(fileName);
@@ -113,7 +114,7 @@ public class TimetableDataExporter implements DataExporter<DomainModel> {
     }
 
     @Override
-    public void exportDomainToITC(DomainModel data) throws IOException {
+    public void exportDataToITC(DataRepository data) throws IOException {
         File file = avoidFileOverwriting(data.getProgramName());
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -297,17 +298,17 @@ public class TimetableDataExporter implements DataExporter<DomainModel> {
     }
 
     @Override
-    public void exportToCSV(DomainModel data, String fileName) throws IOException {
+    public void exportToCSV(DataRepository data) throws IOException {
 
     }
 
     @Override
-    public void exportToPNG(DomainModel data, String fileName) throws IOException {
+    public void exportToPNG(DataRepository data) throws IOException {
 
     }
 
     @Override
-    public void exportToPDF(DomainModel data, String fileName) throws IOException {
+    public void exportToPDF(DataRepository data) throws IOException {
 
     }
 }

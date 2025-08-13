@@ -18,9 +18,9 @@ public class ScheduledLesson {
     private final short timeWeight;
     private final short roomWeight;
 
-    private final DomainModel model;
+    private final DataRepository model;
 
-    public ScheduledLesson(DomainModel model, String classId, String roomId, Time time) {
+    public ScheduledLesson(DataRepository model, String classId, String roomId, Time time) {
         this.model = model;
         this.classId = classId;
         this.roomId = roomId;
@@ -33,11 +33,11 @@ public class ScheduledLesson {
         this.timeWeight = timetableConfiguration.getTimeWeight();
     }
 
-    public ScheduledLesson(DomainModel model, String classId, String roomId, String days, String weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
+    public ScheduledLesson(DataRepository model, String classId, String roomId, String days, String weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
         this(model, classId, roomId, TimeFactory.create(days, weeks, startSlot, length));
     }
 
-    public ScheduledLesson(DomainModel model, String classId, String roomId, byte days, short weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
+    public ScheduledLesson(DataRepository model, String classId, String roomId, byte days, short weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
         this(model, classId, roomId, TimeFactory.create(days, weeks, startSlot, length));
     }
 
@@ -164,7 +164,7 @@ public class ScheduledLesson {
         return Collections.unmodifiableList(teacherIds);
     }
 
-    public DomainModel getModel() {
+    public DataRepository getModel() {
         return model;
     }
 

@@ -3,17 +3,17 @@ package thesis.model.mapper;
 import thesis.model.domain.*;
 import thesis.model.domain.Constraint;
 import thesis.model.domain.constraints.ConstraintFactory;
-import thesis.model.persistence.EntityModel;
+import thesis.model.persistence.EntityRepository;
 import thesis.model.persistence.entities.*;
 
 public class ModelConverter {
-    public static DomainModel convertToDomain(EntityModel entityModel) throws Exception {
-        // TODO: atribuir programName ao domain
-        DomainModel data = new DomainModel();
+    public static DataRepository convertToDataRepository(EntityRepository entityRepository) throws Exception {
+        DataRepository data = new DataRepository();
+        data.setProgramName(entityRepository.getProgramName());
 
         // Set the optimization parameters and configurations of the timetable
-        ConfigurationEntity configurationEntity = entityModel.getConfiguration();
-        OptimizationParametersEntity optimizationParametersEntity = entityModel.getOptimization();
+        ConfigurationEntity configurationEntity = entityRepository.getConfiguration();
+        OptimizationParametersEntity optimizationParametersEntity = entityRepository.getOptimization();
 
         data.setConfiguration(
                 configurationEntity.getNumberDays(),
@@ -26,7 +26,7 @@ public class ModelConverter {
                 optimizationParametersEntity.getDistributionWeight());
 
         // Add the rooms and the relations of distance and unavailabilities
-        for(RoomEntity roomEntity : entityModel.getRooms()) {
+        for(RoomEntity roomEntity : entityRepository.getRooms()) {
             Room room = new Room(roomEntity.getName());
             data.addRoom(room);
             for(RoomDistanceEntity roomDistanceEntity : roomEntity.getRoom1DistanceList()) {
@@ -42,7 +42,7 @@ public class ModelConverter {
         }
 
         // Add the courses, configs, subparts, classes and respective teachers
-        for(CourseEntity courseEntity : entityModel.getCourses()) {
+        for(CourseEntity courseEntity : entityRepository.getCourses()) {
             Course course = new Course(courseEntity.getName());
             data.addCourse(course);
             for(ConfigEntity configEntity : courseEntity.getConfigList()) {
@@ -64,7 +64,7 @@ public class ModelConverter {
         }
 
         // Add the teachers and theirs unavailabilities
-        for(TeacherEntity teacherEntity : entityModel.getTeachers()) {
+        for(TeacherEntity teacherEntity : entityRepository.getTeachers()) {
             Teacher teacher = new Teacher(teacherEntity.getId(), teacherEntity.getName());
             data.addTeacher(teacher);
             for(TeacherUnavailabilityEntity teacherUnavailabilityEntity : teacherEntity.getTeacherUnavailabilityEntityList()) {
@@ -77,7 +77,7 @@ public class ModelConverter {
         }
 
         // Add the timetables, scheduled lessons and respective teachers
-        for(TimetableEntity timetableEntity : entityModel.getTimetables()) {
+        for(TimetableEntity timetableEntity : entityRepository.getTimetables()) {
             Timetable timetable = new Timetable(data.getProgramName());
             data.addTimetable(timetable);
             for(ScheduledLessonEntity scheduledLessonEntity : timetableEntity.getScheduledLessonEntityList()) {
@@ -96,14 +96,14 @@ public class ModelConverter {
             }
         }
 
-        for(ConstraintTypeEntity constraintTypeEntity : entityModel.getConstraintTypes()) {
+        for(ConstraintTypeEntity constraintTypeEntity : entityRepository.getConstraintTypes()) {
             for(ConstraintEntity constraintEntity : constraintTypeEntity.getConstraintEntityList()) {
                 Constraint constraint = ConstraintFactory.createConstraint(constraintEntity.getConstraintTypeEntity().getName(), constraintEntity.getPenalty(), constraintEntity.getRequired(), data.getTimetableConfiguration());
                 data.addConstraint(constraint);
 
                 for (ClassConstraintEntity classRestriction : constraintEntity.getClassRestrictionEntityList()) {
 
-                    for (ClassUnitEntity classUnitEntity : entityModel.getClassUnits()) {
+                    for (ClassUnitEntity classUnitEntity : entityRepository.getClassUnits()) {
                         // TODO: Fazer em conjunto com a alteração da BD
                     }
                 }

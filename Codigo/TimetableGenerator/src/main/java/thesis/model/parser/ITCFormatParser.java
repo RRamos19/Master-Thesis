@@ -18,7 +18,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ITCFormatParser implements InputFileReader<DomainModel> {
+public class ITCFormatParser implements InputFileReader<DataRepository> {
 
     // Principal Tags
     private static final String TEACHERS_TAG          = "teachers";
@@ -44,14 +44,27 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
     private static final String TIME_TAG              = "time";
 
     @Override
-    public DomainModel readFile(String filePath) throws ParsingException {
-        DomainModel data = new DomainModel();
+    public DataRepository readFile(String filePath) throws ParsingException {
+        DataRepository data = new DataRepository();
+
+        File file = new File(filePath);
+
+        if(!file.exists()) {
+            throw new RuntimeException("Error, the file was not found");
+        }
+
+        return readFile(file);
+    }
+
+    @Override
+    public DataRepository readFile(File file) throws ParsingException {
+        DataRepository data = new DataRepository();
 
         FileInputStream inputFile;
         BufferedInputStream inputFileReader;
 
         try {
-            inputFile = new FileInputStream(filePath);
+            inputFile = new FileInputStream(file);
             inputFileReader = new BufferedInputStream(inputFile);
         } catch (FileNotFoundException e) {
             throw new RuntimeException("Error, the file was not found");
@@ -62,7 +75,6 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
         try {
             eventReader = factory.createXMLEventReader(inputFileReader);
         } catch (XMLStreamException e) {
-            e.printStackTrace();
             throw new RuntimeException("Error while processing the XML file. Make sure the file is in UTF-8 format.");
         }
 
@@ -167,7 +179,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
     /**
      * All the scheduled lessons should be read before encountering the termination tag
      */
-    private void readSolution(XMLEventReader eventReader, DomainModel data) throws XMLStreamException, ParsingException {
+    private void readSolution(XMLEventReader eventReader, DataRepository data) throws XMLStreamException, ParsingException {
         Timetable timetable = new Timetable(data.getProgramName());
         data.addTimetable(timetable);
 
@@ -217,7 +229,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
     /**
      * All the rooms should be read before encountering the termination tag
      */
-    private void readRooms(XMLEventReader eventReader, DomainModel data) throws XMLStreamException, ParsingException {
+    private void readRooms(XMLEventReader eventReader, DataRepository data) throws XMLStreamException, ParsingException {
         Room room = null;
 
         while (eventReader.hasNext()) {
@@ -300,7 +312,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
     /**
      * All the courses should be read before encountering the termination tag
      */
-    private void readCourses(XMLEventReader eventReader, DomainModel data) throws XMLStreamException, ParsingException {
+    private void readCourses(XMLEventReader eventReader, DataRepository data) throws XMLStreamException, ParsingException {
         Course course = null;
         Config config = null;
         Subpart subpart = null;
@@ -447,7 +459,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
     /**
      * All the teachers should be read before encountering the termination tag
      */
-    private void readTeachers(XMLEventReader eventReader, DomainModel data) throws XMLStreamException, ParsingException {
+    private void readTeachers(XMLEventReader eventReader, DataRepository data) throws XMLStreamException, ParsingException {
         Teacher teacher = null;
 
         while (eventReader.hasNext()) {
@@ -534,7 +546,7 @@ public class ITCFormatParser implements InputFileReader<DomainModel> {
     /**
      * All the restrictions should be read before encountering the termination tag
      */
-    private void readRestrictions(XMLEventReader eventReader, DomainModel data) throws XMLStreamException, ParsingException {
+    private void readRestrictions(XMLEventReader eventReader, DataRepository data) throws XMLStreamException, ParsingException {
         Constraint constraint = null;
 
         while (eventReader.hasNext()) {
