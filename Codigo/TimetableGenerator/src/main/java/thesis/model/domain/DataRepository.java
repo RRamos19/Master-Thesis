@@ -2,7 +2,7 @@ package thesis.model.domain;
 
 import java.util.*;
 
-public class DomainModel {
+public class DataRepository {
     private String programName;
     private final TimetableConfiguration timetableConfiguration = new TimetableConfiguration();
     private final Map<String, Course> courseMap = new HashMap<>();
@@ -12,11 +12,11 @@ public class DomainModel {
     private final Map<Integer, Teacher> teacherMap = new HashMap<>();
     private final List<Timetable> timetableList = new ArrayList<>();
 
-    public DomainModel() {
+    public DataRepository() {
         this.programName = null;
     }
 
-    public DomainModel(String programName) {
+    public DataRepository(String programName) {
         this.programName = programName;
     }
 

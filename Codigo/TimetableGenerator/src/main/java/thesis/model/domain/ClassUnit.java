@@ -10,14 +10,14 @@ public class ClassUnit {
 
     // Model where the class is stored in. It is used for the creation of all the possible
     // combinations of Time blocks, Rooms and Teachers for this class
-    private final DomainModel model;
+    private final DataRepository model;
 
     private final Map<Time, Integer> classTimesList = new HashMap<>(); // List of pairs of time and associated penalty
     private final List<Integer> classTeacherList = new ArrayList<>();
     private final Map<String, Integer> classRoomPenalties = new HashMap<>(); // RoomId : penalty
     private final List<Constraint> constraintList = new ArrayList<>();
 
-    public ClassUnit(DomainModel model, String classId) {
+    public ClassUnit(DataRepository model, String classId) {
         this.model = model;
         this.classId = classId;
     }
@@ -108,7 +108,7 @@ public class ClassUnit {
         return Collections.unmodifiableList(constraintList);
     }
 
-    public DomainModel getModel() {
+    public DataRepository getModel() {
         return model;
     }
 

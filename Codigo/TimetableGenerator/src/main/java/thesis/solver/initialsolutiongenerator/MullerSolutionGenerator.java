@@ -19,7 +19,7 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
     private final List<ClassUnit> unscheduled;
 
 
-    public MullerSolutionGenerator(DomainModel data) {
+    public MullerSolutionGenerator(DataRepository data) {
         this.unscheduled = new ArrayList<>();
 
         // Every class in every subpart must be allocated in the timetable. As such, every course
@@ -52,7 +52,7 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
             iter++;
             DefaultISGVariable variable = selectVariable(solution);
 
-            // Should be impossible because the list of unscheduled is based on the data in DomainModel
+            // Should be impossible because the list of unscheduled is based on the data in DataRepository
             if(variable.variable() == null) {
                 throw new RuntimeException("Initial Solution Generator: No class unit stored in variable");
             }

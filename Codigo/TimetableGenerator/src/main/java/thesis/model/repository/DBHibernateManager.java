@@ -2,12 +2,12 @@ package thesis.model.repository;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import thesis.model.persistence.EntityModel;
+import thesis.model.persistence.EntityRepository;
 import thesis.model.persistence.entities.*;
 
 import java.util.List;
 
-public class DBHibernateManager implements DBManager<EntityModel> {
+public class DBHibernateManager implements DBManager<EntityRepository> {
 
     /**
      * Creates a connection to the database using Hibernate
@@ -25,8 +25,8 @@ public class DBHibernateManager implements DBManager<EntityModel> {
      * Selects all of the data available in the database and stores in its respective objects
      * @return Aggregate of all the data stored in the database
      */
-    public EntityModel fetchData() {
-        EntityModel data = new EntityModel();
+    public EntityRepository fetchData() {
+        EntityRepository data = new EntityRepository();
 
         try(Session session = HibernateUtils.getSessionFactory().openSession()) {
             Transaction tx = session.beginTransaction();
@@ -101,7 +101,7 @@ public class DBHibernateManager implements DBManager<EntityModel> {
      * Stores all data present in EntityModel into the database
      * @param data Class that contains all of the data to be inserted
      */
-    public void storeData(EntityModel data) {
+    public void storeData(EntityRepository data) {
         try(Session session = HibernateUtils.getSessionFactory().openSession()) {
             Transaction tx = session.beginTransaction();
 
