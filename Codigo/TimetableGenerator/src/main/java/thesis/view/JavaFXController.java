@@ -1,30 +1,42 @@
 package thesis.view;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
+import javafx.util.Duration;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import thesis.controller.ControllerInterface;
+import thesis.model.domain.*;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import java.io.File;
-import java.util.Arrays;
+import java.util.*;
+import java.util.concurrent.Future;
 
 public class JavaFXController implements ViewInterface {
-    private ControllerInterface controller;
+    private ControllerInterface controller = null;
     private boolean isConnected = false;
-
-    @Override
-    public void setController(ControllerInterface controller) {
-        this.controller = controller;
-    }
+    private String chosenProgram = null;
+    private Window primaryWindow = null;
+    private final ExecutorService pool = Executors.newCachedThreadPool();
+    private final Timeline progressBarUpdater = new Timeline();
 
     @FXML
     private TextField ipField;
@@ -40,6 +52,14 @@ public class JavaFXController implements ViewInterface {
 
     @FXML
     private ProgressBar progressBar;
+
+    @FXML
+    private ChoiceBox<String> programsChoiceBox;
+
+    @Override
+    public void setController(ControllerInterface controller) {
+        this.controller = controller;
+    }
 
     @FXML
     private void connectEvent() {
@@ -76,11 +96,29 @@ public class JavaFXController implements ViewInterface {
     @FXML
     private void importMenuITCEvent() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("xml files", ".xml"));
+
+        FileChooser.ExtensionFilter xmlFileFilter = new FileChooser.ExtensionFilter("XML Files", "*.xml");
+        fileChooser.getExtensionFilters().add(xmlFileFilter);
+        fileChooser.setSelectedExtensionFilter(xmlFileFilter);
 
         File chosenFile = fileChooser.showOpenDialog(new Stage());
 
-        controller.importITCData(chosenFile);
+        if(chosenFile != null) {
+            controller.importITCData(chosenFile);
+
+            updateStoredPrograms();
+        }
+    }
+
+    private void updateStoredPrograms() {
+        String oldChosenProgram = chosenProgram;
+        Set<String> storedPrograms = controller.getStoredPrograms();
+
+        programsChoiceBox.setItems(FXCollections.observableList(new ArrayList<>(storedPrograms)));
+
+        if(oldChosenProgram != null && storedPrograms.contains(oldChosenProgram)) {
+            programsChoiceBox.setValue(oldChosenProgram);
+        }
     }
 
     @FXML
@@ -120,9 +158,40 @@ public class JavaFXController implements ViewInterface {
 
     @FXML
     private void generateSolutionEvent() {
+        if(chosenProgram == null) {
+            showErrorMessage("A program must be chosen before starting the generation of a solution");
+            return;
+        }
+
         progressBar.setVisible(true);
 
-        // TODO: Gerar soluções e apresentar progresso
+        DataRepository data = controller.getDataRepository(chosenProgram);
+
+        // Should never happen
+        if(data == null) {
+            throw new RuntimeException("The Program chosen has no data");
+        }
+
+        // TODO: otimizar parâmetros e incluir parâmetros na janela de configuração
+        Future<Timetable> timetable = pool.submit(() -> controller.generateTimetable(data, 10000, 0.01, 0.001, 10));
+
+        progressBarUpdater.getKeyFrames().add(new KeyFrame(Duration.seconds(1), event -> {
+            System.out.println("Tick...");
+
+            // TODO: eliminar os prints de debug e concluir a apresentação do progresso da geração
+            if (true) {
+                progressBarUpdater.stop();
+                try {
+                    showTimetable(data, timetable.get());
+                } catch (Exception e) {
+                    showExceptionMessage(e);
+                }
+                System.out.println("Timeline stopped itself!");
+                progressBarUpdater.getKeyFrames().clear();
+            }
+        }));
+        progressBarUpdater.setCycleCount(Timeline.INDEFINITE);
+        progressBarUpdater.play();
     }
 
     private void populateTreeView() {
@@ -170,6 +239,86 @@ public class JavaFXController implements ViewInterface {
         alert.showAndWait();
     }
 
+    public void showTimetable(DataRepository data, Timetable timetable) {
+        Stage stage = new Stage();
+
+        if(primaryWindow != null) {
+            stage.initOwner(primaryWindow);
+            stage.initModality(Modality.WINDOW_MODAL);
+        }
+
+        GridPane gridPane = new GridPane();
+
+        HashMap<Pair<Integer, Integer>, VBox> nodesToAdd = new HashMap<>();
+        int maxSlot = 0;
+        int minSlot = Integer.MAX_VALUE;
+
+        for(ScheduledLesson scheduledLesson : timetable.getScheduledLessonList()) {
+            String days = scheduledLesson.getDaysBinaryString();
+            for(int i=0; i< days.length(); i++) {
+                if(days.charAt(i) == '1') {
+                    int startSlot = scheduledLesson.getStartSlot();
+                    int endSlot = scheduledLesson.getEndSlot();
+
+                    if(startSlot < minSlot) {
+                        minSlot = startSlot;
+                    }
+                    if(endSlot > maxSlot) {
+                        maxSlot = endSlot;
+                    }
+
+                    VBox vBox = nodesToAdd.computeIfAbsent(new ImmutablePair<>(i,  startSlot), k -> new VBox());
+
+                    StringBuilder vboxLabel = new StringBuilder(scheduledLesson.getClassId() + "\n[" + data.getProgramName() + "]\n");
+                    boolean addedTeacher = false;
+
+                    List<Teacher> teacherList = scheduledLesson.getTeachers();
+                    if(teacherList != null) {
+                        vboxLabel.append('[');
+                        for (Teacher teacher : scheduledLesson.getTeachers()) {
+                            if (addedTeacher) {
+                                vboxLabel.append("; ");
+                            }
+                            vboxLabel.append('(').append(teacher.getName()).append(')');
+
+                            addedTeacher = true;
+                        }
+                        vboxLabel.append("]\n");
+                    }
+
+                    vboxLabel.append('[').append(scheduledLesson.getRoomId()).append(']');
+
+                    vBox.getChildren().add(new Label(vboxLabel.toString()));
+                }
+            }
+        }
+
+        for(Map.Entry<Pair<Integer, Integer>, VBox> nodeData : nodesToAdd.entrySet()) {
+            Pair<Integer, Integer> location = nodeData.getKey();
+            // A value of 1 is added to the column index because column 0 is reserved for the time of the lessons
+            gridPane.add(nodeData.getValue(), location.getKey()+1, location.getValue());
+        }
+
+        int numSlots = data.getTimetableConfiguration().getSlotsPerDay();
+        int minutesPerSlot = 24*60/numSlots;
+
+        for(int i=minSlot; i<=maxSlot; i++) {
+            int startMin = minutesPerSlot;
+            int startHour = startMin / 60;
+
+            int endMin = startMin + minutesPerSlot;
+            int endHour = endMin / 60;
+
+            startMin = startMin % 60;
+            endMin = startMin % 60;
+
+            gridPane.add(new Label(startHour + ":" + startMin + " - " + endHour + ":" + endMin), 0, i);
+        }
+
+        stage.setScene(new Scene(gridPane));
+        stage.show();
+    }
+
     @Override
     public void showExceptionMessage(Exception e) {
         Stage errorStage = new Stage();
@@ -211,10 +360,24 @@ public class JavaFXController implements ViewInterface {
         errorStage.showAndWait();
     }
 
+    public void setPrimaryWindow(Window primaryWindow) {
+        this.primaryWindow = primaryWindow;
+    }
+
     // Runs at the start of the graphical application
     public void initialize(){
         progressBar.setVisible(false);
 
+        programsChoiceBox.getSelectionModel().selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
+            chosenProgram = newValue;
+        });
+
         populateTreeView();
+    }
+
+    public void cleanup() {
+        System.out.println("Closing application...");
+        pool.shutdown();
     }
 }
