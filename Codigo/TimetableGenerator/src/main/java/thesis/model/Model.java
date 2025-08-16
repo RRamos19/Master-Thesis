@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class Model implements ModelInterface<DataRepository> {
     private ControllerInterface controller;
@@ -24,15 +25,28 @@ public class Model implements ModelInterface<DataRepository> {
         this.dataExporter = new TimetableDataExporter();
     }
 
+    @Override
     public void setController(ControllerInterface controller) {
         this.controller = controller;
     }
 
+    @Override
     public void importITCData(File file) throws ParsingException {
         DataRepository dataRepository = inputFileReader.readFile(file);
         dataRepositoryHashMap.put(dataRepository.getProgramName(), dataRepository);
     }
 
+    @Override
+    public DataRepository getDataRepository(String programName) {
+        return dataRepositoryHashMap.get(programName);
+    }
+
+    @Override
+    public Set<String> getStoredPrograms() {
+        return dataRepositoryHashMap.keySet();
+    }
+
+    @Override
     public void exportToCSV(String programName) throws IOException {
         DataRepository data = dataRepositoryHashMap.get(programName);
 
@@ -43,6 +57,7 @@ public class Model implements ModelInterface<DataRepository> {
         dataExporter.exportToCSV(data);
     }
 
+    @Override
     public void exportToPDF(String programName) throws IOException {
         DataRepository data = dataRepositoryHashMap.get(programName);
 
@@ -53,6 +68,7 @@ public class Model implements ModelInterface<DataRepository> {
         dataExporter.exportToPDF(data);
     }
 
+    @Override
     public void exportToPNG(String programName) throws IOException {
         DataRepository data = dataRepositoryHashMap.get(programName);
 
@@ -63,6 +79,7 @@ public class Model implements ModelInterface<DataRepository> {
         dataExporter.exportToPNG(data);
     }
 
+    @Override
     public void exportDataToITC(String programName) throws IOException {
         DataRepository data = dataRepositoryHashMap.get(programName);
 
@@ -73,6 +90,7 @@ public class Model implements ModelInterface<DataRepository> {
         dataExporter.exportDataToITC(data);
     }
 
+    @Override
     public void exportSolutionsToITC(String programName) throws IOException {
         DataRepository data = dataRepositoryHashMap.get(programName);
 

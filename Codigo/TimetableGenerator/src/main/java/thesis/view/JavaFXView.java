@@ -15,6 +15,7 @@ public class JavaFXView extends Application {
     private static final String APP_IMAGE_PATH = "/icons/app_icon.png";
     private static ControllerInterface staticController;
     private static String staticApplicationName;
+    private static JavaFXController javaFXController;
 
     public static void launch(ControllerInterface controller, String applicationName) {
         staticController = controller;
@@ -37,6 +38,9 @@ public class JavaFXView extends Application {
             staticController.setView(view);
         }
 
+        javaFXController = loader.getController();
+        javaFXController.setPrimaryWindow(stage);
+
         Scene scene = new Scene(root);
         stage.setTitle(staticApplicationName);
 
@@ -45,5 +49,12 @@ public class JavaFXView extends Application {
 
         stage.setScene(scene);
         stage.show();
+    }
+
+    @Override
+    public void stop() {
+        if (javaFXController != null) {
+            javaFXController.cleanup();
+        }
     }
 }

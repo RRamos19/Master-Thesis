@@ -3,28 +3,32 @@ package thesis.controller;
 import thesis.model.ModelInterface;
 import thesis.model.domain.DataRepository;
 import thesis.model.domain.Timetable;
-import thesis.model.domain.exceptions.ParsingException;
 import thesis.solver.initialsolutiongenerator.InitialSolutionGenerator;
 import thesis.solver.initialsolutiongenerator.MullerSolutionGenerator;
 import thesis.solver.solutionoptimizer.SimulatedAnnealing;
 import thesis.view.ViewInterface;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Set;
 
 public class Controller implements ControllerInterface {
     private ModelInterface<DataRepository> model;
     private ViewInterface view;
 
+    @Override
     public void setModel(ModelInterface<DataRepository> model) {
         this.model = model;
         this.model.setController(this);
     }
 
+    @Override
     public void setView(ViewInterface view) {
         this.view = view;
         this.view.setController(this);
     }
 
+    @Override
     public Timetable generateTimetable(DataRepository data, double initialTemperature, double minTemperature, double coolingRate, int k) {
         long start = System.currentTimeMillis();
         InitialSolutionGenerator<Timetable> initialSolutionGen = new MullerSolutionGenerator(data);
@@ -37,6 +41,12 @@ public class Controller implements ControllerInterface {
         return generatedSolution;
     }
 
+    @Override
+    public DataRepository getDataRepository(String programName) {
+        return model.getDataRepository(programName);
+    }
+
+    @Override
     public void importITCData(File file) {
         try {
             model.importITCData(file);
@@ -45,23 +55,33 @@ public class Controller implements ControllerInterface {
         }
     }
 
-    public void exportSolutionsToITC(DataRepository data) {
-
+    @Override
+    public Set<String> getStoredPrograms() {
+        return model.getStoredPrograms();
     }
 
-    public void exportDomainToITC(DataRepository data) {
-
+    @Override
+    public void exportSolutionsToITC(String programName) throws IOException {
+        model.exportSolutionsToITC(programName);
     }
 
-    public void exportToCSV(DataRepository data) {
-
+    @Override
+    public void exportDataToITC(String programName) throws IOException {
+        model.exportDataToITC(programName);
     }
 
-    public void exportToPDF(DataRepository data) {
-
+    @Override
+    public void exportToCSV(String programName) throws IOException {
+        model.exportToCSV(programName);
     }
 
-    public void exportToPNG(DataRepository data) {
+    @Override
+    public void exportToPDF(String programName) throws IOException {
+        model.exportToPDF(programName);
+    }
 
+    @Override
+    public void exportToPNG(String programName) throws IOException {
+        model.exportToPNG(programName);
     }
 }
