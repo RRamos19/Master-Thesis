@@ -11,11 +11,11 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 public class Controller implements ControllerInterface {
-    private ModelInterface<DataRepository> model;
+    private ModelInterface model;
     private ViewInterface view;
 
     @Override
-    public void setModel(ModelInterface<DataRepository> model) {
+    public void setModel(ModelInterface model) {
         this.model = model;
         this.model.setController(this);
     }

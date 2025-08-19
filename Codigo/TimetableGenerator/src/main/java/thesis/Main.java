@@ -11,7 +11,7 @@ public class Main {
     public static void main(String[] args) {
         ControllerInterface controller = new Controller();
 
-        ModelInterface<DataRepository> model = new Model();
+        ModelInterface model = new Model();
         controller.setModel(model);
 
         JavaFXView.launch(controller, "Timetable Generator");
