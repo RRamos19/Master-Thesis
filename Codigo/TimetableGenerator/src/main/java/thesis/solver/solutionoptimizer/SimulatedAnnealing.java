@@ -13,6 +13,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
     private final double coolingRate;
     private final double minTemperature;
     private final int k;
+    private int iter;
 
     // List of possible methods for neighbor finding
     private final List<neighborFindingMethod<DefaultISGSolution>> neighborFunctions = List.of(
@@ -47,7 +48,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
 
         double temperature = initialTemperature;
 
-        int iteration = 0;
+        iter = 0;
         while(temperature > minTemperature) {
             for(int i=0; i < k; i++) {
                 DefaultISGSolution neighbor = neighborhoodFunction(currentSolution);
@@ -76,8 +77,8 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
                 }
             }
 
-            iteration++;
-            temperature = coolingSchedule(iteration);
+            iter++;
+            temperature = coolingSchedule(iter);
         }
 
         if(currentSolution.wasBestSaved()) {
@@ -142,6 +143,13 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
         }
 
         return neighbor;
+    }
+
+    @Override
+    public double getProgress() {
+        double kMax = Math.log(initialTemperature / minTemperature) / coolingRate;
+        double progress = iter / kMax;
+        return Math.min(Math.max(progress, 0.0), 1.0);
     }
 
     private DefaultISGSolution swapClasses(DefaultISGSolution solution) {
