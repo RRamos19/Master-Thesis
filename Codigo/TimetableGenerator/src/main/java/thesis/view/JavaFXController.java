@@ -4,9 +4,11 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -23,20 +25,17 @@ import org.apache.commons.lang3.tuple.Pair;
 import thesis.controller.ControllerInterface;
 import thesis.model.domain.*;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.Future;
 
 public class JavaFXController implements ViewInterface {
+    private static final int TIMELINE_UPDATE_TIME_SECONDS = 2;
     private ControllerInterface controller = null;
     private boolean isConnected = false;
     private String chosenProgram = null;
     private Window primaryWindow = null;
-    private final ExecutorService pool = Executors.newCachedThreadPool();
-    private final Timeline progressBarUpdater = new Timeline();
+    private final Map<String, ProgressBar> progressBarMap = new HashMap<>();      // ProgramName : ProgressBar
+    private final Map<String, Timeline> activeTimelines = new HashMap<>();        // ProgramName : Timeline
 
     @FXML
     private TextField ipField;
@@ -51,7 +50,7 @@ public class JavaFXController implements ViewInterface {
     private Button connectBtn;
 
     @FXML
-    private ProgressBar progressBar;
+    private VBox progressContainer;
 
     @FXML
     private ChoiceBox<String> programsChoiceBox;
@@ -96,6 +95,12 @@ public class JavaFXController implements ViewInterface {
     @FXML
     private void importMenuITCEvent() {
         FileChooser fileChooser = new FileChooser();
+
+        // Sets the initial location of the FileChooser as the directory where the application is located
+        File initialDirectory = new File(String.valueOf(ClassLoader.getSystemResource("."))).getAbsoluteFile().getParentFile();
+        if(initialDirectory != null && initialDirectory.isDirectory()) {
+            fileChooser.setInitialDirectory(initialDirectory);
+        }
 
         FileChooser.ExtensionFilter xmlFileFilter = new FileChooser.ExtensionFilter("XML Files", "*.xml");
         fileChooser.getExtensionFilters().add(xmlFileFilter);
@@ -159,39 +164,91 @@ public class JavaFXController implements ViewInterface {
     @FXML
     private void generateSolutionEvent() {
         if(chosenProgram == null) {
-            showErrorMessage("A program must be chosen before starting the generation of a solution");
+            showErrorMessage("A program must be chosen before starting the generation of a solution!");
+            return;
+        }
+        if(activeTimelines.get(chosenProgram) != null) {
+            showErrorMessage("There is a solution generation already in progress!");
             return;
         }
 
-        progressBar.setVisible(true);
+        Node parent = insertProgressBar(chosenProgram);
 
-        DataRepository data = controller.getDataRepository(chosenProgram);
+        controller.startGeneratingSolution(chosenProgram, null, 10000, 0.01, 0.001, 10);
 
-        // Should never happen
-        if(data == null) {
-            throw new RuntimeException("The Program chosen has no data");
-        }
+        String generatingSolutionProgram = chosenProgram;
 
-        // TODO: otimizar parâmetros e incluir parâmetros na janela de configuração
-        Future<Timetable> timetable = pool.submit(() -> controller.generateTimetable(data, 10000, 0.01, 0.001, 10));
-
-        progressBarUpdater.getKeyFrames().add(new KeyFrame(Duration.seconds(1), event -> {
-            System.out.println("Tick...");
-
-            // TODO: eliminar os prints de debug e concluir a apresentação do progresso da geração
-            if (true) {
-                progressBarUpdater.stop();
-                try {
-                    showTimetable(data, timetable.get());
-                } catch (Exception e) {
-                    showExceptionMessage(e);
-                }
-                System.out.println("Timeline stopped itself!");
-                progressBarUpdater.getKeyFrames().clear();
-            }
-        }));
+        Timeline progressBarUpdater = new Timeline(new KeyFrame(Duration.seconds(TIMELINE_UPDATE_TIME_SECONDS), e -> progressBarUpdate(e, parent, generatingSolutionProgram)));
         progressBarUpdater.setCycleCount(Timeline.INDEFINITE);
         progressBarUpdater.play();
+        activeTimelines.put(generatingSolutionProgram, progressBarUpdater);
+    }
+
+    private Node insertProgressBar(String programName) {
+        Label taskName = new Label(programName + " : ");
+        ProgressBar bar = new ProgressBar();
+        bar.setMaxWidth(Double.MAX_VALUE);
+
+        HBox taskBox = new HBox(10, taskName, bar);
+        HBox.setHgrow(bar, Priority.ALWAYS);
+
+        progressContainer.getChildren().add(taskBox);
+
+        progressBarMap.put(programName, bar);
+
+        return taskBox;
+    }
+
+    private void progressBarUpdate(ActionEvent e, Node progressBarParent, String generatingSolutionProgram) {
+        double progress = controller.getGenerationProgress(generatingSolutionProgram);
+
+        ProgressBar progressBar = progressBarMap.get(generatingSolutionProgram);
+
+        // Should never happen
+        if(progressBar == null) {
+            throw new RuntimeException("The activity should have a progress bar but it doesn't");
+        }
+
+        // A verification is made to avoid a progress bar the goes back and forth (Because the progress
+        // of the initial solution is based on the unscheduled classes which can increase or decrease
+        // depending on the situation)
+        if(progressBar.getProgress() < progress) {
+            progressBar.setProgress(progress);
+        }
+
+        // TODO: eliminar os prints de debug e concluir a apresentação do progresso da geração
+        if (progress == 1.0) {
+            try {
+                DataRepository data = controller.getDataRepository(generatingSolutionProgram);
+                Timetable timetable = controller.getGeneratedTimetable(generatingSolutionProgram);
+
+                showTimetable(data, timetable);
+            } catch (Exception ex) {
+                showExceptionMessage(ex);
+            }
+
+            Timeline progressBarUpdater = activeTimelines.get(generatingSolutionProgram);
+
+            // Should never happen
+            if(progressBarUpdater == null) {
+                throw new RuntimeException("The timeline for the given program name doesn't exist");
+            }
+
+            stopAndClearTimeline(progressBarUpdater);
+            activeTimelines.remove(generatingSolutionProgram);
+
+            progressBarMap.remove(generatingSolutionProgram);
+            progressContainer.getChildren().remove(progressBarParent);
+
+            showInformationMessage("The solution for the program " + generatingSolutionProgram + " has been created!");
+
+            System.out.println("Timeline stopped itself!");
+        }
+    }
+
+    private void stopAndClearTimeline(Timeline timeline) {
+        timeline.stop();
+        timeline.getKeyFrames().clear();
     }
 
     private void populateTreeView() {
@@ -233,6 +290,12 @@ public class JavaFXController implements ViewInterface {
         treeView.setRoot(root);
     }
 
+    public void showInformationMessage(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, message);
+
+        alert.show();
+    }
+
     public void showErrorMessage(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR, message);
 
@@ -267,7 +330,7 @@ public class JavaFXController implements ViewInterface {
                         maxSlot = endSlot;
                     }
 
-                    VBox vBox = nodesToAdd.computeIfAbsent(new ImmutablePair<>(i,  startSlot), k -> new VBox());
+                    VBox vBox = nodesToAdd.computeIfAbsent(new ImmutablePair<>(i,  startSlot), k -> new VBox(5));
 
                     StringBuilder vboxLabel = new StringBuilder(scheduledLesson.getClassId() + "\n[" + data.getProgramName() + "]\n");
                     boolean addedTeacher = false;
@@ -302,15 +365,15 @@ public class JavaFXController implements ViewInterface {
         int numSlots = data.getTimetableConfiguration().getSlotsPerDay();
         int minutesPerSlot = 24*60/numSlots;
 
-        for(int i=minSlot; i<=maxSlot; i++) {
-            int startMin = minutesPerSlot;
+        for(int i = minSlot; i < maxSlot; i++) {
+            int startMin = minutesPerSlot*i;
             int startHour = startMin / 60;
 
             int endMin = startMin + minutesPerSlot;
             int endHour = endMin / 60;
 
             startMin = startMin % 60;
-            endMin = startMin % 60;
+            endMin = endMin % 60;
 
             gridPane.add(new Label(startHour + ":" + startMin + " - " + endHour + ":" + endMin), 0, i);
         }
@@ -366,8 +429,6 @@ public class JavaFXController implements ViewInterface {
 
     // Runs at the start of the graphical application
     public void initialize(){
-        progressBar.setVisible(false);
-
         programsChoiceBox.getSelectionModel().selectedItemProperty()
                 .addListener((observable, oldValue, newValue) -> {
             chosenProgram = newValue;
@@ -378,6 +439,7 @@ public class JavaFXController implements ViewInterface {
 
     public void cleanup() {
         System.out.println("Closing application...");
-        pool.shutdown();
+        activeTimelines.forEach((p, t) -> stopAndClearTimeline(t));
+        controller.cleanup();
     }
 }

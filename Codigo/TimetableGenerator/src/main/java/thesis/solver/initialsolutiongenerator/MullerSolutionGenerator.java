@@ -17,6 +17,8 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
     private final ValueSelection<DefaultISGValue, DefaultISGSolution, DefaultISGVariable> valueSelection = new DefaultValueSelection();
     private final DefaultISGSolutionComparator defaultISGSolutionComparator = new DefaultISGSolutionComparator();
     private final List<ClassUnit> unscheduled;
+    private final int startingUnscheduled;
+    private DefaultISGSolution solution;
 
 
     public MullerSolutionGenerator(DataRepository data) {
@@ -31,10 +33,12 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
                 }
             }
         }
+
+        startingUnscheduled = unscheduled.size();
     }
 
     public Timetable generate(Integer maxIterations) {
-        DefaultISGSolution solution = model.createInitialSolution();
+        solution = model.createInitialSolution();
 
         // For each unscheduled class a variable is made which represents the class
         // Each variable is then assigned a value which represents the Room, Time and Teachers combination
@@ -88,6 +92,11 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
         } else {
             return RandomToolkit.random(solution.getAssignedVariables());
         }
+    }
+
+    @Override
+    public double getProgress() {
+        return 1.0 - ((double) solution.getUnassignedVariables().size()) / startingUnscheduled;
     }
 
     private void stopAlgorithm() {

@@ -3,14 +3,12 @@ package thesis.controller;
 import thesis.model.ModelInterface;
 import thesis.model.domain.DataRepository;
 import thesis.model.domain.Timetable;
-import thesis.solver.initialsolutiongenerator.InitialSolutionGenerator;
-import thesis.solver.initialsolutiongenerator.MullerSolutionGenerator;
-import thesis.solver.solutionoptimizer.SimulatedAnnealing;
 import thesis.view.ViewInterface;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 public class Controller implements ControllerInterface {
     private ModelInterface<DataRepository> model;
@@ -29,19 +27,6 @@ public class Controller implements ControllerInterface {
     }
 
     @Override
-    public Timetable generateTimetable(DataRepository data, double initialTemperature, double minTemperature, double coolingRate, int k) {
-        long start = System.currentTimeMillis();
-        InitialSolutionGenerator<Timetable> initialSolutionGen = new MullerSolutionGenerator(data);
-        Timetable initialSolution = initialSolutionGen.generate(null);
-
-        SimulatedAnnealing simulatedAnnealing = new SimulatedAnnealing(initialSolution, initialTemperature, minTemperature, coolingRate, k);
-        Timetable generatedSolution = simulatedAnnealing.execute();
-        generatedSolution.setRuntime((System.currentTimeMillis() - start)/1000);
-
-        return generatedSolution;
-    }
-
-    @Override
     public DataRepository getDataRepository(String programName) {
         return model.getDataRepository(programName);
     }
@@ -53,6 +38,21 @@ public class Controller implements ControllerInterface {
         } catch (Exception e) {
             view.showExceptionMessage(e);
         }
+    }
+
+    @Override
+    public void startGeneratingSolution(String programName, Integer initSolutionMaxIter, double initialTemperature, double minTemperature, double coolingRate, int k) {
+        model.startGeneratingSolution(programName, initSolutionMaxIter, initialTemperature, minTemperature, coolingRate, k);
+    }
+
+    @Override
+    public double getGenerationProgress(String programName) {
+        return model.getGenerationProgress(programName);
+    }
+
+    @Override
+    public Timetable getGeneratedTimetable(String programName) throws ExecutionException, InterruptedException {
+        return model.getGeneratedTimetable(programName);
     }
 
     @Override
@@ -83,5 +83,9 @@ public class Controller implements ControllerInterface {
     @Override
     public void exportToPNG(String programName) throws IOException {
         model.exportToPNG(programName);
+    }
+
+    public void cleanup() {
+        model.cleanup();
     }
 }

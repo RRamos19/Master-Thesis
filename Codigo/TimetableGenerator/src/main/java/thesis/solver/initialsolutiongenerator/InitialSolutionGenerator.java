@@ -1,6 +1,7 @@
 package thesis.solver.initialsolutiongenerator;
 
 public interface InitialSolutionGenerator<T> {
+    double getProgress();
     /**
      * Generates an initial solution
      *
