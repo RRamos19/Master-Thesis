@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
 
-public class Model implements ModelInterface<DataRepository> {
+public class Model implements ModelInterface {
     private ControllerInterface controller;
     private final Map<String, DataRepository> dataRepositoryHashMap = new HashMap<>();                          // ProgramName : Corresponding DataRepository
     private final ConcurrentMap<String, Future<Timetable>> generatedTimetables = new ConcurrentHashMap<>();     // ProgramName : Timetable generated
@@ -79,19 +79,15 @@ public class Model implements ModelInterface<DataRepository> {
         InitialSolutionGenerator<Timetable> initialSolutionGenerator = initialSolutionGeneratorsMap.get(programName);
         HeuristicAlgorithm<Timetable, ClassUnit> heuristicAlgorithm = heuristicAlgorithmsMap.get(programName);
 
-        if(initialSolutionGenerator == null) {
-            // Either the program hasn't started or has already finished (Most probable the latter)
-            // TODO: confirmar
-            return 1.0;
-        }
-
-        double progress = initialSolutionGenerator.getProgress() / 2;
-
+        // If the heuristicAlgorithm exists then the program has reached the 2nd phase of solution generation.
+        // Otherwise its only in the 1st phase or hasn't even reached that point.
         if(heuristicAlgorithm != null) {
-            progress += heuristicAlgorithm.getProgress() / 2;
+            return 0.5 + heuristicAlgorithm.getProgress() / 2;
+        } else if(initialSolutionGenerator != null) {
+            return initialSolutionGenerator.getProgress() / 2;
+        } else {
+            return 0;
         }
-
-        return progress;
     }
 
     @Override
@@ -110,6 +106,7 @@ public class Model implements ModelInterface<DataRepository> {
     private Timetable generateTimetable(DataRepository data, Integer initSolutionMaxIter, double initialTemperature, double minTemperature, double coolingRate, int k) {
         long start = System.currentTimeMillis();
         String programName = data.getProgramName();
+
         InitialSolutionGenerator<Timetable> initialSolutionGen = new MullerSolutionGenerator(data);
         initialSolutionGeneratorsMap.put(programName, initialSolutionGen);
         Timetable initialSolution = initialSolutionGen.generate(initSolutionMaxIter);
@@ -118,10 +115,8 @@ public class Model implements ModelInterface<DataRepository> {
         heuristicAlgorithmsMap.put(programName, heuristicAlgorithm);
         Timetable generatedSolution = heuristicAlgorithm.execute();
 
+        // Runtime in seconds
         generatedSolution.setRuntime((System.currentTimeMillis() - start)/1000);
-
-        initialSolutionGeneratorsMap.remove(programName);
-        heuristicAlgorithmsMap.remove(programName);
 
         return generatedSolution;
     }

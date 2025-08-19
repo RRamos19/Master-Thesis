@@ -11,18 +11,23 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 public interface ControllerInterface {
-    void setModel(ModelInterface<DataRepository> model);
+    // Setters
+    void setModel(ModelInterface model);
     void setView(ViewInterface view);
 
+    // Schedule solution generation methods
     void startGeneratingSolution(String programName, Integer initSolutionMaxIter, double initialTemperature, double minTemperature, double coolingRate, int k);
     double getGenerationProgress(String programName);
     Timetable getGeneratedTimetable(String programName) throws ExecutionException, InterruptedException;
 
+    // Getters
     DataRepository getDataRepository(String programName);
     Set<String> getStoredPrograms();
 
+    // Data import methods
     void importITCData(File file);
 
+    // Data export methods
     void exportSolutionsToITC(String programName) throws IOException;
     void exportDataToITC(String programName) throws IOException;
     void exportToCSV(String programName) throws IOException;

@@ -106,10 +106,12 @@ public class JavaFXController implements ViewInterface {
         fileChooser.getExtensionFilters().add(xmlFileFilter);
         fileChooser.setSelectedExtensionFilter(xmlFileFilter);
 
-        File chosenFile = fileChooser.showOpenDialog(new Stage());
+        List<File> chosenFiles = fileChooser.showOpenMultipleDialog(new Stage());
 
-        if(chosenFile != null) {
-            controller.importITCData(chosenFile);
+        if(chosenFiles != null) {
+            for(File file : chosenFiles) {
+                controller.importITCData(file);
+            }
 
             updateStoredPrograms();
         }
@@ -118,6 +120,11 @@ public class JavaFXController implements ViewInterface {
     private void updateStoredPrograms() {
         String oldChosenProgram = chosenProgram;
         Set<String> storedPrograms = controller.getStoredPrograms();
+
+        // Choose the first element if there is no program chosen
+        if(oldChosenProgram == null && !storedPrograms.isEmpty()) {
+            oldChosenProgram = (String) storedPrograms.toArray()[0];
+        }
 
         programsChoiceBox.setItems(FXCollections.observableList(new ArrayList<>(storedPrograms)));
 
@@ -311,6 +318,9 @@ public class JavaFXController implements ViewInterface {
         }
 
         GridPane gridPane = new GridPane();
+        gridPane.setHgap(10);
+        gridPane.setVgap(5);
+        gridPane.setPadding(new Insets(10));
 
         HashMap<Pair<Integer, Integer>, VBox> nodesToAdd = new HashMap<>();
         int maxSlot = 0;
@@ -330,7 +340,11 @@ public class JavaFXController implements ViewInterface {
                         maxSlot = endSlot;
                     }
 
-                    VBox vBox = nodesToAdd.computeIfAbsent(new ImmutablePair<>(i,  startSlot), k -> new VBox(5));
+                    VBox vBox = nodesToAdd.computeIfAbsent(new ImmutablePair<>(i,  startSlot), k -> {
+                        VBox newVBox = new VBox(5);
+                        newVBox.setStyle("-fx-border-color: black; -fx-padding: 5;");
+                        return newVBox;
+                    });
 
                     StringBuilder vboxLabel = new StringBuilder(scheduledLesson.getClassId() + "\n[" + data.getProgramName() + "]\n");
                     boolean addedTeacher = false;
@@ -375,10 +389,17 @@ public class JavaFXController implements ViewInterface {
             startMin = startMin % 60;
             endMin = endMin % 60;
 
-            gridPane.add(new Label(startHour + ":" + startMin + " - " + endHour + ":" + endMin), 0, i);
+            String timeLabel = String.format("%02d:%02d - %02d:%02d", startHour, startMin, endHour, endMin);
+            gridPane.add(new Label(timeLabel), 0, i);
         }
 
-        stage.setScene(new Scene(gridPane));
+        ScrollPane scrollPane = new ScrollPane(gridPane);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(true);
+
+        Scene scene = new Scene(scrollPane, 1000, 600); // largura x altura inicial
+
+        stage.setScene(scene);
         stage.show();
     }
 
