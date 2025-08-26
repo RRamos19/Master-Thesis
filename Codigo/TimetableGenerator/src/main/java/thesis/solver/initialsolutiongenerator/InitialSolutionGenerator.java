@@ -2,6 +2,7 @@ package thesis.solver.initialsolutiongenerator;
 
 public interface InitialSolutionGenerator<T> {
     double getProgress();
+    void stopAlgorithm();
     /**
      * Generates an initial solution
      *

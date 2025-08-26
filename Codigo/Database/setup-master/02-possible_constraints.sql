@@ -1,0 +1,21 @@
+INSERT INTO constraint_type (name)
+VALUES
+('SameStart'),
+('SameTime'),
+('DifferentTime'),
+('SameDays'),
+('DifferentDays'),
+('SameWeeks'),
+('DifferentWeeks'),
+('Overlap'),
+('NotOverlap'),
+('SameRoom'),
+('DifferentRoom'),
+('SameAttendees'),
+('Precedence'),
+('WorkDay'),
+('MinGap'),
+('MaxDays'),
+('MaxDayLoad'),
+('MaxBreaks'),
+('MaxBlock')

@@ -1,13 +1,13 @@
 package thesis.model.exporter;
 
-import thesis.model.domain.DataRepository;
+import thesis.model.domain.InMemoryRepository;
 
 import java.io.IOException;
 
-public interface DataExporter<D> {
-    void exportSolutionsToITC(D data) throws IOException;
-    void exportDataToITC(DataRepository data) throws IOException;
-    void exportToCSV(D data) throws IOException;
-    void exportToPNG(D data) throws IOException;
-    void exportToPDF(D data) throws IOException;
+public interface DataExporter {
+    void exportSolutionsToITC(InMemoryRepository data) throws IOException;
+    void exportDataToITC(InMemoryRepository data) throws IOException;
+    void exportToCSV(InMemoryRepository data) throws IOException;
+    void exportToPNG(InMemoryRepository data) throws IOException;
+    void exportToPDF(InMemoryRepository data) throws IOException;
 }

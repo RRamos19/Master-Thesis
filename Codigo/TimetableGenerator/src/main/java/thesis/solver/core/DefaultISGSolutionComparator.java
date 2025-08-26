@@ -9,7 +9,7 @@ public class DefaultISGSolutionComparator implements ISGSolutionComparator<Defau
         }
 
         int currentUnassigned = solution.getUnassignedVariables().size();
-        int bestUnassigned = solution.getModel().getBestUnassignedVariables().size();
+        int bestUnassigned = solution.getBestUnassignedVariables().size();
 
         if (bestUnassigned != currentUnassigned) {
             return bestUnassigned > currentUnassigned;

@@ -4,7 +4,6 @@ import thesis.controller.Controller;
 import thesis.controller.ControllerInterface;
 import thesis.model.Model;
 import thesis.model.ModelInterface;
-import thesis.model.domain.DataRepository;
 import thesis.view.JavaFXView;
 
 public class Main {

@@ -1,6 +1,7 @@
 package thesis.solver.initialsolutiongenerator;
 
-import thesis.model.domain.*;
+import thesis.model.domain.InMemoryRepository;
+import thesis.model.domain.elements.*;
 import thesis.solver.core.*;
 import thesis.utils.RandomToolkit;
 
@@ -12,16 +13,16 @@ import java.util.List;
  * Source - Constraint Based Timetabling https://muller.unitime.org/phd-thesis.pdf
  */
 public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetable> {
-    private boolean interruptAlgorithm = false;
-    private final DefaultISGModel model = new DefaultISGModel();
+    private final InMemoryRepository dataModel;
+    private final DefaultISGModel model;
     private final ValueSelection<DefaultISGValue, DefaultISGSolution, DefaultISGVariable> valueSelection = new DefaultValueSelection();
     private final DefaultISGSolutionComparator defaultISGSolutionComparator = new DefaultISGSolutionComparator();
     private final List<ClassUnit> unscheduled;
-    private final int startingUnscheduled;
+    private volatile boolean interruptAlgorithm = false;
     private DefaultISGSolution solution;
 
 
-    public MullerSolutionGenerator(DataRepository data) {
+    public MullerSolutionGenerator(InMemoryRepository data) {
         this.unscheduled = new ArrayList<>();
 
         // Every class in every subpart must be allocated in the timetable. As such, every course
@@ -34,7 +35,8 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
             }
         }
 
-        startingUnscheduled = unscheduled.size();
+        this.dataModel = data;
+        this.model = new DefaultISGModel(data);
     }
 
     public Timetable generate(Integer maxIterations) {
@@ -43,13 +45,13 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
         // For each unscheduled class a variable is made which represents the class
         // Each variable is then assigned a value which represents the Room, Time and Teachers combination
         for(ClassUnit cls : unscheduled) {
-            DefaultISGVariable var = new DefaultISGVariable(cls);
+            DefaultISGVariable var = new DefaultISGVariable(dataModel, cls);
             solution.addUnassignedVariable(var);
             var.setSolution(solution);
         }
 
         int iter = 0;
-        while(!solution.getUnassignedVariables().isEmpty() && !interruptAlgorithm) {
+        while(!solution.isSolutionValid() && !interruptAlgorithm) {
             if(maxIterations != null && iter >= maxIterations) {
                 break;
             }
@@ -96,10 +98,11 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
 
     @Override
     public double getProgress() {
-        return 1.0 - ((double) solution.getUnassignedVariables().size()) / startingUnscheduled;
+        return 1.0 - ((double) solution.getUnassignedVariables().size()) / unscheduled.size();
     }
 
-    private void stopAlgorithm() {
+    @Override
+    public void stopAlgorithm() {
         interruptAlgorithm = true;
     }
 }

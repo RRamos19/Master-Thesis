@@ -1,6 +1,8 @@
 package thesis.model.exporter;
 
-import thesis.model.domain.*;
+import thesis.model.domain.DataRepository;
+import thesis.model.domain.InMemoryRepository;
+import thesis.model.domain.elements.*;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -12,10 +14,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TimetableDataExporter implements DataExporter<DataRepository> {
+public class TimetableDataExporter implements DataExporter {
     private final String EXPORT_LOCATION_PATH = "./exports/";
     private final int INDENT_SIZE = 2;
     private final Charset STANDARD_CHARSET = StandardCharsets.UTF_8;
+
+    public TimetableDataExporter() {
+        File exportLocation = new File(EXPORT_LOCATION_PATH);
+
+        if(!exportLocation.exists()) {
+            exportLocation.mkdirs();
+        }
+    }
 
     private File avoidFileOverwriting(String name) {
         int solutionExportNumber = 0;
@@ -43,7 +53,7 @@ public class TimetableDataExporter implements DataExporter<DataRepository> {
     }
 
     @Override
-    public void exportSolutionsToITC(DataRepository data) throws IOException {
+    public void exportSolutionsToITC(InMemoryRepository data) throws IOException {
         String fileName = "solution_" + data.getProgramName();
         for(Timetable timetable : data.getTimetableList()) {
             File file = avoidFileOverwriting(fileName);
@@ -114,7 +124,7 @@ public class TimetableDataExporter implements DataExporter<DataRepository> {
     }
 
     @Override
-    public void exportDataToITC(DataRepository data) throws IOException {
+    public void exportDataToITC(InMemoryRepository data) throws IOException {
         File file = avoidFileOverwriting(data.getProgramName());
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -298,17 +308,17 @@ public class TimetableDataExporter implements DataExporter<DataRepository> {
     }
 
     @Override
-    public void exportToCSV(DataRepository data) throws IOException {
+    public void exportToCSV(InMemoryRepository data) throws IOException {
 
     }
 
     @Override
-    public void exportToPNG(DataRepository data) throws IOException {
+    public void exportToPNG(InMemoryRepository data) throws IOException {
 
     }
 
     @Override
-    public void exportToPDF(DataRepository data) throws IOException {
+    public void exportToPDF(InMemoryRepository data) throws IOException {
 
     }
 }

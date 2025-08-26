@@ -1,6 +1,26 @@
+CREATE TABLE optimization_parameters (
+	id SERIAL PRIMARY KEY,
+	time_weight SMALLINT NOT NULL,
+	room_weight SMALLINT NOT NULL,
+	distribution_weight SMALLINT NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE configuration (
+	id SERIAL PRIMARY KEY,
+	number_days SMALLINT NOT NULL,
+	number_weeks INT NOT NULL,
+	slots_per_day INT NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE program (
 	id SERIAL PRIMARY KEY,
-	name VARCHAR(30) NOT NULL UNIQUE
+	name VARCHAR(30) NOT NULL UNIQUE,
+	optimization_id INT NOT NULL,
+	configuration_id INT NOT NULL,
+	CONSTRAINT optimization_id_fk FOREIGN KEY (optimization_id) REFERENCES optimization_parameters(id),
+	CONSTRAINT configuration_id_fk FOREIGN KEY (configuration_id) REFERENCES configuration(id)
 );
 
 CREATE TABLE teacher (
@@ -152,20 +172,4 @@ CREATE TABLE scheduled_lesson_teacher (
 	CONSTRAINT scheduled_lesson_teacher_lesson_id_fk FOREIGN KEY (scheduled_lesson_id, scheduled_lesson_timetable_id) REFERENCES scheduled_lesson(id, timetable_id),
 	CONSTRAINT scheduled_lesson_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id),
 	CONSTRAINT scheduled_lesson_teacher_pk PRIMARY KEY (scheduled_lesson_id, scheduled_lesson_timetable_id, teacher_id)
-);
-
-CREATE TABLE optimization_parameters (
-	id SERIAL PRIMARY KEY,
-	time_weight SMALLINT NOT NULL,
-	room_weight SMALLINT NOT NULL,
-	distribution_weight SMALLINT NOT NULL,
-	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE configuration (
-	id SERIAL PRIMARY KEY,
-	number_days SMALLINT NOT NULL,
-	number_weeks INT NOT NULL,
-	slots_per_day INT NOT NULL,
-	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

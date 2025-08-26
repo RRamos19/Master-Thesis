@@ -1,16 +1,17 @@
 package thesis.solver.core;
 
+import thesis.model.domain.elements.Timetable;
+
 import java.util.List;
 
-public interface ISGSolution<DomainSolution, Model extends ISGModel, Variable extends ISGVariable> {
-    DomainSolution solution();
-//    long getIteration(); //current iteration
-//    double getTime(); //current solution time
+public interface ISGSolution<Model extends ISGModel, Variable extends ISGVariable> {
+    Timetable solution();
     Model getModel(); //model
 
     void addUnassignedVariable(Variable var);
     List<Variable> getUnassignedVariables();
     List<Variable> getAssignedVariables();
+    List<Variable> getBestUnassignedVariables();
 
     Boolean wasBestSaved();
     int getBestValue();

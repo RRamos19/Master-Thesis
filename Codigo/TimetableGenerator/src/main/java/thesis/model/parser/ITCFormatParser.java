@@ -1,9 +1,11 @@
 package thesis.model.parser;
 
-import thesis.model.domain.*;
-import thesis.model.domain.constraints.ConstraintFactory;
-import thesis.model.domain.exceptions.CheckedIllegalArgumentException;
-import thesis.model.domain.exceptions.ParsingException;
+import thesis.model.domain.DataRepository;
+import thesis.model.domain.InMemoryRepository;
+import thesis.model.domain.elements.*;
+import thesis.model.domain.elements.constraints.ConstraintFactory;
+import thesis.model.domain.elements.exceptions.CheckedIllegalArgumentException;
+import thesis.model.domain.elements.exceptions.ParsingException;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -15,10 +17,13 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ITCFormatParser implements InputFileReader<DataRepository> {
+public class ITCFormatParser implements InputFileReader {
+    private static final DateTimeFormatter timeStampUTC12Formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     // Principal Tags
     private static final String TEACHERS_TAG          = "teachers";
@@ -43,146 +48,163 @@ public class ITCFormatParser implements InputFileReader<DataRepository> {
     private static final String CLASS_TAG             = "class";
     private static final String TIME_TAG              = "time";
 
-    @Override
-    public DataRepository readFile(String filePath) throws ParsingException {
-        DataRepository data = new DataRepository();
+    @FunctionalInterface
+    private interface XmlProcessor<T extends XmlResult> {
+        T apply(XMLEventReader reader) throws ParsingException;
+    }
 
-        File file = new File(filePath);
+    private <T extends XmlResult> T processXmlFile(File file, XmlProcessor<T> parser) throws ParsingException {
+        try (FileInputStream fis = new FileInputStream(file);
+             BufferedInputStream bis = new BufferedInputStream(fis)) {
 
-        if(!file.exists()) {
-            throw new RuntimeException("Error, the file was not found");
+            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLEventReader reader = factory.createXMLEventReader(bis);
+
+            try {
+                return parser.apply(reader);
+            } finally {
+                try {
+                    reader.close();
+                } catch (XMLStreamException ignore) {}
+            }
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("Error, the file was not found", e);
+        } catch (IOException e) {
+            throw new ParsingException("Error while closing the file", e);
+        } catch (XMLStreamException e) {
+            throw new ParsingException("Error while processing the XML file. The file may be malformed", e);
         }
-
-        return readFile(file);
     }
 
     @Override
-    public DataRepository readFile(File file) throws ParsingException {
-        DataRepository data = new DataRepository();
-
-        FileInputStream inputFile;
-        BufferedInputStream inputFileReader;
-
-        try {
-            inputFile = new FileInputStream(file);
-            inputFileReader = new BufferedInputStream(inputFile);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("Error, the file was not found");
-        }
-
-        XMLInputFactory factory = XMLInputFactory.newInstance();
-        XMLEventReader eventReader;
-        try {
-            eventReader = factory.createXMLEventReader(inputFileReader);
-        } catch (XMLStreamException e) {
-            throw new RuntimeException("Error while processing the XML file. Make sure the file is in UTF-8 format.");
-        }
-
-        while (eventReader.hasNext()) {
-            XMLEvent event;
+    public XmlResult readXmlFile(File file) throws ParsingException {
+        return processXmlFile(file, reader -> {
             try {
-                event = eventReader.nextEvent();
+                while (reader.hasNext()) {
+                    XMLEvent event = reader.nextEvent();
+                    if (event.isStartElement()) {
+                        StartElement startElement = event.asStartElement();
+                        String qName = startElement.getName().getLocalPart();
 
-                if (event.getEventType() == XMLStreamConstants.START_ELEMENT) {
-                    StartElement startElement = event.asStartElement();
-                    String qName = startElement.getName().getLocalPart();
+                        if (qName.equals(SOLUTION_TAG)) {
+                            return parseSolution(reader, startElement, event);
+                        } else if (qName.equals(PROBLEM_TAG)) {
+                            return parseProblem(reader, startElement, event);
+                        }
+                    }
+                }
+                throw new ParsingException("The XML file does not contain a valid <solution> or <problem> root element");
+            } catch (XMLStreamException e) {
+                throw new ParsingException("Error while processing the XML file. The file may be malformed", e);
+            }
+        });
+    }
+
+    private InMemoryRepository parseProblem(XMLEventReader reader, StartElement startElement, XMLEvent event) throws ParsingException {
+        InMemoryRepository data = new DataRepository();
+
+        String programName = getAttributeValue(startElement, "name");
+        String nrDaysString = getAttributeValue(startElement, "nrDays");
+        String slotsPerDayString = getAttributeValue(startElement, "slotsPerDay");
+        String nrWeeksString = getAttributeValue(startElement, "nrWeeks");
+
+        byte nrDays = nrDaysString != null ? Byte.parseByte(nrDaysString) : 0;
+        int slotsPerDay = slotsPerDayString != null ? Integer.parseInt(slotsPerDayString) : 0;
+        short nrWeeks = nrWeeksString != null ? Short.parseShort(nrWeeksString) : 0;
+
+        List<String> problemTagErrors = new ArrayList<>();
+        if (programName == null) problemTagErrors.add("Program name must be specified");
+        if (nrDays == 0) problemTagErrors.add("nrDays >= 1");
+        if (slotsPerDay <= 1) problemTagErrors.add("slotsPerDay > 1");
+        if (nrWeeks == 0) problemTagErrors.add("nrWeeks >= 1");
+        if (!problemTagErrors.isEmpty()) {
+            String errorMessage = "The following conditions must be followed:\n" + String.join("\n", problemTagErrors);
+            throw new ParsingException(event.getLocation(), errorMessage);
+        }
+
+        data.setProgramName(programName);
+        data.setConfiguration(nrDays, nrWeeks, slotsPerDay);
+
+        while (reader.hasNext()) {
+            try {
+                XMLEvent subEvent = reader.nextEvent();
+                if (subEvent.isStartElement()) {
+                    StartElement subStart = subEvent.asStartElement();
+                    String qName = subStart.getName().getLocalPart();
 
                     switch (qName) {
-                        case SOLUTION_TAG:
-                            String solutionName = getAttributeValue(startElement, "name");
-
-                            if (solutionName == null) {
-                                throw new ParsingException(event.getLocation(), "A name must be specified in the solution tag");
-                            }
-
-                            data.setProgramName(solutionName);
-
-                            readSolution(eventReader, data);
-                            break;
-                        case PROBLEM_TAG:
-                            String programName = getAttributeValue(startElement, "name");
-                            String nrDaysString = getAttributeValue(startElement, "nrDays");
-                            String slotsPerDayString = getAttributeValue(startElement, "slotsPerDay");
-                            String nrWeeksString = getAttributeValue(startElement, "nrWeeks");
-
-                            byte nrDays = nrDaysString != null ? Byte.parseByte(nrDaysString) : 7;                  // Default 7 days
-                            int slotsPerDay = slotsPerDayString != null ? Integer.parseInt(slotsPerDayString) : 16; // Default 1h:30m for each slot
-                            short nrWeeks = nrWeeksString != null ? Short.parseShort(nrWeeksString) : 9;            // Default 9 weeks
-
-                            List<String> problemTagErrors = new ArrayList<>();
-                            if (programName == null) problemTagErrors.add("name must be specified");
-                            if (nrDays == 0) problemTagErrors.add("nrDays >= 1");
-                            if (slotsPerDay <= 1) problemTagErrors.add("slotsPerDay > 1");
-                            if (nrWeeks == 0) problemTagErrors.add("nrWeeks >= 1");
-                            if (!problemTagErrors.isEmpty()) {
-                                String errorMessage = "The following conditions must be followed: " + String.join(", ", problemTagErrors);
-                                throw new ParsingException(event.getLocation(), errorMessage);
-                            }
-
-                            data.setProgramName(programName);
-
-                            data.setConfiguration(nrDays, nrWeeks, slotsPerDay);
-                            break;
                         case OPTIMIZATION_TAG:
-                            String timeWeightString = getAttributeValue(startElement, "time");
-                            String roomWeightString = getAttributeValue(startElement, "room");
-                            String distributionWeightString = getAttributeValue(startElement, "distribution");
+                            String timeWeightString = getAttributeValue(subStart, "time");
+                            String roomWeightString = getAttributeValue(subStart, "room");
+                            String distributionWeightString = getAttributeValue(subStart, "distribution");
 
-                            short timeWeight = timeWeightString != null ? Short.parseShort(timeWeightString) : 1;                         // Default 1
-                            short roomWeight = roomWeightString != null ? Short.parseShort(roomWeightString) : 1;                         // Default 1
-                            short distributionWeight = distributionWeightString != null ? Short.parseShort(distributionWeightString) : 1; // Default 1
+                            short timeWeight = timeWeightString != null ? Short.parseShort(timeWeightString) : 0;
+                            short roomWeight = roomWeightString != null ? Short.parseShort(roomWeightString) : 0;
+                            short distributionWeight = distributionWeightString != null ? Short.parseShort(distributionWeightString) : 0;
 
                             List<String> optimizationTagErrors = new ArrayList<>();
                             if (timeWeight < 1) optimizationTagErrors.add("time >= 1");
                             if (roomWeight < 1) optimizationTagErrors.add("room >= 1");
                             if (distributionWeight < 1) optimizationTagErrors.add("distribution >= 1");
                             if (!optimizationTagErrors.isEmpty()) {
-                                String errorMessage = "The following conditions must be followed: " + String.join(", ", optimizationTagErrors);
+                                String errorMessage = "The following conditions must be followed:\n" + String.join("\n", optimizationTagErrors);
                                 throw new ParsingException(event.getLocation(), errorMessage);
                             }
 
                             data.setOptimizationParameters(timeWeight, roomWeight, distributionWeight);
                             break;
                         case ROOMS_TAG:
-                            readRooms(eventReader, data);
+                            readRooms(reader, data);
                             break;
                         case DISTRIBUTIONS_TAG:
-                            readRestrictions(eventReader, data);
+                            readRestrictions(reader, data);
                             break;
                         case COURSES_TAG:
-                            readCourses(eventReader, data);
+                            readCourses(reader, data);
                             break;
                         case TEACHERS_TAG:
-                            readTeachers(eventReader, data);
+                            readTeachers(reader, data);
                             break;
                     }
                 }
             } catch (XMLStreamException e) {
-                e.printStackTrace();
-                throw new ParsingException("Error while processing the XML file. Make sure the file is in UTF-8 format.");
+                throw new ParsingException(e.getLocation(), "Error while processing the XML file. The file may be malformed");
             }
         }
 
-        try {
-            eventReader.close();
-            inputFileReader.close();
-            inputFile.close();
-        } catch (XMLStreamException | IOException xml_e) {
-            throw new ParsingException("Error while closing the file");
+        data.verifyValidity();
+        return data;
+    }
+
+    private Timetable parseSolution(XMLEventReader reader, StartElement startElement, XMLEvent event) throws ParsingException, XMLStreamException {
+        Timetable timetable = new Timetable();
+
+        String solutionName = getAttributeValue(startElement, "name");
+        String dateOfCreationString = getAttributeValue(startElement, "timeStampUTC12");
+        String runtimeString = getAttributeValue(startElement, "runtime");
+
+        LocalDateTime dateOfCreation = dateOfCreationString != null
+                ? LocalDateTime.from(timeStampUTC12Formatter.parse(dateOfCreationString)) : null;
+        int runtime = runtimeString != null ? Integer.parseInt(runtimeString) : 0;
+
+        if (solutionName == null) {
+            throw new ParsingException(event.getLocation(), "A name must be specified in the solution tag");
         }
 
-        data.verifyValidity();
+        timetable.setProgramName(solutionName);
+        timetable.setRuntime(runtime);
+        if (dateOfCreation != null) timetable.setDateOfCreation(dateOfCreation);
 
-        return data;
+        readSolution(reader, timetable);
+
+        return timetable;
     }
 
     /**
      * All the scheduled lessons should be read before encountering the termination tag
      */
-    private void readSolution(XMLEventReader eventReader, DataRepository data) throws XMLStreamException, ParsingException {
-        Timetable timetable = new Timetable(data.getProgramName());
-        data.addTimetable(timetable);
-
+    private void readSolution(XMLEventReader eventReader, Timetable timetable) throws XMLStreamException, ParsingException {
         while (eventReader.hasNext()) {
             XMLEvent event;
             event = eventReader.nextEvent();
@@ -204,7 +226,7 @@ public class ITCFormatParser implements InputFileReader<DataRepository> {
                         int length = lengthString != null ? Integer.parseInt(lengthString) : 0;
 
                         try {
-                            ScheduledLesson scheduledLesson = new ScheduledLesson(data, classId, roomId, days, weeks, start, length);
+                            ScheduledLesson scheduledLesson = new ScheduledLesson(classId, roomId, days, weeks, start, length);
 
                             timetable.addScheduledLesson(scheduledLesson);
                         } catch (CheckedIllegalArgumentException e) {
@@ -229,7 +251,7 @@ public class ITCFormatParser implements InputFileReader<DataRepository> {
     /**
      * All the rooms should be read before encountering the termination tag
      */
-    private void readRooms(XMLEventReader eventReader, DataRepository data) throws XMLStreamException, ParsingException {
+    private void readRooms(XMLEventReader eventReader, InMemoryRepository data) throws XMLStreamException, ParsingException {
         Room room = null;
 
         while (eventReader.hasNext()) {
@@ -312,7 +334,7 @@ public class ITCFormatParser implements InputFileReader<DataRepository> {
     /**
      * All the courses should be read before encountering the termination tag
      */
-    private void readCourses(XMLEventReader eventReader, DataRepository data) throws XMLStreamException, ParsingException {
+    private void readCourses(XMLEventReader eventReader, InMemoryRepository data) throws XMLStreamException, ParsingException {
         Course course = null;
         Config config = null;
         Subpart subpart = null;
@@ -366,7 +388,7 @@ public class ITCFormatParser implements InputFileReader<DataRepository> {
                             String classId = getAttributeValue(startElement, "id");
                             String parentClassId = getAttributeValue(startElement, "parent");
 
-                            cls = new ClassUnit(data, classId);
+                            cls = new ClassUnit(classId);
                             data.addClassUnit(cls);
 
                             if(parentClassId != null) {
@@ -459,7 +481,7 @@ public class ITCFormatParser implements InputFileReader<DataRepository> {
     /**
      * All the teachers should be read before encountering the termination tag
      */
-    private void readTeachers(XMLEventReader eventReader, DataRepository data) throws XMLStreamException, ParsingException {
+    private void readTeachers(XMLEventReader eventReader, InMemoryRepository data) throws XMLStreamException, ParsingException {
         Teacher teacher = null;
 
         while (eventReader.hasNext()) {
@@ -546,7 +568,7 @@ public class ITCFormatParser implements InputFileReader<DataRepository> {
     /**
      * All the restrictions should be read before encountering the termination tag
      */
-    private void readRestrictions(XMLEventReader eventReader, DataRepository data) throws XMLStreamException, ParsingException {
+    private void readRestrictions(XMLEventReader eventReader, InMemoryRepository data) throws XMLStreamException, ParsingException {
         Constraint constraint = null;
 
         while (eventReader.hasNext()) {
