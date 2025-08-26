@@ -1,18 +1,21 @@
 package thesis.solver.core;
 
-import thesis.model.domain.ClassUnit;
-import thesis.model.domain.Constraint;
+import thesis.model.domain.InMemoryRepository;
+import thesis.model.domain.elements.ClassUnit;
+import thesis.model.domain.elements.Constraint;
 
 import java.util.*;
 
 public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValue, DefaultISGSolution> {
+    private final InMemoryRepository dataModel;
     private final ClassUnit classUnit;                  // Assigned ClassUnit. Value will be linked to said class
-    private DefaultISGValue iAssignment = null;         // Assigned value
-    private DefaultISGValue iBestAssignment = null;     // Best assignment value
+    private DefaultISGValue iAssignment;                // Assigned value
+    private DefaultISGValue iBestAssignment;            // Best assignment value
     private DefaultISGSolution solution;                // Solution of which the variable belongs to
     private final Map<DefaultISGValue, Integer> removalCount = new HashMap<>();
 
-    public DefaultISGVariable(ClassUnit classUnit) {
+    public DefaultISGVariable(InMemoryRepository dataModel, ClassUnit classUnit) {
+        this.dataModel = dataModel;
         this.classUnit = classUnit;
     }
 
@@ -38,11 +41,7 @@ public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValu
 
     @Override
     public ISGValueList<DefaultISGValue> getValues() {
-        return new ScheduledClassValueList(this);
-    }
-
-    public List<Constraint> getConstraintList() {
-        return classUnit.getConstraintList();
+        return new ScheduledClassValueList(dataModel, this);
     }
 
     @Override
@@ -71,7 +70,6 @@ public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValu
                 }
             }
         }
-
     }
 
     @Override

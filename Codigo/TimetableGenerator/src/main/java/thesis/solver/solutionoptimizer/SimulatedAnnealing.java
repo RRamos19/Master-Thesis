@@ -1,20 +1,24 @@
 package thesis.solver.solutionoptimizer;
 
-import thesis.model.domain.*;
+import thesis.model.domain.InMemoryRepository;
+import thesis.model.domain.elements.ScheduledLesson;
+import thesis.model.domain.elements.Timetable;
 import thesis.solver.core.*;
 import thesis.utils.RandomToolkit;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUnit> {
+public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
     private final DefaultISGSolution initialSolution;
     private final double initialTemperature;
     private final double coolingRate;
     private final double minTemperature;
     private final int k;
     private final int maxIter;
-    private int iter;
+    private AtomicInteger iter;
+    private volatile boolean interruptAlgorithm = false;
 
     // List of possible methods for neighbor finding
     private final List<neighborFindingMethod<DefaultISGSolution>> neighborFunctions = List.of(
@@ -22,7 +26,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
 //            this::swapClasses
     );
 
-    public SimulatedAnnealing(Timetable initialSolution, double initialTemperature, double minTemperature, double coolingRate, int k) {
+    public SimulatedAnnealing(InMemoryRepository data, Timetable initialSolution, double initialTemperature, double minTemperature, double coolingRate, int k) {
         this.initialTemperature = initialTemperature;
         this.minTemperature = minTemperature;
         this.coolingRate = coolingRate;
@@ -30,10 +34,10 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
         this.maxIter = (int) Math.floor(-Math.log(minTemperature / initialTemperature) / coolingRate);
 
         // Create the Objects required for the algorithm
-        DefaultISGModel model = new DefaultISGModel();
+        DefaultISGModel model = new DefaultISGModel(data);
         this.initialSolution = model.createInitialSolution();
         for(ScheduledLesson scheduledLesson : initialSolution.getScheduledLessonList()) {
-            DefaultISGVariable variable = new DefaultISGVariable(scheduledLesson.getClassUnit());
+            DefaultISGVariable variable = new DefaultISGVariable(data, scheduledLesson.getClassUnit());
             variable.setSolution(this.initialSolution);
             this.initialSolution.addUnassignedVariable(variable);
             variable.assign(new DefaultISGValue(variable, scheduledLesson));
@@ -43,16 +47,26 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
     @Override
     public Timetable execute() {
         DefaultISGSolution currentSolution = initialSolution;
+
+        if(!currentSolution.isSolutionValid()) {
+            throw new IllegalStateException("The initial solution must be valid");
+        }
+
         int currentCost = costFunction(currentSolution);
 
-        currentSolution.saveBest();
         int bestSolutionCost = currentCost;
+        currentSolution.saveBest();
 
         double temperature = initialTemperature;
 
-        iter = 0;
-        while(temperature > minTemperature) {
+        iter = new AtomicInteger(0);
+        while(temperature > minTemperature && !interruptAlgorithm) {
             for(int i=0; i < k; i++) {
+
+                if(interruptAlgorithm) {
+                    break;
+                }
+
                 DefaultISGSolution neighbor = neighborhoodFunction(currentSolution);
                 int fv = costFunction(neighbor);
 
@@ -79,12 +93,16 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
                 }
             }
 
-            iter++;
-            temperature = coolingSchedule(iter);
+            iter.incrementAndGet();
+            temperature = coolingSchedule(iter.get());
         }
 
         if(currentSolution.wasBestSaved()) {
             currentSolution.restoreBest();
+        }
+
+        if(!currentSolution.isSolutionValid()) {
+            throw new IllegalStateException("The solution is not valid after the optimization");
         }
 
         return currentSolution.solution();
@@ -111,23 +129,22 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
     }
 
     private DefaultISGSolution moveClass(DefaultISGSolution solution) {
-        DefaultISGSolution neighbor = solution.clone();
         DefaultISGVariable selectedVar;
 
         // Always choose one of the unassigned variables first
-        List<DefaultISGVariable> unassignedVars = neighbor.getUnassignedVariables();
+        List<DefaultISGVariable> unassignedVars = solution.getUnassignedVariables();
         selectedVar = RandomToolkit.random(unassignedVars);
 
         // If there are no unassigned variables an assigned one is chosen
         if(selectedVar == null) {
-            List<DefaultISGVariable> assignedVars = neighbor.getAssignedVariables();
-            if (assignedVars.isEmpty()) return neighbor;
+            List<DefaultISGVariable> assignedVars = solution.getAssignedVariables();
+            if (assignedVars.isEmpty()) return solution;
 
             selectedVar = RandomToolkit.random(assignedVars);
         }
 
         // Should be impossible if there are any variables present
-        if(selectedVar == null) return neighbor;
+        if(selectedVar == null) return solution;
 
         ISGValueList<DefaultISGValue> possibleValues = selectedVar.getValues();
 
@@ -137,6 +154,8 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
                 .filter(val -> !val.equals(currentValue))
                 .collect(Collectors.toList());
 
+        if(validValues.isEmpty()) return solution;
+
         DefaultISGValue newValue = RandomToolkit.random(validValues);
 
         // applies the mutation
@@ -144,19 +163,26 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable, ClassUn
             selectedVar.assign(newValue);
         }
 
-        return neighbor;
+        return solution;
     }
 
     @Override
     public double getProgress() {
-        return Math.min((double) iter / maxIter, 1);
+        if(iter == null) return 0;
+
+        if(interruptAlgorithm) return 100;
+
+        return Math.min((double) iter.get() / maxIter, 1);
+    }
+
+    @Override
+    public void stopAlgorithm() {
+        interruptAlgorithm = true;
     }
 
     private DefaultISGSolution swapClasses(DefaultISGSolution solution) {
-        DefaultISGSolution neighbor = solution.clone();
-
         //ScheduledLesson scheduledLesson = RandomToolkit.random(neighbor.getScheduledLessonList());
 
-        return neighbor;
+        return solution;
     }
 }

@@ -1,15 +1,15 @@
 package thesis.model.mapper;
 
-import thesis.model.domain.*;
-import thesis.model.domain.Constraint;
-import thesis.model.domain.constraints.ConstraintFactory;
+import thesis.model.domain.DataRepository;
+import thesis.model.domain.InMemoryRepository;
+import thesis.model.domain.elements.*;
+import thesis.model.domain.elements.constraints.ConstraintFactory;
 import thesis.model.persistence.EntityRepository;
 import thesis.model.persistence.entities.*;
 
 public class ModelConverter {
-    public static DataRepository convertToDataRepository(EntityRepository entityRepository) throws Exception {
-        DataRepository data = new DataRepository();
-        data.setProgramName(entityRepository.getProgramName());
+    public static InMemoryRepository convertToDataRepository(EntityRepository entityRepository) throws Exception {
+        InMemoryRepository data = new DataRepository(entityRepository.getProgramName());
 
         // Set the optimization parameters and configurations of the timetable
         ConfigurationEntity configurationEntity = entityRepository.getConfiguration();
@@ -52,7 +52,7 @@ public class ModelConverter {
                     Subpart subpart = new Subpart(subpartEntity.getName());
                     config.addSubpart(subpart);
                     for(ClassUnitEntity classUnitEntity : subpartEntity.getClassUnits()) {
-                        ClassUnit classUnit = new ClassUnit(data, classUnitEntity.getName());
+                        ClassUnit classUnit = new ClassUnit(classUnitEntity.getName());
                         subpart.addClassUnit(classUnit);
                         data.addClassUnit(classUnit);
                         for(TeacherEntity teacherEntity : classUnitEntity.getTeacherEntityClassList()) {
@@ -82,13 +82,13 @@ public class ModelConverter {
             data.addTimetable(timetable);
             for(ScheduledLessonEntity scheduledLessonEntity : timetableEntity.getScheduledLessonEntityList()) {
                 ScheduledLesson scheduledLesson = new ScheduledLesson(
-                        data,
                         scheduledLessonEntity.getClassUnit().getName(),
                         scheduledLessonEntity.getRoom().getName(),
                         scheduledLessonEntity.getDays(),
                         scheduledLessonEntity.getWeeks(),
                         scheduledLessonEntity.getStartSlot(),
                         scheduledLessonEntity.getDuration());
+                //scheduledLesson.bindModel(data);
                 timetable.addScheduledLesson(scheduledLesson);
                 for(ScheduledLessonTeacherEntity scheduledLessonTeacherEntity : scheduledLessonEntity.getScheduledLessonTeacherList()) {
                     scheduledLesson.addTeacherId(scheduledLessonTeacherEntity.getTeacher().getId());
