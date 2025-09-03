@@ -59,6 +59,11 @@ public class TimetableConfiguration implements TableDisplayable {
     }
 
     @Override
+    public String getTableName() {
+        return "Timetable Configuration";
+    }
+
+    @Override
     public List<String> getColumnNames() {
         return List.of("Nº of days", "Nº of weeks", "Slots per day", "Time Weight", "Room Weight", "Distribution Weight");
     }

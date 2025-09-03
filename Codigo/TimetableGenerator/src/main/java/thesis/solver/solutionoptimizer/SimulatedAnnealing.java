@@ -6,11 +6,12 @@ import thesis.model.domain.elements.Timetable;
 import thesis.solver.core.*;
 import thesis.utils.RandomToolkit;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
+    private final static int MAX_TRIES = 3;
     private final DefaultISGSolution initialSolution;
     private final double initialTemperature;
     private final double coolingRate;
@@ -23,7 +24,6 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
     // List of possible methods for neighbor finding
     private final List<neighborFindingMethod<DefaultISGSolution>> neighborFunctions = List.of(
             this::moveClass
-//            this::swapClasses
     );
 
     public SimulatedAnnealing(InMemoryRepository data, Timetable initialSolution, double initialTemperature, double minTemperature, double coolingRate, int k) {
@@ -34,10 +34,9 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
         this.maxIter = (int) Math.floor(-Math.log(minTemperature / initialTemperature) / coolingRate);
 
         // Create the Objects required for the algorithm
-        DefaultISGModel model = new DefaultISGModel(data);
-        this.initialSolution = model.createInitialSolution();
+        this.initialSolution = new DefaultISGSolution(data);
         for(ScheduledLesson scheduledLesson : initialSolution.getScheduledLessonList()) {
-            DefaultISGVariable variable = new DefaultISGVariable(data, scheduledLesson.getClassUnit());
+            DefaultISGVariable variable = new DefaultISGVariable(scheduledLesson.getClassUnit(), false);
             variable.setSolution(this.initialSolution);
             this.initialSolution.addUnassignedVariable(variable);
             variable.assign(new DefaultISGValue(variable, scheduledLesson));
@@ -62,7 +61,6 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
         iter = new AtomicInteger(0);
         while(temperature > minTemperature && !interruptAlgorithm) {
             for(int i=0; i < k; i++) {
-
                 if(interruptAlgorithm) {
                     break;
                 }
@@ -79,6 +77,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
 
                     // Update the best solution found if the solution is valid
                     if(currentCost < bestSolutionCost && currentSolution.isSolutionValid()) {
+                        System.out.println("Best solution updated!! - Cost: " + currentCost);
                         bestSolutionCost = currentCost;
                         currentSolution.saveBest();
                     }
@@ -117,49 +116,58 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
     }
 
     private double probabilityFunction(double currentCost, double neighborCost, double temperature) {
-        return currentCost != 0 ? Math.exp((currentCost - neighborCost) / (currentCost * temperature)) : 0;
+        return currentCost != 0 ? Math.exp((currentCost - neighborCost) / temperature) : 0;
     }
 
     private DefaultISGSolution neighborhoodFunction(DefaultISGSolution curr) {
+        DefaultISGSolution neighbor = new DefaultISGSolution(curr);
+
         if(neighborFunctions.isEmpty()) {
             throw new IllegalStateException("There aren't any neighbor finding functions!");
         }
 
-        return RandomToolkit.random(neighborFunctions).findNeighbor(curr);
+        return RandomToolkit.random(neighborFunctions).findNeighbor(neighbor);
     }
 
+    /**
+     * Move an assigned class to another time block, room or both. The neighbors generated should always be possible and complete timetables (no unassigned variables and no hard penalties violated)
+     * @param solution A copy of the current solution
+     * @return A neighbor of the current solution
+     */
     private DefaultISGSolution moveClass(DefaultISGSolution solution) {
         DefaultISGVariable selectedVar;
+        DefaultISGValue newValue;
+        int n = 0;
+        do {
+            selectedVar = RandomToolkit.random(solution.getAssignedVariables());
 
-        // Always choose one of the unassigned variables first
-        List<DefaultISGVariable> unassignedVars = solution.getUnassignedVariables();
-        selectedVar = RandomToolkit.random(unassignedVars);
+            if (selectedVar == null) {
+                throw new IllegalStateException("The assigned variables list of the solution is empty");
+            }
 
-        // If there are no unassigned variables an assigned one is chosen
-        if(selectedVar == null) {
-            List<DefaultISGVariable> assignedVars = solution.getAssignedVariables();
-            if (assignedVars.isEmpty()) return solution;
+            DefaultISGValue currentValue = selectedVar.getAssignment();
 
-            selectedVar = RandomToolkit.random(assignedVars);
-        }
+            // List of values of which there are no conflicts
+            List<DefaultISGValue> noConflictValues = new ArrayList<>();
+            for (DefaultISGValue value : selectedVar.getValues().values()) {
+                if (value.equals(currentValue)) continue;
 
-        // Should be impossible if there are any variables present
-        if(selectedVar == null) return solution;
+                // Check if there are conflicts. If there aren't any, the value is stored in the list
+                if (solution.conflictIds(value).isEmpty()) {
+                    noConflictValues.add(value);
+                }
+            }
 
-        ISGValueList<DefaultISGValue> possibleValues = selectedVar.getValues();
+            newValue = RandomToolkit.random(noConflictValues);
 
-        // Choose a different value of the current one (if possible)
-        DefaultISGValue currentValue = selectedVar.getAssignment();
-        List<DefaultISGValue> validValues = possibleValues.values().stream()
-                .filter(val -> !val.equals(currentValue))
-                .collect(Collectors.toList());
+            n++;
 
-        if(validValues.isEmpty()) return solution;
+            // If the value is null it indicates there are no possible moves for this variable.
+            // And the process is repeated until there is a variable
+        } while(newValue == null && n < MAX_TRIES);
 
-        DefaultISGValue newValue = RandomToolkit.random(validValues);
-
-        // applies the mutation
-        if (newValue != null) {
+        // Apply the mutation if the value exists
+        if(newValue != null) {
             selectedVar.assign(newValue);
         }
 
@@ -170,7 +178,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
     public double getProgress() {
         if(iter == null) return 0;
 
-        if(interruptAlgorithm) return 100;
+        if(interruptAlgorithm) return 1;
 
         return Math.min((double) iter.get() / maxIter, 1);
     }
@@ -178,11 +186,5 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
     @Override
     public void stopAlgorithm() {
         interruptAlgorithm = true;
-    }
-
-    private DefaultISGSolution swapClasses(DefaultISGSolution solution) {
-        //ScheduledLesson scheduledLesson = RandomToolkit.random(neighbor.getScheduledLessonList());
-
-        return solution;
     }
 }

@@ -4,8 +4,9 @@ import thesis.model.domain.DataRepository;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.elements.*;
 import thesis.model.domain.elements.constraints.ConstraintFactory;
-import thesis.model.domain.elements.exceptions.CheckedIllegalArgumentException;
-import thesis.model.domain.elements.exceptions.ParsingException;
+import thesis.model.exceptions.CheckedIllegalArgumentException;
+import thesis.model.exceptions.InvalidConfigurationException;
+import thesis.model.exceptions.ParsingException;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -48,12 +49,26 @@ public class ITCFormatParser implements InputFileReader {
     private static final String CLASS_TAG             = "class";
     private static final String TIME_TAG              = "time";
 
+    /**
+     * This interface was created to allow the throw of certain exceptions, which should be caught by the method callers.
+     * @param <T> Type which implements the Marker Interface. It is used to categorize the various types of classes which result from the parsing of files.
+     */
     @FunctionalInterface
     private interface XmlProcessor<T extends XmlResult> {
-        T apply(XMLEventReader reader) throws ParsingException;
+        T apply(XMLEventReader reader) throws ParsingException, InvalidConfigurationException;
     }
 
-    private <T extends XmlResult> T processXmlFile(File file, XmlProcessor<T> parser) throws ParsingException {
+    // TODO: completar comentário
+    /**
+     *
+     * @param file
+     * @param parser
+     * @return
+     * @param <T>
+     * @throws ParsingException
+     * @throws InvalidConfigurationException
+     */
+    private <T extends XmlResult> T processXmlFile(File file, XmlProcessor<T> parser) throws ParsingException, InvalidConfigurationException {
         try (FileInputStream fis = new FileInputStream(file);
              BufferedInputStream bis = new BufferedInputStream(fis)) {
 
@@ -66,6 +81,7 @@ public class ITCFormatParser implements InputFileReader {
                 try {
                     reader.close();
                 } catch (XMLStreamException ignore) {}
+                bis.close();
             }
 
         } catch (FileNotFoundException e) {
@@ -78,7 +94,7 @@ public class ITCFormatParser implements InputFileReader {
     }
 
     @Override
-    public XmlResult readXmlFile(File file) throws ParsingException {
+    public XmlResult readXmlFile(File file) throws ParsingException, InvalidConfigurationException {
         return processXmlFile(file, reader -> {
             try {
                 while (reader.hasNext()) {
@@ -101,7 +117,18 @@ public class ITCFormatParser implements InputFileReader {
         });
     }
 
-    private InMemoryRepository parseProblem(XMLEventReader reader, StartElement startElement, XMLEvent event) throws ParsingException {
+    // TODO: completar comentário
+    /**
+     *
+     * @param reader
+     * @param startElement
+     * @param event
+     * @return
+     * @throws ParsingException
+     * @throws InvalidConfigurationException
+     * @throws XMLStreamException
+     */
+    private InMemoryRepository parseProblem(XMLEventReader reader, StartElement startElement, XMLEvent event) throws ParsingException, InvalidConfigurationException, XMLStreamException {
         InMemoryRepository data = new DataRepository();
 
         String programName = getAttributeValue(startElement, "name");
@@ -177,6 +204,16 @@ public class ITCFormatParser implements InputFileReader {
         return data;
     }
 
+    // TODO: completar comentário
+    /**
+     *
+     * @param reader
+     * @param startElement
+     * @param event
+     * @return
+     * @throws ParsingException
+     * @throws XMLStreamException
+     */
     private Timetable parseSolution(XMLEventReader reader, StartElement startElement, XMLEvent event) throws ParsingException, XMLStreamException {
         Timetable timetable = new Timetable();
 
@@ -201,6 +238,7 @@ public class ITCFormatParser implements InputFileReader {
         return timetable;
     }
 
+    // TODO: completar comentário
     /**
      * All the scheduled lessons should be read before encountering the termination tag
      */
@@ -227,7 +265,6 @@ public class ITCFormatParser implements InputFileReader {
 
                         try {
                             ScheduledLesson scheduledLesson = new ScheduledLesson(classId, roomId, days, weeks, start, length);
-
                             timetable.addScheduledLesson(scheduledLesson);
                         } catch (CheckedIllegalArgumentException e) {
                             throw new ParsingException(event.getLocation(), e.getMessage());
@@ -248,6 +285,7 @@ public class ITCFormatParser implements InputFileReader {
         }
     }
 
+    // TODO: completar comentário
     /**
      * All the rooms should be read before encountering the termination tag
      */
@@ -331,6 +369,7 @@ public class ITCFormatParser implements InputFileReader {
         }
     }
 
+    // TODO: completar comentário
     /**
      * All the courses should be read before encountering the termination tag
      */
@@ -478,6 +517,7 @@ public class ITCFormatParser implements InputFileReader {
         }
     }
 
+    // TODO: completar comentário
     /**
      * All the teachers should be read before encountering the termination tag
      */
@@ -565,6 +605,7 @@ public class ITCFormatParser implements InputFileReader {
         }
     }
 
+    // TODO: completar comentário
     /**
      * All the restrictions should be read before encountering the termination tag
      */

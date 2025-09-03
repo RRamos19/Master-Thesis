@@ -1,22 +1,44 @@
 package thesis.solver.core;
 
-import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.elements.ClassUnit;
-import thesis.model.domain.elements.Constraint;
 
 import java.util.*;
 
-public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValue, DefaultISGSolution> {
-    private final InMemoryRepository dataModel;
-    private final ClassUnit classUnit;                  // Assigned ClassUnit. Value will be linked to said class
-    private DefaultISGValue iAssignment;                // Assigned value
-    private DefaultISGValue iBestAssignment;            // Best assignment value
-    private DefaultISGSolution solution;                // Solution of which the variable belongs to
-    private final Map<DefaultISGValue, Integer> removalCount = new HashMap<>();
+public class DefaultISGVariable implements ISGVariable<DefaultISGVariable, DefaultISGValue, DefaultISGSolution> {
+    private final Map<DefaultISGValue, Integer> removalCount; // Counts the number of times a certain value has been unassigned
+    private final ClassUnit classUnit;                        // Assigned ClassUnit. Value will be linked to said class
+    private DefaultISGValue iAssignment;                      // Assigned value
+    private DefaultISGValue iBestAssignment;                  // Best assignment value
+    private DefaultISGSolution solution;                      // Solution of which the variable belongs to
 
-    public DefaultISGVariable(InMemoryRepository dataModel, ClassUnit classUnit) {
-        this.dataModel = dataModel;
+    public DefaultISGVariable(ClassUnit classUnit, boolean useRemovalCount) {
         this.classUnit = classUnit;
+
+        if(useRemovalCount) {
+            this.removalCount = new HashMap<>();
+        } else {
+            this.removalCount = null;
+        }
+    }
+
+    public DefaultISGVariable(DefaultISGSolution newSol, DefaultISGVariable other) {
+        this.classUnit = other.classUnit;
+
+        if(other.iAssignment != null) {
+            this.iAssignment = new DefaultISGValue(this, other.iAssignment);
+        }
+
+        if(other.iBestAssignment != null) {
+            this.iBestAssignment = new DefaultISGValue(this, other.iBestAssignment);
+        }
+
+        if(other.removalCount != null) {
+            this.removalCount = new HashMap<>(other.removalCount);
+        } else {
+            this.removalCount = null;
+        }
+
+        this.solution = newSol;
     }
 
     @Override
@@ -36,17 +58,22 @@ public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValu
 
     @Override
     public int getRemovals(DefaultISGValue value) {
+        if(removalCount == null) {
+            throw new IllegalStateException("Cant get removals as the removal count map is null (incorrect initialization of class)");
+        }
         return removalCount.getOrDefault(value, 0);
     }
 
     @Override
     public ISGValueList<DefaultISGValue> getValues() {
-        return new ScheduledClassValueList(dataModel, this);
+        return new ScheduledClassValueList(solution.getDataModel(), this);
     }
 
     @Override
     public void unassign() {
-        removalCount.put(iAssignment, getRemovals(iAssignment) + 1);
+        if(removalCount != null) {
+            removalCount.put(iAssignment, getRemovals(iAssignment) + 1);
+        }
         iAssignment = null;
         solution.convertToUnassigned(this);
     }
@@ -57,7 +84,7 @@ public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValu
         iAssignment = value;
         solution.convertToAssigned(this);
 
-        Set<String> classConflicts = solution.getModel().conflictValues(value);
+        Set<String> classConflicts = solution.conflictIds(value);
 
         // Unassign all the conflicts
         for(String classId : classConflicts) {
@@ -93,7 +120,7 @@ public class DefaultISGVariable implements ISGVariable<ClassUnit, DefaultISGValu
 
     @Override
     public int hashCode() {
-        return Objects.hash(classUnit, iAssignment, iBestAssignment, solution);
+        return Objects.hash(classUnit, iAssignment, iBestAssignment);
     }
 
     @Override

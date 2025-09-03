@@ -1,6 +1,6 @@
 package thesis.model.domain.elements;
 
-import thesis.model.domain.elements.exceptions.CheckedIllegalArgumentException;
+import thesis.model.exceptions.CheckedIllegalArgumentException;
 
 import java.util.*;
 
@@ -37,6 +37,11 @@ public class Room implements TableDisplayable {
     public int getRoomDistance(String room2Id) {
         Integer distance = roomDistances.get(room2Id);
         return distance != null ? distance : 0;
+    }
+
+    @Override
+    public String getTableName() {
+        return "Rooms";
     }
 
     @Override

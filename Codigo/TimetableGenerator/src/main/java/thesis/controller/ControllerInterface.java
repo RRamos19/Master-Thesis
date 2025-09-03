@@ -1,10 +1,10 @@
 package thesis.controller;
 
 import thesis.model.ModelInterface;
-import thesis.model.domain.DataRepository;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.elements.TableDisplayable;
-import thesis.model.domain.elements.exceptions.ParsingException;
+import thesis.model.exceptions.InvalidConfigurationException;
+import thesis.model.exceptions.ParsingException;
 import thesis.view.ViewInterface;
 
 import java.io.File;
@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 public interface ControllerInterface {
     // Setters
@@ -25,7 +26,8 @@ public interface ControllerInterface {
 
     // Schedule solution generation methods
     void startGeneratingSolution(String programName, Integer initSolutionMaxIter, double initialTemperature, double minTemperature, double coolingRate, int k);
-    double getGenerationProgress(String programName) throws ParsingException, ExecutionException, InterruptedException;
+    double getGenerationProgress(String programName) throws InvalidConfigurationException, ExecutionException, InterruptedException;
+    void cancelGeneration(String programName);
 
     // Data import methods
     void importITCData(File file);
@@ -36,6 +38,4 @@ public interface ControllerInterface {
     void exportToCSV(String programName);
     void exportToPDF(String programName);
     void exportToPNG(String programName);
-
-    void cleanup();
 }

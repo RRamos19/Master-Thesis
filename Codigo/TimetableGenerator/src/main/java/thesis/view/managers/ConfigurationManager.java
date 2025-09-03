@@ -1,6 +1,7 @@
-package thesis.view;
+package thesis.view.managers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import thesis.view.managers.components.GeneralConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,18 +12,18 @@ public class ConfigurationManager {
 
     private ConfigurationManager() {}
 
-    public static generalConfiguration loadConfig() {
+    public static GeneralConfiguration loadConfig() {
         try {
             File file = new File(CONFIG_FILE);
             if (file.exists()) {
-                return mapper.readValue(file, generalConfiguration.class);
+                return mapper.readValue(file, GeneralConfiguration.class);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         // Default values
-        generalConfiguration defaultValues = new generalConfiguration(
+        GeneralConfiguration defaultValues = new GeneralConfiguration(
                 true,
                 null,
                 1000,
@@ -35,7 +36,7 @@ public class ConfigurationManager {
         return defaultValues;
     }
 
-    public static void saveConfig(generalConfiguration config) {
+    public static void saveConfig(GeneralConfiguration config) {
         try {
             mapper.writerWithDefaultPrettyPrinter().writeValue(new File(CONFIG_FILE), config);
         } catch (IOException e) {

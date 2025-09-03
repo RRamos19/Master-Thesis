@@ -1,12 +1,10 @@
 package thesis.solver.core;
 
-public interface ISGValue<DomainValue, Variable extends ISGVariable> {
-    DomainValue value();
-    Variable variable();
+public interface ISGValue<V extends ISGValue<V, Var>, Var extends ISGVariable<Var, V, ?>> {
+    Object value();
+    Var variable();
 
     int getRemovals();
-
-    boolean isAvailable();
 
     int toInt();
 }

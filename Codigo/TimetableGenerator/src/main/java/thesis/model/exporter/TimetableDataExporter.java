@@ -1,6 +1,5 @@
 package thesis.model.exporter;
 
-import thesis.model.domain.DataRepository;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.elements.*;
 
@@ -15,15 +14,19 @@ import java.util.List;
 import java.util.Map;
 
 public class TimetableDataExporter implements DataExporter {
-    private final String EXPORT_LOCATION_PATH = "./exports/";
+    private static final String EXPORT_LOCATION_PATH = "exports/";
+
+    private final File exportLocation;
     private final int INDENT_SIZE = 2;
     private final Charset STANDARD_CHARSET = StandardCharsets.UTF_8;
 
     public TimetableDataExporter() {
-        File exportLocation = new File(EXPORT_LOCATION_PATH);
+        exportLocation = new File(EXPORT_LOCATION_PATH);
 
         if(!exportLocation.exists()) {
-            exportLocation.mkdirs();
+            if(!exportLocation.mkdir()) {
+                throw new IllegalStateException("There was an error while creation a folder in path " + exportLocation.getAbsolutePath());
+            }
         }
     }
 
@@ -34,7 +37,7 @@ public class TimetableDataExporter implements DataExporter {
             // Checks if the file exists. If the answer is true then a
             // number between brackets is added to avoid overwriting an existing file
             String exportNumberString = solutionExportNumber >= 1 ? " (" + solutionExportNumber + ")" : "";
-            file = new File(EXPORT_LOCATION_PATH + name + exportNumberString + ".xml");
+            file = new File(exportLocation.getAbsolutePath() + '/' + name + exportNumberString + ".xml");
             solutionExportNumber++;
         } while(file.exists());
 
@@ -50,6 +53,10 @@ public class TimetableDataExporter implements DataExporter {
         try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), STANDARD_CHARSET))) {
             bw.write(content);
         }
+    }
+
+    public String getExportLocation() {
+        return exportLocation.getAbsolutePath();
     }
 
     @Override
@@ -73,7 +80,7 @@ public class TimetableDataExporter implements DataExporter {
                 stringBuilder.append(addIndentation(INDENT_SIZE, "<class id=\"")).append(classId).append("\" ");
 
                 List<Teacher> teacherList = scheduledLesson.getTeachers();
-                if(teacherList != null && !teacherList.isEmpty()) {
+                if(!teacherList.isEmpty()) {
                     for(Teacher teacher : teacherList) {
                         List<String> classList = teacherClassMap.computeIfAbsent(teacher, k -> new ArrayList<>());
 

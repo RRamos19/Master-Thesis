@@ -25,6 +25,11 @@ public class Subpart implements TableDisplayable {
     }
 
     @Override
+    public String getTableName() {
+        return "Subparts";
+    }
+
+    @Override
     public List<String> getColumnNames() {
         return List.of("Id", "Nº of Classes");
     }

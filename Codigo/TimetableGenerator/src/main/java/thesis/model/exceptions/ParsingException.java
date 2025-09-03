@@ -1,4 +1,4 @@
-package thesis.model.domain.elements.exceptions;
+package thesis.model.exceptions;
 
 import javax.xml.stream.Location;
 

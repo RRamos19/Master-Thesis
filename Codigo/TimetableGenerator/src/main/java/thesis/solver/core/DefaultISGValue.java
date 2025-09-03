@@ -4,13 +4,18 @@ import thesis.model.domain.elements.ScheduledLesson;
 
 import java.util.Objects;
 
-public class DefaultISGValue implements ISGValue<ScheduledLesson, DefaultISGVariable> {
+public class DefaultISGValue implements ISGValue<DefaultISGValue, DefaultISGVariable> {
     private final ScheduledLesson scheduledLesson;
     private final DefaultISGVariable variable;
 
     public DefaultISGValue(DefaultISGVariable variable, ScheduledLesson scheduledLesson) {
         this.variable = variable;
         this.scheduledLesson = scheduledLesson;
+    }
+
+    public DefaultISGValue(DefaultISGVariable newVar, DefaultISGValue other) {
+        this.scheduledLesson = other.scheduledLesson;
+        this.variable = newVar;
     }
 
     @Override
@@ -21,11 +26,6 @@ public class DefaultISGValue implements ISGValue<ScheduledLesson, DefaultISGVari
     @Override
     public DefaultISGVariable variable() {
         return variable;
-    }
-
-    @Override
-    public boolean isAvailable() {
-        return scheduledLesson.isAvailable();
     }
 
     @Override

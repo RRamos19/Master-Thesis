@@ -1,7 +1,7 @@
 package thesis.model.domain.elements;
 
 import thesis.model.domain.InMemoryRepository;
-import thesis.model.domain.elements.exceptions.CheckedIllegalArgumentException;
+import thesis.model.exceptions.CheckedIllegalArgumentException;
 import thesis.utils.BitToolkit;
 
 import java.util.ArrayList;
@@ -11,10 +11,10 @@ import java.util.Objects;
 
 public class ScheduledLesson {
     private final List<Integer> teacherIds = new ArrayList<>();
-    private final Time scheduledTime;
     private final String roomId;
     private final String classId;
-    private int nDays;
+    private Time scheduledTime;
+    private short nDays;
     private int nWeeks;
     private short timeWeight;
     private short roomWeight;
@@ -31,7 +31,7 @@ public class ScheduledLesson {
         this(classId, roomId, TimeFactory.create(days, weeks, startSlot, length));
     }
 
-    public ScheduledLesson(String classId, String roomId, byte days, short weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
+    public ScheduledLesson(String classId, String roomId, short days, int weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
         this(classId, roomId, TimeFactory.create(days, weeks, startSlot, length));
     }
 
@@ -153,7 +153,7 @@ public class ScheduledLesson {
                 teachers.add(teacher);
         }
 
-        return teachers.isEmpty() ? null : teachers;
+        return teachers;
     }
 
     public String getClassId() {
@@ -170,6 +170,14 @@ public class ScheduledLesson {
 
     public List<Integer> getTeacherIds() {
         return Collections.unmodifiableList(teacherIds);
+    }
+
+    public void fixTime(Time time) {
+        try {
+            this.scheduledTime = TimeFactory.create(scheduledTime.getDays(), scheduledTime.getWeeks(), scheduledTime.getStartSlot(), time.getLength());
+        } catch (CheckedIllegalArgumentException ignored) {
+            // This is impossible because the scheduledTime was already created with no error
+        }
     }
 
     public InMemoryRepository getModel() {

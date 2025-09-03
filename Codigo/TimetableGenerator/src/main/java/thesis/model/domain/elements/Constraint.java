@@ -2,7 +2,7 @@ package thesis.model.domain.elements;
 
 import java.util.*;
 
-public abstract class Constraint {
+public abstract class Constraint implements TableDisplayable {
     protected final String type;
     protected final Integer penalty;
     protected final boolean required;
@@ -78,6 +78,19 @@ public abstract class Constraint {
         return scheduledClasses;
     }
 
+    public List<Integer> computePenaltiesIfScheduled(ScheduledLesson lessonToSchedule, Timetable currentSolution) {
+        List<Integer> penalties = new ArrayList<>();
+
+        // Create a timetable with lessonToSchedule already scheduled
+        Timetable currentSolutionClone = currentSolution.clone();
+        currentSolutionClone.addScheduledLesson(lessonToSchedule);
+
+        // Get all the conflicts present in a given timetable
+        getConflictingClasses(currentSolution, (conflictIds) -> penalties.add(penalty * distribWeight));
+
+        return penalties;
+    }
+
     /**
      * Adds all the hard conflicts between classes if lessonToSchedule was scheduled to classConflicts
      * @param lessonToSchedule Lesson that is to be scheduled
@@ -124,6 +137,21 @@ public abstract class Constraint {
     }
 
     protected abstract void getConflictingClasses(Timetable solution, conflictAction action);
+
+    @Override
+    public String getTableName() {
+        return "Constraints";
+    }
+
+    @Override
+    public List<String> getColumnNames() {
+        return List.of("Type", "Penalty", "Required", "Nº of Classes");
+    }
+
+    @Override
+    public List<Object> getColumnValues() {
+        return Arrays.asList(type, penalty, required, classUnitIdList.size());
+    }
 
     @Override
     public boolean equals(Object o) {

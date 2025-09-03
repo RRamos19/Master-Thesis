@@ -5,6 +5,8 @@ import thesis.model.domain.InMemoryRepository;
 import java.io.IOException;
 
 public interface DataExporter {
+    String getExportLocation();
+
     void exportSolutionsToITC(InMemoryRepository data) throws IOException;
     void exportDataToITC(InMemoryRepository data) throws IOException;
     void exportToCSV(InMemoryRepository data) throws IOException;

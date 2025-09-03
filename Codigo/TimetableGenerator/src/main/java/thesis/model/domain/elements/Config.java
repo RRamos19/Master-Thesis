@@ -24,10 +24,17 @@ public class Config implements TableDisplayable {
         return Collections.unmodifiableList(subpartList);
     }
 
+    @Override
+    public String getTableName() {
+        return "Configs";
+    }
+
+    @Override
     public List<String> getColumnNames() {
         return List.of("Id", "Nº of Subparts");
     }
 
+    @Override
     public List<Object> getColumnValues() {
         return List.of(configId, subpartList.size());
     }
