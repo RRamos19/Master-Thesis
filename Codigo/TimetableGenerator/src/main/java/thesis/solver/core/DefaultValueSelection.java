@@ -12,10 +12,6 @@ public class DefaultValueSelection implements ValueSelection<DefaultISGValue, De
     private final float iWeightCoflicts = 1.0F;                           // weight of a conflict
     private final float iWeightValue = 1.0F;                              // weight of a value (value.toInt())
 
-    private int iTabuSize = 0;                                            // TABU-SEARCH: size of tabu-list
-    private final ArrayList<DefaultISGValue> iTabu = null;                // TABU-SEARCH: tabu-list
-    private int iTabuPos = 0;                                             // TABU-SEARCH: pointer to the last value in the tabu-list
-
     private final float iWeightWeightedCoflicts = 1.0F;                   // CBS: CBS weighted conflict weight
 
     @Override
@@ -26,28 +22,27 @@ public class DefaultValueSelection implements ValueSelection<DefaultISGValue, De
             return values.random();
         }
 
-        //values with the lowest weighted sum
+        // values with the lowest weighted sum
         List<DefaultISGValue> bestValues = null;
         double bestWeightedSum = 0;
 
-        //go through all the values
+        // go through all the values
         for(DefaultISGValue value : values.values()) {
-            if(iTabu != null && iTabu.contains(value)) {
-                //value is in the tabu-list
-                continue;
-            }
-
             if(Objects.equals(value, selectedVariable.getAssignment())) {
-                //do not pick the same value as it is currently assigned
-                //if there is a value assigned to the selected variable
+                // do not pick the same value as it is currently assigned
+                // if there is a value assigned to the selected variable
                 continue;
             }
 
             // Conflicting values
-            Collection<String> conf = solution.getModel().conflictValues(value);
+            Collection<Integer> conf = solution.conflictValues(value);
 
-            double weightedConflicts = 0.0; //CBS weighted conflicts
-            weightedConflicts = value.getRemovals();
+            int penaltySum = 0;
+            for(int penalty : conf){
+                penaltySum += penalty;
+            }
+
+            int weightedConflicts = penaltySum * value.getRemovals(); // CBS weighted conflicts
 
             // Weighted sum of several criteria
             double weightedSum = (iWeightWeightedCoflicts * weightedConflicts) +
@@ -71,15 +66,6 @@ public class DefaultValueSelection implements ValueSelection<DefaultISGValue, De
         if(selectedValue == null) {
             //no value in the bestValues -> select randomly
             selectedValue = values.random();
-        }
-
-        // In case of tabu-search, put into tabu-list
-        if(iTabu != null) {
-            if (iTabu.size() == iTabuPos)
-                iTabu.add(selectedValue);
-            else
-                iTabu.set(iTabuPos, selectedValue);
-            iTabuPos = (iTabuPos + 1) % iTabuSize;
         }
 
         return selectedValue;

@@ -1,7 +1,7 @@
 package thesis.model.domain;
 
 import thesis.model.domain.elements.*;
-import thesis.model.domain.elements.exceptions.ParsingException;
+import thesis.model.exceptions.InvalidConfigurationException;
 import thesis.model.domain.elements.TableDisplayable;
 
 import java.util.*;
@@ -11,7 +11,7 @@ public class DataRepository implements InMemoryRepository {
     private final TimetableConfiguration timetableConfiguration = new TimetableConfiguration();
     private final Map<String, Course> courseMap = new HashMap<>();
     private final Map<String, ClassUnit> classUnitMap = new HashMap<>(); // This map is used to simplify the search of specific ids
-    private final List<Constraint> constraintMap = new ArrayList<>();
+    private final List<Constraint> constraintList = new ArrayList<>();
     private final Map<String, Room> roomMap = new HashMap<>();
     private final Map<Integer, Teacher> teacherMap = new HashMap<>();
     private final List<Timetable> timetableList = new ArrayList<>();
@@ -48,7 +48,7 @@ public class DataRepository implements InMemoryRepository {
 
     @Override
     public void addConstraint(Constraint constraint) {
-        constraintMap.add(constraint);
+        constraintList.add(constraint);
     }
 
     @Override
@@ -117,12 +117,12 @@ public class DataRepository implements InMemoryRepository {
     }
 
     @Override
-    public void addTimetable(Timetable timetable) throws ParsingException {
+    public void addTimetable(Timetable timetable) throws InvalidConfigurationException {
         timetableList.add(timetable);
 
         try {
             verifyValidity();
-        } catch (ParsingException e) {
+        } catch (InvalidConfigurationException e) {
             timetableList.remove(timetable);
             throw e;
         }
@@ -134,7 +134,7 @@ public class DataRepository implements InMemoryRepository {
 
     @Override
     public List<Constraint> getConstraints() {
-        return constraintMap;
+        return constraintList;
     }
 
     @Override
@@ -170,52 +170,76 @@ public class DataRepository implements InMemoryRepository {
 
         result.add(timetableConfiguration);
 
+        result.addAll(constraintList);
+
         return result;
+    }
+
+    // TODO: completar, vai ser utilizado principalmente na conexão com a BD
+    public void merge(InMemoryRepository other) {
+        List<Course> courseList = other.getCourses();
+
+        for(Course course : courseList) {
+            String courseId = course.getCourseId();
+            courseMap.putIfAbsent(courseId, course);
+        }
     }
 
     /**
      * Verifies if all of the data present in the model is coherent
-     * @throws ParsingException If there is an error in the model an exception is thrown explaining what went wrong
+     * @throws InvalidConfigurationException If there is an error in the model an exception is thrown explaining what went wrong
      */
     @Override
-    public void verifyValidity() throws ParsingException {
+    public void verifyValidity() throws InvalidConfigurationException {
         if(timetableConfiguration.getRoomWeight() == 0 &&
             timetableConfiguration.getDistribWeight() == 0 &&
             timetableConfiguration.getTimeWeight() == 0) {
-            throw new ParsingException("ERROR: All the weights are at 0 which doesn't make sense.\nEither the configuration section was omitted or there is an error in the weights.");
+            throw new InvalidConfigurationException("Problem configuration - All the weights are at 0 which doesn't make sense.\nEither the configuration section was omitted or there is an error in the weights.");
         }
 
         if(programName == null) {
-            throw new ParsingException("ERROR: This problem must have a name");
+            throw new InvalidConfigurationException("Problem configuration - This problem must have a name");
         }
 
         for(ClassUnit cls : classUnitMap.values()) {
             for(int teacherId : cls.getTeacherIdList()) {
                 if(teacherMap.get(teacherId) == null) {
-                    throw new ParsingException("ERROR: The teacherId " + teacherId + " in class " + cls.getClassId() + " is invalid!");
+                    throw new InvalidConfigurationException("Problem configuration - The teacherId " + teacherId + " in class " + cls.getClassId() + " wasn't defined!");
                 }
             }
             for(String roomId : cls.getRoomIds()) {
                 if(roomId != null && roomMap.get(roomId) == null) {
-                    throw new ParsingException("ERROR: The roomId " + roomId + " in class " + cls.getClassId() + " is invalid!");
+                    throw new InvalidConfigurationException("Problem configuration - The roomId " + roomId + " in class " + cls.getClassId() + " wasn't defined!");
                 }
             }
         }
 
         for(Timetable timetable : timetableList) {
             for(ScheduledLesson lesson : timetable.getScheduledLessonList()) {
-                if(getClassUnit(lesson.getClassId()) == null) {
-                    throw new ParsingException("ERROR: the class id " + lesson.getClassId() + " is not present in the data repository");
+                ClassUnit cls = getClassUnit(lesson.getClassId());
+
+                if(cls == null) {
+                    throw new InvalidConfigurationException("Timetable - The class id " + lesson.getClassId() + " is not present in the data repository");
                 }
 
                 if(lesson.getRoomId() != null && getRoom(lesson.getRoomId()) == null) {
-                    throw new ParsingException("ERROR: the room id " + lesson.getRoomId() + " is not present int the data repository");
+                    throw new InvalidConfigurationException("Timetable - The room id " + lesson.getRoomId() + " is not present int the data repository");
                 }
 
                 for(int teacherId : lesson.getTeacherIds()) {
-                    if(getTeacher(teacherId) == null) {
-                        throw new ParsingException("ERROR: the teacher id " + teacherId + " is not present in the data repository");
+                    if (getTeacher(teacherId) == null) {
+                        throw new InvalidConfigurationException("Timetable - The teacher id " + teacherId + " is not present in the data repository");
                     }
+                }
+
+                // Corrects the time if this solution was read from a file
+                if(lesson.getScheduledTime().getLength() == 0) {
+                    lesson.fixTime(cls.getTimeSet().iterator().next());
+                }
+
+                // Bind the lesson to the model if this solution was read from a file
+                if(lesson.getModel() == null) {
+                    lesson.bindModel(this);
                 }
             }
         }
@@ -241,6 +265,6 @@ public class DataRepository implements InMemoryRepository {
         return String.format("nrDays = %d, slotsPerDay = %d, nrWeeks = %d", timetableConfiguration.getNumDays(), timetableConfiguration.getSlotsPerDay(), timetableConfiguration.getNumWeeks()) + "\n" +
                 String.format("timeWeight = %d, roomWeight = %d, distributionWeight = %d", timetableConfiguration.getTimeWeight(), timetableConfiguration.getRoomWeight(), timetableConfiguration.getDistribWeight()) + "\n" +
                 String.format("nrCourses = %d, nrConfigs = %d, nrSubparts = %d, nrClasses = %d, nrTeachers = %d, nrTimetables = %d, nrRooms = %d, nrDist = %d",
-                        courseMap.size(), nrConfigs, nrSubparts, nrClasses, teacherMap.size(), timetableList.size(), roomMap.size(), constraintMap.size());
+                        courseMap.size(), nrConfigs, nrSubparts, nrClasses, teacherMap.size(), timetableList.size(), roomMap.size(), constraintList.size());
     }
 }

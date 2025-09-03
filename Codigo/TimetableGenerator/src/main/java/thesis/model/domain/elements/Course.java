@@ -25,6 +25,11 @@ public class Course implements TableDisplayable {
     }
 
     @Override
+    public String getTableName() {
+        return "Courses";
+    }
+
+    @Override
     public List<String> getColumnNames() {
         return List.of("Id", "Nº of Configs");
     }

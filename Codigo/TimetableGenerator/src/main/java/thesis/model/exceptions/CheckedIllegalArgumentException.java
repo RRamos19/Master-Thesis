@@ -1,4 +1,4 @@
-package thesis.model.domain.elements.exceptions;
+package thesis.model.exceptions;
 
 /**
  * Basically the same as IllegalArgumentException but this one is checked, which makes it easier to catch

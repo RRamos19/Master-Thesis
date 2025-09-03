@@ -98,6 +98,11 @@ public class Timetable implements Cloneable, TableDisplayable, XmlResult {
     }
 
     @Override
+    public String getTableName() {
+        return "Timetables";
+    }
+
+    @Override
     public List<String> getColumnNames() {
         return List.of("Date of Creation", "Runtime (s)", "Cost", "Nº of Scheduled Lessons");
     }

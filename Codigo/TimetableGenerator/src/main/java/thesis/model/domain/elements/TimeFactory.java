@@ -1,6 +1,6 @@
 package thesis.model.domain.elements;
 
-import thesis.model.domain.elements.exceptions.CheckedIllegalArgumentException;
+import thesis.model.exceptions.CheckedIllegalArgumentException;
 
 import java.lang.ref.SoftReference;
 import java.util.Map;

@@ -14,13 +14,11 @@ import java.util.List;
  */
 public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetable> {
     private final InMemoryRepository dataModel;
-    private final DefaultISGModel model;
     private final ValueSelection<DefaultISGValue, DefaultISGSolution, DefaultISGVariable> valueSelection = new DefaultValueSelection();
     private final DefaultISGSolutionComparator defaultISGSolutionComparator = new DefaultISGSolutionComparator();
     private final List<ClassUnit> unscheduled;
     private volatile boolean interruptAlgorithm = false;
     private DefaultISGSolution solution;
-
 
     public MullerSolutionGenerator(InMemoryRepository data) {
         this.unscheduled = new ArrayList<>();
@@ -36,16 +34,15 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
         }
 
         this.dataModel = data;
-        this.model = new DefaultISGModel(data);
     }
 
     public Timetable generate(Integer maxIterations) {
-        solution = model.createInitialSolution();
+        solution = new DefaultISGSolution(dataModel);
 
         // For each unscheduled class a variable is made which represents the class
         // Each variable is then assigned a value which represents the Room, Time and Teachers combination
         for(ClassUnit cls : unscheduled) {
-            DefaultISGVariable var = new DefaultISGVariable(dataModel, cls);
+            DefaultISGVariable var = new DefaultISGVariable(cls, true);
             solution.addUnassignedVariable(var);
             var.setSolution(solution);
         }

@@ -1,7 +1,8 @@
 package thesis.model.domain;
 
 import thesis.model.domain.elements.*;
-import thesis.model.domain.elements.exceptions.ParsingException;
+import thesis.model.exceptions.InvalidConfigurationException;
+import thesis.model.exceptions.ParsingException;
 import thesis.model.parser.XmlResult;
 
 import java.util.List;
@@ -36,10 +37,12 @@ public interface InMemoryRepository extends XmlResult {
     void addConstraint(Constraint constraint);
     List<Constraint> getConstraints();
 
-    void addTimetable(Timetable timetable) throws ParsingException;
+    void addTimetable(Timetable timetable) throws InvalidConfigurationException;
     List<Timetable> getTimetableList();
 
     List<TableDisplayable> getAllDisplayableData();
 
-    void verifyValidity() throws ParsingException;
+    void merge(InMemoryRepository other);
+
+    void verifyValidity() throws InvalidConfigurationException;
 }

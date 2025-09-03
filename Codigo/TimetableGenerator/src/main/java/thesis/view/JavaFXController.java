@@ -2,34 +2,32 @@ package thesis.view;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
-import javafx.stage.FileChooser;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.Window;
+import javafx.stage.*;
 import javafx.util.Duration;
 import thesis.controller.ControllerInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.elements.ScheduledLesson;
-import thesis.model.domain.elements.Teacher;
 import thesis.model.domain.elements.Timetable;
 import thesis.model.domain.elements.TableDisplayable;
 import thesis.utils.DoubleToolkit;
+import thesis.view.managers.ConfigurationManager;
+import thesis.view.managers.ProgressBarManager;
+import thesis.view.managers.components.GeneralConfiguration;
+import thesis.view.managers.WindowManager;
+import thesis.view.utils.AppIcons;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class JavaFXController implements ViewInterface {
     private static final List<String> DAYS_OF_WEEK = List.of("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
@@ -37,14 +35,13 @@ public class JavaFXController implements ViewInterface {
     private static final int DEFAULT_WIDTH = 800;
     private static final int DEFAULT_HEIGHT = 600;
 
-    private final Map<String, ProgressBar> progressBarMap = new HashMap<>();      // ProgramName : ProgressBar
-    private final Map<String, Timeline> activeTimelines = new HashMap<>();        // ProgramName : Timeline
-
+    private WindowManager windowManager;
     private ControllerInterface controller;
     private boolean isConnected = false;
     private volatile String chosenProgram;
     private Window primaryWindow;
-    private generalConfiguration generalConfiguration;
+    private GeneralConfiguration generalConfiguration;
+    private ProgressBarManager progressBarManager;
 
     @FXML
     private TextField ipField;
@@ -76,11 +73,11 @@ public class JavaFXController implements ViewInterface {
     private void connectEvent() {
         if (!isConnected) {
             if(ipField.getText().isEmpty()) {
-                showErrorMessage("The ip field should not be empty");
+                showErrorAlert("The ip field should not be empty");
                 return;
             }
             if(portField.getText().isEmpty()) {
-                showErrorMessage("The port field should not be empty");
+                showErrorAlert("The port field should not be empty");
                 return;
             }
 
@@ -153,51 +150,75 @@ public class JavaFXController implements ViewInterface {
 
     @FXML
     private void configMenuEvent() {
+        windowManager.getConfigWindow(generalConfiguration).show();
+    }
 
+    private boolean checkBeforeExportation() {
+        if(chosenProgram == null) {
+            showErrorAlert("A program must be chosen first!");
+            return false;
+        }
+
+        return true;
     }
 
     @FXML
     private void exportDataITCEvent() {
+        if(!checkBeforeExportation()) {
+            return;
+        }
+
         controller.exportDataToITC(chosenProgram);
     }
 
     @FXML
     private void exportDataCSVEvent() {
+        if(!checkBeforeExportation()) {
+            return;
+        }
+
         controller.exportToCSV(chosenProgram);
     }
 
     @FXML
     private void exportSolutionsITCEvent() {
+        if(!checkBeforeExportation()) {
+            return;
+        }
+
         controller.exportSolutionsToITC(chosenProgram);
     }
 
     @FXML
     private void exportSolutionsPNGEvent() {
+        if(!checkBeforeExportation()) {
+            return;
+        }
+
         controller.exportToPNG(chosenProgram);
     }
 
     @FXML
     private void exportSolutionsPDFEvent() {
+        if(!checkBeforeExportation()) {
+            return;
+        }
+
         controller.exportToPDF(chosenProgram);
-    }
-
-    @FXML
-    private void aboutMenuEvent() {
-
     }
 
     @FXML
     private void generateSolutionEvent() {
         if(chosenProgram == null) {
-            showErrorMessage("A program must be chosen before starting the generation of a solution!");
+            showErrorAlert("A program must be chosen before starting the generation of a solution!");
             return;
         }
-        if(activeTimelines.get(chosenProgram) != null) {
-            showErrorMessage("There is a solution generation already in progress!");
+        if(progressBarManager.exists(chosenProgram)) {
+            showErrorAlert("There is a solution generation already in progress!");
             return;
         }
 
-        Node parent = insertProgressBar(chosenProgram);
+        progressBarManager.insertProgressBar(chosenProgram);
 
         controller.startGeneratingSolution(chosenProgram,
                 generalConfiguration.getInitialSolutionMaxIterations(),
@@ -208,75 +229,32 @@ public class JavaFXController implements ViewInterface {
 
         String generatingSolutionProgram = chosenProgram;
 
-        Timeline progressBarUpdater = new Timeline(new KeyFrame(Duration.seconds(PROGRESSBAR_UPDATE_SECONDS), e -> progressBarUpdate(e, parent, generatingSolutionProgram)));
-        progressBarUpdater.setCycleCount(Timeline.INDEFINITE);
-        progressBarUpdater.play();
-        activeTimelines.put(generatingSolutionProgram, progressBarUpdater);
+        KeyFrame keyframe = new KeyFrame(Duration.seconds(PROGRESSBAR_UPDATE_SECONDS), e -> progressBarUpdate(e, generatingSolutionProgram));
+        progressBarManager.startTimeline(generatingSolutionProgram, Timeline.INDEFINITE, keyframe);
     }
 
-    private Node insertProgressBar(String programName) {
-        Label taskName = new Label(programName + " :");
-        ProgressBar bar = new ProgressBar(0);
-        bar.setMaxWidth(Double.MAX_VALUE);
-        Label progressLabel = new Label("0%");
-
-        progressLabel.textProperty().bind(
-                bar.progressProperty().multiply(100).asString("%.1f%%")
-        );
-
-        StackPane progressPane = new StackPane(bar, progressLabel);
-        StackPane.setAlignment(bar, Pos.CENTER_LEFT);
-        StackPane.setAlignment(progressLabel, Pos.CENTER);
-
-        HBox taskBox = new HBox(5, taskName, progressPane);
-        HBox.setHgrow(progressPane, Priority.ALWAYS);
-
-        progressContainer.getChildren().add(taskBox);
-
-        progressBarMap.put(programName, bar);
-
-        return taskBox;
-    }
-
-    private void progressBarUpdate(ActionEvent ignoredEvent, Node progressBarParent, String generatingSolutionProgram) {
-        double progress = 0;
+    private void progressBarUpdate(ActionEvent ignoredEvent, String generatingSolutionProgram) {
+        double progress;
 
         try {
             progress = controller.getGenerationProgress(generatingSolutionProgram);
         } catch (Exception e) {
-            stopAndClearTimeline(activeTimelines.get(generatingSolutionProgram));
-            activeTimelines.remove(generatingSolutionProgram);
+            progressBarManager.stopAndClearTimeline(generatingSolutionProgram);
+            controller.cancelGeneration(generatingSolutionProgram);
+            return;
         }
 
-        ProgressBar progressBar = progressBarMap.get(generatingSolutionProgram);
-
-        // Should never happen
-        if(progressBar == null) {
-            throw new RuntimeException("The activity should have a progress bar but it doesn't");
-        }
-
-        // A verification is made to avoid a progress bar the goes back and forth (which may happen
-        // because the progress of the initial solution is based on the unscheduled classes which can
-        // increase or decrease depending on the situation)
-        if(progressBar.getProgress() < progress) {
-            progressBar.setProgress(progress);
-        }
+        progressBarManager.setProgress(generatingSolutionProgram, progress);
 
         if (DoubleToolkit.isEqual(progress, 1)) {
-            Timeline progressBarUpdater = activeTimelines.get(generatingSolutionProgram);
-
-            stopAndClearTimeline(progressBarUpdater);
-            activeTimelines.remove(generatingSolutionProgram);
-
-            progressBarMap.remove(generatingSolutionProgram);
-            progressContainer.getChildren().remove(progressBarParent);
+            progressBarManager.stopAndClearTimeline(generatingSolutionProgram);
 
             // If the chosenProgram is the same as the program of the solution, the treeView must be updated
             if(generatingSolutionProgram.equals(chosenProgram)) {
-                populateTreeView(chosenProgram);
+                populateTreeView(generatingSolutionProgram);
             }
 
-            showInformationMessage("The solution for the program " + generatingSolutionProgram + " has been created!\nPerform a double click on it to visualize!");
+            showInformationAlert("The solution for the program " + generatingSolutionProgram + " has been created!\nPerform a double click on it to visualize!");
         }
     }
 
@@ -305,248 +283,347 @@ public class JavaFXController implements ViewInterface {
         treeView.setRoot(root);
     }
 
-    public void showTutorial() {
-
+    @FXML
+    public void showTutorialMenuEvent() {
+        windowManager.getTutorialWindow().show();
     }
 
-    public void showInformationMessage(String message) {
+    @Override
+    public void showInformationAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION, message);
+        alert.initStyle(StageStyle.DECORATED);
+        alert.initOwner(primaryWindow);
+        alert.initModality(Modality.WINDOW_MODAL);
 
         alert.show();
     }
 
-    public void showErrorMessage(String message) {
+    @Override
+    public void showErrorAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR, message);
+        alert.initStyle(StageStyle.DECORATED);
+        alert.initOwner(primaryWindow);
+        alert.initModality(Modality.WINDOW_MODAL);
 
         alert.show();
+    }
+
+    @Override
+    public boolean showConfirmationAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message);
+        alert.initStyle(StageStyle.DECORATED);
+        alert.initOwner(primaryWindow);
+        alert.initModality(Modality.WINDOW_MODAL);
+
+        alert.getButtonTypes().clear();
+        alert.getButtonTypes().add(ButtonType.YES);
+        alert.getButtonTypes().add(ButtonType.NO);
+
+        Optional<ButtonType> optionalResponse = alert.showAndWait();
+
+        if(optionalResponse.isPresent()) {
+            ButtonType response = optionalResponse.get();
+
+            return response.equals(ButtonType.YES);
+        }
+
+        return false;
     }
 
     public void showTimetable(InMemoryRepository data, Timetable timetable) {
         Stage stage = new Stage();
-        stage.setTitle(timetable.getProgramName() + " timetable");
+        stage.getIcons().addAll(AppIcons.getAppIcons());
+        stage.setTitle(timetable.getProgramName());
 
-        if(primaryWindow != null) {
+        if (primaryWindow != null) {
             stage.initOwner(primaryWindow);
             stage.initModality(Modality.WINDOW_MODAL);
         }
 
-        GridPane gridPane = new GridPane();
-        gridPane.setAlignment(Pos.CENTER);
-        gridPane.setPadding(new Insets(10));
-        //gridPane.setGridLinesVisible(true);
+        int numSlots = data.getTimetableConfiguration().getSlotsPerDay();
+        int minutesPerSlot = 24 * 60 / numSlots;
+        int minHour = generalConfiguration.getMinHour();
+        int maxHour = generalConfiguration.getMaxHour();
 
-        Map<String, List<TimetableNodeGridLocation>> nodesToAdd = new HashMap<>(); // day + startSlot : List<TimetableNodeGridLocation>
-        int maxSlot = 0;
-        int minSlot = Integer.MAX_VALUE;
-        // maxDay is reduced by 1 because the count starts with 0
-        int maxDay = data.getTimetableConfiguration().getNumDays() - 1;
+        // slots per hour and min visible slot index
+        int slotsPerHour = 60 / minutesPerSlot;
+        int minSlot = minHour * slotsPerHour;
+        int visibleSlots = (maxHour - minHour) * slotsPerHour;
 
-        Map<Integer, Integer> maxColSpan = new HashMap<>();
+        final double TIME_COL_WIDTH = 120;
+        final double DAY_SUBCOL_WIDTH = 140;
+        final double ROW_HEIGHT = 40;
 
-        for(ScheduledLesson scheduledLesson : timetable.getScheduledLessonList()) {
-            String days = scheduledLesson.getDaysBinaryString();
-            for(int i=0; i< days.length(); i++) {
-                if(days.charAt(i) == '1') {
-                    int startSlot = scheduledLesson.getStartSlot();
-                    int endSlot = scheduledLesson.getEndSlot();
+        // Group weeks by unique pattern of active lessons
+        int maxWeeks = data.getTimetableConfiguration().getNumWeeks();
 
-                    if(startSlot < minSlot) {
-                        minSlot = startSlot;
-                    }
-                    if(endSlot > maxSlot) {
-                        maxSlot = endSlot;
-                    }
+        // key -> list of week numbers
+        LinkedHashMap<String, List<Integer>> weekGroups = new LinkedHashMap<>();
+        // key -> list of ScheduledLesson objects for that key
+        Map<String, List<ScheduledLesson>> lessonsByKey = new HashMap<>();
 
-                    List<TimetableNodeGridLocation> gridLocationArrayList = nodesToAdd.computeIfAbsent("" + i + startSlot, (s) -> new ArrayList<>());
+        for (int week = 0; week < maxWeeks; week++) {
+            final int finalWeek = week;
+            // collect active lessons this week
+            List<ScheduledLesson> active = timetable.getScheduledLessonList().stream()
+                    .filter(l -> {
+                        String weeks = l.getWeeksBinaryString();
+                        return finalWeek < weeks.length() && weeks.charAt(finalWeek) == '1';
+                    })
+                    .collect(Collectors.toList());
 
-                    StringBuilder nodeString = new StringBuilder(scheduledLesson.getClassId() + "\n[" + data.getProgramName() + "]\n");
-                    boolean addedTeacher = false;
+            // create a key to represent all lessons
+            List<String> ids = active.stream()
+                    .map(ScheduledLesson::getClassId)
+                    .sorted()
+                    .collect(Collectors.toList());
 
-                    List<Teacher> teacherList = scheduledLesson.getTeachers();
-                    if(teacherList != null) {
-                        nodeString.append('[');
-                        for (Teacher teacher : scheduledLesson.getTeachers()) {
-                            if (addedTeacher) {
-                                nodeString.append("; ");
-                            }
-                            nodeString.append('(').append(teacher.getName()).append(')');
+            String key = String.join("|", ids); // key creation
 
-                            addedTeacher = true;
-                        }
-                        nodeString.append("]\n");
-                    }
+            if (weekGroups.containsKey(key)) {
+                weekGroups.get(key).add(week + 1);
+            } else {
+                weekGroups.put(key, new ArrayList<>(List.of(week + 1)));
+                lessonsByKey.put(key, active);
+            }
+        }
 
-                    nodeString.append('[').append(scheduledLesson.getRoomId()).append(']');
+        // TabPane: one tab per unique week pattern
+        TabPane tabPane = new TabPane();
+        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
-                    Label nodeLabel = new Label(nodeString.toString());
-                    nodeLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-                    nodeLabel.setPadding(new Insets(1, 5, 1, 5));
-                    // Apply a border to the label
-                    nodeLabel.setStyle("-fx-border-color: black; -fx-border-width: 1;");
+        for (Map.Entry<String, List<Integer>> entry : weekGroups.entrySet()) {
+            String key = entry.getKey();
+            List<Integer> weeks = entry.getValue();
 
-                    // If the list is not empty then a sub column is needed to correctly represent the node
-                    int colIdx = gridLocationArrayList.size();
-                    gridLocationArrayList.add(new TimetableNodeGridLocation(nodeLabel, i, startSlot, scheduledLesson.getLength(), colIdx));
+            List<ScheduledLesson> lessonsForPattern = lessonsByKey.get(key);
+            if(lessonsForPattern == null) continue;
 
-                    int colSpan = maxColSpan.getOrDefault(i, 1);
-                    if(colIdx+1 > colSpan) {
-                        maxColSpan.put(i, colIdx+1);
-                    }
+            GridPane grid = buildGridForLessons(
+                    lessonsForPattern,
+                    data,
+                    minutesPerSlot,
+                    minSlot,
+                    visibleSlots,
+                    TIME_COL_WIDTH,
+                    DAY_SUBCOL_WIDTH,
+                    ROW_HEIGHT
+            );
+
+            // Tab title shows the weeks that share this timetable
+            String tabTitle = "Weeks " + weeks.toString();
+            Tab tab = new Tab(tabTitle, new ScrollPane(grid));
+            tabPane.getTabs().add(tab);
+        }
+
+        Scene scene = new Scene(tabPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    /**
+     * Build the GridPane for a specific set of lessons
+     */
+    private GridPane buildGridForLessons(
+            List<ScheduledLesson> lessons,
+            InMemoryRepository data,
+            int minutesPerSlot,
+            int minSlotOffset,
+            int visibleSlots,
+            double timeColWidth,
+            double daySubColWidth,
+            double rowHeight
+    ) {
+        GridPane grid = new GridPane();
+        grid.setGridLinesVisible(false);
+
+        int days = data.getTimetableConfiguration().getNumDays();
+
+        // Group lessons by day
+        Map<Integer, List<ScheduledLesson>> lessonsByDay = new HashMap<>();
+        for (ScheduledLesson l : lessons) {
+            String mask = l.getDaysBinaryString();
+            for (int d = 0; d < mask.length() && d < days; d++) {
+                if (mask.charAt(d) == '1') {
+                    lessonsByDay.computeIfAbsent(d, k -> new ArrayList<>()).add(l);
                 }
             }
         }
 
-        Map<Integer, Integer> dayOffsets = new HashMap<>();
-        int startColIdx = 1;
+        // For each day compute sub-column assignment (interval partitioning / greedy coloring)
+        Map<ScheduledLesson, Integer> assignment = new IdentityHashMap<>();
+        int[] subColsPerDay = new int[days];
+        for (int d = 0; d < days; d++) {
+            List<ScheduledLesson> dayList = lessonsByDay.getOrDefault(d, List.of())
+                    .stream()
+                    .sorted(Comparator.comparingInt(ScheduledLesson::getStartSlot))
+                    .collect(Collectors.toList());
 
-        for (int day = 0; day < maxDay; day++) {
-            dayOffsets.put(day, startColIdx);
-            startColIdx += maxColSpan.getOrDefault(day, 1);
-
-            // Set all the columns to the same width
-            int colSpan = maxColSpan.getOrDefault(day, 1);
-            for (int c = 0; c < colSpan; c++) {
-                ColumnConstraints cc = new ColumnConstraints();
-                cc.setPercentWidth(100.0 / colSpan);
-                gridPane.getColumnConstraints().add(cc);
+            List<Integer> lastEnd = new ArrayList<>(); // end slot for each subcol
+            for (ScheduledLesson l : dayList) {
+                int start = l.getStartSlot();
+                int end = start + l.getLength();
+                int found = -1;
+                for (int sc = 0; sc < lastEnd.size(); sc++) {
+                    if (start >= lastEnd.get(sc)) {
+                        found = sc;
+                        lastEnd.set(sc, end);
+                        break;
+                    }
+                }
+                if (found == -1) {
+                    found = lastEnd.size();
+                    lastEnd.add(end);
+                }
+                assignment.put(l, found);
             }
+            subColsPerDay[d] = Math.max(1, lastEnd.size());
         }
 
-        // Add the boxes into the GridPane
-        for(List<TimetableNodeGridLocation> nodeData : nodesToAdd.values()) {
-            for(TimetableNodeGridLocation nodeGridLocation : nodeData) {
-                int baseCol = dayOffsets.get(nodeGridLocation.getDay());
-                int col = baseCol + nodeGridLocation.getSubColumn();
-                // A value of 1 is added to the column index because column 0 is reserved for the time of the lessons
-                // The same goes for the rows but for days of week
-                StackPane nodePane = new StackPane(nodeGridLocation.getNode());
-                nodePane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-                nodePane.setStyle("-fx-border-color: black; -fx-border-width: 1;");
+        // Build column constraints: col 0 = time, then sum(subColsPerDay) subcolumns
+        ColumnConstraints timeCol = new ColumnConstraints();
+        timeCol.setMinWidth(timeColWidth);
+        timeCol.setPrefWidth(timeColWidth);
+        timeCol.setHgrow(Priority.NEVER);
+        grid.getColumnConstraints().add(timeCol);
 
-                gridPane.add(nodePane, col, nodeGridLocation.getStart() + 1, 1, nodeGridLocation.getDuration());
-            }
+        int totalSubCols = Arrays.stream(subColsPerDay).sum();
+        for (int i = 0; i < totalSubCols; i++) {
+            ColumnConstraints cc = new ColumnConstraints();
+            cc.setMinWidth(daySubColWidth);
+            cc.setPrefWidth(daySubColWidth);
+            cc.setHgrow(Priority.ALWAYS);
+            grid.getColumnConstraints().add(cc);
         }
 
-        int numSlots = data.getTimetableConfiguration().getSlotsPerDay();
-        int minutesPerSlot = 24*60/numSlots;
+        // Number of Rows = header + visibleSlots
+        RowConstraints headerRow = new RowConstraints();
+        headerRow.setMinHeight(rowHeight);
+        headerRow.setPrefHeight(rowHeight);
+        headerRow.setMaxHeight(rowHeight);
+        grid.getRowConstraints().add(headerRow);
+        for (int r = 0; r < visibleSlots; r++) {
+            RowConstraints rc = new RowConstraints();
+            rc.setMinHeight(rowHeight);
+            rc.setPrefHeight(rowHeight);
+            rc.setMaxHeight(rowHeight);
+            grid.getRowConstraints().add(rc);
+        }
 
-        int minHourInSlots = generalConfiguration.getMinHour() * 60 / minutesPerSlot;
-        int maxHourInSlots = generalConfiguration.getMaxHour() * 60 / minutesPerSlot;
+        // Header: one label per day spanning its sub-columns in width
+        int colCursor = 1;
+        for (int d = 0; d < days; d++) {
+            int span = subColsPerDay[d];
+            Label dayLabel = new Label(DAYS_OF_WEEK.get(d));
+            dayLabel.setAlignment(Pos.CENTER);
+            dayLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            dayLabel.setStyle(
+                    "-fx-font-weight: bold;" +
+                    "-fx-border-color: black;" +
+                    "-fx-border-width: 1;" +
+                    "-fx-background-color: #f0f0f0;" // Very light gray
+            );
 
-        // These calculations allow the timetable to expand until either the first or last lessons appear
-        // Example: If the min hour in the configuration was 8h but, for some reason, there was a lesson
-        // scheduled at 6h. The min hour of the timetable will be 6h.
-        minSlot = Math.min(minSlot, minHourInSlots);
-        maxSlot = Math.max(maxSlot, maxHourInSlots);
+            grid.add(dayLabel, colCursor, 0, span, 1);
+            GridPane.setHgrow(dayLabel, Priority.ALWAYS);
+            colCursor += span;
+        }
 
-        // Add the time slots on the first column
-        int timeblock_index = 1;
-        for(int i = 0; i < numSlots; i++) {
-            int startMin = minutesPerSlot*i;
+        // Time column + empty cells (to show a border in each cell)
+        for (int s = 0; s < visibleSlots; s++) {
+            int globalSlot = minSlotOffset + s;
+            int startMin = globalSlot * minutesPerSlot;
+            int endMin = (globalSlot + 1) * minutesPerSlot;
             int startHour = startMin / 60;
-
-            if(i < minSlot) {
-                continue;
-            }
-
-            int endMin = startMin + minutesPerSlot;
             int endHour = endMin / 60;
 
-            if(i > maxSlot) {
-                System.out.println("This should never happen!");
-                break;
+            Label timeLabel = new Label(String.format("%02d:%02d - %02d:%02d", startHour, startMin % 60, endHour, endMin % 60));
+            timeLabel.setAlignment(Pos.CENTER);
+            timeLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            timeLabel.setStyle("-fx-border-color: black; -fx-border-width: 1; -fx-background-color: #fafafa;");
+            grid.add(timeLabel, 0, s + 1);
+
+            // add empty panes for each sub-column so borders appear
+            for (int c = 1; c <= totalSubCols; c++) {
+                Pane cell = new Pane();
+                cell.setStyle("-fx-border-color: lightgray; -fx-border-width: 1;");
+                grid.add(cell, c, s + 1);
             }
-
-            startMin = startMin % 60;
-            endMin = endMin % 60;
-
-            String timeString = String.format("%02d:%02d - %02d:%02d", startHour, startMin, endHour, endMin);
-
-            Label timeLabel = new Label(timeString);
-
-            StackPane timePane = new StackPane(timeLabel);
-            timePane.setStyle("-fx-border-color: black; -fx-border-width: 1;");
-            StackPane.setAlignment(timeLabel, Pos.CENTER);
-            StackPane.setMargin(timeLabel, new Insets(1, 5, 1, 5));
-
-            gridPane.add(timePane, 0, timeblock_index++);
         }
 
-        // Add the days of week on the first row
-        for(int day = 0; day < maxDay; day++) {
-            int colSpan = maxColSpan.getOrDefault(day, 1);
-            int baseCol = dayOffsets.get(day);
+        // Place lessons into assigned sub-column
+        for (ScheduledLesson l : lessons) {
+            String mask = l.getDaysBinaryString();
+            if (mask == null) continue;
+            for (int d = 0; d < Math.min(mask.length(), days); d++) {
+                if (mask.charAt(d) != '1') continue;
 
-            Label dayOfWeekLabel = new Label(DAYS_OF_WEEK.get(day));
+                int subColIndex = assignment.getOrDefault(l, 0);
+                // compute column base for day d
+                int dayColStart = 1; // after time column
+                for (int dd = 0; dd < d; dd++) dayColStart += subColsPerDay[dd];
 
-            StackPane dayOfWeekPane = new StackPane(dayOfWeekLabel);
-            dayOfWeekPane.setStyle("-fx-border-color: black; -fx-border-width: 1;");
-            StackPane.setAlignment(dayOfWeekLabel, Pos.CENTER);
-            StackPane.setMargin(dayOfWeekPane, new Insets(1, 5, 1, 5));
+                int targetCol = dayColStart + subColIndex;
 
-            gridPane.add(dayOfWeekPane, baseCol, 0, colSpan, 1);
+                int startSlot = l.getStartSlot();
+                int duration = l.getLength();
+
+                // clip to visible window
+                if (startSlot + duration <= minSlotOffset) continue; // ends before visible window
+                if (startSlot >= minSlotOffset + visibleSlots) continue; // starts after visible window
+
+                int relativeStart = Math.max(0, startSlot - minSlotOffset);
+                int visibleSpan = Math.min(duration, (minSlotOffset + visibleSlots) - startSlot);
+
+                List<String> teacherList = new ArrayList<>();
+                l.getTeachers().forEach((t) -> teacherList.add(t.getName()));
+
+                Label idLabel = new Label(l.getClassId());
+                Label progLabel = new Label("[" + data.getProgramName() + "]");
+                Label teachersLabel = teacherList.isEmpty() ? null : new Label("[(" + String.join("); ", teacherList) + ")]");
+                Label roomLabel = l.getRoomId() != null ? new Label(l.getRoomId()) : null;
+
+                VBox box = new VBox(2);
+                box.getChildren().add(idLabel);
+                box.getChildren().add(progLabel);
+                if(teachersLabel != null) box.getChildren().add(teachersLabel);
+                if(roomLabel != null) box.getChildren().add(roomLabel);
+
+                box.setAlignment(Pos.CENTER);
+                box.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+                box.setStyle("-fx-background-color: lightblue; -fx-border-color: darkblue; -fx-border-width: 1;");
+                GridPane.setHgrow(box, Priority.ALWAYS);
+                GridPane.setVgrow(box, Priority.ALWAYS);
+
+                grid.add(box, targetCol, relativeStart + 1, 1, visibleSpan);
+            }
         }
 
-        ScrollPane scrollPane = new ScrollPane(gridPane);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setFitToHeight(true);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        // set preferred size so ScrollPane will show scrollbars properly
+        double prefWidth = timeColWidth + totalSubCols * daySubColWidth;
+        double prefHeight = (visibleSlots + 1) * rowHeight;
+        grid.setPrefSize(prefWidth, prefHeight);
+        grid.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
-        stage.setScene(new Scene(scrollPane, DEFAULT_WIDTH, DEFAULT_HEIGHT));
-        stage.show();
+        return grid;
     }
 
     @Override
     public void showExceptionMessage(Exception e) {
-        Stage errorStage = new Stage();
-        errorStage.initModality(Modality.APPLICATION_MODAL);
-        errorStage.setTitle("Error message");
+        windowManager.getExceptionMessage(e).show();
+    }
 
-        // Primary message to be displayed
-        Label exceptionMessage = new Label(e.getMessage());
-        exceptionMessage.setWrapText(true);
+    @Override
+    public void setPrimaryWindow(Window primaryWindow) {
+        this.primaryWindow = primaryWindow;
 
-        // Stacktrace to give more insight of the error
-        TextArea stacktraceMessage = new TextArea(Arrays.toString(e.getStackTrace()));
-        stacktraceMessage.setEditable(false);
-        stacktraceMessage.setWrapText(true);
-
-        // Area where the stacktrace will be displayed (starts hidden)
-        TitledPane titledPane = new TitledPane("Show stracktrace", stacktraceMessage);
-        titledPane.setExpanded(false);
-        titledPane.setAnimated(false);
-        titledPane.expandedProperty().addListener((obs, oldV, newV) ->
-                Platform.runLater(errorStage::sizeToScene)
-        );
-
-        // Close button
-        Button closeBtn = new Button("Close");
-        closeBtn.setOnAction(event -> errorStage.close());
-        HBox hbox = new HBox(closeBtn);
-        hbox.setAlignment(Pos.CENTER_RIGHT);
-
-        VBox box = new VBox(10, exceptionMessage, titledPane, hbox);
-        box.setPadding(new Insets(10));
-        box.setAlignment(Pos.CENTER_LEFT);
-
-        VBox.setVgrow(exceptionMessage, Priority.NEVER);
-        VBox.setVgrow(titledPane, Priority.NEVER);
-        VBox.setVgrow(hbox, Priority.NEVER);
-
-        errorStage.setScene(new Scene(box));
-        errorStage.show();
+        primaryWindow.setWidth(DEFAULT_WIDTH);
+        primaryWindow.setHeight(DEFAULT_HEIGHT);
     }
 
     private void clearTableView() {
         tableView.getColumns().clear();
         tableView.getItems().clear();
-    }
-
-    public void setPrimaryWindow(Window primaryWindow) {
-        this.primaryWindow = primaryWindow;
-
-        primaryWindow.sizeToScene();
     }
 
     // Runs at the start of the graphical application
@@ -603,18 +680,23 @@ public class JavaFXController implements ViewInterface {
             }
         });
 
+        windowManager = new WindowManager(primaryWindow);
         generalConfiguration = ConfigurationManager.loadConfig();
+        progressBarManager = new ProgressBarManager(progressContainer);
 
         if(generalConfiguration.getShowTutorial()) {
-            showTutorial();
-            generalConfiguration.tutorialShown();
+            showTutorialMenuEvent();
+            generalConfiguration.setTutorialShown();
         }
     }
 
-    // Runs at the end of the graphical application
+    @Override
     public void cleanup() {
-        System.out.println("Closing application...");
-        activeTimelines.forEach((p, t) -> stopAndClearTimeline(t));
-        controller.cleanup();
+        // Only update the config file if the configuration was changed
+        if(generalConfiguration.getUpdateConfigFile()) {
+            ConfigurationManager.saveConfig(generalConfiguration);
+        }
+
+        progressBarManager.stopAndClearTimelines();
     }
 }

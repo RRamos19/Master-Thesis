@@ -3,7 +3,9 @@ package thesis.controller;
 import thesis.model.ModelInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.elements.TableDisplayable;
-import thesis.model.domain.elements.exceptions.ParsingException;
+import thesis.model.domain.elements.Timetable;
+import thesis.model.exceptions.InvalidConfigurationException;
+import thesis.model.parser.XmlResult;
 import thesis.view.ViewInterface;
 
 import java.io.File;
@@ -35,7 +37,7 @@ public class Controller implements ControllerInterface {
     }
 
     @Override
-    public double getGenerationProgress(String programName) throws ParsingException, ExecutionException, InterruptedException {
+    public double getGenerationProgress(String programName) throws InvalidConfigurationException, ExecutionException, InterruptedException {
         try {
             return model.getGenerationProgress(programName);
         } catch (Exception e) {
@@ -45,6 +47,11 @@ public class Controller implements ControllerInterface {
 
             throw e;
         }
+    }
+
+    @Override
+    public void cancelGeneration(String programName) {
+        model.cancelTimetableGeneration(programName);
     }
 
     @Override
@@ -59,10 +66,45 @@ public class Controller implements ControllerInterface {
 
     @Override
     public void importITCData(File file) {
+        XmlResult result;
+
         try {
-            model.importITCData(file);
+            result = model.readFile(file);
         } catch (Exception e) {
             view.showExceptionMessage(e);
+            return;
+        }
+
+        if(result instanceof InMemoryRepository) {
+            InMemoryRepository dataRepository = (InMemoryRepository) result;
+
+            InMemoryRepository storedData = model.getDataRepository(dataRepository.getProgramName());
+
+            if(storedData == null) {
+                model.importRepository(dataRepository);
+            } else {
+                if(view.showConfirmationAlert("There is already a program stored which is equal to the program of the file provided. Overwrite (while retaining the solutions if possible) ?")) {
+                    for(Timetable solution : storedData.getTimetableList()) {
+                        try {
+                            dataRepository.addTimetable(solution);
+                        } catch (InvalidConfigurationException e) {
+                            view.showExceptionMessage(e);
+                        }
+                    }
+                    model.importRepository(dataRepository);
+                }
+            }
+        } else if(result instanceof Timetable) {
+            Timetable solution = (Timetable) result;
+
+
+            try {
+                model.importSolution(solution);
+            } catch (InvalidConfigurationException e) {
+                view.showExceptionMessage(e);
+            }
+        } else {
+            throw new IllegalStateException("The resulting type of the parsing is unsupported");
         }
     }
 
@@ -71,56 +113,44 @@ public class Controller implements ControllerInterface {
         model.startGeneratingSolution(programName, initSolutionMaxIter, initialTemperature, minTemperature, coolingRate, k);
     }
 
+    private void export(String programName, ModelInterface.ExportType type) {
+        try {
+            model.export(programName, type);
+        } catch(IOException e) {
+            view.showExceptionMessage(e);
+        }
+
+        view.showInformationAlert("The data was exported successfully to the following location: " + model.getExportLocation());
+    }
+
     @Override
     public void exportSolutionsToITC(String programName) {
-        try {
-            model.exportSolutionsToITC(programName);
-        } catch (IOException e) {
-            view.showExceptionMessage(e);
+        InMemoryRepository data = model.getDataRepository(programName);
+
+        if(!data.getTimetableList().isEmpty()) {
+            export(programName, ModelInterface.ExportType.SOLUTIONS_ITC);
+        } else {
+            view.showErrorAlert("There are no solutions to export!");
         }
     }
 
     @Override
     public void exportDataToITC(String programName) {
-        try {
-            model.exportDataToITC(programName);
-        } catch (IOException e) {
-            view.showExceptionMessage(e);
-        }
+        export(programName, ModelInterface.ExportType.DATA_ITC);
     }
 
     @Override
     public void exportToCSV(String programName) {
-        try {
-            model.exportToCSV(programName);
-        } catch (IOException e) {
-            view.showExceptionMessage(e);
-        }
+        export(programName, ModelInterface.ExportType.CSV);
     }
 
     @Override
     public void exportToPDF(String programName) {
-        try {
-            model.exportToPDF(programName);
-        } catch (IOException e) {
-            view.showExceptionMessage(e);
-        }
+        export(programName, ModelInterface.ExportType.PDF);
     }
 
     @Override
     public void exportToPNG(String programName) {
-        try {
-            model.exportToPNG(programName);
-        } catch (IOException e) {
-            view.showExceptionMessage(e);
-        }
-    }
-
-    public void cleanup() {
-        try {
-            model.cleanup();
-        } catch (InterruptedException e) {
-            view.showExceptionMessage(e);
-        }
+        export(programName, ModelInterface.ExportType.PNG);
     }
 }

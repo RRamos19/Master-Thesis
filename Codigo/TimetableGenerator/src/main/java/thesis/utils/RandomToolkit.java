@@ -1,21 +1,25 @@
 package thesis.utils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 public class RandomToolkit {
     private RandomToolkit() {}
 
     /**
-     * Choose a random value present in the list provided
-     * @param valueList List of values of which a random value must be chosen
-     * @return A random value present in the list or null if the list provided is null
+     * Choose a random value present in the collection provided
+     * @param values Collection of values of which a random value must be chosen
+     * @return A random value present in the collection or null if the collection provided is null or empty
      * @param <T> Type of the values provided
      */
-    public static <T> T random(List<T> valueList) {
-        if(valueList == null || valueList.isEmpty()) {
+    public static <T> T random(Collection<T> values) {
+        if(values == null || values.isEmpty()) {
             return null;
         }
+
+        List<T> valueList = values.parallelStream().collect(Collectors.toList());
 
         return valueList.get(ThreadLocalRandom.current().nextInt(valueList.size()));
     }

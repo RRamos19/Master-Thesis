@@ -2,7 +2,7 @@ package thesis.model.domain.elements.constraints;
 
 import thesis.model.domain.elements.Constraint;
 import thesis.model.domain.elements.TimetableConfiguration;
-import thesis.model.domain.elements.exceptions.CheckedIllegalArgumentException;
+import thesis.model.exceptions.CheckedIllegalArgumentException;
 
 import java.util.HashMap;
 

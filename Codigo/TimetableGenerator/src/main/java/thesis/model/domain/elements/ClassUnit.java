@@ -1,6 +1,6 @@
 package thesis.model.domain.elements;
 
-import thesis.model.domain.elements.exceptions.CheckedIllegalArgumentException;
+import thesis.model.exceptions.CheckedIllegalArgumentException;
 
 import java.util.*;
 
@@ -75,6 +75,11 @@ public class ClassUnit implements TableDisplayable {
 
     public List<Constraint> getConstraintList() {
         return Collections.unmodifiableList(constraintList);
+    }
+
+    @Override
+    public String getTableName() {
+        return "Classes";
     }
 
     @Override

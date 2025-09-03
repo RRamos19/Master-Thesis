@@ -1,10 +1,12 @@
 package thesis.model;
 
 import thesis.controller.ControllerInterface;
-import thesis.model.domain.DataRepository;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.elements.TableDisplayable;
-import thesis.model.domain.elements.exceptions.ParsingException;
+import thesis.model.domain.elements.Timetable;
+import thesis.model.exceptions.InvalidConfigurationException;
+import thesis.model.exceptions.ParsingException;
+import thesis.model.parser.XmlResult;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +16,10 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 public interface ModelInterface {
+    enum ExportType {
+        CSV, PDF, PNG, DATA_ITC, SOLUTIONS_ITC
+    }
+
     // Setters
     void setController(ControllerInterface controller);
 
@@ -24,18 +30,15 @@ public interface ModelInterface {
 
     // Schedule solution generation methods
     void startGeneratingSolution(String programName, Integer initSolutionMaxIter, double initialTemperature, double minTemperature, double coolingRate, int k);
-    double getGenerationProgress(String programName) throws ExecutionException, InterruptedException, ParsingException;
+    double getGenerationProgress(String programName) throws ExecutionException, InterruptedException, InvalidConfigurationException;
     void cancelTimetableGeneration(String programName);
 
     // Data import methods
-    void importITCData(File file) throws ParsingException;
+    XmlResult readFile(File file) throws ParsingException, InvalidConfigurationException;
+    void importRepository(InMemoryRepository repository);
+    void importSolution(Timetable solution) throws InvalidConfigurationException;
 
     // Data export methods
-    void exportToCSV(String programName) throws IOException;
-    void exportToPDF(String programName) throws IOException;
-    void exportToPNG(String programName) throws IOException;
-    void exportDataToITC(String programName) throws IOException;
-    void exportSolutionsToITC(String programName) throws IOException;
-
-    void cleanup() throws InterruptedException;
+    String getExportLocation();
+    void export(String programName, ExportType type) throws IOException;
 }

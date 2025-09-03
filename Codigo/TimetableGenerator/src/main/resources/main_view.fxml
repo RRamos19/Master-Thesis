@@ -25,22 +25,22 @@
             <items>
                   <Menu mnemonicParsing="false" text="Import">
                     <items>
-                      <MenuItem mnemonicParsing="false" onAction="#importDataITCEvent" text="ITC2019 pattern" />
+                      <MenuItem mnemonicParsing="false" onAction="#importDataITCEvent" text="ITC" />
                     </items>
                   </Menu>
                   <Menu mnemonicParsing="false" text="Export">
                     <items>
                         <Menu mnemonicParsing="false" text="Data">
                           <items>
-                            <MenuItem mnemonicParsing="false" onAction="#exportDataITCEvent" text="ITC2019 pattern" />
-                              <MenuItem mnemonicParsing="false" onAction="#exportDataCSVEvent" text="CSV" />
+                            <MenuItem mnemonicParsing="false" onAction="#exportDataITCEvent" text="Export as ITC" />
+                              <MenuItem mnemonicParsing="false" onAction="#exportDataCSVEvent" text="Export as CSV" />
                           </items>
                         </Menu>
                         <Menu mnemonicParsing="false" text="Solutions">
                           <items>
-                            <MenuItem mnemonicParsing="false" onAction="#exportSolutionsITCEvent" text="ITC2019 pattern" />
-                              <MenuItem mnemonicParsing="false" onAction="#exportSolutionsPNGEvent" text="PNG" />
-                              <MenuItem mnemonicParsing="false" onAction="#exportSolutionsPDFEvent" text="PDF" />
+                            <MenuItem mnemonicParsing="false" onAction="#exportSolutionsITCEvent" text="Export as ITC" />
+                              <MenuItem mnemonicParsing="false" onAction="#exportSolutionsPNGEvent" text="Export as PNG" />
+                              <MenuItem mnemonicParsing="false" onAction="#exportSolutionsPDFEvent" text="Export as PDF" />
                           </items>
                         </Menu>
                     </items>
@@ -49,12 +49,12 @@
           </Menu>
           <Menu mnemonicParsing="false" text="Settings">
             <items>
-              <MenuItem mnemonicParsing="false" onAction="#configMenuEvent" text="Generator Configuration" />
+              <MenuItem mnemonicParsing="false" onAction="#configMenuEvent" text="Configuration" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Help">
             <items>
-              <MenuItem mnemonicParsing="false" onAction="#aboutMenuEvent" text="About" />
+              <MenuItem mnemonicParsing="false" onAction="#showTutorialMenuEvent" text="Tutorial" />
             </items>
           </Menu>
         </menus>
@@ -117,10 +117,9 @@
          <left>
             <VBox prefWidth="195.0" BorderPane.alignment="CENTER">
                <children>
-                  <Region prefHeight="7.0" prefWidth="195.0" />
-                  <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Program:" textAlignment="CENTER" />
+                  <Label alignment="CENTER" maxWidth="1.7976931348623157E308" minHeight="25.0" minWidth="195.0" text="Program:" textAlignment="CENTER" />
                   <ChoiceBox fx:id="programsChoiceBox" maxWidth="1.7976931348623157E308" />
-                  <Separator maxWidth="1.7976931348623157E308" prefHeight="27.0" prefWidth="195.0" />
+                  <Separator maxWidth="1.7976931348623157E308" minHeight="25.0" minWidth="195.0" />
                   <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Data:" />
                   <TreeView fx:id="treeView" showRoot="false" VBox.vgrow="ALWAYS" />
                </children>

@@ -2,16 +2,14 @@ CREATE TABLE optimization_parameters (
 	id SERIAL PRIMARY KEY,
 	time_weight SMALLINT NOT NULL,
 	room_weight SMALLINT NOT NULL,
-	distribution_weight SMALLINT NOT NULL,
-	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	distribution_weight SMALLINT NOT NULL
 );
 
 CREATE TABLE configuration (
 	id SERIAL PRIMARY KEY,
 	number_days SMALLINT NOT NULL,
 	number_weeks INT NOT NULL,
-	slots_per_day INT NOT NULL,
-	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	slots_per_day INT NOT NULL
 );
 
 CREATE TABLE program (

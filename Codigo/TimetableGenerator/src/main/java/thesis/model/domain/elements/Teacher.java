@@ -1,6 +1,6 @@
 package thesis.model.domain.elements;
 
-import thesis.model.domain.elements.exceptions.CheckedIllegalArgumentException;
+import thesis.model.exceptions.CheckedIllegalArgumentException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +40,11 @@ public class Teacher implements TableDisplayable {
 
     public void addClassUnit(String classId) {
         teacherClassList.add(classId);
+    }
+
+    @Override
+    public String getTableName() {
+        return "Teachers";
     }
 
     @Override

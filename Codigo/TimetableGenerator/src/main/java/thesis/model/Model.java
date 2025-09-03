@@ -1,15 +1,12 @@
 package thesis.model;
 
 import thesis.controller.ControllerInterface;
-import thesis.model.domain.DataRepository;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.elements.TableDisplayable;
-import thesis.model.domain.elements.Time;
 import thesis.model.domain.elements.Timetable;
-import thesis.model.domain.elements.exceptions.ParsingException;
+import thesis.model.exceptions.InvalidConfigurationException;
+import thesis.model.exceptions.ParsingException;
 import thesis.model.exporter.DataExporter;
-import thesis.model.exporter.TimetableDataExporter;
-import thesis.model.parser.ITCFormatParser;
 import thesis.model.parser.InputFileReader;
 import thesis.model.parser.XmlResult;
 import thesis.solver.initialsolutiongenerator.InitialSolutionGenerator;
@@ -27,15 +24,15 @@ public class Model implements ModelInterface {
     private ControllerInterface controller;
     private final DataExporter dataExporter;
     private final InputFileReader inputFileReader;
-    private final ExecutorService pool = Executors.newCachedThreadPool();
-    private final Map<String, InMemoryRepository> dataRepositoryHashMap = new ConcurrentHashMap<>();                                // ProgramName : Corresponding DataRepository
+    private final ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), new DaemonThreadFactory());
+    private final Map<String, InMemoryRepository> dataRepositoryHashMap = new ConcurrentHashMap<>();                            // ProgramName : Corresponding DataRepository
     private final ConcurrentMap<String, Future<Timetable>> generatedTimetables = new ConcurrentHashMap<>();                     // ProgramName : Timetable generated
     private final Map<String, InitialSolutionGenerator<Timetable>> initialSolutionGeneratorsMap = new ConcurrentHashMap<>();    // ProgramName : InitialSolutionGenerator
     private final Map<String, HeuristicAlgorithm<Timetable>> heuristicAlgorithmsMap = new ConcurrentHashMap<>();                // ProgramName : HeuristicAlgorithm
 
-    public Model() {
-        this.inputFileReader = new ITCFormatParser();
-        this.dataExporter = new TimetableDataExporter();
+    public Model(InputFileReader inputReader, DataExporter dataExporter) {
+        this.inputFileReader = inputReader;
+        this.dataExporter = dataExporter;
     }
 
     @Override
@@ -44,23 +41,30 @@ public class Model implements ModelInterface {
     }
 
     @Override
-    public void importITCData(File file) throws ParsingException {
-        XmlResult result = inputFileReader.readXmlFile(file);
+    public XmlResult readFile(File file) throws ParsingException, InvalidConfigurationException {
+        return inputFileReader.readXmlFile(file);
+    }
 
-        if(result instanceof InMemoryRepository) {
-            InMemoryRepository dataRepository = (InMemoryRepository) result;
-            dataRepositoryHashMap.put(dataRepository.getProgramName(), dataRepository);
-        } else if(result instanceof Timetable) {
-            Timetable solution = (Timetable) result;
-            String program = solution.getProgramName();
+    @Override
+    public void importRepository(InMemoryRepository repository) {
+        dataRepositoryHashMap.put(repository.getProgramName(), repository);
+    }
 
-            InMemoryRepository dataRepository = dataRepositoryHashMap.get(program);
-            if(dataRepository == null) {
-                throw new IllegalStateException("No data was already stored for the solution imported");
-            }
+    @Override
+    public String getExportLocation() {
+        return dataExporter.getExportLocation();
+    }
 
-            dataRepository.addTimetable(solution);
+    @Override
+    public void importSolution(Timetable solution) throws InvalidConfigurationException {
+        String program = solution.getProgramName();
+
+        InMemoryRepository dataRepository = dataRepositoryHashMap.get(program);
+        if(dataRepository == null) {
+            throw new IllegalStateException("No data was already stored for the solution imported");
         }
+
+        dataRepository.addTimetable(solution);
     }
 
     @Override
@@ -73,8 +77,7 @@ public class Model implements ModelInterface {
             List<TableDisplayable> dataList = data.getAllDisplayableData();
 
             for(TableDisplayable obj : dataList) {
-                String className = obj.getClass().getSimpleName();
-                List<TableDisplayable> resultObjectList = result.computeIfAbsent(className, (s) -> new ArrayList<>());
+                List<TableDisplayable> resultObjectList = result.computeIfAbsent(obj.getTableName(), (s) -> new ArrayList<>());
 
                 resultObjectList.add(obj);
             }
@@ -107,14 +110,22 @@ public class Model implements ModelInterface {
         heuristicAlgorithmsMap.remove(programName);
 
         // Pool the generation task
-        generatedTimetables.put(programName, pool.submit(() -> generateTimetable(data, initSolutionMaxIter, initialTemperature, minTemperature, coolingRate, k)));
+        generatedTimetables.put(programName, threadPool.submit(() -> generateTimetable(data, initSolutionMaxIter, initialTemperature, minTemperature, coolingRate, k)));
     }
 
     @Override
-    public double getGenerationProgress(String programName) throws ExecutionException, InterruptedException, ParsingException {
-        if(generatedTimetables.get(programName) == null) {
+    public double getGenerationProgress(String programName) throws ExecutionException, InterruptedException, InvalidConfigurationException {
+        Future<Timetable> taskResult = generatedTimetables.get(programName);
+
+        if(taskResult == null) {
             throw new IllegalStateException("Can't return the progress because the process hasn't started yet");
         }
+
+        // This throws an exception in case the thread crashed which can atleast provide an explanation of the
+        // error, instead of failing silently
+        try{
+            taskResult.get(1, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException ignored) {} // This exception is expected as the timeout is extremely short. In this case can be ignored
 
         InitialSolutionGenerator<Timetable> initialSolutionGenerator = initialSolutionGeneratorsMap.get(programName);
         HeuristicAlgorithm<Timetable> heuristicAlgorithm = heuristicAlgorithmsMap.get(programName);
@@ -162,82 +173,47 @@ public class Model implements ModelInterface {
 
     @Override
     public void cancelTimetableGeneration(String programName) {
-        InitialSolutionGenerator initialSolutionGenerator = initialSolutionGeneratorsMap.get(programName);
-        if(initialSolutionGenerator != null)
-            initialSolutionGenerator.stopAlgorithm();
+        InitialSolutionGenerator<Timetable> initialSolutionGenerator = initialSolutionGeneratorsMap.get(programName);
+        if(initialSolutionGenerator == null) return;
+        initialSolutionGenerator.stopAlgorithm();
 
-        HeuristicAlgorithm heuristicAlgorithm = heuristicAlgorithmsMap.get(programName);
-        if(heuristicAlgorithm != null)
-            heuristicAlgorithm.stopAlgorithm();
+        HeuristicAlgorithm<Timetable> heuristicAlgorithm = heuristicAlgorithmsMap.get(programName);
+        if(heuristicAlgorithm == null) return;
+        heuristicAlgorithm.stopAlgorithm();
     }
 
     @Override
-    public void exportToCSV(String programName) throws IOException {
+    public void export(String programName, ExportType type) throws IOException {
         InMemoryRepository data = dataRepositoryHashMap.get(programName);
-
-        if(data == null) {
-            throw new RuntimeException("The ProgramName provided has no corresponding data");
+        if (data == null) {
+            throw new RuntimeException("The program name provided has no corresponding data");
         }
 
-        dataExporter.exportToCSV(data);
+        switch (type) {
+            case CSV:
+                dataExporter.exportToCSV(data);
+                break;
+            case PDF:
+                dataExporter.exportToPDF(data);
+                break;
+            case PNG:
+                dataExporter.exportToPNG(data);
+                break;
+            case DATA_ITC:
+                dataExporter.exportDataToITC(data);
+                break;
+            case SOLUTIONS_ITC:
+                dataExporter.exportSolutionsToITC(data);
+                break;
+        }
     }
 
-    @Override
-    public void exportToPDF(String programName) throws IOException {
-        InMemoryRepository data = dataRepositoryHashMap.get(programName);
-
-        if(data == null) {
-            throw new RuntimeException("The ProgramName provided has no corresponding data");
+    private static class DaemonThreadFactory implements ThreadFactory {
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread thread = new Thread(r);
+            thread.setDaemon(true); // The thread is cancelled when the JVM is closed
+            return thread;
         }
-
-        dataExporter.exportToPDF(data);
-    }
-
-    @Override
-    public void exportToPNG(String programName) throws IOException {
-        InMemoryRepository data = dataRepositoryHashMap.get(programName);
-
-        if(data == null) {
-            throw new RuntimeException("The ProgramName provided has no corresponding data");
-        }
-
-        dataExporter.exportToPNG(data);
-    }
-
-    @Override
-    public void exportDataToITC(String programName) throws IOException {
-        InMemoryRepository data = dataRepositoryHashMap.get(programName);
-
-        if(data == null) {
-            throw new RuntimeException("The ProgramName provided has no corresponding data");
-        }
-
-        dataExporter.exportDataToITC(data);
-    }
-
-    @Override
-    public void exportSolutionsToITC(String programName) throws IOException {
-        InMemoryRepository data = dataRepositoryHashMap.get(programName);
-
-        if(data == null) {
-            throw new RuntimeException("The ProgramName provided has no corresponding data");
-        }
-
-        dataExporter.exportSolutionsToITC(data);
-    }
-
-    public void cleanup() throws InterruptedException {
-        pool.shutdown();
-
-        // Stop the initial phase
-        initialSolutionGeneratorsMap.values().forEach(InitialSolutionGenerator::stopAlgorithm);
-
-        // Wait until the second phase is initiated
-        while(heuristicAlgorithmsMap.size() != initialSolutionGeneratorsMap.size()) {
-            Thread.sleep(50);
-        }
-
-        // Stop the second phase
-        heuristicAlgorithmsMap.values().forEach(HeuristicAlgorithm::stopAlgorithm);
     }
 }
