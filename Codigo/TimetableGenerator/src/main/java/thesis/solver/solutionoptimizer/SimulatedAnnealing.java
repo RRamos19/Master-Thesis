@@ -1,8 +1,8 @@
 package thesis.solver.solutionoptimizer;
 
 import thesis.model.domain.InMemoryRepository;
-import thesis.model.domain.elements.ScheduledLesson;
-import thesis.model.domain.elements.Timetable;
+import thesis.model.domain.components.ScheduledLesson;
+import thesis.model.domain.components.Timetable;
 import thesis.solver.core.*;
 import thesis.utils.RandomToolkit;
 
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
-    private final static int MAX_TRIES = 3;
+    private final static int MAX_TRIES = 5;
     private final DefaultISGSolution initialSolution;
     private final double initialTemperature;
     private final double coolingRate;
@@ -75,9 +75,8 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
                     currentSolution = neighbor;
                     currentCost = fv;
 
-                    // Update the best solution found if the solution is valid
-                    if(currentCost < bestSolutionCost && currentSolution.isSolutionValid()) {
-                        System.out.println("Best solution updated!! - Cost: " + currentCost);
+                    // Update the best solution found if the current cost is better than the best
+                    if(currentCost < bestSolutionCost) {
                         bestSolutionCost = currentCost;
                         currentSolution.saveBest();
                     }

@@ -1,17 +1,20 @@
 package thesis.solver.core;
 
 import thesis.model.domain.InMemoryRepository;
-import thesis.model.domain.elements.*;
+import thesis.model.domain.components.*;
 
 import java.util.*;
 
 public class DefaultISGSolution implements ISGSolution<InMemoryRepository, DefaultISGValue, DefaultISGVariable> {
     private final InMemoryRepository dataModel;
-    private final List<DefaultISGVariable> variableList = Collections.synchronizedList(new ArrayList<>());
-    private final List<DefaultISGVariable> unassignedVariableList = Collections.synchronizedList(new ArrayList<>());
-    private List<DefaultISGVariable> bestUnassignedVariableList;
-    private List<DefaultISGVariable> bestAssignedVariableList;
+    private final Collection<DefaultISGVariable> variableCollection = new ArrayList<>();
+    private final Collection<DefaultISGVariable> unassignedVariableCollection = new Vector<>();
+    private List<DefaultISGVariable> bestUnassignedVariableCollection;
+    private List<DefaultISGVariable> bestAssignedVariableCollection;
     private Integer bestValue;
+
+    private boolean updateSolution = true;
+    private Timetable solution;
 
     public DefaultISGSolution(InMemoryRepository dataModel) {
         this.dataModel = dataModel;
@@ -21,57 +24,70 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
     public DefaultISGSolution(DefaultISGSolution other) {
         this.dataModel = other.dataModel;
 
-        other.variableList.forEach((var) -> {
-            this.variableList.add(new DefaultISGVariable(this, var));
+        // Copy the collections of assigned and unassigned variables
+        other.variableCollection.forEach((var) -> {
+            this.variableCollection.add(new DefaultISGVariable(this, var));
         });
-        other.unassignedVariableList.forEach((var) -> {
-            this.unassignedVariableList.add(new DefaultISGVariable(this, var));
+        other.unassignedVariableCollection.forEach((var) -> {
+            this.unassignedVariableCollection.add(new DefaultISGVariable(this, var));
         });
 
-        if(other.bestUnassignedVariableList != null) {
-            this.bestUnassignedVariableList = new ArrayList<>();
+        // If there was a saveBest copy the best assigned and unassigned variables
+        if(other.bestUnassignedVariableCollection != null) {
+            this.bestUnassignedVariableCollection = new ArrayList<>();
 
-            other.bestUnassignedVariableList.forEach((var) -> {
-                this.bestUnassignedVariableList.add(new DefaultISGVariable(this, var));
+            other.bestUnassignedVariableCollection.forEach((var) -> {
+                this.bestUnassignedVariableCollection.add(new DefaultISGVariable(this, var));
             });
         }
 
-        if(other.bestAssignedVariableList != null) {
-            this.bestAssignedVariableList = new ArrayList<>();
+        if(other.bestAssignedVariableCollection != null) {
+            this.bestAssignedVariableCollection = new ArrayList<>();
 
-            other.bestAssignedVariableList.forEach((var) -> {
-                this.bestAssignedVariableList.add(new DefaultISGVariable(this, var));
+            other.bestAssignedVariableCollection.forEach((var) -> {
+                this.bestAssignedVariableCollection.add(new DefaultISGVariable(this, var));
             });
         }
 
+        // Copy the cost
         this.bestValue = other.bestValue;
+
+        this.updateSolution = other.updateSolution;
+        this.solution = other.solution;
+
+        // Update the solution
+//        this.solution();
     }
 
     @Override
     public Timetable solution() {
-        Timetable timetable = new Timetable(dataModel.getProgramName());
-        timetable.bindDataModel(dataModel);
+        if(updateSolution) {
+            solution = new Timetable(dataModel.getProgramName());
+            solution.bindDataModel(dataModel);
 
-        for(DefaultISGVariable var : variableList) {
-            timetable.addScheduledLesson(var.getAssignment().value());
+            for (DefaultISGVariable variable : variableCollection) {
+                solution.addScheduledLesson(variable.getAssignment().value());
+            }
+
+            updateSolution = false;
         }
 
-        return timetable;
+        return solution;
     }
 
     @Override
-    public List<DefaultISGVariable> getUnassignedVariables() {
-        return unassignedVariableList;
+    public Collection<DefaultISGVariable> getUnassignedVariables() {
+        return unassignedVariableCollection;
     }
 
     @Override
-    public List<DefaultISGVariable> getAssignedVariables() {
-        return variableList;
+    public Collection<DefaultISGVariable> getAssignedVariables() {
+        return variableCollection;
     }
 
     @Override
-    public List<DefaultISGVariable> getBestUnassignedVariables() {
-        return bestUnassignedVariableList;
+    public Collection<DefaultISGVariable> getBestUnassignedVariables() {
+        return bestUnassignedVariableCollection;
     }
 
     @Override
@@ -95,43 +111,18 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
 
     @Override
     public void addUnassignedVariable(DefaultISGVariable var) {
-        unassignedVariableList.add(var);
+        unassignedVariableCollection.add(var);
     }
 
     @Override
     public boolean isSolutionValid() {
-        if(!unassignedVariableList.isEmpty())
-            return false;
-
-        // Should not be needed but just for double checking
-        for(DefaultISGVariable var : variableList) {
-            if(var.getAssignment() == null) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    @Override
-    public List<Integer> conflictValues(DefaultISGValue value) {
-        List<Integer> conflictValues = new ArrayList<>();
-
-        Timetable timetable = solution();
-
-        // Add the constraint penalties
-        for (Constraint constraint : value.variable().variable().getConstraintList()) {
-            conflictValues.addAll(constraint.computePenaltiesIfScheduled(value.value(), timetable));
-        }
-
-        return conflictValues;
+        return unassignedVariableCollection.isEmpty() && solution().isValid();
     }
 
     @Override
     public Set<String> conflictIds(DefaultISGValue value) {
-        HashSet<String> conflictIds = new HashSet<>();
-
         Timetable timetable = solution();
+        Set<String> conflictIds = new HashSet<>();
 
         // Add the constraint conflicts
         for (Constraint constraint : value.variable().variable().getConstraintList()) {
@@ -146,7 +137,7 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
         List<Integer> valueTeachers = valueLesson.getTeacherIds();
 
         // Add the room and teacher conflicts
-        for (DefaultISGVariable variable : variableList) {
+        for (DefaultISGVariable variable : variableCollection) {
             ScheduledLesson scheduledLesson = variable.getAssignment().value();
 
             if (scheduledLesson != null) {
@@ -154,20 +145,25 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
                 String lessonClassId = scheduledLesson.getClassId();
                 List<Integer> lessonTeachers = scheduledLesson.getTeacherIds();
 
-                if (Objects.equals(lessonClassId, valueClassId)) continue;
+                // If the class ids are the same skip
+                if (Objects.equals(lessonClassId, valueClassId)) {
+                    continue;
+                }
 
-                if (lessonRoomId != null && Objects.equals(lessonRoomId, valueRoomId)) {
-                    if (scheduledLesson.getScheduledTime().overlaps(valueTime)) {
+                if(scheduledLesson.getScheduledTime().overlaps(valueTime)) {
+                    // Verify if the rooms are the same
+                    if (lessonRoomId != null && Objects.equals(lessonRoomId, valueRoomId)) {
                         conflictIds.add(lessonClassId);
                         continue;
                     }
-                }
 
-                if(!valueTeachers.isEmpty() && !lessonTeachers.isEmpty()) {
-                    for(int teacherId : valueTeachers) {
-                        if(lessonTeachers.contains(teacherId)) {
-                            conflictIds.add(lessonClassId);
-                            break;
+                    // Verify if any of the teachers involved in both lessons overlap
+                    if (!valueTeachers.isEmpty() && !lessonTeachers.isEmpty()) {
+                        for (int teacherId : valueTeachers) {
+                            if (lessonTeachers.contains(teacherId)) {
+                                conflictIds.add(lessonClassId);
+                                break;
+                            }
                         }
                     }
                 }
@@ -179,60 +175,66 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
 
     @Override
     public void convertToAssigned(DefaultISGVariable var) {
-        if(!unassignedVariableList.contains(var)) {
+        if(!unassignedVariableCollection.contains(var)) {
             // Should be impossible, unless there is a bug
             throw new RuntimeException("Unassigned variable was not found!");
         }
 
-        unassignedVariableList.remove(var);
-        variableList.add(var);
+        unassignedVariableCollection.remove(var);
+        variableCollection.add(var);
+
+        updateSolution = true;
     }
 
     @Override
     public void convertToUnassigned(DefaultISGVariable var) {
-        if(!variableList.contains(var)) {
+        if(!variableCollection.contains(var)) {
             // Should be impossible, unless there is a bug
             throw new RuntimeException("Assigned variable was not found!");
         }
 
-        variableList.remove(var);
-        unassignedVariableList.add(var);
+        variableCollection.remove(var);
+        unassignedVariableCollection.add(var);
+
+        updateSolution = true;
     }
 
     @Override
     public void saveBest() {
-        bestUnassignedVariableList = new ArrayList<>(unassignedVariableList);
-        bestUnassignedVariableList.forEach(DefaultISGVariable::saveBest);
+        bestUnassignedVariableCollection = new ArrayList<>(unassignedVariableCollection);
+        bestUnassignedVariableCollection.forEach(DefaultISGVariable::saveBest);
 
-        bestAssignedVariableList = new ArrayList<>(variableList);
-        bestAssignedVariableList.forEach(DefaultISGVariable::saveBest);
+        bestAssignedVariableCollection = new ArrayList<>(variableCollection);
+        bestAssignedVariableCollection.forEach(DefaultISGVariable::saveBest);
 
         bestValue = getTotalValue();
     }
 
     @Override
     public void restoreBest() {
-        unassignedVariableList.clear();
-        unassignedVariableList.addAll(bestUnassignedVariableList);
-        unassignedVariableList.forEach(DefaultISGVariable::restoreBest);
+        unassignedVariableCollection.clear();
+        unassignedVariableCollection.addAll(bestUnassignedVariableCollection);
+        unassignedVariableCollection.forEach(DefaultISGVariable::restoreBest);
 
-        variableList.clear();
-        variableList.addAll(bestAssignedVariableList);
-        variableList.forEach(DefaultISGVariable::restoreBest);
+        variableCollection.clear();
+        variableCollection.addAll(bestAssignedVariableCollection);
+        variableCollection.forEach(DefaultISGVariable::restoreBest);
+
+        updateSolution = true;
     }
 
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof DefaultISGSolution)) return false;
         DefaultISGSolution that = (DefaultISGSolution) o;
-        return Objects.equals(variableList, that.variableList) &&
-                Objects.equals(unassignedVariableList, that.unassignedVariableList) &&
+        return Objects.equals(variableCollection, that.variableCollection) &&
+                Objects.equals(unassignedVariableCollection, that.unassignedVariableCollection) &&
                 Objects.equals(bestValue, that.bestValue) &&
-                Objects.equals(bestUnassignedVariableList, that.bestUnassignedVariableList);
+                Objects.equals(bestUnassignedVariableCollection, that.bestUnassignedVariableCollection);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(variableList, unassignedVariableList, dataModel, bestValue);
+        return Objects.hash(variableCollection, unassignedVariableCollection, bestAssignedVariableCollection, bestUnassignedVariableCollection, bestValue);
     }
 }

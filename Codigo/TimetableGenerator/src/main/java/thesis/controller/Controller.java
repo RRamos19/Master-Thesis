@@ -2,8 +2,8 @@ package thesis.controller;
 
 import thesis.model.ModelInterface;
 import thesis.model.domain.InMemoryRepository;
-import thesis.model.domain.elements.TableDisplayable;
-import thesis.model.domain.elements.Timetable;
+import thesis.model.domain.components.TableDisplayable;
+import thesis.model.domain.components.Timetable;
 import thesis.model.exceptions.InvalidConfigurationException;
 import thesis.model.parser.XmlResult;
 import thesis.view.ViewInterface;
@@ -97,10 +97,9 @@ public class Controller implements ControllerInterface {
         } else if(result instanceof Timetable) {
             Timetable solution = (Timetable) result;
 
-
             try {
                 model.importSolution(solution);
-            } catch (InvalidConfigurationException e) {
+            } catch (Exception e) {
                 view.showExceptionMessage(e);
             }
         } else {
@@ -118,6 +117,7 @@ public class Controller implements ControllerInterface {
             model.export(programName, type);
         } catch(IOException e) {
             view.showExceptionMessage(e);
+            return;
         }
 
         view.showInformationAlert("The data was exported successfully to the following location: " + model.getExportLocation());

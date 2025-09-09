@@ -1,7 +1,7 @@
 package thesis.solver.initialsolutiongenerator;
 
 import thesis.model.domain.InMemoryRepository;
-import thesis.model.domain.elements.*;
+import thesis.model.domain.components.*;
 import thesis.solver.core.*;
 import thesis.utils.RandomToolkit;
 
@@ -52,6 +52,7 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
             if(maxIterations != null && iter >= maxIterations) {
                 break;
             }
+
             iter++;
             DefaultISGVariable variable = selectVariable(solution);
 
@@ -79,18 +80,12 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
     }
 
     /**
-     * Choose a class at random. The list of unscheduled classes is prioritized if there are classes that still need to be scheduled. Otherwise, a random already scheduled class is chosen to be rescheduled.
+     * Choose a class at random from the list of unscheduled classes
      * @param solution Contains all of the data needed to create a solution.
-     * @return Class id of the selected class
+     * @return Class to be scheduled
      */
     private DefaultISGVariable selectVariable(DefaultISGSolution solution) {
-        List<DefaultISGVariable> unassignedVariables = solution.getUnassignedVariables();
-
-        if(!unassignedVariables.isEmpty()) {
-            return RandomToolkit.random(unassignedVariables);
-        } else {
-            return RandomToolkit.random(solution.getAssignedVariables());
-        }
+        return RandomToolkit.random(solution.getUnassignedVariables());
     }
 
     @Override

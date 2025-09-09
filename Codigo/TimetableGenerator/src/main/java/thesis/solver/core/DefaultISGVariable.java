@@ -1,6 +1,6 @@
 package thesis.solver.core;
 
-import thesis.model.domain.elements.ClassUnit;
+import thesis.model.domain.components.ClassUnit;
 
 import java.util.*;
 
@@ -80,7 +80,11 @@ public class DefaultISGVariable implements ISGVariable<DefaultISGVariable, Defau
 
     @Override
     public void assign(DefaultISGValue value) {
-        if (iAssignment != null) unassign();
+        if (iAssignment != null) {
+            if (iAssignment.equals(value)) return; // There is no need to assign the same value to this variable
+
+            unassign();
+        }
         iAssignment = value;
         solution.convertToAssigned(this);
 
@@ -110,21 +114,23 @@ public class DefaultISGVariable implements ISGVariable<DefaultISGVariable, Defau
     }
 
     @Override
+    public DefaultISGSolution getSolution() {
+        return solution;
+    }
+
+    public String toString() {
+        return classUnit.getClassId();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof DefaultISGVariable)) return false;
         DefaultISGVariable that = (DefaultISGVariable) o;
-        return Objects.equals(classUnit, that.classUnit) &&
-                Objects.equals(iAssignment, that.iAssignment) &&
-                Objects.equals(iBestAssignment, that.iBestAssignment);
+        return Objects.equals(classUnit.getClassId(), that.classUnit.getClassId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(classUnit, iAssignment, iBestAssignment);
-    }
-
-    @Override
-    public DefaultISGSolution getSolution() {
-        return solution;
+        return Objects.hash(classUnit.getClassId());
     }
 }

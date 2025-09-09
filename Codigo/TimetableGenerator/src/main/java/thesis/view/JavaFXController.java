@@ -7,7 +7,6 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -15,9 +14,9 @@ import javafx.stage.*;
 import javafx.util.Duration;
 import thesis.controller.ControllerInterface;
 import thesis.model.domain.InMemoryRepository;
-import thesis.model.domain.elements.ScheduledLesson;
-import thesis.model.domain.elements.Timetable;
-import thesis.model.domain.elements.TableDisplayable;
+import thesis.model.domain.components.ScheduledLesson;
+import thesis.model.domain.components.Timetable;
+import thesis.model.domain.components.TableDisplayable;
 import thesis.utils.DoubleToolkit;
 import thesis.view.managers.ConfigurationManager;
 import thesis.view.managers.ProgressBarManager;
@@ -138,7 +137,7 @@ public class JavaFXController implements ViewInterface {
 
         // Choose the first element if there was no program already chosen
         if(oldChosenProgram == null && !storedPrograms.isEmpty()) {
-            oldChosenProgram = (String) storedPrograms.toArray()[0];
+            oldChosenProgram = storedPrograms.iterator().next();
         }
 
         programsChoiceBox.setItems(FXCollections.observableList(new ArrayList<>(storedPrograms)));
@@ -256,16 +255,6 @@ public class JavaFXController implements ViewInterface {
 
             showInformationAlert("The solution for the program " + generatingSolutionProgram + " has been created!\nPerform a double click on it to visualize!");
         }
-    }
-
-    private void stopAndClearTimeline(Timeline timeline) {
-        // Should never happen
-        if(timeline == null) {
-            throw new RuntimeException("The timeline provided doesn't exist");
-        }
-
-        timeline.stop();
-        timeline.getKeyFrames().clear();
     }
 
     private void populateTreeView(String progname) {
@@ -397,7 +386,7 @@ public class JavaFXController implements ViewInterface {
             List<Integer> weeks = entry.getValue();
 
             List<ScheduledLesson> lessonsForPattern = lessonsByKey.get(key);
-            if(lessonsForPattern == null) continue;
+            if (lessonsForPattern == null) continue;
 
             GridPane grid = buildGridForLessons(
                     lessonsForPattern,

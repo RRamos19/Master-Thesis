@@ -57,9 +57,9 @@ public class ExceptionMessageWindow {
         box.setPadding(new Insets(10));
         box.setAlignment(Pos.CENTER_LEFT);
 
-        VBox.setVgrow(exceptionMessage, Priority.NEVER);
-        VBox.setVgrow(titledPane, Priority.NEVER);
-        VBox.setVgrow(hbox, Priority.NEVER);
+        //VBox.setVgrow(exceptionMessage, Priority.NEVER);
+        //VBox.setVgrow(titledPane, Priority.NEVER);
+        //VBox.setVgrow(hbox, Priority.NEVER);
 
         exceptionStage.setScene(new Scene(box));
     }

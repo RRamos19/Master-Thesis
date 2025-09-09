@@ -2,8 +2,8 @@ package thesis.model.parser;
 
 import thesis.model.domain.DataRepository;
 import thesis.model.domain.InMemoryRepository;
-import thesis.model.domain.elements.*;
-import thesis.model.domain.elements.constraints.ConstraintFactory;
+import thesis.model.domain.components.*;
+import thesis.model.domain.components.constraints.ConstraintFactory;
 import thesis.model.exceptions.CheckedIllegalArgumentException;
 import thesis.model.exceptions.InvalidConfigurationException;
 import thesis.model.exceptions.ParsingException;

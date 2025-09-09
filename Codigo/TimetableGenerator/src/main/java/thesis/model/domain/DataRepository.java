@@ -1,8 +1,8 @@
 package thesis.model.domain;
 
-import thesis.model.domain.elements.*;
+import thesis.model.domain.components.*;
 import thesis.model.exceptions.InvalidConfigurationException;
-import thesis.model.domain.elements.TableDisplayable;
+import thesis.model.domain.components.TableDisplayable;
 
 import java.util.*;
 
@@ -118,6 +118,7 @@ public class DataRepository implements InMemoryRepository {
 
     @Override
     public void addTimetable(Timetable timetable) throws InvalidConfigurationException {
+        timetable.bindDataModel(this);
         timetableList.add(timetable);
 
         try {
@@ -128,7 +129,18 @@ public class DataRepository implements InMemoryRepository {
         }
 
         timetable.getScheduledLessonList().forEach((lesson) -> {
-            lesson.bindModel(this);
+            ClassUnit cls = getClassUnit(lesson.getClassId());
+
+            // Corrects the time if this solution was read from a file
+            // (its assumed every time definition has the same length)
+            if(lesson.getScheduledTime().getLength() == 0) {
+                lesson.fixTime(cls.getTimeSet().iterator().next());
+            }
+
+            // Bind the lesson to the model if this solution was read from a file
+            if(lesson.getModel() == null) {
+                lesson.bindModel(this);
+            }
         });
     }
 
@@ -230,16 +242,6 @@ public class DataRepository implements InMemoryRepository {
                     if (getTeacher(teacherId) == null) {
                         throw new InvalidConfigurationException("Timetable - The teacher id " + teacherId + " is not present in the data repository");
                     }
-                }
-
-                // Corrects the time if this solution was read from a file
-                if(lesson.getScheduledTime().getLength() == 0) {
-                    lesson.fixTime(cls.getTimeSet().iterator().next());
-                }
-
-                // Bind the lesson to the model if this solution was read from a file
-                if(lesson.getModel() == null) {
-                    lesson.bindModel(this);
                 }
             }
         }
