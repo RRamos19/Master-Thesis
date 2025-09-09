@@ -2,9 +2,8 @@ package thesis.controller;
 
 import thesis.model.ModelInterface;
 import thesis.model.domain.InMemoryRepository;
-import thesis.model.domain.elements.TableDisplayable;
+import thesis.model.domain.components.TableDisplayable;
 import thesis.model.exceptions.InvalidConfigurationException;
-import thesis.model.exceptions.ParsingException;
 import thesis.view.ViewInterface;
 
 import java.io.File;
@@ -12,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 public interface ControllerInterface {
     // Setters

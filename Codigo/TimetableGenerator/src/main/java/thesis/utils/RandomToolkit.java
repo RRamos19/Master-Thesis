@@ -19,9 +19,17 @@ public class RandomToolkit {
             return null;
         }
 
-        List<T> valueList = values.parallelStream().collect(Collectors.toList());
-
-        return valueList.get(ThreadLocalRandom.current().nextInt(valueList.size()));
+        int index = ThreadLocalRandom.current().nextInt(values.size());
+        if (values instanceof List) {
+            return ((List<T>) values).get(index);
+        } else {
+            int i = 0;
+            for (T val : values) {
+                if (i == index) return val;
+                i++;
+            }
+            return null; // This return should be unreachable
+        }
     }
 
     /**

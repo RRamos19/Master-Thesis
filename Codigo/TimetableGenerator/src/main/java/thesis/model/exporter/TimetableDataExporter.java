@@ -1,7 +1,7 @@
 package thesis.model.exporter;
 
 import thesis.model.domain.InMemoryRepository;
-import thesis.model.domain.elements.*;
+import thesis.model.domain.components.*;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -35,7 +35,7 @@ public class TimetableDataExporter implements DataExporter {
         File file;
         do {
             // Checks if the file exists. If the answer is true then a
-            // number between brackets is added to avoid overwriting an existing file
+            // number between parenthesis is added to avoid overwriting an existing file
             String exportNumberString = solutionExportNumber >= 1 ? " (" + solutionExportNumber + ")" : "";
             file = new File(exportLocation.getAbsolutePath() + '/' + name + exportNumberString + ".xml");
             solutionExportNumber++;
@@ -63,7 +63,7 @@ public class TimetableDataExporter implements DataExporter {
     public void exportSolutionsToITC(InMemoryRepository data) throws IOException {
         String fileName = "solution_" + data.getProgramName();
         for(Timetable timetable : data.getTimetableList()) {
-            File file = avoidFileOverwriting(fileName);
+            File file = avoidFileOverwriting(fileName + '_' + timetable.getDateOfCreation());
             LocalDateTime now = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
             String formattedNow = now.format(formatter);

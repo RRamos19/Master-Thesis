@@ -1,6 +1,10 @@
 package thesis.solver.core;
 
 public interface ISGVariable<Var extends ISGVariable<Var, Val, ?>, Val extends ISGValue<Val, Var>, Sol extends ISGSolution<?, Val, Var>> {
+    /**
+     * Returns the object this variable represents.
+     * @return The variable object of this class.
+     */
     Object variable();
     Val getAssignment();
 

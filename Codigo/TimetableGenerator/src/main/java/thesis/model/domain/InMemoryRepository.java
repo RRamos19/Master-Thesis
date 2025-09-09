@@ -1,8 +1,7 @@
 package thesis.model.domain;
 
-import thesis.model.domain.elements.*;
+import thesis.model.domain.components.*;
 import thesis.model.exceptions.InvalidConfigurationException;
-import thesis.model.exceptions.ParsingException;
 import thesis.model.parser.XmlResult;
 
 import java.util.List;

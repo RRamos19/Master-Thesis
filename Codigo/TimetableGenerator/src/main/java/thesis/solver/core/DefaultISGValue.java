@@ -1,6 +1,6 @@
 package thesis.solver.core;
 
-import thesis.model.domain.elements.ScheduledLesson;
+import thesis.model.domain.components.ScheduledLesson;
 
 import java.util.Objects;
 

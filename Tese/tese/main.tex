@@ -1,0 +1,148 @@
+\documentclass[11pt,a4paper]{report}
+
+\input{preamble}
+
+% -------- Capa --------
+\begin{document}
+
+\pagenumbering{roman}
+
+\begin{titlepage}
+    \centering
+    {\includegraphics[width=0.4\linewidth]{Imagens/logo_ISEL_simplificado_cor.png}}
+
+    {\includegraphics[width=12cm, height=8cm]{Imagens/imagem_capa.png}}
+    
+    \vfill
+    
+    {\bfseries\fontsize{17}{20}\selectfont Ferramenta para Geração de Horários de Cursos com Restrições}
+    \vspace{1cm}
+    
+    {\bfseries\fontsize{15}{18}\selectfont RICARDO ALEXANDRE ALVES RAMOS \par}
+    {\fontsize{13}{16}\selectfont (Licenciado)}
+    \vspace{1cm}
+    
+    {\fontsize{10}{12}\selectfont Trabalho de Projeto para obtenção do grau de Mestre em Engenharia Informática\\ e de Computadores}
+    
+	\vfill
+
+    \begin{center}
+        \parbox[h]{0.7\textwidth}{
+        \raggedright
+            {\hspace{1cm}\fontsize{11}{13}\selectfont Orientadores:}
+            
+            {\hspace{2cm}\fontsize{10}{12}\selectfont Professor Doutor Nuno Miguel da Costa de Sousa Leite}
+            
+            {\hspace{2cm}\fontsize{10}{12}\selectfont Professor Doutor Artur Jorge Ferreira}
+        }
+    \end{center}
+    
+	\vfill
+
+    \begin{center}
+        \parbox{0.7\textwidth}{
+        \raggedright
+        {\hspace{1cm}\fontsize{11}{13}\selectfont Júri:}
+        
+        {\hspace{1.5cm}\fontsize{10}{12}\selectfont Presidente: Professor Doutor Nuno Miguel Machado Cruz}
+        
+        {\hspace{1.5cm}\fontsize{10}{12}\selectfont Vogais: \par}
+        {\hspace{2cm}\fontsize{10}{12}\selectfont Professora Doutora Cátia Raquel Jesus Vaz \par}
+        {\hspace{2cm}\fontsize{10}{12}\selectfont Professor Doutor Nuno Miguel da Costa de Sousa Leite \par}
+        {\hspace{2cm}\fontsize{10}{12}\selectfont Professor Doutor Artur Jorge Ferreira \par}
+        }
+    \end{center}
+
+    \vfill
+	
+    {\bfseries\fontsize{9}{11} Setembro de 2025 \par}
+\end{titlepage}
+
+% -------- Subcapa --------
+\begin{titlepage}
+    \centering
+    {\bfseries\fontsize{17}{20}\selectfont Ferramenta para Geração de Horários de Cursos com Restrições}
+    \vfill
+    
+    {\bfseries\fontsize{15}{18}\selectfont RICARDO ALEXANDRE ALVES RAMOS \par}
+    {\fontsize{13}{16}\selectfont (Licenciado)}
+    \vspace{1cm}
+    
+    {\fontsize{10}{12}\selectfont Trabalho de Projeto para obtenção do grau de Mestre em Engenharia Informática\\ e de Computadores}
+    \vfill
+
+    \begin{center}
+        \parbox[h]{0.7\textwidth}{
+        \raggedright
+            {\hspace{1cm}\fontsize{11}{13}\selectfont Orientadores:}
+            
+            {\hspace{2cm}\fontsize{10}{12}\selectfont Professor Doutor Nuno Miguel da Costa de Sousa Leite}
+            
+            {\hspace{2cm}\fontsize{10}{12}\selectfont Professor Doutor Artur Jorge Ferreira}
+        }
+    \end{center}
+    \vfill
+
+    \begin{center}
+        \parbox{0.7\textwidth}{
+        \raggedright
+        {\hspace{1cm}\fontsize{11}{13}\selectfont Júri:}
+        
+        {\hspace{1.5cm}\fontsize{10}{12}\selectfont Presidente: Professor Doutor Nuno Miguel Machado Cruz}
+        
+        {\hspace{1.5cm}\fontsize{10}{12}\selectfont Vogais: \par}
+        {\hspace{2cm}\fontsize{10}{12}\selectfont Professora Doutora Cátia Raquel Jesus Vaz \par}
+        {\hspace{2cm}\fontsize{10}{12}\selectfont Professor Doutor Nuno Miguel da Costa de Sousa Leite \par}
+        {\hspace{2cm}\fontsize{10}{12}\selectfont Professor Doutor Artur Jorge Ferreira \par}
+        }
+    \end{center}
+
+    \vfill
+    {\bfseries\fontsize{9}{11} Setembro de 2025 \par}
+\end{titlepage}
+
+% -------- Agradecimentos --------
+\include{Capitulos/acknowledgements}
+
+% -------- Declaração de Integridade --------
+\include{Capitulos/statement}
+
+% -------- Resumo --------
+\include{Capitulos/abstract-pt}
+
+\ % Força a criação de uma página em branco
+
+\newpage
+
+% -------- Abstract --------
+\include{Capitulos/abstract-en}
+
+% -------- Listas --------
+\printglossaries
+\newpage
+
+\tableofcontents
+\newpage
+
+\listoffigures
+\newpage
+
+\listoftables
+\newpage
+
+\lstlistoflistings
+
+\pagenumbering{arabic}
+
+% -------- Trabalho --------
+\include{Capitulos/chapter1}
+\include{Capitulos/chapter2}
+\include{Capitulos/chapter3}
+\include{Capitulos/chapter4}
+\include{Capitulos/chapter5}
+
+% -------- REFERÊNCIAS --------
+\printbibliography[title={Referências}]
+
+\end{document}
+`

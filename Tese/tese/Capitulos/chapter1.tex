@@ -1,0 +1,64 @@
+% 
+%  chapter1.tex
+%  ThesisISEL
+%  
+%  Created by Matilde Pós-de-Mina Pato on 2012/10/09.
+%
+\chapter{Introdução}
+\label{capitulo:introdução}
+
+Os problemas de agendamento são uma classe de problemas de otimização combinatória que surgem em diversas áreas, sendo fundamentais para melhorar a eficiência e a alocação de recursos em cenários reais. A essência do problema de agendamento está na organização de um conjunto de tarefas (ou eventos) num intervalo de tempo, de forma a atender a um conjunto de restrições e, em muitos casos, otimizar um ou mais critérios. Esses problemas aparecem em contextos tão variados quanto educação, logística, saúde, produção industrial, transportes, entre outros.
+
+A elaboração anual ou semestral de horários escolares é tipicamente feita de forma manual. Devido à existência de múltiplas soluções possíveis, esta atividade é muito demorada e complexa. Em certos casos, pode não ser possível criar um horário devido ao número de restrições presentes.
+
+As restrições podem ser rígidas ou flexíveis. Restrições rígidas são de cumprimento obrigatório não sendo possível criar um horário caso a restrição seja violada. Restrições flexíveis podem não ser cumpridas apesar de haver um incentivo para o cumprimento das mesmas. A qualidade de uma solução de horário depende da quantidade de restrições flexíveis violadas.
+
+Os problemas de agendamento podem ser abordados por meio de duas subcategorias:
+
+\begin{compactitem}
+    \item Agendamento de Disciplinas Baseado no Currículo ou, em inglês, \gls{cb-ctt}.
+    \item Agendamento de Disciplinas Após Inscrição ou, em inglês, \gls{pe-ctt}.
+\end{compactitem}
+
+A formulação \gls{cb-ctt} centra-se no planeamento de horários com base no currículo escolar, organizando disciplinas que compõem programas de estudo estruturados. Este tipo de abordagem é amplamente utilizado no ensino primário e secundário, mas também pode ser aplicado no ensino superior.
+
+Por outro lado, a formulação \gls{pe-ctt} foca-se no planeamento de horários considerando as inscrições dos estudantes em disciplinas específicas. Esta abordagem é particularmente relevante no ensino superior, onde os estudantes têm maior liberdade na escolha das disciplinas que desejam frequentar.
+
+\section{Objetivos}
+
+O projeto tem como objetivo principal o desenvolvimento de uma aplicação com interface gráfica que permita a criação de horários, a partir de uma configuração inicial acerca do ciclo (licenciatura, mestrado) do horário e os dados relativos às salas, disciplinas e professores. Para a criação dos horários será utilizada a meta-heurística Têmpera simulada ou, em inglês, \gls{sa} e será seguido o padrão da \gls{itc}~2019 \cite{itc2019-Website}.
+
+A aplicação será desenvolvida de modo a ser utilizada pelo \gls{isel}, seguindo as normas estabelecidas pela instituição. Para a formulação do problema de agendamento, será adotada a abordagem \gls{cb-ctt}, uma vez que a inscrição dos estudantes ocorre após a criação dos horários.
+
+Pretende-se a utilização do padrão da \gls{itc}~2019 de modo a simplificar o armazenamento e representação dos dados num formato definido e amplamente utilizado. A utilização de um padrão definido possui algumas vantagens, tais como: redução do tempo de implementação, fiabilidade e qualidade, facilidade de manutenção e minimização de erros de implementação.
+
+O projeto terá um foco na otimização do processo de geração de horários e haverá uma fase de descoberta dos melhores parâmetros do algoritmo \gls{sa} para este caso em específico, comparando os tempos de execução e os resultados obtidos.
+
+Os dados utilizados por parte do projeto devem ser guardados de forma persistente para que os seus utilizadores não sejam obrigados a fornecer os mesmos dados entre utilizações. Será criada uma base de dados para armazenar os dados fornecidos de forma organizada e normalizada.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{Imagens/diagrama-geral.pdf}
+    \caption{Diagrama geral da aplicação a desenvolver.}
+    \label{fig:diagrama-geral}
+\end{figure}
+
+A Figura~\ref{fig:diagrama-geral} apresenta o diagrama geral da aplicação. Na primeira utilização, o utilizador deve introduzir os dados referentes aos cursos, disciplinas e professores, seguindo o padrão estabelecido pela \gls{itc}~2019.
+
+Após a inserção e processamento dos dados, estes são exibidos ao utilizador através da interface gráfica. Os dados introduzidos são armazenados numa base de dados, garantindo a sua persistência entre diferentes utilizações da aplicação.
+
+Quando o utilizador inicia o processo de geração de horários, a aplicação executa o algoritmo responsável pela criação dos horários. Durante este processo, uma barra de progresso é exibida para fornecer informação sobre o estado de execução da operação.
+
+%TODO: Adicionar informação acerca dos parâmetros de entrada
+
+Por fim, o utilizador pode optar por exportar os dados armazenados na base de dados. A exportação pode ser realizada nos formatos \gls{xml} e \gls{csv} para todos os dados, sendo os formatos \gls{png} e \gls{pdf} exclusivos para os horários.
+
+A exportação dos dados no formato \gls{xml} seguirá o padrão estabelecido pela \gls{itc}~2019. No formato \gls{csv}, serão exportadas as tabelas presentes na base de dados. Já nos formatos \gls{png} e \gls{pdf}, serão exportados exclusivamente os horários, sendo apresentados por meio de uma imagem típica de horário. No formato \gls{pdf}, a imagem será gerada como um gráfico vetorial.
+
+\section{Organização do documento}
+
+O restante relatório está organizado em dois capítulos.
+
+O Capítulo~\ref{capitulo:estado-arte} tem como objetivo detalhar a compreensão do problema ao explorar abordagens e técnicas descritas na literatura. A análise começa com estudos relevantes a partir do ano de 1996, fornecendo uma perspetiva histórica das soluções propostas. Em seguida, são destacados artigos que fazem uso do algoritmo que será utilizado neste projeto, o \gls{sa}, permitindo compreender a sua aplicação em cenários semelhantes e o impacto das suas características na resolução do problema em questão.
+
+No Capítulo~\ref{capitulo:trabalho-realizado-e-por-realizar}, são detalhados os requisitos funcionais e não funcionais do projeto, juntamente com uma descrição das atividades e avanços realizados até ao momento. Este capítulo resume o trabalho desenvolvido e apresenta as estratégias adotadas para alcançar os resultados pretendidos, bem como o respetivo planeamento.

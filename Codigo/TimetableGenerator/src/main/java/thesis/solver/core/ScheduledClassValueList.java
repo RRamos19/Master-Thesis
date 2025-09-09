@@ -1,9 +1,9 @@
 package thesis.solver.core;
 
 import thesis.model.domain.InMemoryRepository;
-import thesis.model.domain.elements.ClassUnit;
-import thesis.model.domain.elements.ScheduledLesson;
-import thesis.model.domain.elements.Time;
+import thesis.model.domain.components.ClassUnit;
+import thesis.model.domain.components.ScheduledLesson;
+import thesis.model.domain.components.Time;
 import thesis.utils.RandomToolkit;
 
 import java.util.*;
@@ -15,7 +15,7 @@ public class ScheduledClassValueList implements ISGValueList<DefaultISGValue> {
         ClassUnit classUnit = selectedVariable.variable();
         String classId = classUnit.getClassId();
 
-        // Copy of the original set to allow modifications
+        // Copy of the original to allow modifications
         Set<String> roomList = new HashSet<>(classUnit.getRoomIds());
 
         // If there are no rooms for a given class, a null value is used
@@ -24,11 +24,15 @@ public class ScheduledClassValueList implements ISGValueList<DefaultISGValue> {
         }
 
         // Create all the possible values and only store the ones that are available
-        // (The lesson is available only if the Room and Teachers are available at the scheduled time)
+        // (A lesson is available only if the Room and Teachers are available at the scheduled time)
         for(String roomId : roomList) {
             for (Time time : classUnit.getTimeSet()) {
                 ScheduledLesson scheduledLesson = new ScheduledLesson(classId, roomId, time);
                 scheduledLesson.bindModel(dataModel);
+
+                for(int teacherId : classUnit.getTeacherIdList()) {
+                    scheduledLesson.addTeacherId(teacherId);
+                }
 
                 if (scheduledLesson.isAvailable()) {
                     defaultISGValueList.add(new DefaultISGValue(selectedVariable, scheduledLesson));

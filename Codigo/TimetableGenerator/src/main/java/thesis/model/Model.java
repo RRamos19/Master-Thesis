@@ -2,8 +2,9 @@ package thesis.model;
 
 import thesis.controller.ControllerInterface;
 import thesis.model.domain.InMemoryRepository;
-import thesis.model.domain.elements.TableDisplayable;
-import thesis.model.domain.elements.Timetable;
+import thesis.model.domain.components.TableDisplayable;
+import thesis.model.domain.components.Timetable;
+import thesis.model.exceptions.CheckedIllegalState;
 import thesis.model.exceptions.InvalidConfigurationException;
 import thesis.model.exceptions.ParsingException;
 import thesis.model.exporter.DataExporter;
@@ -13,6 +14,7 @@ import thesis.solver.initialsolutiongenerator.InitialSolutionGenerator;
 import thesis.solver.initialsolutiongenerator.MullerSolutionGenerator;
 import thesis.solver.solutionoptimizer.HeuristicAlgorithm;
 import thesis.solver.solutionoptimizer.SimulatedAnnealing;
+import thesis.utils.DaemonThreadFactory;
 import thesis.utils.DoubleToolkit;
 
 import java.io.File;
@@ -56,12 +58,12 @@ public class Model implements ModelInterface {
     }
 
     @Override
-    public void importSolution(Timetable solution) throws InvalidConfigurationException {
+    public void importSolution(Timetable solution) throws InvalidConfigurationException, CheckedIllegalState {
         String program = solution.getProgramName();
 
         InMemoryRepository dataRepository = dataRepositoryHashMap.get(program);
         if(dataRepository == null) {
-            throw new IllegalStateException("No data was already stored for the solution imported");
+            throw new CheckedIllegalState("No data was already stored for the solution imported");
         }
 
         dataRepository.addTimetable(solution);
@@ -158,15 +160,13 @@ public class Model implements ModelInterface {
         Timetable initialSolution = initialSolutionGen.generate(initSolutionMaxIter);
 
         System.out.println("Initial solution cost: " + initialSolution.cost());
+        System.out.println("Initial Generation Runtime: " + (System.currentTimeMillis() - start)/1000);
 
         HeuristicAlgorithm<Timetable> heuristicAlgorithm = new SimulatedAnnealing(data, initialSolution, initialTemperature, minTemperature, coolingRate, k);
         heuristicAlgorithmsMap.put(programName, heuristicAlgorithm);
         Timetable generatedSolution = heuristicAlgorithm.execute();
 
-        System.out.println("Optimized cost: " + generatedSolution.cost());
-
-        // Runtime in seconds
-        generatedSolution.setRuntime((System.currentTimeMillis() - start)/1000);
+        generatedSolution.setRuntime((System.currentTimeMillis() - start)/1000); // Runtime in seconds
 
         return generatedSolution;
     }
@@ -205,15 +205,6 @@ public class Model implements ModelInterface {
             case SOLUTIONS_ITC:
                 dataExporter.exportSolutionsToITC(data);
                 break;
-        }
-    }
-
-    private static class DaemonThreadFactory implements ThreadFactory {
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r);
-            thread.setDaemon(true); // The thread is cancelled when the JVM is closed
-            return thread;
         }
     }
 }
