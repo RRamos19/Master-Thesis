@@ -35,8 +35,7 @@ public class Room implements TableDisplayable {
     }
 
     public int getRoomDistance(String room2Id) {
-        Integer distance = roomDistances.get(room2Id);
-        return distance != null ? distance : 0;
+        return roomDistances.getOrDefault(room2Id, 0);
     }
 
     @Override

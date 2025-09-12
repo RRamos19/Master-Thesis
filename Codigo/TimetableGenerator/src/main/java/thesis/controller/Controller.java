@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class Controller implements ControllerInterface {
@@ -37,9 +38,9 @@ public class Controller implements ControllerInterface {
     }
 
     @Override
-    public double getGenerationProgress(String programName) throws InvalidConfigurationException, ExecutionException, InterruptedException {
+    public double getGenerationProgress(UUID progressUUID) throws InvalidConfigurationException, ExecutionException, InterruptedException {
         try {
-            return model.getGenerationProgress(programName);
+            return model.getGenerationProgress(progressUUID);
         } catch (Exception e) {
             // This should only happen if the process of storing the result is interrupted
             // but that only happens if the progress is 100%, so it should be impossible
@@ -50,8 +51,8 @@ public class Controller implements ControllerInterface {
     }
 
     @Override
-    public void cancelGeneration(String programName) {
-        model.cancelTimetableGeneration(programName);
+    public void cancelGeneration(UUID progressUUID) {
+        model.cancelTimetableGeneration(progressUUID);
     }
 
     @Override
@@ -108,8 +109,8 @@ public class Controller implements ControllerInterface {
     }
 
     @Override
-    public void startGeneratingSolution(String programName, Integer initSolutionMaxIter, double initialTemperature, double minTemperature, double coolingRate, int k) {
-        model.startGeneratingSolution(programName, initSolutionMaxIter, initialTemperature, minTemperature, coolingRate, k);
+    public void startGeneratingSolution(String programName, UUID progressUUID, Integer initSolutionMaxIter, double initialTemperature, double minTemperature, double coolingRate, int k) {
+        model.startGeneratingSolution(programName, progressUUID, initSolutionMaxIter, initialTemperature, minTemperature, coolingRate, k);
     }
 
     private void export(String programName, ModelInterface.ExportType type) {

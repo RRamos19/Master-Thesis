@@ -74,8 +74,8 @@ public class DefaultISGVariable implements ISGVariable<DefaultISGVariable, Defau
         if(removalCount != null) {
             removalCount.put(iAssignment, getRemovals(iAssignment) + 1);
         }
-        iAssignment = null;
         solution.convertToUnassigned(this);
+        iAssignment = null;
     }
 
     @Override

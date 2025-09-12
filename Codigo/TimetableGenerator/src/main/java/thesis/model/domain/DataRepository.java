@@ -226,6 +226,14 @@ public class DataRepository implements InMemoryRepository {
             }
         }
 
+        for(Room room1 : roomMap.values()) {
+            for(String room2Id : room1.getRoomDistances().keySet()) {
+                if(roomMap.get(room2Id) == null) {
+                    throw new InvalidConfigurationException("Problem configuration - The roomId " + room2Id + " in the distance section of room " + room1.getRoomId() + " wasn't defined!");
+                }
+            }
+        }
+
         for(Timetable timetable : timetableList) {
             for(ScheduledLesson lesson : timetable.getScheduledLessonList()) {
                 ClassUnit cls = getClassUnit(lesson.getClassId());

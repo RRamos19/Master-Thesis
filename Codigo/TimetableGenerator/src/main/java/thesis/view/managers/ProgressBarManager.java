@@ -6,25 +6,32 @@ import thesis.view.managers.components.ProgressBarUnit;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class ProgressBarManager {
     private final Pane progressContainer;
-    private final Map<String, ProgressBarUnit> progressBarMap = new HashMap<>(); // ProgramName : ProgressBar
+    private final Map<UUID, ProgressBarUnit> progressBarMap = new HashMap<>(); // UUID : ProgressBar
 
     public ProgressBarManager(Pane parent) {
         this.progressContainer = parent;
     }
 
-    public void insertProgressBar(String programName) {
+    public UUID insertProgressBar(String programName) {
         ProgressBarUnit bar = new ProgressBarUnit(programName);
 
-        progressBarMap.put(programName, bar);
+        UUID uuid;
+        do {
+             uuid = UUID.randomUUID();
+        } while(progressBarMap.get(uuid) != null);
 
+        progressBarMap.put(uuid, bar);
         progressContainer.getChildren().add(bar.getProgressParent());
+
+        return uuid;
     }
 
-    public void startTimeline(String programName, int cycleCount, KeyFrame ... keyframes) {
-        ProgressBarUnit unit = progressBarMap.get(programName);
+    public void startTimeline(UUID progressUUID, int cycleCount, KeyFrame ... keyframes) {
+        ProgressBarUnit unit = progressBarMap.get(progressUUID);
 
         if(unit == null) {
             throw new IllegalStateException("Program has no progress bar!");
@@ -39,8 +46,8 @@ public class ProgressBarManager {
         }
     }
 
-    public void stopAndClearTimeline(String programName) {
-        ProgressBarUnit unit = progressBarMap.get(programName);
+    public void stopAndClearTimeline(UUID programUUID) {
+        ProgressBarUnit unit = progressBarMap.get(programUUID);
 
         if(unit == null) {
             throw new IllegalStateException("Program has no progress bar!");
@@ -48,11 +55,11 @@ public class ProgressBarManager {
 
         unit.stopAndClearTimeline();
         progressContainer.getChildren().remove(unit.getProgressParent());
-        progressBarMap.remove(programName);
+        progressBarMap.remove(programUUID);
     }
 
-    public void setProgress(String programName, double progress) {
-        ProgressBarUnit unit = progressBarMap.get(programName);
+    public void setProgress(UUID programUUID, double progress) {
+        ProgressBarUnit unit = progressBarMap.get(programUUID);
 
         if(unit == null) {
             throw new IllegalStateException("Program has no progress bar!");
@@ -66,7 +73,8 @@ public class ProgressBarManager {
         }
     }
 
-    public boolean exists(String programName) {
-        return progressBarMap.get(programName) != null;
+    public String getProgramName(UUID programUUID) {
+        ProgressBarUnit unit = progressBarMap.get(programUUID);
+        return unit != null ? unit.getProgramName() : null;
     }
 }

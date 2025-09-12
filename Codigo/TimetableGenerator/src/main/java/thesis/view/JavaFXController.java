@@ -4,6 +4,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -132,18 +133,17 @@ public class JavaFXController implements ViewInterface {
     }
 
     private void updateStoredPrograms() {
-        String oldChosenProgram = chosenProgram;
+        ObservableList<String> oldItems = programsChoiceBox.getItems();
         Set<String> storedPrograms = controller.getStoredPrograms();
-
-        // Choose the first element if there was no program already chosen
-        if(oldChosenProgram == null && !storedPrograms.isEmpty()) {
-            oldChosenProgram = storedPrograms.iterator().next();
-        }
 
         programsChoiceBox.setItems(FXCollections.observableList(new ArrayList<>(storedPrograms)));
 
-        if(oldChosenProgram != null && storedPrograms.contains(oldChosenProgram)) {
-            programsChoiceBox.setValue(oldChosenProgram);
+        // Choose the first item not present on the list previous to the update
+        for(String item : storedPrograms) {
+            if(!oldItems.contains(item)) {
+                programsChoiceBox.setValue(item);
+                break;
+            }
         }
     }
 
@@ -212,48 +212,43 @@ public class JavaFXController implements ViewInterface {
             showErrorAlert("A program must be chosen before starting the generation of a solution!");
             return;
         }
-        if(progressBarManager.exists(chosenProgram)) {
-            showErrorAlert("There is a solution generation already in progress!");
-            return;
-        }
 
-        progressBarManager.insertProgressBar(chosenProgram);
+        UUID progressBarUUID = progressBarManager.insertProgressBar(chosenProgram);
 
         controller.startGeneratingSolution(chosenProgram,
+                progressBarUUID,
                 generalConfiguration.getInitialSolutionMaxIterations(),
                 generalConfiguration.getInitialTemperature(),
                 generalConfiguration.getMinTemperature(),
                 generalConfiguration.getCoolingRate(),
                 generalConfiguration.getK());
 
-        String generatingSolutionProgram = chosenProgram;
-
-        KeyFrame keyframe = new KeyFrame(Duration.seconds(PROGRESSBAR_UPDATE_SECONDS), e -> progressBarUpdate(e, generatingSolutionProgram));
-        progressBarManager.startTimeline(generatingSolutionProgram, Timeline.INDEFINITE, keyframe);
+        KeyFrame keyframe = new KeyFrame(Duration.seconds(PROGRESSBAR_UPDATE_SECONDS), e -> progressBarUpdate(e, progressBarUUID));
+        progressBarManager.startTimeline(progressBarUUID, Timeline.INDEFINITE, keyframe);
     }
 
-    private void progressBarUpdate(ActionEvent ignoredEvent, String generatingSolutionProgram) {
+    private void progressBarUpdate(ActionEvent ignoredEvent, UUID progressBarUUID) {
         double progress;
 
         try {
-            progress = controller.getGenerationProgress(generatingSolutionProgram);
+            progress = controller.getGenerationProgress(progressBarUUID);
         } catch (Exception e) {
-            progressBarManager.stopAndClearTimeline(generatingSolutionProgram);
-            controller.cancelGeneration(generatingSolutionProgram);
+            progressBarManager.stopAndClearTimeline(progressBarUUID);
+            controller.cancelGeneration(progressBarUUID);
             return;
         }
 
-        progressBarManager.setProgress(generatingSolutionProgram, progress);
+        progressBarManager.setProgress(progressBarUUID, progress);
 
         if (DoubleToolkit.isEqual(progress, 1)) {
-            progressBarManager.stopAndClearTimeline(generatingSolutionProgram);
+            String programName = progressBarManager.getProgramName(progressBarUUID);
+            progressBarManager.stopAndClearTimeline(progressBarUUID);
 
-            // If the chosenProgram is the same as the program of the solution, the treeView must be updated
-            if(generatingSolutionProgram.equals(chosenProgram)) {
-                populateTreeView(generatingSolutionProgram);
+            if(programName.equals(chosenProgram)) {
+                populateTreeView(programName);
             }
 
-            showInformationAlert("The solution for the program " + generatingSolutionProgram + " has been created!\nPerform a double click on it to visualize!");
+            showInformationAlert("The solution for the program " + programName + " has been created!\nPerform a double click on it to visualize!");
         }
     }
 

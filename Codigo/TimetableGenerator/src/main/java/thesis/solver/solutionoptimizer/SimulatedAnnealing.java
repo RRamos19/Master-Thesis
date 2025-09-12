@@ -115,7 +115,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
     }
 
     private double probabilityFunction(double currentCost, double neighborCost, double temperature) {
-        return currentCost != 0 ? Math.exp((currentCost - neighborCost) / temperature) : 0;
+        return Math.exp((currentCost - neighborCost) / temperature);
     }
 
     private DefaultISGSolution neighborhoodFunction(DefaultISGSolution curr) {
