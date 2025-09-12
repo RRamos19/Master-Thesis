@@ -212,11 +212,10 @@ public class ITCFormatParser implements InputFileReader {
 
                 if(room2 != null) {
                     room2.addRoomDistance(roomId, roomDistances.getValue());
-                } else {
-                    System.out.println("Algo não bate certo!!");
                 }
             }
         }
+        
         return data;
     }
 

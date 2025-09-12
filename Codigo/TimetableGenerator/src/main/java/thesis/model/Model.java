@@ -32,12 +32,8 @@ public class Model implements ModelInterface {
     private final Map<UUID, HeuristicAlgorithm<Timetable>> heuristicAlgorithmsMap = new ConcurrentHashMap<>();                // ProgramName : HeuristicAlgorithm
     private final Map<UUID, String> programGenerationMap = new HashMap<>();
 
-    private final ExecutorService threadPool = new ThreadPoolExecutor(
-            0,
+    private final ExecutorService threadPool = Executors.newFixedThreadPool(
             Runtime.getRuntime().availableProcessors(),
-            60,
-            TimeUnit.SECONDS,
-            new SynchronousQueue<>(),
             new DaemonThreadFactory()
     );
 

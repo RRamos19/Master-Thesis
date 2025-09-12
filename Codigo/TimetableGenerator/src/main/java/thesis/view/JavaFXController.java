@@ -10,6 +10,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
 import javafx.util.Duration;
@@ -42,6 +43,12 @@ public class JavaFXController implements ViewInterface {
     private Window primaryWindow;
     private GeneralConfiguration generalConfiguration;
     private ProgressBarManager progressBarManager;
+
+    @FXML
+    private BorderPane applicationPrincipalPane;
+
+    @FXML
+    private Pane dragAndDropPane;
 
     @FXML
     private TextField ipField;
@@ -136,6 +143,11 @@ public class JavaFXController implements ViewInterface {
         ObservableList<String> oldItems = programsChoiceBox.getItems();
         Set<String> storedPrograms = controller.getStoredPrograms();
 
+        if(!oldItems.isEmpty() && storedPrograms.containsAll(oldItems)) {
+            // Nothing changed
+            return;
+        }
+
         programsChoiceBox.setItems(FXCollections.observableList(new ArrayList<>(storedPrograms)));
 
         // Choose the first item not present on the list previous to the update
@@ -207,6 +219,55 @@ public class JavaFXController implements ViewInterface {
     }
 
     @FXML
+    private void dragDetectionEvent(MouseEvent event) {
+        System.out.println("Drag detected!");
+        // Only accept files moved onto the application window
+        applicationPrincipalPane.startDragAndDrop(TransferMode.MOVE);
+
+        event.consume();
+    }
+
+    @FXML
+    private void dragOverEvent(DragEvent event) {
+        event.acceptTransferModes(TransferMode.MOVE);
+
+        event.consume();
+    }
+
+    @FXML
+    private void dragEnteredEvent(DragEvent event) {
+        if (event.getGestureSource() != applicationPrincipalPane &&
+                event.getDragboard().hasFiles()) {
+            dragAndDropPane.setVisible(true);
+        }
+
+        event.consume();
+    }
+
+    @FXML
+    private void dragExitedEvent(DragEvent event) {
+        dragAndDropPane.setVisible(false);
+
+        event.consume();
+    }
+
+    @FXML
+    private void dragDroppedEvent(DragEvent event) {
+        Dragboard dragboard = event.getDragboard();
+        if(dragboard.hasFiles()) {
+            List<File> files = dragboard.getFiles();
+
+            for(File file : files) {
+                controller.importITCData(file);
+            }
+
+            updateStoredPrograms();
+        }
+
+        event.consume();
+    }
+
+    @FXML
     private void generateSolutionEvent() {
         if(chosenProgram == null) {
             showErrorAlert("A program must be chosen before starting the generation of a solution!");
@@ -227,7 +288,7 @@ public class JavaFXController implements ViewInterface {
         progressBarManager.startTimeline(progressBarUUID, Timeline.INDEFINITE, keyframe);
     }
 
-    private void progressBarUpdate(ActionEvent ignoredEvent, UUID progressBarUUID) {
+    private void progressBarUpdate(ActionEvent actionEvent, UUID progressBarUUID) {
         double progress;
 
         try {
@@ -250,6 +311,8 @@ public class JavaFXController implements ViewInterface {
 
             showInformationAlert("The solution for the program " + programName + " has been created!\nPerform a double click on it to visualize!");
         }
+
+        actionEvent.consume();
     }
 
     private void populateTreeView(String progname) {
