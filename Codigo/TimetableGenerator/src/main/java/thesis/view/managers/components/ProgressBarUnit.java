@@ -11,12 +11,14 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 
 public class ProgressBarUnit {
+    private final String programName;
     private final ProgressBar progressBar;
     private final HBox progressParent;
     private Timeline timeline;
 
-    public ProgressBarUnit(String barName) {
-        Label progressBarName = new Label(barName + " :");
+    public ProgressBarUnit(String programName) {
+        this.programName = programName;
+        Label progressBarName = new Label(programName + " :");
 
         Label progressBarProgress = new Label();
         progressBarProgress.setMaxWidth(Double.MAX_VALUE);
@@ -44,6 +46,10 @@ public class ProgressBarUnit {
 
     public Node getProgressParent() {
         return progressParent;
+    }
+
+    public String getProgramName() {
+        return programName;
     }
 
     public void startTimeline(int cycleCount, KeyFrame... keyFrames) {

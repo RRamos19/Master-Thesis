@@ -13,11 +13,16 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
     private List<DefaultISGVariable> bestAssignedVariableCollection;
     private Integer bestValue;
 
+    // Variables for optimizations
+    private final Map<String, Set<ScheduledLesson>> lessonsByRoom;
+    private final Map<Integer, Set<ScheduledLesson>> lessonsByTeacher;
     private boolean updateSolution = true;
     private Timetable solution;
 
     public DefaultISGSolution(InMemoryRepository dataModel) {
         this.dataModel = dataModel;
+        this.lessonsByRoom = new HashMap<>();
+        this.lessonsByTeacher = new HashMap<>();
     }
 
     // Deep copy of another solution
@@ -49,14 +54,22 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
             });
         }
 
-        // Copy the cost
+        // Copy the best cost
         this.bestValue = other.bestValue;
 
+        // Copy the last solution created and the flag to update
         this.updateSolution = other.updateSolution;
         this.solution = other.solution;
 
-        // Update the solution
-//        this.solution();
+        // Deep copy the memory of room and teacher conflicts
+        this.lessonsByRoom = new HashMap<>();
+        other.lessonsByRoom.forEach((room, set) ->
+            this.lessonsByRoom.put(room, new HashSet<>(set))
+        );
+        this.lessonsByTeacher = new HashMap<>();
+        other.lessonsByTeacher.forEach((teacher, set) ->
+            this.lessonsByTeacher.put(teacher, new HashSet<>(set))
+        );
     }
 
     @Override
@@ -122,55 +135,47 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
     @Override
     public Set<String> conflictIds(DefaultISGValue value) {
         Timetable timetable = solution();
-        Set<String> conflictIds = new HashSet<>();
+        ScheduledLesson valueLesson = value.value();
+        Set<String> conflicts = new HashSet<>();
 
         // Add the constraint conflicts
         for (Constraint constraint : value.variable().variable().getConstraintList()) {
-            constraint.computeConflicts(value.value(), timetable, conflictIds);
+            constraint.computeConflicts(valueLesson, timetable, conflicts);
         }
 
         // Variables to avoid multiple method calls in the for loop
-        ScheduledLesson valueLesson = value.value();
         String valueClassId = valueLesson.getClassId();
         String valueRoomId = valueLesson.getRoomId();
         Time valueTime = valueLesson.getScheduledTime();
-        List<Integer> valueTeachers = valueLesson.getTeacherIds();
+        Set<Integer> valueTeachers = valueLesson.getTeacherIds();
 
-        // Add the room and teacher conflicts
-        for (DefaultISGVariable variable : variableCollection) {
-            ScheduledLesson scheduledLesson = variable.getAssignment().value();
+        // Add the room conflicts
+        if (valueRoomId != null) {
+            for (ScheduledLesson scheduledLesson : lessonsByRoom.getOrDefault(valueRoomId, Collections.emptySet())) {
+                String classId = scheduledLesson.getClassId();
+                if (classId.equals(valueClassId) || conflicts.contains(classId)) continue;
 
-            if (scheduledLesson != null) {
-                String lessonRoomId = scheduledLesson.getRoomId();
-                String lessonClassId = scheduledLesson.getClassId();
-                List<Integer> lessonTeachers = scheduledLesson.getTeacherIds();
-
-                // If the class ids are the same skip
-                if (Objects.equals(lessonClassId, valueClassId)) {
-                    continue;
-                }
-
-                if(scheduledLesson.getScheduledTime().overlaps(valueTime)) {
-                    // Verify if the rooms are the same
-                    if (lessonRoomId != null && Objects.equals(lessonRoomId, valueRoomId)) {
-                        conflictIds.add(lessonClassId);
-                        continue;
-                    }
-
-                    // Verify if any of the teachers involved in both lessons overlap
-                    if (!valueTeachers.isEmpty() && !lessonTeachers.isEmpty()) {
-                        for (int teacherId : valueTeachers) {
-                            if (lessonTeachers.contains(teacherId)) {
-                                conflictIds.add(lessonClassId);
-                                break;
-                            }
-                        }
-                    }
+                // There is only a conflict if the times overlap
+                if (scheduledLesson.getScheduledTime().overlaps(valueTime)) {
+                    conflicts.add(classId);
                 }
             }
         }
 
-        return conflictIds;
+        // Add the teacher conflicts
+        for (int teacherId : valueTeachers) {
+            for (ScheduledLesson scheduledLesson : lessonsByTeacher.getOrDefault(teacherId, Collections.emptySet())) {
+                String classId = scheduledLesson.getClassId();
+                if (classId.equals(valueClassId) || conflicts.contains(classId)) continue;
+
+                // There is only a conflict if the times overlap
+                if (scheduledLesson.getScheduledTime().overlaps(valueTime)) {
+                    conflicts.add(classId);
+                }
+            }
+        }
+
+        return conflicts;
     }
 
     @Override
@@ -183,7 +188,20 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
         unassignedVariableCollection.remove(var);
         variableCollection.add(var);
 
+        addToMemory(var.getAssignment().value());
+
         updateSolution = true;
+    }
+
+    private void addToMemory(ScheduledLesson scheduledLesson) {
+        String roomId = scheduledLesson.getRoomId();
+        if(roomId != null) {
+            lessonsByRoom.computeIfAbsent(roomId, k -> new HashSet<>()).add(scheduledLesson);
+        }
+
+        for(Integer teacherId : scheduledLesson.getTeacherIds()) {
+            lessonsByTeacher.computeIfAbsent(teacherId, k -> new HashSet<>()).add(scheduledLesson);
+        }
     }
 
     @Override
@@ -196,7 +214,22 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
         variableCollection.remove(var);
         unassignedVariableCollection.add(var);
 
+        removeFromMemory(var.getAssignment().value());
+
         updateSolution = true;
+    }
+
+    private void removeFromMemory(ScheduledLesson scheduledLesson) {
+        String roomId = scheduledLesson.getRoomId();
+        if(roomId != null) {
+            Set<ScheduledLesson> lessonSet = lessonsByRoom.get(roomId);
+            if(lessonSet != null) lessonSet.remove(scheduledLesson);
+        }
+
+        for(Integer teacherId : scheduledLesson.getTeacherIds()) {
+            Set<ScheduledLesson> lessonSet = lessonsByTeacher.get(teacherId);
+            if(lessonSet != null) lessonSet.remove(scheduledLesson);
+        }
     }
 
     @Override
@@ -219,6 +252,12 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
         variableCollection.clear();
         variableCollection.addAll(bestAssignedVariableCollection);
         variableCollection.forEach(DefaultISGVariable::restoreBest);
+
+        lessonsByRoom.clear();
+        lessonsByTeacher.clear();
+        for(DefaultISGVariable variable : variableCollection) {
+            addToMemory(variable.getAssignment().value());
+        }
 
         updateSolution = true;
     }

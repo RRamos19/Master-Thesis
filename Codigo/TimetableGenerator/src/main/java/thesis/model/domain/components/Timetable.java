@@ -14,9 +14,9 @@ public class Timetable implements Cloneable, TableDisplayable, XmlResult {
     private long runtime;                                                      // Sum of the durations of the initial solution and optimization algorithms
     private Map<String, ScheduledLesson> scheduledLessonMap = new HashMap<>(); // ClassId : ScheduledLesson
     private InMemoryRepository dataModel;
-    Set<Constraint> involvedConstraints = new HashSet<>();                     // Contains the constraints of the classes
+    private Set<Constraint> involvedConstraints = new HashSet<>();             // Contains the constraints of the classes
 
-    boolean updateCost = true;
+    private boolean updateCost = true;
     private int cost;
 
     public Timetable(String programName) {
@@ -148,6 +148,8 @@ public class Timetable implements Cloneable, TableDisplayable, XmlResult {
             clone.dataModel = dataModel;
             clone.involvedConstraints = involvedConstraints;
             clone.scheduledLessonMap = new HashMap<>(scheduledLessonMap);
+            clone.updateCost = updateCost;
+            clone.cost = cost;
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);

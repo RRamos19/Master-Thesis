@@ -10,6 +10,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public interface ControllerInterface {
@@ -23,9 +24,9 @@ public interface ControllerInterface {
     Map<String, List<TableDisplayable>> getAllDisplayableData(String progName);
 
     // Schedule solution generation methods
-    void startGeneratingSolution(String programName, Integer initSolutionMaxIter, double initialTemperature, double minTemperature, double coolingRate, int k);
-    double getGenerationProgress(String programName) throws InvalidConfigurationException, ExecutionException, InterruptedException;
-    void cancelGeneration(String programName);
+    void startGeneratingSolution(String programName, UUID progressUUID, Integer initSolutionMaxIter, double initialTemperature, double minTemperature, double coolingRate, int k);
+    double getGenerationProgress(UUID progressUUID) throws InvalidConfigurationException, ExecutionException, InterruptedException;
+    void cancelGeneration(UUID progressUUID);
 
     // Data import methods
     void importITCData(File file);

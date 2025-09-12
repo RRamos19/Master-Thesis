@@ -26,9 +26,9 @@ public class ConfigurationManager {
         GeneralConfiguration defaultValues = new GeneralConfiguration(
                 true,
                 null,
-                1000,
+                400,
+                0.0001,
                 0.01,
-                0.001,
                 5,
                 23,
                 8);

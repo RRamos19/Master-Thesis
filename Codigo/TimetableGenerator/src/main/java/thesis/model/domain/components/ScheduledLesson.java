@@ -4,13 +4,10 @@ import thesis.model.domain.InMemoryRepository;
 import thesis.model.exceptions.CheckedIllegalArgumentException;
 import thesis.utils.BitToolkit;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class ScheduledLesson {
-    private final List<Integer> teacherIds = new ArrayList<>();
+    private final Set<Integer> teacherIds = new HashSet<>();
     private final String roomId;
     private final String classId;
     private Time scheduledTime;
@@ -168,8 +165,8 @@ public class ScheduledLesson {
         teacherIds.add(teacherId);
     }
 
-    public List<Integer> getTeacherIds() {
-        return Collections.unmodifiableList(teacherIds);
+    public Set<Integer> getTeacherIds() {
+        return Collections.unmodifiableSet(teacherIds);
     }
 
     public void fixTime(Time time) {

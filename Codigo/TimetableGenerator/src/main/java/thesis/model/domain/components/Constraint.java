@@ -6,7 +6,7 @@ public abstract class Constraint implements TableDisplayable {
     protected final String type;
     protected final Integer penalty;
     protected final boolean required;
-    protected final List<String> classUnitIdList = new ArrayList<>();
+    protected final Set<String> classUnitIdList = new HashSet<>();
     protected final Integer firstParam;
     protected final Integer secondParam;
     protected final short distribWeight;
@@ -56,8 +56,8 @@ public abstract class Constraint implements TableDisplayable {
         classUnitIdList.add(classUnitId);
     }
 
-    public List<String> getClassUnitIdList() {
-        return Collections.unmodifiableList(classUnitIdList);
+    public Set<String> getClassUnitIdList() {
+        return Collections.unmodifiableSet(classUnitIdList);
     }
 
     /**
@@ -67,24 +67,16 @@ public abstract class Constraint implements TableDisplayable {
      */
     protected List<ScheduledLesson> getScheduledClasses(Timetable solution) {
         List<ScheduledLesson> scheduledClasses = new ArrayList<>();
+        Set<String> classUnitList = this.getClassUnitIdList();
 
         for(ScheduledLesson scheduledLesson : solution.getScheduledLessonList()) {
             String classId = scheduledLesson.getClassId();
-            if(this.getClassUnitIdList().contains(classId)) {
+            if(classUnitList.contains(classId)) {
                 scheduledClasses.add(scheduledLesson);
             }
         }
 
         return scheduledClasses;
-    }
-
-    public void computePenaltiesIfScheduled(ScheduledLesson lessonToSchedule, Timetable currentSolution, List<Integer> penalties) {
-        // Create a timetable with lessonToSchedule already scheduled
-        Timetable currentSolutionClone = currentSolution.clone();
-        currentSolutionClone.addScheduledLesson(lessonToSchedule);
-
-        // Get all the conflicts present in a given timetable
-        getConflictingClasses(currentSolution, (conflictIds) -> penalties.add(penalty * distribWeight));
     }
 
     /**
@@ -102,7 +94,7 @@ public abstract class Constraint implements TableDisplayable {
             Set<String> conflicts = new HashSet<>();
 
             // Get all the conflicts present in said timetable
-            getConflictingClasses(currentSolutionClone, (conflictIds -> conflicts.addAll(Arrays.asList(conflictIds))));
+            getConflictingClasses(currentSolutionClone, (conflictIds -> Collections.addAll(conflicts, conflictIds)));
 
             // Remove the class to be scheduled to obtain only the classes it conflicts with
             conflicts.remove(lessonToSchedule.getClassId());

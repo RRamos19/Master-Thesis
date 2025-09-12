@@ -4,7 +4,7 @@ import thesis.controller.ControllerInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.TableDisplayable;
 import thesis.model.domain.components.Timetable;
-import thesis.model.exceptions.CheckedIllegalState;
+import thesis.model.exceptions.CheckedIllegalStateException;
 import thesis.model.exceptions.InvalidConfigurationException;
 import thesis.model.exceptions.ParsingException;
 import thesis.model.parser.XmlResult;
@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public interface ModelInterface {
@@ -30,14 +31,14 @@ public interface ModelInterface {
     Map<String, List<TableDisplayable>> getAllDisplayableData(String progName);
 
     // Schedule solution generation methods
-    void startGeneratingSolution(String programName, Integer initSolutionMaxIter, double initialTemperature, double minTemperature, double coolingRate, int k);
-    double getGenerationProgress(String programName) throws ExecutionException, InterruptedException, InvalidConfigurationException;
-    void cancelTimetableGeneration(String programName);
+    void startGeneratingSolution(String programName, UUID progressUUID, Integer initSolutionMaxIter, double initialTemperature, double minTemperature, double coolingRate, int k);
+    double getGenerationProgress(UUID progressUUID) throws ExecutionException, InterruptedException, InvalidConfigurationException;
+    void cancelTimetableGeneration(UUID progressUUID);
 
     // Data import methods
     XmlResult readFile(File file) throws ParsingException, InvalidConfigurationException;
     void importRepository(InMemoryRepository repository);
-    void importSolution(Timetable solution) throws InvalidConfigurationException, CheckedIllegalState;
+    void importSolution(Timetable solution) throws InvalidConfigurationException, CheckedIllegalStateException;
 
     // Data export methods
     String getExportLocation();

@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ITCFormatParser implements InputFileReader {
     private static final DateTimeFormatter timeStampUTC12Formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -201,6 +202,21 @@ public class ITCFormatParser implements InputFileReader {
         }
 
         data.verifyValidity();
+
+        // Add bidirectionality to room distances
+        for(Room room1 : data.getRooms()) {
+            String roomId = room1.getRoomId();
+
+            for(Map.Entry<String, Integer> roomDistances : room1.getRoomDistances().entrySet()) {
+                Room room2 = data.getRoom(roomDistances.getKey());
+
+                if(room2 != null) {
+                    room2.addRoomDistance(roomId, roomDistances.getValue());
+                } else {
+                    System.out.println("Algo não bate certo!!");
+                }
+            }
+        }
         return data;
     }
 
