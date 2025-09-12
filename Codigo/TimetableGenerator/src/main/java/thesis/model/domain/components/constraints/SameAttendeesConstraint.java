@@ -31,10 +31,6 @@ public class SameAttendeesConstraint extends Constraint {
                 int travel = 0;
                 if(room1 != null && room2 != null) {
                     travel = room1.getRoomDistance(room2.getRoomId());
-
-//                    if(travel == 0) { // Should only happen if the travel distance (from room1 to room2) doesnt exist
-//                        travel = room2.getRoomDistance(room1.getRoomId());
-//                    }
                 }
 
                 if (time1.getEndSlot() + travel <= time2.getStartSlot() ||
