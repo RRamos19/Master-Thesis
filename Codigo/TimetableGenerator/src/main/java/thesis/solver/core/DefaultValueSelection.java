@@ -2,17 +2,17 @@ package thesis.solver.core;
 
 import thesis.utils.RandomToolkit;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class DefaultValueSelection implements ValueSelection<DefaultISGValue, DefaultISGSolution, DefaultISGVariable> {
-    private final float iRandomWalkProb = 0.05F;                          // random walk selection
-    private final float iWeightCoflicts = 1.0F;                           // weight of a conflict
-    private final float iWeightValue = 0.0F;                              // weight of a value (value.toInt())
+    private final static float iRandomWalkProb = 0.05F;                          // random walk selection
+    private final static float iWeightCoflicts = 1.0F;                           // weight of a conflict
+    private final static float iWeightValue = 0.0F;                              // weight of a value (value.toInt())
 
-    private final float iWeightWeightedCoflicts = 1.0F;                   // CBS: CBS weighted conflict weight
+    private final static float iWeightWeightedCoflicts = 1F;                     // CBS: CBS weighted conflict weight
+
+    private final Map<DefaultISGValue, Long> tabuList = new HashMap<>();
+    private final static int TABU_DURATION = 7;
 
     @Override
     public DefaultISGValue selectValue(DefaultISGSolution solution, DefaultISGVariable selectedVariable) {
@@ -32,6 +32,12 @@ public class DefaultValueSelection implements ValueSelection<DefaultISGValue, De
             if(Objects.equals(value, selectedVariable.getAssignment())) {
                 // do not pick the same value as it is currently assigned
                 // if there is a value assigned to the selected variable
+                continue;
+            }
+
+            Long tabuUntil = tabuList.get(value);
+            // Value is found on the tabu list
+            if(tabuUntil != null && tabuUntil > solution.getIteration()) {
                 continue;
             }
 
@@ -62,6 +68,9 @@ public class DefaultValueSelection implements ValueSelection<DefaultISGValue, De
             //no value in the bestValues -> select randomly
             selectedValue = values.random();
         }
+
+        // Add the selected value onto the tabu list
+        tabuList.put(selectedValue, solution.getIteration() + TABU_DURATION);
 
         return selectedValue;
     }

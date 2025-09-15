@@ -3,13 +3,11 @@ package thesis.model.domain.components;
 import thesis.model.exceptions.CheckedIllegalArgumentException;
 
 import java.lang.ref.SoftReference;
-import java.util.Map;
-import java.util.Objects;
-import java.util.WeakHashMap;
+import java.util.*;
 
 public class TimeFactory {
     // Static pool to avoid multiple clones of Time
-    private static final Map<Integer, SoftReference<Time>> timePool = new WeakHashMap<>();
+    private static final Map<List<Integer>, SoftReference<Time>> timePool = new WeakHashMap<>();
 
     // Prevents instantiation
     private TimeFactory() {}
@@ -35,9 +33,9 @@ public class TimeFactory {
             throw new CheckedIllegalArgumentException("The weeks value must be bigger than 0 but it has a value of " + weeks);
         }
 
-        int timeHash = Objects.hash(days, weeks, startSlot, length);
+        List<Integer> key = Arrays.asList((int) days, weeks, startSlot, length);
 
-        SoftReference<Time> ref = timePool.computeIfAbsent(timeHash, t -> new SoftReference<>(new Time(days, weeks, startSlot, length)));
+        SoftReference<Time> ref = timePool.computeIfAbsent(key, t -> new SoftReference<>(new Time(days, weeks, startSlot, length)));
         return ref.get();
     }
 }

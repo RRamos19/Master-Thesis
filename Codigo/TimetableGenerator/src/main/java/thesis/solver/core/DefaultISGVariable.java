@@ -80,6 +80,9 @@ public class DefaultISGVariable implements ISGVariable<DefaultISGVariable, Defau
 
     @Override
     public void assign(DefaultISGValue value) {
+        if(!value.value().getClassId().equals(classUnit.getClassId())) {
+            throw new IllegalStateException("The value to be assigned has a class id different from the variable");
+        }
         if (iAssignment != null) {
             if (iAssignment.equals(value)) return; // There is no need to assign the same value to this variable
 

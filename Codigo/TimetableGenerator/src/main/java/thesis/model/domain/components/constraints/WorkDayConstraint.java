@@ -19,6 +19,7 @@ public class WorkDayConstraint extends Constraint {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
 
         int scheduledClassesSize = scheduledClasses.size();
+        final int S = firstParam;
 
         for(int i=0; i<scheduledClassesSize-1; i++) {
             ScheduledLesson scheduledLesson1 = scheduledClasses.get(i);
@@ -33,7 +34,7 @@ public class WorkDayConstraint extends Constraint {
 
                 if((scheduledLesson1.getDays() & scheduledLesson2.getDays()) == 0 ||
                    (scheduledLesson1.getWeeks() & scheduledLesson2.getWeeks()) == 0 ||
-                   Math.max(scheduledLesson1End, scheduledLesson2End) - Math.min(scheduledLesson1Start, scheduledLesson2Start) <= firstParam) {
+                   Math.max(scheduledLesson1End, scheduledLesson2End) - Math.min(scheduledLesson1Start, scheduledLesson2Start) <= S) {
                     continue;
                 }
 

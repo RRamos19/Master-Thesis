@@ -22,6 +22,10 @@ public class Room implements TableDisplayable {
         roomUnavailabilities.add(TimeFactory.create(days, weeks, startSlot, length));
     }
 
+    public void addUnavailability(Time time) {
+        roomUnavailabilities.add(time);
+    }
+
     public void addRoomDistance(String roomId, int distance) {
         roomDistances.put(roomId, distance);
     }

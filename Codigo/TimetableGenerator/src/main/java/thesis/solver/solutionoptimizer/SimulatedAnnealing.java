@@ -59,10 +59,10 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
         double temperature = initialTemperature;
 
         iter = new AtomicInteger(0);
-        while(temperature > minTemperature && !interruptAlgorithm) {
+        while(temperature > minTemperature) {
             for(int i=0; i < k; i++) {
                 if(interruptAlgorithm) {
-                    break;
+                    return null;
                 }
 
                 DefaultISGSolution neighbor = neighborhoodFunction(currentSolution);

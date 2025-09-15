@@ -20,7 +20,7 @@ public class MaxDaysConstraint extends Constraint {
     protected void getConflictingClasses(Timetable solution, conflictAction action) {
         Set<String> conflictingClasses = new HashSet<>();
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
-        int D = firstParam;
+        final int D = firstParam;
         int acc = 0;
 
         for (ScheduledLesson scheduledLesson : scheduledClasses) {

@@ -17,6 +17,9 @@ import thesis.view.utils.AppIcons;
 import thesis.view.managers.components.GeneralConfiguration;
 import thesis.view.managers.windows.ConfigWindow;
 import thesis.view.managers.windows.ExceptionMessageWindow;
+import thesis.view.utils.Defaults;
+
+import java.util.List;
 
 public class WindowManager {
     private final Window primaryWindow;
@@ -48,25 +51,52 @@ public class WindowManager {
             tutorialWindow.initModality(Modality.WINDOW_MODAL);
             tutorialWindow.setTitle("Tutorial");
 
-            // Message to be displayed
-            Label textLabel = new Label("For the correct functioning of the system start by either connecting to the database, by writting the IP and Port of the database on the respective fields, followed by pressing the button \"Connect\", or importing a file (or multiple files) into the system\n" +
-                    "Now that the system has data there should be an item selected on the top left which displays the program name. Below are some items which when pressed display what is currently stored on the table in the middle of the window.\n" +
-                    "There is a button on the bottom right which starts the generation process. Upon clicking the button there should be a progress bar on the bottom that displays the progress of the task. Upon completion there should be a new item on the left called \"Timetable\" which displays all the solutions for the selected program\n" +
-                    "The application supports multiple generation tasks at a time but only one task per program at a time.");
-            textLabel.setWrapText(true);
-            textLabel.setTextAlignment(TextAlignment.JUSTIFY);
+            VBox box = new VBox(5);
+            box.setPadding(new Insets(10));
+            box.setAlignment(Pos.CENTER_LEFT);
+
+            List<String> labels = List.of(
+                    "System Usage Instructions",
+
+                    "1. For the system to function correctly, follow these steps:",
+                    "\tConnect to the database",
+                    "\tEnter the database IP address and Port in the corresponding fields.",
+                    "\tEnter the username and password in the corresponding fields.",
+                    "\tPress the \"Connect\" button.",
+                    "\tNote - Alternatively, you may import one or more files into the system instead of connecting to a database.",
+
+                    "2. Verify data availability",
+                    "\tOnce data is loaded, a program name will appear in the top-left corner of the interface.",
+                    "\tBelow it, you will find selectable items. When clicked, these display the contents of the corresponding tables in the central area of the window.",
+
+                    "3. Generate timetables",
+                    "\tPress the button located at the bottom-right corner to start the generation process.",
+                    "\tA progress bar at the bottom of the window will indicate task progress.",
+                    "\tAfter completion, a new item called \"Timetable\" will appear on the left. Selecting it displays all solutions for the chosen program.",
+
+                    "4. Task management",
+                    "\tThe application supports multiple generation tasks running in parallel.",
+                    "\tMultiple tasks can be executed at a time. Each one has a button to cancel said task.",
+
+                    "5. Exporting the data",
+                    "\tOn the top menu, the option \"File\" contains all the choices of exportation.",
+                    "\tUpon choosing one of the options, all the data of the chosen program will be exported in the choosen format."
+            );
+
+            for(String line : labels) {
+                Label textLabel = new Label(line);
+                textLabel.setTextAlignment(TextAlignment.LEFT);
+
+                box.getChildren().add(textLabel);
+            }
 
             // Close button
             Button closeBtn = new Button("Close");
             closeBtn.setOnAction(event -> tutorialWindow.close());
-            HBox closeBTNbox = new HBox(closeBtn);
-            closeBTNbox.setAlignment(Pos.CENTER_RIGHT);
+            HBox closeBTNBox = new HBox(closeBtn);
+            closeBTNBox.setAlignment(Pos.CENTER_RIGHT);
 
-            VBox box = new VBox(5, textLabel, closeBTNbox);
-            box.setPadding(new Insets(10));
-            box.setAlignment(Pos.CENTER_LEFT);
-
-            VBox.setVgrow(textLabel, Priority.ALWAYS);
+            box.getChildren().add(closeBTNBox);
 
             tutorialWindow.setScene(new Scene(box));
             tutorialWindow.setAlwaysOnTop(true);

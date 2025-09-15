@@ -4,124 +4,104 @@ import thesis.model.domain.components.Constraint;
 import thesis.model.domain.components.TimetableConfiguration;
 import thesis.model.exceptions.CheckedIllegalArgumentException;
 
-import java.util.HashMap;
-
 public class ConstraintFactory {
-    private static HashMap<String, String> stringPool = new HashMap<>();
+    public static Constraint createConstraint(String constraintType, Integer constraintPenalty, boolean constraintRequired, TimetableConfiguration timetableConfiguration) throws CheckedIllegalArgumentException {
+        String[] constraintArray = constraintType.split("[(,)]");
 
-    public static Constraint createConstraint(String restrictionType, Integer constraintPenalty, boolean constraintRequired, TimetableConfiguration timetableConfiguration) throws CheckedIllegalArgumentException {
-        String[] ConstraintArray = restrictionType.split("[(,)]");
+        if(constraintArray.length < 1) {
+            throw new CheckedIllegalArgumentException("There is an error in the constraint type provided");
+        }
 
-        String str0 = stringPool.computeIfAbsent(ConstraintArray[0], s -> s);
+        String str0 = constraintArray[0];
 
         String str1 = null;
-        if(ConstraintArray.length >= 2) {
-            str1 = stringPool.computeIfAbsent(ConstraintArray[1], s -> s);
+        if(constraintArray.length >= 2) {
+            str1 = constraintArray[1];
         }
 
         String str2 = null;
-        if(ConstraintArray.length == 3) {
-            str2 = stringPool.computeIfAbsent(ConstraintArray[2], s -> s);
+        if(constraintArray.length == 3) {
+            str2 = constraintArray[2];
         }
 
         switch(str0) {
             case "SameStart":
-                if(ConstraintArray.length != 1) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have no parameters");
-                }
+                checkForNoParameters(str0, constraintArray);
                 return new SameStartConstraint(str0, constraintPenalty, constraintRequired, timetableConfiguration);
             case "SameTime":
-                if(ConstraintArray.length != 1) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have no parameters");
-                }
+                checkForNoParameters(str0, constraintArray);
                 return new SameTimeConstraint(str0, constraintPenalty, constraintRequired, timetableConfiguration);
             case "DifferentTime":
-                if(ConstraintArray.length != 1) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have no parameters");
-                }
+                checkForNoParameters(str0, constraintArray);
                 return new DifferentTimeConstraint(str0, constraintPenalty, constraintRequired, timetableConfiguration);
             case "SameDays":
-                if(ConstraintArray.length != 1) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have no parameters");
-                }
+                checkForNoParameters(str0, constraintArray);
                 return new SameDaysConstraint(str0, constraintPenalty, constraintRequired, timetableConfiguration);
             case "DifferentDays":
-                if(ConstraintArray.length != 1) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have no parameters");
-                }
+                checkForNoParameters(str0, constraintArray);
                 return new DifferentDaysConstraint(str0, constraintPenalty, constraintRequired, timetableConfiguration);
             case "SameWeeks":
-                if(ConstraintArray.length != 1) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have no parameters");
-                }
+                checkForNoParameters(str0, constraintArray);
                 return new SameWeeksConstraint(str0, constraintPenalty, constraintRequired, timetableConfiguration);
             case "DifferentWeeks":
-                if(ConstraintArray.length != 1) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have no parameters");
-                }
+                checkForNoParameters(str0, constraintArray);
                 return new DifferentWeeksConstraint(str0, constraintPenalty, constraintRequired, timetableConfiguration);
             case "Overlap":
-                if(ConstraintArray.length != 1) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have no parameters");
-                }
+                checkForNoParameters(str0, constraintArray);
                 return new OverlapConstraint(str0, constraintPenalty, constraintRequired, timetableConfiguration);
             case "NotOverlap":
-                if(ConstraintArray.length != 1) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have no parameters");
-                }
+                checkForNoParameters(str0, constraintArray);
                 return new NotOverlapConstraint(str0, constraintPenalty, constraintRequired, timetableConfiguration);
             case "SameRoom":
-                if(ConstraintArray.length != 1) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have no parameters");
-                }
+                checkForNoParameters(str0, constraintArray);
                 return new SameRoomConstraint(str0, constraintPenalty, constraintRequired, timetableConfiguration);
             case "DifferentRoom":
-                if(ConstraintArray.length != 1) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have no parameters");
-                }
+                checkForNoParameters(str0, constraintArray);
                 return new DifferentRoomConstraint(str0, constraintPenalty, constraintRequired, timetableConfiguration);
             case "SameAttendees":
-                if(ConstraintArray.length != 1) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have no parameters");
-                }
+                checkForNoParameters(str0, constraintArray);
                 return new SameAttendeesConstraint(str0, constraintPenalty, constraintRequired, timetableConfiguration);
             case "Precedence":
-                if(ConstraintArray.length != 1) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have no parameters");
-                }
+                checkForNoParameters(str0, constraintArray);
                 return new PrecedenceConstraint(str0, constraintPenalty, constraintRequired, timetableConfiguration);
             case "WorkDay":
-                if(ConstraintArray.length != 2) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have only one parameter");
-                }
+                checkForOnlyOneParameter(str0, constraintArray);
                 return new WorkDayConstraint(str0, str1, constraintPenalty, constraintRequired, timetableConfiguration);
             case "MinGap":
-                if(ConstraintArray.length != 2) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have only one parameter");
-                }
+                checkForOnlyOneParameter(str0, constraintArray);
                 return new MinGapConstraint(str0, str1, constraintPenalty, constraintRequired, timetableConfiguration);
             case "MaxDays":
-                if(ConstraintArray.length != 2) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have only one parameter");
-                }
+                checkForOnlyOneParameter(str0, constraintArray);
                 return new MaxDaysConstraint(str0, str1, constraintPenalty, constraintRequired, timetableConfiguration);
             case "MaxDayLoad":
-                if(ConstraintArray.length != 2) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have only one parameter");
-                }
+                checkForOnlyOneParameter(str0, constraintArray);
                 return new MaxDayLoadConstraint(str0, str1, constraintPenalty, constraintRequired, timetableConfiguration);
             case "MaxBreaks":
-                if(ConstraintArray.length != 3) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have only two parameters");
-                }
+                checkForOnlyTwoParameters(str0, constraintArray);
                 return new MaxBreaksConstraint(str0, str1, str2, constraintPenalty, constraintRequired, timetableConfiguration);
             case "MaxBlock":
-                if(ConstraintArray.length != 3) {
-                    throw new CheckedIllegalArgumentException("The " + str0 + " restriction must have only two parameters");
-                }
+                checkForOnlyTwoParameters(str0, constraintArray);
                 return new MaxBlockConstraint(str0, str1, str2, constraintPenalty, constraintRequired, timetableConfiguration);
             default:
-                throw new CheckedIllegalArgumentException("The restriction of type: " + restrictionType + " is not supported");
+                throw new CheckedIllegalArgumentException("The constraint of type: " + constraintType + " is not supported");
+        }
+    }
+
+    private static void checkForNoParameters(String constraintName, String[] constraintArray) throws CheckedIllegalArgumentException {
+        if(constraintArray.length != 1) {
+            throw new CheckedIllegalArgumentException("The " + constraintName + " constraint must have no parameters");
+        }
+    }
+
+    private static void checkForOnlyOneParameter(String constraintName, String[] constraintArray) throws CheckedIllegalArgumentException {
+        if(constraintArray.length != 2) {
+            throw new CheckedIllegalArgumentException("The " + constraintName + " constraint must have only one parameter");
+        }
+    }
+
+    private static void checkForOnlyTwoParameters(String constraintName, String[] constraintArray) throws CheckedIllegalArgumentException {
+        if(constraintArray.length != 3) {
+            throw new CheckedIllegalArgumentException("The " + constraintName + " constraint must have only two parameters");
         }
     }
 }

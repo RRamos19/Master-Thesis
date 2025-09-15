@@ -1,6 +1,8 @@
 package thesis.view.managers;
 
 import javafx.animation.KeyFrame;
+import javafx.event.EventHandler;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import thesis.view.managers.components.ProgressBarUnit;
 
@@ -30,11 +32,21 @@ public class ProgressBarManager {
         return uuid;
     }
 
+    public void setCancelAction(UUID progressUUID, EventHandler<MouseEvent> cancelAction) {
+        ProgressBarUnit unit = progressBarMap.get(progressUUID);
+
+        if(unit == null) {
+            throw new IllegalStateException("The UUID provided has no progress bar!");
+        }
+
+        unit.setCancelAction(cancelAction);
+    }
+
     public void startTimeline(UUID progressUUID, int cycleCount, KeyFrame ... keyframes) {
         ProgressBarUnit unit = progressBarMap.get(progressUUID);
 
         if(unit == null) {
-            throw new IllegalStateException("Program has no progress bar!");
+            throw new IllegalStateException("The UUID provided has no progress bar!");
         }
 
         unit.startTimeline(cycleCount, keyframes);
@@ -50,7 +62,7 @@ public class ProgressBarManager {
         ProgressBarUnit unit = progressBarMap.get(programUUID);
 
         if(unit == null) {
-            throw new IllegalStateException("Program has no progress bar!");
+            throw new IllegalStateException("The UUID provided has no progress bar!");
         }
 
         unit.stopAndClearTimeline();
@@ -62,7 +74,7 @@ public class ProgressBarManager {
         ProgressBarUnit unit = progressBarMap.get(programUUID);
 
         if(unit == null) {
-            throw new IllegalStateException("Program has no progress bar!");
+            throw new IllegalStateException("The UUID provided has no progress bar!");
         }
 
         // A verification is made to avoid a progress bar the goes back and forth (which may happen

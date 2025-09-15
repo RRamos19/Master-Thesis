@@ -33,21 +33,23 @@ public class Controller implements ControllerInterface {
     }
 
     @Override
+    public void connectToDatabase(String ip, String port, String userName, String password) throws Exception {
+        model.connectToDatabase(ip, port, userName, password);
+    }
+
+    @Override
+    public void disconnectFromDatabase() {
+        model.disconnectFromDatabase();
+    }
+
+    @Override
     public InMemoryRepository getDataRepository(String programName) {
         return model.getDataRepository(programName);
     }
 
     @Override
     public double getGenerationProgress(UUID progressUUID) throws InvalidConfigurationException, ExecutionException, InterruptedException {
-        try {
-            return model.getGenerationProgress(progressUUID);
-        } catch (Exception e) {
-            // This should only happen if the process of storing the result is interrupted
-            // but that only happens if the progress is 100%, so it should be impossible
-            view.showExceptionMessage(e);
-
-            throw e;
-        }
+        return model.getGenerationProgress(progressUUID);
     }
 
     @Override
