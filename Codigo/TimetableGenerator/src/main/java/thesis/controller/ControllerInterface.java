@@ -28,6 +28,10 @@ public interface ControllerInterface {
     double getGenerationProgress(UUID progressUUID) throws InvalidConfigurationException, ExecutionException, InterruptedException;
     void cancelGeneration(UUID progressUUID);
 
+    // Database connectivity
+    void connectToDatabase(String ip, String port, String userName, String password) throws Exception;
+    void disconnectFromDatabase();
+
     // Data import methods
     void importITCData(File file);
 

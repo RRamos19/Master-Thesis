@@ -29,7 +29,7 @@ public class SameWeeksConstraint extends Constraint {
 
                 int orWeeks = scheduledLesson1.getWeeks() | scheduledLesson2.getWeeks();
 
-                if(orWeeks == scheduledLesson1.getWeeks() || orWeeks == scheduledLesson2.getWeeks()){
+                if((orWeeks == scheduledLesson1.getWeeks()) || (orWeeks == scheduledLesson2.getWeeks())){
                     continue;
                 }
 

@@ -5,21 +5,15 @@ import thesis.model.persistence.entities.*;
 import java.util.*;
 
 public class EntityRepository {
-    // Name of the program the entity represents
-    private String programName;
-
-    // Number of days, slots per day and weeks of the timetable
-    private ConfigurationEntity configurationEntity;
-
-    // Optimization data
-    private OptimizationParametersEntity optimizationParametersEntity;
+    // Contains programName, configuration and optimization of the program
+    private ProgramEntity programEntity;
 
     // Storage of the data present in the ITC Format and the Database
     private final Map<String, CourseEntity> courses = new HashMap<>();              // CourseId: Course
     private final Map<Integer, TeacherEntity> teachers = new HashMap<>();           // TeacherId: Teacher
     private final Map<UUID, TimetableEntity> timetables = new HashMap<>();          // TimetableId: Timetable
     private final Map<String, RoomEntity> rooms = new HashMap<>();                  // RoomName: Room
-    private final Map<String, ConstraintTypeEntity> constraintTypes = new HashMap<>();    // RestrictionName: Restriction
+    private final Map<String, ConstraintTypeEntity> constraintTypes = new HashMap<>();    // ConstraintName: Constraint
 
     // Only used to simplify the search of configs, subparts and classes
     private final Map<String, ConfigEntity> configs = new HashMap<>();                // ConfigId: Config
@@ -27,27 +21,19 @@ public class EntityRepository {
     private final Map<String, ClassUnitEntity> classUnits = new HashMap<>();          // ClassId: ClassUnit
 
     public void setProgramName(String programName) {
-        this.programName = programName;
+        programEntity.setName(programName);
     }
 
     public String getProgramName() {
-        return programName;
+        return programEntity.getName();
     }
 
-    public void storeConfiguration(ConfigurationEntity configurationEntity) {
-        this.configurationEntity = configurationEntity;
+    public void storeProgram(ProgramEntity programEntity) {
+        this.programEntity = programEntity;
     }
 
-    public ConfigurationEntity getConfiguration() {
-        return configurationEntity;
-    }
-
-    public void storeOptimization(OptimizationParametersEntity optimizationParametersEntity) {
-        this.optimizationParametersEntity = optimizationParametersEntity;
-    }
-
-    public OptimizationParametersEntity getOptimization() {
-        return optimizationParametersEntity;
+    public ProgramEntity getProgramEntity() {
+        return programEntity;
     }
 
     public void storeCourse(CourseEntity courseEntity) {
@@ -58,7 +44,7 @@ public class EntityRepository {
         return courses.get(courseId);
     }
 
-    public List<CourseEntity> getCourses() {
+    public Collection<CourseEntity> getCourses() {
         return new ArrayList<>(courses.values());
     }
 
@@ -70,7 +56,7 @@ public class EntityRepository {
         return configs.get(configId);
     }
 
-    public List<ConfigEntity> getConfigs() {
+    public Collection<ConfigEntity> getConfigs() {
         return new ArrayList<>(configs.values());
     }
 
@@ -82,7 +68,7 @@ public class EntityRepository {
         return subparts.get(subpartId);
     }
 
-    public List<SubpartEntity> getSubparts() {
+    public Collection<SubpartEntity> getSubparts() {
         return new ArrayList<>(subparts.values());
     }
 
@@ -94,7 +80,7 @@ public class EntityRepository {
         return classUnits.get(className);
     }
 
-    public List<ClassUnitEntity> getClassUnits() {
+    public Collection<ClassUnitEntity> getClassUnits() {
         return new ArrayList<>(classUnits.values());
     }
 
@@ -114,11 +100,11 @@ public class EntityRepository {
         constraintTypes.put(constraintTypeEntity.getName(), constraintTypeEntity);
     }
 
-    public ConstraintTypeEntity getConstraintType(String restrictionName) {
-        return constraintTypes.get(restrictionName);
+    public ConstraintTypeEntity getConstraintType(String constraintName) {
+        return constraintTypes.get(constraintName);
     }
 
-    public List<ConstraintTypeEntity> getConstraintTypes() {
+    public Collection<ConstraintTypeEntity> getConstraintTypes() {
         return new ArrayList<>(constraintTypes.values());
     }
 
@@ -130,7 +116,7 @@ public class EntityRepository {
         return timetables.get(timetableId);
     }
 
-    public List<TimetableEntity> getTimetables() {
+    public Collection<TimetableEntity> getTimetables() {
         return new ArrayList<>(timetables.values());
     }
 
@@ -194,8 +180,9 @@ public class EntityRepository {
         }
 
 
-        return String.format("nrDays = %d, slotsPerDay = %d, nrWeeks = %d", configurationEntity.getNumberDays(), configurationEntity.getSlotsPerDay(), configurationEntity.getNumberWeeks()) + "\n" +
-                String.format("timeWeight = %d, roomWeight = %d, distributionWeight = %d", optimizationParametersEntity.getTimeWeight(), optimizationParametersEntity.getRoomWeight(), optimizationParametersEntity.getDistributionWeight()) + "\n" +
+        return "program = " + programEntity.getName() + '\n' +
+                String.format("nrDays = %d, slotsPerDay = %d, nrWeeks = %d", programEntity.getNumberDays(), programEntity.getSlotsPerDay(), programEntity.getNumberWeeks()) + "\n" +
+                String.format("timeWeight = %d, roomWeight = %d, distributionWeight = %d", programEntity.getTimeWeight(), programEntity.getRoomWeight(), programEntity.getDistributionWeight()) + "\n" +
                 String.format("nrCourses = %d, nrConfigs = %d, nrSubparts = %d, nrClasses = %d, nrTeachers = %d, nrTimetables = %d, nrRooms = %d, nrDist = %d",
                         courses.size(), nrConfigs, nrSubparts, nrClasses, teachers.size(), timetables.size(), rooms.size(), constraintTypes.size());
     }

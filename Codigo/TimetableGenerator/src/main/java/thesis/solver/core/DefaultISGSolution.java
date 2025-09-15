@@ -4,14 +4,16 @@ import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultISGSolution implements ISGSolution<InMemoryRepository, DefaultISGValue, DefaultISGVariable> {
     private final InMemoryRepository dataModel;
-    private final Collection<DefaultISGVariable> variableCollection = new ArrayList<>();
-    private final Collection<DefaultISGVariable> unassignedVariableCollection = new Vector<>();
+    private final Collection<DefaultISGVariable> variableCollection = new HashSet<>();
+    private final Collection<DefaultISGVariable> unassignedVariableCollection = ConcurrentHashMap.newKeySet();
     private List<DefaultISGVariable> bestUnassignedVariableCollection;
     private List<DefaultISGVariable> bestAssignedVariableCollection;
     private Integer bestValue;
+    private long iteration = 0;
 
     // Variables for optimizations
     private final Map<String, Set<ScheduledLesson>> lessonsByRoom;
@@ -89,6 +91,16 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
     }
 
     @Override
+    public void incrementIteration() {
+        iteration++;
+    }
+
+    @Override
+    public long getIteration() {
+        return iteration;
+    }
+
+    @Override
     public Collection<DefaultISGVariable> getUnassignedVariables() {
         return unassignedVariableCollection;
     }
@@ -155,8 +167,11 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
                 String classId = scheduledLesson.getClassId();
                 if (classId.equals(valueClassId) || conflicts.contains(classId)) continue;
 
+                Room scheduledLessonRoom = scheduledLesson.getRoom();
+                int travelTime = scheduledLessonRoom != null ? scheduledLessonRoom.getRoomDistance(valueRoomId) : 0;
+
                 // There is only a conflict if the times overlap
-                if (scheduledLesson.getScheduledTime().overlaps(valueTime)) {
+                if (scheduledLesson.getScheduledTime().overlaps(valueTime, travelTime)) {
                     conflicts.add(classId);
                 }
             }
@@ -208,6 +223,10 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
     public void convertToUnassigned(DefaultISGVariable var) {
         if(!variableCollection.contains(var)) {
             // Should be impossible, unless there is a bug
+            System.out.println("Help!!");
+            System.out.println(var);
+            System.out.println(variableCollection);
+            System.out.println();
             throw new RuntimeException("Assigned variable was not found!");
         }
 

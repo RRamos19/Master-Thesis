@@ -22,16 +22,17 @@ public class DifferentRoomConstraint extends Constraint {
 
         for(int i=0; i<scheduledClassesSize-1; i++) {
             ScheduledLesson scheduledLesson1 = scheduledClasses.get(i);
-            String scheduledClass1Id = scheduledLesson1.getClassId();
+            String scheduledLesson1Id = scheduledLesson1.getClassId();
+            String scheduledLesson1Room = scheduledLesson1.getRoomId();
 
             for(int j=i+1; j<scheduledClassesSize; j++) {
                 ScheduledLesson scheduledLesson2 = scheduledClasses.get(j);
 
-                if(!scheduledLesson1.getRoomId().equals(scheduledLesson2.getRoomId())) {
+                if(!scheduledLesson1Room.equals(scheduledLesson2.getRoomId())) {
                     continue;
                 }
 
-                action.apply(scheduledClass1Id, scheduledLesson2.getClassId());
+                action.apply(scheduledLesson1Id, scheduledLesson2.getClassId());
             }
         }
     }

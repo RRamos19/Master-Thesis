@@ -28,7 +28,7 @@ public class SameDaysConstraint extends Constraint {
 
                 int orDays = time1.getDays() | time2.getDays();
 
-                if (orDays == time1.getDays() || orDays == time2.getDays()) {
+                if ((orDays == time1.getDays()) || (orDays == time2.getDays())) {
                     continue;
                 }
 

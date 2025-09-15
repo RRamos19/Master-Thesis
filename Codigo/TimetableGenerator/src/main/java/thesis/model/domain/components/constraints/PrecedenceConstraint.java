@@ -25,7 +25,7 @@ public class PrecedenceConstraint extends Constraint {
             for(int j=i+1; j<scheduledClassesSize; j++) {
                 ScheduledLesson scheduledLesson2 = scheduledLessons.get(j);
 
-                if(scheduledLesson2.getScheduledTime().isEarlier(scheduledLesson1Time)){
+                if(scheduledLesson1Time.isEarlier(scheduledLesson2.getScheduledTime())){
                     continue;
                 }
 

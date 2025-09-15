@@ -47,13 +47,14 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
             var.setSolution(solution);
         }
 
-        int iter = 0;
-        while(!solution.isSolutionValid() && !interruptAlgorithm) {
-            if(maxIterations != null && iter >= maxIterations) {
+        while(!solution.isSolutionValid()) {
+            if(interruptAlgorithm) {
+                return null;
+            }
+            if(maxIterations != null && solution.getIteration() >= maxIterations) {
                 break;
             }
 
-            iter++;
             DefaultISGVariable variable = selectVariable(solution);
 
             // Should be impossible because the list of unscheduled is based on the data in DataRepository
@@ -72,9 +73,13 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
             if(defaultISGSolutionComparator.isBetterThanBestSolution(solution)) {
                 solution.saveBest();
             }
+
+            solution.incrementIteration();
         }
 
-        solution.restoreBest();
+        if(solution.wasBestSaved()) {
+            solution.restoreBest();
+        }
 
         return solution.solution();
     }

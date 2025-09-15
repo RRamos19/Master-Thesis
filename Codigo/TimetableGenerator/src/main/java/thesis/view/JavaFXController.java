@@ -4,7 +4,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -25,16 +24,16 @@ import thesis.view.managers.ProgressBarManager;
 import thesis.view.managers.components.GeneralConfiguration;
 import thesis.view.managers.WindowManager;
 import thesis.view.utils.AppIcons;
+import thesis.view.utils.Defaults;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class JavaFXController implements ViewInterface {
     private static final List<String> DAYS_OF_WEEK = List.of("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
     private static final int PROGRESSBAR_UPDATE_SECONDS = 2;
-    private static final int DEFAULT_WIDTH = 800;
-    private static final int DEFAULT_HEIGHT = 600;
 
     private WindowManager windowManager;
     private ControllerInterface controller;
@@ -54,10 +53,16 @@ public class JavaFXController implements ViewInterface {
     private TextField ipField;
 
     @FXML
-    private TreeView<String> treeView;
+    private TextField portField;
 
     @FXML
-    private TextField portField;
+    private TextField usernameField;
+
+    @FXML
+    private TextField passwordField;
+
+    @FXML
+    private TreeView<String> treeView;
 
     @FXML
     private Button connectBtn;
@@ -87,9 +92,22 @@ public class JavaFXController implements ViewInterface {
                 showErrorAlert("The port field should not be empty");
                 return;
             }
+            if(usernameField.getText().isEmpty()) {
+                showErrorAlert("The username field should not be empty");
+                return;
+            }
+            if(passwordField.getText().isEmpty()) {
+                showErrorAlert("The password field should not be empty");
+                return;
+            }
 
-            connectToDB();
-            isConnected = true;
+            try {
+                connectToDB();
+
+                isConnected = true;
+            } catch (Exception e) {
+                showExceptionMessage(e);
+            }
         } else {
             disconnectFromDB();
             isConnected = false;
@@ -97,15 +115,29 @@ public class JavaFXController implements ViewInterface {
 
         ipField.setDisable(isConnected);
         portField.setDisable(isConnected);
+        usernameField.setDisable(isConnected);
+        passwordField.setDisable(isConnected);
+
         connectBtn.setText(isConnected ? "Disconnect" : "Connect");
     }
 
-    private void connectToDB() {
+    private void connectToDB() throws Exception {
+        String ip = ipField.getText();
+        String port = portField.getText();
+        String username = usernameField.getText();
+        String password = passwordField.getText();
 
+        //TODO: Sanitize the user inputs
+
+        controller.connectToDatabase(ip, port, username, password);
+
+        generalConfiguration.setIpField(ip);
+        generalConfiguration.setPortField(port);
+        generalConfiguration.setUsernameField(username);
     }
 
     private void disconnectFromDB() {
-
+        controller.disconnectFromDatabase();
     }
 
     private FileChooser createXmlFileChooser() {
@@ -140,10 +172,10 @@ public class JavaFXController implements ViewInterface {
     }
 
     private void updateStoredPrograms() {
-        ObservableList<String> oldItems = programsChoiceBox.getItems();
+        Set<String> oldItems = new HashSet<>(programsChoiceBox.getItems());
         Set<String> storedPrograms = controller.getStoredPrograms();
 
-        if(!oldItems.isEmpty() && storedPrograms.containsAll(oldItems)) {
+        if(oldItems.containsAll(storedPrograms)) {
             // Nothing changed
             return;
         }
@@ -219,15 +251,6 @@ public class JavaFXController implements ViewInterface {
     }
 
     @FXML
-    private void dragDetectionEvent(MouseEvent event) {
-        System.out.println("Drag detected!");
-        // Only accept files moved onto the application window
-        applicationPrincipalPane.startDragAndDrop(TransferMode.MOVE);
-
-        event.consume();
-    }
-
-    @FXML
     private void dragOverEvent(DragEvent event) {
         event.acceptTransferModes(TransferMode.MOVE);
 
@@ -275,6 +298,10 @@ public class JavaFXController implements ViewInterface {
         }
 
         UUID progressBarUUID = progressBarManager.insertProgressBar(chosenProgram);
+        progressBarManager.setCancelAction(progressBarUUID, (event) -> {
+            controller.cancelGeneration(progressBarUUID);
+            progressBarManager.stopAndClearTimeline(progressBarUUID);
+        });
 
         controller.startGeneratingSolution(chosenProgram,
                 progressBarUUID,
@@ -289,30 +316,30 @@ public class JavaFXController implements ViewInterface {
     }
 
     private void progressBarUpdate(ActionEvent actionEvent, UUID progressBarUUID) {
-        double progress;
-
         try {
-            progress = controller.getGenerationProgress(progressBarUUID);
+            double progress = controller.getGenerationProgress(progressBarUUID);
+
+            progressBarManager.setProgress(progressBarUUID, progress);
+
+            if (DoubleToolkit.isEqual(progress, 1)) {
+                String programName = progressBarManager.getProgramName(progressBarUUID);
+                progressBarManager.stopAndClearTimeline(progressBarUUID);
+
+                if(programName.equals(chosenProgram)) {
+                    populateTreeView(programName);
+                }
+
+                showInformationAlert("The solution for the program " + programName + " has been created!\nPerform a double click on it to visualize!");
+            }
         } catch (Exception e) {
+            // This should only happen if the process of storing the result is interrupted
+            // but that only happens if the progress is 100%, so it should be impossible
             progressBarManager.stopAndClearTimeline(progressBarUUID);
             controller.cancelGeneration(progressBarUUID);
-            return;
+            showExceptionMessage(e);
+        } finally {
+            actionEvent.consume();
         }
-
-        progressBarManager.setProgress(progressBarUUID, progress);
-
-        if (DoubleToolkit.isEqual(progress, 1)) {
-            String programName = progressBarManager.getProgramName(progressBarUUID);
-            progressBarManager.stopAndClearTimeline(progressBarUUID);
-
-            if(programName.equals(chosenProgram)) {
-                populateTreeView(programName);
-            }
-
-            showInformationAlert("The solution for the program " + programName + " has been created!\nPerform a double click on it to visualize!");
-        }
-
-        actionEvent.consume();
     }
 
     private void populateTreeView(String progname) {
@@ -463,7 +490,7 @@ public class JavaFXController implements ViewInterface {
             tabPane.getTabs().add(tab);
         }
 
-        Scene scene = new Scene(tabPane, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        Scene scene = new Scene(tabPane, Defaults.DEFAULT_WIDTH, Defaults.DEFAULT_HEIGHT);
         stage.setScene(scene);
         stage.show();
     }
@@ -657,15 +684,15 @@ public class JavaFXController implements ViewInterface {
 
     @Override
     public void showExceptionMessage(Exception e) {
-        windowManager.getExceptionMessage(e).show();
+        windowManager.getExceptionMessage(e).showAndWait();
     }
 
     @Override
     public void setPrimaryWindow(Window primaryWindow) {
         this.primaryWindow = primaryWindow;
 
-        primaryWindow.setWidth(DEFAULT_WIDTH);
-        primaryWindow.setHeight(DEFAULT_HEIGHT);
+        primaryWindow.setWidth(Defaults.DEFAULT_WIDTH);
+        primaryWindow.setHeight(Defaults.DEFAULT_HEIGHT);
     }
 
     private void clearTableView() {
@@ -728,12 +755,22 @@ public class JavaFXController implements ViewInterface {
         });
 
         windowManager = new WindowManager(primaryWindow);
-        generalConfiguration = ConfigurationManager.loadConfig();
+        try {
+            generalConfiguration = ConfigurationManager.loadConfig();
+        } catch (IOException e) {
+            showExceptionMessage(e);
+            System.exit(1);
+        }
+
+        ipField.setText(generalConfiguration.getIpField());
+        portField.setText(generalConfiguration.getPortField());
+        usernameField.setText(generalConfiguration.getUsernameField());
+
         progressBarManager = new ProgressBarManager(progressContainer);
 
         if(generalConfiguration.getShowTutorial()) {
             showTutorialMenuEvent();
-            generalConfiguration.setTutorialShown();
+            generalConfiguration.setShowTutorial(false);
         }
     }
 
@@ -741,7 +778,11 @@ public class JavaFXController implements ViewInterface {
     public void cleanup() {
         // Only update the config file if the configuration was changed
         if(generalConfiguration.getUpdateConfigFile()) {
-            ConfigurationManager.saveConfig(generalConfiguration);
+            try {
+                ConfigurationManager.saveConfig(generalConfiguration);
+            } catch (IOException e) {
+                showExceptionMessage(e);
+            }
         }
 
         progressBarManager.stopAndClearTimelines();

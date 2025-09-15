@@ -59,7 +59,7 @@ public class ITCFormatParser implements InputFileReader {
         T apply(XMLEventReader reader) throws ParsingException, InvalidConfigurationException;
     }
 
-    // TODO: completar comentário
+    // TODO: complete comment
     /**
      *
      * @param file
@@ -118,7 +118,7 @@ public class ITCFormatParser implements InputFileReader {
         });
     }
 
-    // TODO: completar comentário
+    // TODO: complete comment
     /**
      *
      * @param reader
@@ -219,7 +219,7 @@ public class ITCFormatParser implements InputFileReader {
         return data;
     }
 
-    // TODO: completar comentário
+    // TODO: complete comment
     /**
      *
      * @param reader
@@ -253,7 +253,7 @@ public class ITCFormatParser implements InputFileReader {
         return timetable;
     }
 
-    // TODO: completar comentário
+    // TODO: complete comment
     /**
      * All the scheduled lessons should be read before encountering the termination tag
      */
@@ -300,7 +300,7 @@ public class ITCFormatParser implements InputFileReader {
         }
     }
 
-    // TODO: completar comentário
+    // TODO: complete comment
     /**
      * All the rooms should be read before encountering the termination tag
      */
@@ -384,7 +384,7 @@ public class ITCFormatParser implements InputFileReader {
         }
     }
 
-    // TODO: completar comentário
+    // TODO: complete comment
     /**
      * All the courses should be read before encountering the termination tag
      */
@@ -532,7 +532,7 @@ public class ITCFormatParser implements InputFileReader {
         }
     }
 
-    // TODO: completar comentário
+    // TODO: complete comment
     /**
      * All the teachers should be read before encountering the termination tag
      */
@@ -620,7 +620,7 @@ public class ITCFormatParser implements InputFileReader {
         }
     }
 
-    // TODO: completar comentário
+    // TODO: complete comment
     /**
      * All the restrictions should be read before encountering the termination tag
      */
@@ -654,7 +654,6 @@ public class ITCFormatParser implements InputFileReader {
 
                                 data.addConstraint(constraint);
                             } catch (Exception e) {
-                                // TODO: fazer log do erro (provavelmente deve-se ignorar as restricoes que não são suportadas)
                                 throw new ParsingException(event.getLocation(), e.getMessage());
                             }
                             break;

@@ -14,12 +14,11 @@
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="applicationPrincipalPane" onDragDetected="#dragDetectionEvent" onDragDropped="#dragDroppedEvent" onDragEntered="#dragEnteredEvent" onDragExited="#dragExitedEvent" onDragOver="#dragOverEvent" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="thesis.view.JavaFXController">
+<BorderPane fx:id="applicationPrincipalPane" onDragDropped="#dragDroppedEvent" onDragEntered="#dragEnteredEvent" onDragExited="#dragExitedEvent" onDragOver="#dragOverEvent" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="thesis.view.JavaFXController">
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
@@ -94,20 +93,65 @@
                               <Insets left="10.0" top="10.0" />
                            </VBox.margin>
                         </Label>
-                        <HBox alignment="CENTER" prefHeight="38.0">
+                        <VBox alignment="CENTER" spacing="20.0">
                            <children>
-                              <Label prefHeight="25.0" prefWidth="22.0" text="IP:" />
-                              <TextField fx:id="ipField" prefHeight="25.0" prefWidth="135.0" />
-                              <Region prefHeight="38.0" prefWidth="87.0" />
-                              <Label prefHeight="25.0" prefWidth="32.0" text="Port:" />
-                              <TextField fx:id="portField" prefHeight="25.0" prefWidth="51.0" />
-                              <Region prefHeight="38.0" prefWidth="115.0" />
-                              <Button fx:id="connectBtn" mnemonicParsing="false" onAction="#connectEvent" text="Connect" />
+                              <HBox alignment="CENTER" spacing="50.0">
+                                 <children>
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER" text="IP:">
+                                             <padding>
+                                                <Insets right="5.0" />
+                                             </padding>
+                                          </Label>
+                                          <TextField fx:id="ipField" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="135.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER" text="Port:">
+                                             <padding>
+                                                <Insets right="5.0" />
+                                             </padding>
+                                          </Label>
+                                          <TextField fx:id="portField" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="60.0" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER" spacing="50.0">
+                                 <children>
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label text="Username:">
+                                             <padding>
+                                                <Insets right="5.0" />
+                                             </padding>
+                                          </Label>
+                                          <TextField fx:id="usernameField" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="20.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label text="Password:">
+                                             <padding>
+                                                <Insets right="5.0" />
+                                             </padding>
+                                          </Label>
+                                          <TextField fx:id="passwordField" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="20.0" />
+                                       </children>
+                                       <HBox.margin>
+                                          <Insets />
+                                       </HBox.margin>
+                                    </HBox>
+                                    <Button fx:id="connectBtn" mnemonicParsing="false" onAction="#connectEvent" text="Connect" />
+                                 </children>
+                                 <padding>
+                                    <Insets bottom="20.0" left="50.0" right="50.0" />
+                                 </padding>
+                              </HBox>
                            </children>
-                           <padding>
-                              <Insets bottom="20.0" left="50.0" right="50.0" />
-                           </padding>
-                        </HBox>
+                        </VBox>
                      </children>
                   </VBox>
                </top>

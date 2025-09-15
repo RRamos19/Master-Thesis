@@ -1,24 +1,12 @@
-CREATE TABLE optimization_parameters (
-	id SERIAL PRIMARY KEY,
-	time_weight SMALLINT NOT NULL,
-	room_weight SMALLINT NOT NULL,
-	distribution_weight SMALLINT NOT NULL
-);
-
-CREATE TABLE configuration (
-	id SERIAL PRIMARY KEY,
-	number_days SMALLINT NOT NULL,
-	number_weeks INT NOT NULL,
-	slots_per_day INT NOT NULL
-);
-
 CREATE TABLE program (
 	id SERIAL PRIMARY KEY,
 	name VARCHAR(30) NOT NULL UNIQUE,
-	optimization_id INT NOT NULL,
-	configuration_id INT NOT NULL,
-	CONSTRAINT optimization_id_fk FOREIGN KEY (optimization_id) REFERENCES optimization_parameters(id),
-	CONSTRAINT configuration_id_fk FOREIGN KEY (configuration_id) REFERENCES configuration(id)
+	time_weight SMALLINT NOT NULL,
+	room_weight SMALLINT NOT NULL,
+	distribution_weight SMALLINT NOT NULL
+	number_days SMALLINT NOT NULL,
+	number_weeks INT NOT NULL,
+	slots_per_day INT NOT NULL
 );
 
 CREATE TABLE teacher (
@@ -59,7 +47,7 @@ CREATE TABLE class_unit (
 CREATE TABLE timetable (
     id UUID PRIMARY KEY,
 	program VARCHAR(10) NOT NULL,
-	creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	creation_date VARCHAR NOT NULL
 );
 
 CREATE TABLE constraint_type (

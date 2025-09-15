@@ -11,19 +11,17 @@ public class ModelConverter {
     public static InMemoryRepository convertToDataRepository(EntityRepository entityRepository) throws Exception {
         InMemoryRepository data = new DataRepository(entityRepository.getProgramName());
 
-        // Set the optimization parameters and configurations of the timetable
-        ConfigurationEntity configurationEntity = entityRepository.getConfiguration();
-        OptimizationParametersEntity optimizationParametersEntity = entityRepository.getOptimization();
+        ProgramEntity programEntity = entityRepository.getProgramEntity();
 
         data.setConfiguration(
-                configurationEntity.getNumberDays(),
-                configurationEntity.getNumberWeeks(),
-                configurationEntity.getSlotsPerDay());
+                programEntity.getNumberDays(),
+                programEntity.getNumberWeeks(),
+                programEntity.getSlotsPerDay());
 
         data.setOptimizationParameters(
-                optimizationParametersEntity.getTimeWeight(),
-                optimizationParametersEntity.getRoomWeight(),
-                optimizationParametersEntity.getDistributionWeight());
+                programEntity.getTimeWeight(),
+                programEntity.getRoomWeight(),
+                programEntity.getDistributionWeight());
 
         // Add the rooms and the relations of distance and unavailabilities
         for(RoomEntity roomEntity : entityRepository.getRooms()) {
@@ -104,7 +102,7 @@ public class ModelConverter {
                 for (ClassConstraintEntity classRestriction : constraintEntity.getClassRestrictionEntityList()) {
 
                     for (ClassUnitEntity classUnitEntity : entityRepository.getClassUnits()) {
-                        // TODO: Fazer em conjunto com a alteração da BD
+                        // TODO: complete
                     }
                 }
             }

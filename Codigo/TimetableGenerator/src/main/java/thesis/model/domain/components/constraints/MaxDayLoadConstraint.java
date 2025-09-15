@@ -35,7 +35,9 @@ public class MaxDayLoadConstraint extends Constraint {
             }
         }
 
-        // TODO: confirmar
-        scheduledClasses.forEach((cls) -> action.apply(cls.getClassId()));
+        // TODO: confirm it is correct
+        if(sum > 0) {
+            scheduledClasses.forEach((cls) -> action.apply(cls.getClassId()));
+        }
     }
 }

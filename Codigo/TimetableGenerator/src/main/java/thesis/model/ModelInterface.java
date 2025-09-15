@@ -5,6 +5,7 @@ import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.TableDisplayable;
 import thesis.model.domain.components.Timetable;
 import thesis.model.exceptions.CheckedIllegalStateException;
+import thesis.model.exceptions.DatabaseException;
 import thesis.model.exceptions.InvalidConfigurationException;
 import thesis.model.exceptions.ParsingException;
 import thesis.model.parser.XmlResult;
@@ -39,6 +40,10 @@ public interface ModelInterface {
     XmlResult readFile(File file) throws ParsingException, InvalidConfigurationException;
     void importRepository(InMemoryRepository repository);
     void importSolution(Timetable solution) throws InvalidConfigurationException, CheckedIllegalStateException;
+
+    // Database connectivity
+    void connectToDatabase(String ip, String port, String userName, String password) throws DatabaseException;
+    void disconnectFromDatabase();
 
     // Data export methods
     String getExportLocation();

@@ -51,17 +51,23 @@ public class Time {
     public boolean isEarlier(Time other) {
         int msbWeeksThis = BitToolkit.mostSignificantBit(this.weeks);
         int msbWeeksOther = BitToolkit.mostSignificantBit(other.weeks);
+
         if(msbWeeksThis > msbWeeksOther) {
             return true;
-        } else if(msbWeeksOther > msbWeeksThis) {
+        }
+
+        if(msbWeeksThis != msbWeeksOther) {
             return false;
         }
 
         int msbDaysThis = BitToolkit.mostSignificantBit(this.days);
         int msbDaysOther = BitToolkit.mostSignificantBit(other.days);
+
         if(msbDaysThis > msbDaysOther) {
             return true;
-        } else if(msbDaysOther > msbDaysThis) {
+        }
+
+        if(msbDaysThis != msbDaysOther) {
             return false;
         }
 
@@ -76,10 +82,34 @@ public class Time {
      * @return True if there is an overlap, false otherwise
      */
     public boolean overlaps(Time other) {
-        return other.startSlot < this.endSlot &&
-            this.startSlot < other.endSlot &&
-            (this.days & other.days) != 0 &&
-            (this.weeks & other.weeks) != 0;
+        if((this.weeks & other.weeks) == 0) {
+            return false;
+        }
+
+        if((this.days & other.days) == 0) {
+            return false;
+        }
+
+        return this.startSlot < other.endSlot && other.startSlot < this.endSlot;
+    }
+
+    /**
+     * Checks if there is an overlap between this time block and another time block if travel time is included.
+     * The authors of this method are Edon Gashi and Kadri Sylejmani
+     * source: https://github.com/edongashi/itc-2019
+     * @param other Another time block of which the overlap is to be checked
+     * @return True if there is an overlap, false otherwise
+     */
+    public boolean overlaps(Time other, int travelTime) {
+        if((this.weeks & other.weeks) == 0) {
+            return false;
+        }
+
+        if((this.days & other.days) == 0) {
+            return false;
+        }
+
+        return this.startSlot < (other.endSlot + travelTime) && other.startSlot < (this.endSlot + travelTime);
     }
 
     public String toString(byte numDays, short numWeeks) {

@@ -12,35 +12,19 @@ public class ConfigurationManager {
 
     private ConfigurationManager() {}
 
-    public static GeneralConfiguration loadConfig() {
-        try {
-            File file = new File(CONFIG_FILE);
-            if (file.exists()) {
-                return mapper.readValue(file, GeneralConfiguration.class);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    public static GeneralConfiguration loadConfig() throws IOException {
+        File file = new File(CONFIG_FILE);
+        if (file.exists()) {
+            return mapper.readValue(file, GeneralConfiguration.class);
         }
 
         // Default values
-        GeneralConfiguration defaultValues = new GeneralConfiguration(
-                true,
-                null,
-                400,
-                0.0001,
-                0.01,
-                5,
-                23,
-                8);
+        GeneralConfiguration defaultValues = new GeneralConfiguration();
         saveConfig(defaultValues);
         return defaultValues;
     }
 
-    public static void saveConfig(GeneralConfiguration config) {
-        try {
-            mapper.writerWithDefaultPrettyPrinter().writeValue(new File(CONFIG_FILE), config);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public static void saveConfig(GeneralConfiguration config) throws IOException {
+        mapper.writerWithDefaultPrettyPrinter().writeValue(new File(CONFIG_FILE), config);
     }
 }

@@ -1,31 +1,28 @@
 package thesis.view.managers.components;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.beans.ConstructorProperties;
 
+@JsonIgnoreProperties(value = {"updateConfigFile"})
 public class GeneralConfiguration {
+
     // Flag which indicates if the config file must be updated
-    private boolean updateConfigFile;
+    private boolean updateConfigFile = false;
 
-    private Integer initialSolutionMaxIterations;
-    private double initialTemperature;
-    private double minTemperature;
-    private double coolingRate;
-    private int k;
-    private int maxHour;
-    private int minHour;
-    private boolean showTutorial;
+    private Integer initialSolutionMaxIterations = null;
+    private double initialTemperature = 200;
+    private double minTemperature = 1e-4;
+    private double coolingRate = 0.05;
+    private int k = 5;
+    private int maxHour = 23;
+    private int minHour = 8;
+    private boolean showTutorial = true;
+    private String ipField = "";
+    private String portField = "";
+    private String usernameField = "";
 
-    @ConstructorProperties({"showTutorial", "initialSolutionMaxIterations","initialTemperature","minTemperature","coolingRate","k", "maxHour", "minHour"})
-    public GeneralConfiguration(boolean showTutorial, Integer initialSolutionMaxIterations, double initialTemperature, double minTemperature, double coolingRate, int k, int maxHour, int minHour) {
-        this.showTutorial = showTutorial;
-        this.initialSolutionMaxIterations = initialSolutionMaxIterations;
-        this.initialTemperature = initialTemperature;
-        this.minTemperature = minTemperature;
-        this.coolingRate = coolingRate;
-        this.k = k;
-        this.maxHour = maxHour;
-        this.minHour = minHour;
-    }
+    public GeneralConfiguration() {}
 
     public boolean getUpdateConfigFile() {
         return updateConfigFile;
@@ -98,8 +95,35 @@ public class GeneralConfiguration {
         return showTutorial;
     }
 
-    public void setTutorialShown() {
-        showTutorial = false;
+    public void setShowTutorial(boolean showTutorial) {
+        this.showTutorial = showTutorial;
+        setUpdateConfigFile();
+    }
+
+    public String getIpField() {
+        return ipField;
+    }
+
+    public void setIpField(String ipField) {
+        this.ipField = ipField;
+        setUpdateConfigFile();
+    }
+
+    public String getPortField() {
+        return portField;
+    }
+
+    public void setPortField(String portField) {
+        this.portField = portField;
+        setUpdateConfigFile();
+    }
+
+    public String getUsernameField() {
+        return usernameField;
+    }
+
+    public void setUsernameField(String usernameField) {
+        this.usernameField = usernameField;
         setUpdateConfigFile();
     }
 

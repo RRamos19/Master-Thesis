@@ -32,8 +32,8 @@ public class SameTimeConstraint extends Constraint {
                 int scheduledLesson2Start = scheduledLesson2.getStartSlot();
                 int scheduledLesson2End = scheduledLesson2.getEndSlot();
 
-                if(scheduledLesson1Start <= scheduledLesson2Start && scheduledLesson1End <= scheduledLesson2End ||
-                   scheduledLesson2Start <= scheduledLesson1Start && scheduledLesson2End <= scheduledLesson1End){
+                if(scheduledLesson1Start <= scheduledLesson2Start && scheduledLesson2End <= scheduledLesson1End ||
+                   scheduledLesson2Start <= scheduledLesson1Start && scheduledLesson1End <= scheduledLesson2End){
                     continue;
                 }
 

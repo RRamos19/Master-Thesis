@@ -25,6 +25,9 @@ public interface ISGSolution<modelRepository extends InMemoryRepository, Val ext
     int getBestValue();
     int getTotalValue();
 
+    void incrementIteration();
+    long getIteration();
+
     modelRepository getDataModel();
 
     /**

@@ -187,7 +187,7 @@ public class DataRepository implements InMemoryRepository {
         return result;
     }
 
-    // TODO: completar, vai ser utilizado principalmente na conexão com a BD
+    // TODO: complete. It will be used primarily in the database data merges
     public void merge(InMemoryRepository other) {
         List<Course> courseList = other.getCourses();
 
