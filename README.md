@@ -1,5 +1,5 @@
-# Tese de Mestrado
+# Master Thesis
 
-Trabalho de Projeto: Ferramenta para geração de Horários de Cursos com restrições
+Project Work: Tool for generating course schedules with constraints
 
-Orientadores: Nuno Leite e Artur Ferreira
+Advisors: Nuno Leite and Artur Ferreira
