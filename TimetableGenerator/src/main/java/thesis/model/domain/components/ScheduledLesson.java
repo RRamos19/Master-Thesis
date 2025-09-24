@@ -30,11 +30,11 @@ public class ScheduledLesson {
         this.scheduledTime = time;
     }
 
-    public ScheduledLesson(String classId, String roomId, String days, String weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
+    public ScheduledLesson(String classId, String roomId, String days, String weeks, short startSlot, short length) throws CheckedIllegalArgumentException {
         this(classId, roomId, TimeFactory.create(days, weeks, startSlot, length));
     }
 
-    public ScheduledLesson(String classId, String roomId, short days, int weeks, int startSlot, int length) throws CheckedIllegalArgumentException {
+    public ScheduledLesson(String classId, String roomId, short days, int weeks, short startSlot, short length) throws CheckedIllegalArgumentException {
         this(classId, roomId, TimeFactory.create(days, weeks, startSlot, length));
     }
 
@@ -121,15 +121,15 @@ public class ScheduledLesson {
         return BitToolkit.createSpecificSizeBinaryString(nWeeks, getWeeks());
     }
 
-    public int getStartSlot() {
+    public short getStartSlot() {
         return scheduledTime.getStartSlot();
     }
 
-    public int getEndSlot() {
+    public short getEndSlot() {
         return scheduledTime.getEndSlot();
     }
 
-    public int getLength() {
+    public short getLength() {
         return scheduledTime.getLength();
     }
 

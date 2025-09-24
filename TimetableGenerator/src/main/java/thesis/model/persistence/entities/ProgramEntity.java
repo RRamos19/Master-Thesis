@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "program")
+@Table(name = "tb_program")
 public class ProgramEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,22 +15,22 @@ public class ProgramEntity {
     @Column(length = 30, unique = true, nullable = false)
     private String name;
 
-    @Column(name = "number_days")
-    private byte numberDays;
+    @Column(name = "number_days", nullable = false)
+    private short numberDays;
 
-    @Column(name = "number_weeks")
-    private short numberWeeks;
+    @Column(name = "number_weeks", nullable = false)
+    private int numberWeeks;
 
-    @Column(name = "slots_per_day")
-    private int slotsPerDay;
+    @Column(name = "slots_per_day", nullable = false)
+    private short slotsPerDay;
 
-    @Column(name = "time_weight")
+    @Column(name = "time_weight", nullable = false)
     private short timeWeight;
 
-    @Column(name = "room_weight")
+    @Column(name = "room_weight", nullable = false)
     private short roomWeight;
 
-    @Column(name = "distribution_weight")
+    @Column(name = "distribution_weight", nullable = false)
     private short distributionWeight;
 
     @OneToMany(mappedBy = "programEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
@@ -38,8 +38,14 @@ public class ProgramEntity {
 
     public ProgramEntity() {}
 
-    public ProgramEntity(String name) {
+    public ProgramEntity(String name, short numberDays, int numberWeeks, short slotsPerDay, short timeWeight, short roomWeight, short distributionWeight) {
         this.name = name;
+        this.numberDays = numberDays;
+        this.numberWeeks = numberWeeks;
+        this.slotsPerDay = slotsPerDay;
+        this.timeWeight = timeWeight;
+        this.roomWeight = roomWeight;
+        this.distributionWeight = distributionWeight;
     }
 
     public Integer getId() {
@@ -54,7 +60,7 @@ public class ProgramEntity {
         this.name = name;
     }
 
-    public byte getNumberDays() {
+    public short getNumberDays() {
         return numberDays;
     }
 
@@ -62,7 +68,7 @@ public class ProgramEntity {
         this.numberDays = numberDays;
     }
 
-    public short getNumberWeeks() {
+    public int getNumberWeeks() {
         return numberWeeks;
     }
 
@@ -70,11 +76,11 @@ public class ProgramEntity {
         this.numberWeeks = numberWeeks;
     }
 
-    public int getSlotsPerDay() {
+    public short getSlotsPerDay() {
         return slotsPerDay;
     }
 
-    public void setSlotsPerDay(int slotsPerDay) {
+    public void setSlotsPerDay(short slotsPerDay) {
         this.slotsPerDay = slotsPerDay;
     }
 

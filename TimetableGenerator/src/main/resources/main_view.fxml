@@ -9,6 +9,7 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -85,7 +86,7 @@
                                     </Label>
                                     <VBox maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefWidth="683.0">
                                        <children>
-                                          <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" spacing="50.0">
+                                          <HBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" spacing="50.0">
                                              <children>
                                                 <HBox alignment="CENTER">
                                                    <children>
@@ -94,7 +95,7 @@
                                                             <Insets right="5.0" />
                                                          </padding>
                                                       </Label>
-                                                      <TextField fx:id="ipField" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="135.0" />
+                                                      <TextField fx:id="ipField" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="135.0" />
                                                    </children>
                                                 </HBox>
                                                 <HBox alignment="CENTER">
@@ -104,7 +105,7 @@
                                                             <Insets right="5.0" />
                                                          </padding>
                                                       </Label>
-                                                      <TextField fx:id="portField" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="60.0" />
+                                                      <TextField fx:id="portField" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="60.0" />
                                                    </children>
                                                 </HBox>
                                              </children>
@@ -112,7 +113,7 @@
                                                 <Insets bottom="10.0" left="50.0" right="50.0" top="10.0" />
                                              </padding>
                                           </HBox>
-                                          <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" spacing="50.0">
+                                          <HBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" spacing="50.0">
                                              <children>
                                                 <HBox alignment="CENTER">
                                                    <children>
@@ -121,7 +122,7 @@
                                                             <Insets right="5.0" />
                                                          </padding>
                                                       </Label>
-                                                      <TextField fx:id="usernameField" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="20.0" />
+                                                      <TextField fx:id="usernameField" maxHeight="-Infinity" minHeight="-Infinity" />
                                                    </children>
                                                 </HBox>
                                                 <HBox alignment="CENTER">
@@ -131,7 +132,7 @@
                                                             <Insets right="5.0" />
                                                          </padding>
                                                       </Label>
-                                                      <TextField fx:id="passwordField" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="20.0" />
+                                                      <PasswordField fx:id="passwordField" />
                                                    </children>
                                                    <HBox.margin>
                                                       <Insets />

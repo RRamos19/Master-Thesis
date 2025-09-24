@@ -59,15 +59,13 @@ public class ITCFormatParser implements InputFileReader {
         T apply(XMLEventReader reader) throws ParsingException, InvalidConfigurationException;
     }
 
-    // TODO: complete comment
     /**
-     *
-     * @param file
-     * @param parser
-     * @return
-     * @param <T>
-     * @throws ParsingException
-     * @throws InvalidConfigurationException
+     * This method is a generalization of the parsing of files. No matter which file is read the process is the same.
+     * @param file File that is to be read
+     * @param parser Functional interface made to reduce code repetition and to allow throws of exceptions
+     * @return Either a Timetable or a DataRepository
+     * @throws ParsingException Exception related to the parsing of the file
+     * @throws InvalidConfigurationException Exception related to the configuration
      */
     private <T extends XmlResult> T processXmlFile(File file, XmlProcessor<T> parser) throws ParsingException, InvalidConfigurationException {
         try (FileInputStream fis = new FileInputStream(file);
@@ -94,6 +92,13 @@ public class ITCFormatParser implements InputFileReader {
         }
     }
 
+    /**
+     *
+     * @param file File that is to be read
+     * @return Either a Timetable or a DataRepository
+     * @throws ParsingException 
+     * @throws InvalidConfigurationException
+     */
     @Override
     public XmlResult readXmlFile(File file) throws ParsingException, InvalidConfigurationException {
         return processXmlFile(file, reader -> {
@@ -137,9 +142,9 @@ public class ITCFormatParser implements InputFileReader {
         String slotsPerDayString = getAttributeValue(startElement, "slotsPerDay");
         String nrWeeksString = getAttributeValue(startElement, "nrWeeks");
 
-        byte nrDays = nrDaysString != null ? Byte.parseByte(nrDaysString) : 0;
-        int slotsPerDay = slotsPerDayString != null ? Integer.parseInt(slotsPerDayString) : 0;
-        short nrWeeks = nrWeeksString != null ? Short.parseShort(nrWeeksString) : 0;
+        short nrDays = nrDaysString != null ? Short.parseShort(nrDaysString) : 0;
+        short slotsPerDay = slotsPerDayString != null ? Short.parseShort(slotsPerDayString) : 0;
+        int nrWeeks = nrWeeksString != null ? Integer.parseInt(nrWeeksString) : 0;
 
         List<String> problemTagErrors = new ArrayList<>();
         if (programName == null) problemTagErrors.add("Program name must be specified");
@@ -205,7 +210,6 @@ public class ITCFormatParser implements InputFileReader {
 
         // Add bidirectionality to room distances
         for(Room room1 : data.getRooms()) {
-            room1.fixRoomDistances();
             String roomId = room1.getRoomId();
 
             for(Map.Entry<String, Integer> roomDistances : room1.getRoomDistances().entrySet()) {
@@ -215,6 +219,12 @@ public class ITCFormatParser implements InputFileReader {
                     room2.addRoomDistance(roomId, roomDistances.getValue());
                 }
             }
+        }
+
+        // Now that the bidirectionality is done populate the new map that was made
+        // to optimize the lookups of room distances
+        for(Room room : data.getRooms()) {
+            room.fixRoomDistances();
         }
         
         return data;
@@ -276,8 +286,8 @@ public class ITCFormatParser implements InputFileReader {
                         String lengthString = getAttributeValue(startElement, "length");
                         String weeks = getAttributeValue(startElement, "weeks");
 
-                        int start = startString != null ? Integer.parseInt(startString) : 0;
-                        int length = lengthString != null ? Integer.parseInt(lengthString) : 0;
+                        short start = startString != null ? Short.parseShort(startString) : 0;
+                        short length = lengthString != null ? Short.parseShort(lengthString) : 0;
 
                         try {
                             ScheduledLesson scheduledLesson = new ScheduledLesson(classId, roomId, days, weeks, start, length);
@@ -348,8 +358,8 @@ public class ITCFormatParser implements InputFileReader {
                             String lengthString = getAttributeValue(startElement, "length");
                             String weeks = getAttributeValue(startElement, "weeks");
 
-                            int start = startString != null ? Integer.parseInt(startString) : 0;
-                            int length = lengthString != null ? Integer.parseInt(lengthString) : 0;
+                            short start = startString != null ? Short.parseShort(startString) : 0;
+                            short length = lengthString != null ? Short.parseShort(lengthString) : 0;
 
                             try {
                                 room.addUnavailability(days, weeks, start, length);
@@ -477,8 +487,8 @@ public class ITCFormatParser implements InputFileReader {
                             String weeks = getAttributeValue(startElement, "weeks");
                             String timePenaltyString = getAttributeValue(startElement, "penalty");
 
-                            int start = startString != null ? Integer.parseInt(startString) : 0;
-                            int length = lengthString != null ? Integer.parseInt(lengthString) : 0;
+                            short start = startString != null ? Short.parseShort(startString) : 0;
+                            short length = lengthString != null ? Short.parseShort(lengthString) : 0;
                             int timePenalty = timePenaltyString != null ? Integer.parseInt(timePenaltyString) : 0;
 
                             try {
@@ -586,8 +596,8 @@ public class ITCFormatParser implements InputFileReader {
                             String lengthString = getAttributeValue(startElement, "length");
                             String weeks = getAttributeValue(startElement, "weeks");
 
-                            int start = startString != null ? Integer.parseInt(startString) : 0;
-                            int length = lengthString != null ? Integer.parseInt(lengthString) : 0;
+                            short start = startString != null ? Short.parseShort(startString) : 0;
+                            short length = lengthString != null ? Short.parseShort(lengthString) : 0;
 
                             try {
                                 teacher.addUnavailability(days, weeks, start, length);

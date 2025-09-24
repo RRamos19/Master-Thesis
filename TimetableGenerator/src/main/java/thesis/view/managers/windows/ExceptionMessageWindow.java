@@ -16,6 +16,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import thesis.view.utils.AppIcons;
+import thesis.view.utils.Defaults;
 
 import java.util.Arrays;
 
@@ -43,6 +44,8 @@ public class ExceptionMessageWindow {
         TitledPane titledPane = new TitledPane("Show stracktrace", stacktraceMessage);
         titledPane.setExpanded(false);
         titledPane.setAnimated(false);
+
+        // Dynamically resize the window when the stacktrace is expanded
         titledPane.expandedProperty().addListener((obs, oldV, newV) ->
                 Platform.runLater(exceptionStage::sizeToScene)
         );
@@ -56,10 +59,6 @@ public class ExceptionMessageWindow {
         VBox box = new VBox(10, exceptionMessage, titledPane, hbox);
         box.setPadding(new Insets(10));
         box.setAlignment(Pos.CENTER_LEFT);
-
-        //VBox.setVgrow(exceptionMessage, Priority.NEVER);
-        //VBox.setVgrow(titledPane, Priority.NEVER);
-        //VBox.setVgrow(hbox, Priority.NEVER);
 
         exceptionStage.setScene(new Scene(box));
     }

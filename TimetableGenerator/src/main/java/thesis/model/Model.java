@@ -1,6 +1,5 @@
 package thesis.model;
 
-import org.hibernate.HibernateException;
 import thesis.controller.ControllerInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.TableDisplayable;
@@ -10,6 +9,7 @@ import thesis.model.exceptions.DatabaseException;
 import thesis.model.exceptions.InvalidConfigurationException;
 import thesis.model.exceptions.ParsingException;
 import thesis.model.exporter.DataExporter;
+import thesis.model.mapper.ModelConverter;
 import thesis.model.parser.InputFileReader;
 import thesis.model.parser.XmlResult;
 import thesis.model.persistence.EntityRepository;
@@ -22,7 +22,8 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class Model implements ModelInterface {
-    private static String DB_NAME = "";
+    private static final String DB_NAME = "timetabling_db";
+
     private ControllerInterface controller;
     private final DataExporter dataExporter;
     private final InputFileReader inputFileReader;
@@ -44,6 +45,36 @@ public class Model implements ModelInterface {
     @Override
     public void connectToDatabase(String ip, String port, String userName, String password) throws DatabaseException {
         dbManager = new DBHibernateManager(DB_NAME, ip, port, userName, password);
+
+        try {
+            fetchDatabaseData();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        storeDataInDatabase();
+    }
+
+    private void fetchDatabaseData() throws Exception {
+        Collection<EntityRepository> entityRepositories = dbManager.fetchData();
+
+        for(EntityRepository entityRepository : entityRepositories) {
+            InMemoryRepository data = ModelConverter.convertToDomain(entityRepository);
+
+            System.out.println(data);
+        }
+    }
+
+    private void storeDataInDatabase() {
+        List<EntityRepository> data = new ArrayList<>();
+
+        for(InMemoryRepository dataRepository : dataRepositoryHashMap.values()) {
+            EntityRepository entityRepository = ModelConverter.convertToEntity(dataRepository);
+            data.add(entityRepository);
+            System.out.println(entityRepository);
+        }
+
+        dbManager.storeData(data);
     }
 
     @Override

@@ -13,7 +13,7 @@ public interface InMemoryRepository extends XmlResult {
 
     // Configuration of the problem
     void setOptimizationParameters(short timeWeight, short roomWeight, short distribWeight);
-    void setConfiguration(byte numDays, short numWeeks, int slotPerDay);
+    void setConfiguration(short numDays, int numWeeks, short slotPerDay);
     TimetableConfiguration getTimetableConfiguration();
 
     // Setters and Getters of the elements present in the problem

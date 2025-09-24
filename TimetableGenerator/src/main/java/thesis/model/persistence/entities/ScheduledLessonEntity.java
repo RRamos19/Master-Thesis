@@ -1,7 +1,7 @@
 package thesis.model.persistence.entities;
 
 import jakarta.persistence.*;
-import thesis.model.persistence.entities.embeddableids.ScheduledLessonPK;
+import thesis.model.persistence.entities.embeddableIds.ScheduledLessonPK;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ public class ScheduledLessonEntity {
     private ClassUnitEntity classUnitEntity;
 
     @ManyToOne
-    @JoinColumn(name = "room_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "room_id", referencedColumnName = "id")
     private RoomEntity roomEntity;
 
     @ManyToOne
@@ -29,26 +29,29 @@ public class ScheduledLessonEntity {
     @OneToMany(mappedBy = "scheduledLessonEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private final List<ScheduledLessonTeacherEntity> scheduledLessonTeacherList = new ArrayList<>();
 
-    @Column(length = 7)
-    private String days;
+    @Column(nullable = false)
+    private short days;
 
-    @Column(length = 16)
-    private String weeks;
+    @Column(nullable = false)
+    private int weeks;
 
-    @Column(name = "start_slot")
-    private int startSlot;
+    @Column(name = "start_slot", nullable = false)
+    private short startSlot;
 
-    private int duration;
+    @Column(nullable = false)
+    private short duration;
 
     public ScheduledLessonEntity() {}
 
-    public ScheduledLessonEntity(TimetableEntity timetableEntity, ClassUnitEntity classUnitEntity, RoomEntity roomEntity, String days, String weeks, int startSlot, int duration) {
+    public ScheduledLessonEntity(TimetableEntity timetableEntity, ClassUnitEntity classUnitEntity, RoomEntity roomEntity, short days, int weeks, short startSlot, short duration) {
         this.id = new ScheduledLessonPK(timetableEntity.getId(), UUID.randomUUID());
         timetableEntity.addScheduledLesson(this);
         this.timetableEntity = timetableEntity;
         classUnitEntity.addScheduledLesson(this);
         this.classUnitEntity = classUnitEntity;
-        roomEntity.addScheduledLesson(this);
+        if(roomEntity != null) {
+            roomEntity.addScheduledLesson(this);
+        }
         this.roomEntity = roomEntity;
         this.days = days;
         this.weeks = weeks;
@@ -65,7 +68,6 @@ public class ScheduledLessonEntity {
     }
 
     public void setClassUnit(ClassUnitEntity classUnitEntity) {
-        classUnitEntity.addScheduledLesson(this);
         this.classUnitEntity = classUnitEntity;
     }
 
@@ -74,7 +76,6 @@ public class ScheduledLessonEntity {
     }
 
     public void setRoom(RoomEntity roomEntity) {
-        roomEntity.addScheduledLesson(this);
         this.roomEntity = roomEntity;
     }
 
@@ -87,40 +88,39 @@ public class ScheduledLessonEntity {
     }
 
     public void setTimetable(TimetableEntity timetableEntity) {
-        timetableEntity.addScheduledLesson(this);
         this.timetableEntity = timetableEntity;
         this.id.setTimetableId(timetableEntity.getId());
     }
 
-    public String getDays() {
+    public short getDays() {
         return days;
     }
 
-    public void setDays(String days) {
+    public void setDays(short days) {
         this.days = days;
     }
 
-    public String getWeeks() {
+    public int getWeeks() {
         return weeks;
     }
 
-    public void setWeeks(String weeks) {
+    public void setWeeks(int weeks) {
         this.weeks = weeks;
     }
 
-    public int getStartSlot() {
+    public short getStartSlot() {
         return startSlot;
     }
 
-    public void setStartSlot(int startSlot) {
+    public void setStartSlot(short startSlot) {
         this.startSlot = startSlot;
     }
 
-    public int getDuration() {
+    public short getDuration() {
         return duration;
     }
 
-    public void setDuration(int duration) {
+    public void setDuration(short duration) {
         this.duration = duration;
     }
 

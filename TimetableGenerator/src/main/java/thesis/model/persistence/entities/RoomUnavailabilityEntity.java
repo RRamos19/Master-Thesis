@@ -13,20 +13,21 @@ public class RoomUnavailabilityEntity {
     @JoinColumn(name = "room_id", referencedColumnName = "id")
     private RoomEntity roomEntity;
 
-    @Column(length = 7, nullable = false)
-    private String days;
+    @Column(nullable = false)
+    private short days;
 
-    @Column(length = 16, nullable = false)
-    private String weeks;
+    @Column(nullable = false)
+    private int weeks;
 
     @Column(name = "start_slot", nullable = false)
-    private int startSlot;
+    private short startSlot;
 
-    private int duration;
+    @Column(nullable = false)
+    private short duration;
 
     public RoomUnavailabilityEntity() {}
 
-    public RoomUnavailabilityEntity(RoomEntity roomEntity, String days, String weeks, int startSlot, int duration) {
+    public RoomUnavailabilityEntity(RoomEntity roomEntity, short days, int weeks, short startSlot, short duration) {
         this.roomEntity = roomEntity;
         roomEntity.addRoomUnavailability(this);
         this.days = days;
@@ -47,35 +48,35 @@ public class RoomUnavailabilityEntity {
         this.roomEntity = roomEntity;
     }
 
-    public String getDays() {
+    public short getDays() {
         return days;
     }
 
-    public void setDays(String days) {
+    public void setDays(short days) {
         this.days = days;
     }
 
-    public String getWeeks() {
+    public int getWeeks() {
         return weeks;
     }
 
-    public void setWeeks(String weeks) {
+    public void setWeeks(int weeks) {
         this.weeks = weeks;
     }
 
-    public int getStartSlot() {
+    public short getStartSlot() {
         return startSlot;
     }
 
-    public void setStartSlot(int startSlot) {
+    public void setStartSlot(short startSlot) {
         this.startSlot = startSlot;
     }
 
-    public int getDuration() {
+    public short getDuration() {
         return duration;
     }
 
-    public void setDuration(int duration) {
+    public void setDuration(short duration) {
         this.duration = duration;
     }
 }

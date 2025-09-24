@@ -8,8 +8,8 @@ import thesis.model.domain.components.TimetableConfiguration;
 import java.util.List;
 
 public class MaxDayLoadConstraint extends Constraint {
-    public MaxDayLoadConstraint(String restrictionType, String param1, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
-        super(restrictionType, penalty, required, Integer.valueOf(param1), timetableConfiguration);
+    public MaxDayLoadConstraint(String restrictionType, Integer param1, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
+        super(restrictionType, penalty, required, param1, timetableConfiguration);
     }
 
     // The authors of this method are Edon Gashi and Kadri Sylejmani

@@ -139,8 +139,8 @@ public class TimetableDataExporter implements DataExporter {
                 .append("<!DOCTYPE problem PUBLIC \"-//ITC 2019//DTD Problem Format/EN\" \"http://www.itc2019.org/competition-format.dtd\">\n\n");
 
         TimetableConfiguration timetableConfiguration = data.getTimetableConfiguration();
-        byte numDays = timetableConfiguration.getNumDays();
-        short numWeeks = timetableConfiguration.getNumWeeks();
+        short numDays = timetableConfiguration.getNumDays();
+        int numWeeks = timetableConfiguration.getNumWeeks();
         byte indentation = 0;
 
         // Problem configuration
@@ -151,7 +151,7 @@ public class TimetableDataExporter implements DataExporter {
 
         indentation += INDENT_SIZE;
 
-        // Distributions weights
+        // Problem weights
         stringBuilder.append(addIndentation(indentation, "<optimization time=\"")).append(timetableConfiguration.getTimeWeight()).append("\" ")
                 .append("room=\"").append(timetableConfiguration.getRoomWeight()).append("\" ")
                 .append("distribution=\"").append(timetableConfiguration.getDistribWeight()).append("\" ")
@@ -186,7 +186,7 @@ public class TimetableDataExporter implements DataExporter {
 
                     stringBuilder.append(addIndentation(indentation, "</room>\n"));
                 } else {
-                    // If either of the sub sections are empty then the tag is closed in a single line
+                    // If either of the subsections are empty then the tag is closed in a single line
                     stringBuilder.append("\"/>\n");
                 }
             }

@@ -40,8 +40,9 @@ public class DataRepository implements InMemoryRepository {
     }
 
     @Override
-    public void setConfiguration(byte numDays, short numWeeks, int slotPerDay) {
-        timetableConfiguration.setNumDays(numDays);
+    public void setConfiguration(short numDays, int numWeeks, short slotPerDay) {
+        byte numDaysByte = (byte) numDays;
+        timetableConfiguration.setNumDays(numDaysByte);
         timetableConfiguration.setNumWeeks(numWeeks);
         timetableConfiguration.setSlotsPerDay(slotPerDay);
     }
@@ -173,9 +174,7 @@ public class DataRepository implements InMemoryRepository {
                 List<Subpart> subparts = conf.getSubpartList();
                 result.addAll(subparts);
 
-                subparts.forEach((sub) -> {
-                    result.addAll(sub.getClassUnitList());
-                });
+                subparts.forEach((sub) -> result.addAll(sub.getClassUnitList()));
             });
         });
 
@@ -203,7 +202,7 @@ public class DataRepository implements InMemoryRepository {
     }
 
     /**
-     * Verifies if all of the data present in the model is coherent
+     * Verifies if all the data is present in the model is coherent
      * @throws InvalidConfigurationException If there is an error in the model an exception is thrown explaining what went wrong
      */
     @Override

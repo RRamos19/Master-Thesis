@@ -13,7 +13,7 @@ public class EntityRepository {
     private final Map<Integer, TeacherEntity> teachers = new HashMap<>();           // TeacherId: Teacher
     private final Map<UUID, TimetableEntity> timetables = new HashMap<>();          // TimetableId: Timetable
     private final Map<String, RoomEntity> rooms = new HashMap<>();                  // RoomName: Room
-    private final Map<String, ConstraintTypeEntity> constraintTypes = new HashMap<>();    // ConstraintName: Constraint
+    private final Set<ConstraintEntity> constraintEntities = new HashSet<>();
 
     // Only used to simplify the search of configs, subparts and classes
     private final Map<String, ConfigEntity> configs = new HashMap<>();                // ConfigId: Config
@@ -38,6 +38,18 @@ public class EntityRepository {
 
     public void storeCourse(CourseEntity courseEntity) {
         courses.put(courseEntity.getName(), courseEntity);
+
+        for(ConfigEntity configEntity : courseEntity.getConfigList()) {
+            storeConfig(configEntity);
+
+            for(SubpartEntity subpartEntity : configEntity.getSubpartList()) {
+                storeSubpart(subpartEntity);
+
+                for(ClassUnitEntity classUnitEntity : subpartEntity.getClassUnits()) {
+                    storeClassUnit(classUnitEntity);
+                }
+            }
+        }
     }
 
     public CourseEntity getCourse(String courseId) {
@@ -96,16 +108,12 @@ public class EntityRepository {
         return teachers.values();
     }
 
-    public void storeConstraintType(ConstraintTypeEntity constraintTypeEntity) {
-        constraintTypes.put(constraintTypeEntity.getName(), constraintTypeEntity);
+    public void storeConstraintEntity(ConstraintEntity constraintEntity) {
+        constraintEntities.add(constraintEntity);
     }
 
-    public ConstraintTypeEntity getConstraintType(String constraintName) {
-        return constraintTypes.get(constraintName);
-    }
-
-    public Collection<ConstraintTypeEntity> getConstraintTypes() {
-        return new ArrayList<>(constraintTypes.values());
+    public Collection<ConstraintEntity> getConstraintEntities() {
+        return new ArrayList<>(constraintEntities);
     }
 
     public void storeTimetable(TimetableEntity timetableEntity) {
@@ -150,8 +158,8 @@ public class EntityRepository {
             storeTeacher(t);
         }
 
-        for(ConstraintTypeEntity r : timetableData.getConstraintTypes()) {
-            storeConstraintType(r);
+        for(ConstraintEntity r : timetableData.getConstraintEntities()) {
+            storeConstraintEntity(r);
         }
 
         for(TimetableEntity t : timetableData.getTimetables()) {
@@ -184,6 +192,6 @@ public class EntityRepository {
                 String.format("nrDays = %d, slotsPerDay = %d, nrWeeks = %d", programEntity.getNumberDays(), programEntity.getSlotsPerDay(), programEntity.getNumberWeeks()) + "\n" +
                 String.format("timeWeight = %d, roomWeight = %d, distributionWeight = %d", programEntity.getTimeWeight(), programEntity.getRoomWeight(), programEntity.getDistributionWeight()) + "\n" +
                 String.format("nrCourses = %d, nrConfigs = %d, nrSubparts = %d, nrClasses = %d, nrTeachers = %d, nrTimetables = %d, nrRooms = %d, nrDist = %d",
-                        courses.size(), nrConfigs, nrSubparts, nrClasses, teachers.size(), timetables.size(), rooms.size(), constraintTypes.size());
+                        courses.size(), nrConfigs, nrSubparts, nrClasses, teachers.size(), timetables.size(), rooms.size(), constraintEntities.size());
     }
 }

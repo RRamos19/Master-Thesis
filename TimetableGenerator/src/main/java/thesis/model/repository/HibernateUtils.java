@@ -16,14 +16,13 @@ public class HibernateUtils {
         props.setProperty("hibernate.connection.url", "jdbc:postgresql://" + ip + ":" + port + "/" + dbName);
         props.setProperty("hibernate.connection.username", user);
         props.setProperty("hibernate.connection.password", password);
-        //props.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
-        props.setProperty("hibernate.hbm2ddl.auto", "validate");
+        props.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+        props.setProperty("hibernate.hbm2ddl.auto", "none");
         props.setProperty("hibernate.show_sql", "false");
 
         Configuration cfg = new Configuration();
         cfg.addProperties(props);
 
-        cfg.addAnnotatedClass(ClassConstraintEntity.class);
         cfg.addAnnotatedClass(ClassRoomEntity.class);
         cfg.addAnnotatedClass(ClassTimeEntity.class);
         cfg.addAnnotatedClass(ClassUnitEntity.class);

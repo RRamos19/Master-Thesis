@@ -14,20 +14,20 @@ public class TeacherUnavailabilityEntity {
     private TeacherEntity teacherEntity;
 
     @Column(nullable = false)
-    private int duration;
+    private short duration;
 
     @Column(name = "start_slot", nullable = false)
-    private int startSlot;
+    private short startSlot;
 
-    @Column(length = 7, nullable = false)
-    private String days;
+    @Column(nullable = false)
+    private short days;
 
-    @Column(length = 16, nullable = false)
-    private String weeks;
+    @Column(nullable = false)
+    private int weeks;
 
     public TeacherUnavailabilityEntity() {}
 
-    public TeacherUnavailabilityEntity(TeacherEntity teacherEntity, int duration, int startSlot, String days, String weeks) {
+    public TeacherUnavailabilityEntity(TeacherEntity teacherEntity, short duration, short startSlot, short days, int weeks) {
         teacherEntity.addUnavailability(this);
         this.teacherEntity = teacherEntity;
         this.duration = duration;
@@ -48,35 +48,35 @@ public class TeacherUnavailabilityEntity {
         this.teacherEntity = teacherEntity;
     }
 
-    public int getDuration() {
+    public short getDuration() {
         return duration;
     }
 
-    public void setDuration(int duration) {
+    public void setDuration(short duration) {
         this.duration = duration;
     }
 
-    public int getStartSlot() {
+    public short getStartSlot() {
         return startSlot;
     }
 
-    public void setStartSlot(int startSlot) {
+    public void setStartSlot(short startSlot) {
         this.startSlot = startSlot;
     }
 
-    public String getDays() {
+    public short getDays() {
         return days;
     }
 
-    public void setDays(String days) {
+    public void setDays(short days) {
         this.days = days;
     }
 
-    public String getWeeks() {
+    public int getWeeks() {
         return weeks;
     }
 
-    public void setWeeks(String weeks) {
+    public void setWeeks(short weeks) {
         this.weeks = weeks;
     }
 }

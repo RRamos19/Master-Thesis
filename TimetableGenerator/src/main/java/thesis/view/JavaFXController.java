@@ -54,7 +54,7 @@ public class JavaFXController implements ViewInterface {
     private TextField usernameField;
 
     @FXML
-    private TextField passwordField;
+    private PasswordField passwordField;
 
     @FXML
     private TreeView<String> treeView;
@@ -436,7 +436,7 @@ public class JavaFXController implements ViewInterface {
 
     @Override
     public void showExceptionMessage(Exception e) {
-        windowManager.getExceptionMessage(e).showAndWait();
+        windowManager.getExceptionMessage(e).show();
     }
 
     @Override

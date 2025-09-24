@@ -15,16 +15,17 @@ public class TimetableEntity {
     @Column(name = "creation_date", insertable = false, updatable = false)
     private LocalDateTime creationDate; // Value created by the database
 
-    @Column(length = 10, nullable = false)
-    private String program;
+    @ManyToOne
+    @JoinColumn(name = "program_id", referencedColumnName = "id", nullable = false)
+    private ProgramEntity programEntity;
 
-    @OneToMany(mappedBy = "timetableEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "timetableEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private final List<ScheduledLessonEntity> scheduledLessonEntityList = new ArrayList<>();
 
     public TimetableEntity() {}
 
-    public TimetableEntity(String program){
-        this.program = program;
+    public TimetableEntity(ProgramEntity programEntity){
+        this.programEntity = programEntity;
     }
 
     public UUID getId() {
@@ -35,16 +36,16 @@ public class TimetableEntity {
         return creationDate;
     }
 
-    public String getProgram() {
-        return program;
+    public ProgramEntity getProgramEntity() {
+        return programEntity;
     }
 
     public List<ScheduledLessonEntity> getScheduledLessonEntityList() {
         return scheduledLessonEntityList;
     }
 
-    public void setProgram(String program) {
-        this.program = program;
+    public void setProgramEntity(ProgramEntity programEntity) {
+        this.programEntity = programEntity;
     }
 
     public void addScheduledLesson(ScheduledLessonEntity scheduledLessonEntity) {

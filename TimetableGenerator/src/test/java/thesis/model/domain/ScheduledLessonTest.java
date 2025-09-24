@@ -19,8 +19,8 @@ public class ScheduledLessonTest {
         String roomId1 = "1";
         String classId2 = "2";
         String roomId2 = "2";
-        Time time1 = TimeFactory.create("1111111", "111111111111", 20, 10);
-        Time time2 = TimeFactory.create("1111111", "111111111111", 10, 12);
+        Time time1 = TimeFactory.create("1111111", "111111111111", (short) 20, (short) 10);
+        Time time2 = TimeFactory.create("1111111", "111111111111", (short) 10, (short) 12);
         ScheduledLesson scheduledLesson1 = new ScheduledLesson(classId1, roomId1, time1);
         ScheduledLesson scheduledLesson2 = new ScheduledLesson(classId1, roomId1, time1);
         ScheduledLesson scheduledLesson3 = new ScheduledLesson(classId2, roomId1, time1);
@@ -49,7 +49,7 @@ public class ScheduledLessonTest {
         String roomId1 = "1";
         String roomId2 = "2";
         String classId2 = "2";
-        Time time1 = TimeFactory.create("1111111", "111111111111", 20, 10);
+        Time time1 = TimeFactory.create("1111111", "111111111111", (short) 20, (short) 10);
         ScheduledLesson scheduledLesson1 = new ScheduledLesson(classId1, roomId1, time1);
         ScheduledLesson scheduledLesson2 = new ScheduledLesson(classId2, roomId1, time1);
         ScheduledLesson scheduledLesson3 = new ScheduledLesson(classId2, roomId2, time1);
@@ -74,7 +74,7 @@ public class ScheduledLessonTest {
         String roomId1 = "1";
         String roomId2 = "2";
         String classId2 = "2";
-        Time time1 = TimeFactory.create("1111111", "111111111111", 20, 10);
+        Time time1 = TimeFactory.create("1111111", "111111111111", (short) 20, (short) 10);
         ScheduledLesson scheduledLesson1 = new ScheduledLesson(classId1, roomId1, time1);
         ScheduledLesson scheduledLesson2 = new ScheduledLesson(classId2, roomId2, time1);
 

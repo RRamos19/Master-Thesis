@@ -6,9 +6,9 @@ public class TimetableConfiguration implements TableDisplayable {
     private short timeWeight;
     private short roomWeight;
     private short distribWeight;
-    private byte numDays;
-    private short numWeeks;
-    private int slotsPerDay;
+    private short numDays;
+    private int numWeeks;
+    private short slotsPerDay;
 
     public short getTimeWeight() {
         return timeWeight;
@@ -34,7 +34,7 @@ public class TimetableConfiguration implements TableDisplayable {
         this.distribWeight = distribWeight;
     }
 
-    public byte getNumDays() {
+    public short getNumDays() {
         return numDays;
     }
 
@@ -42,19 +42,19 @@ public class TimetableConfiguration implements TableDisplayable {
         this.numDays = numDays;
     }
 
-    public short getNumWeeks() {
+    public int getNumWeeks() {
         return numWeeks;
     }
 
-    public void setNumWeeks(short numWeeks) {
+    public void setNumWeeks(int numWeeks) {
         this.numWeeks = numWeeks;
     }
 
-    public int getSlotsPerDay() {
+    public short getSlotsPerDay() {
         return slotsPerDay;
     }
 
-    public void setSlotsPerDay(int slotsPerDay) {
+    public void setSlotsPerDay(short slotsPerDay) {
         this.slotsPerDay = slotsPerDay;
     }
 

@@ -4,9 +4,11 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.dialect.Database;
+import org.hibernate.query.Query;
 import thesis.model.exceptions.DatabaseException;
 import thesis.model.persistence.EntityRepository;
 import thesis.model.persistence.entities.*;
+import thesis.model.persistence.entities.embeddableIds.TeacherClassPK;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,13 +42,50 @@ public class DBHibernateManager implements DBManager<Collection<EntityRepository
         try(Session session = HibernateUtils.getSessionFactory().openSession()) {
             Transaction tx = session.beginTransaction();
 
-            List<ProgramEntity> programs = genericSelectAllHibernateQuery(session, ProgramEntity.class);
+            List<ProgramEntity> programs = session.createQuery("select a from ProgramEntity a", ProgramEntity.class).getResultList();
 
             for(ProgramEntity programEntity : programs) {
                 EntityRepository data = new EntityRepository();
                 data.storeProgram(programEntity);
 
-                List<TimetableEntity> timetableEntityList = genericSelectAllHibernateQuery(session, TimetableEntity.class);
+                List<TeacherEntity> teacherList = new ArrayList<>();
+                List<RoomEntity> roomList = new ArrayList<>();
+
+                Query<CourseEntity> courseEntityQuery = session.createQuery("select a from CourseEntity a where programEntity = :programName", CourseEntity.class);
+                courseEntityQuery.setParameter("programName", programEntity);
+
+                List<CourseEntity> courseEntityList = courseEntityQuery.getResultList();
+                for(CourseEntity courseEntity : courseEntityList) {
+                    data.storeCourse(courseEntity);
+
+                    // Get all the rooms and teachers for this problem
+                    for(ConfigEntity configEntity: courseEntity.getConfigList()) {
+                        for(SubpartEntity subpartEntity : configEntity.getSubpartList()) {
+                            for(ClassUnitEntity classUnitEntity : subpartEntity.getClassUnits()) {
+                                // Get every room for this class
+                                for(ClassRoomEntity classRoomEntity : classUnitEntity.getClassRoomEntityList()) {
+                                    roomList.add(classRoomEntity.getRoom());
+                                }
+
+                                // Get every teacher for this class
+                                teacherList.addAll(classUnitEntity.getTeacherEntityClassList());
+                            }
+                        }
+                    }
+                }
+
+                for(TeacherEntity teacherEntity : teacherList) {
+                    data.storeTeacher(teacherEntity);
+                }
+
+                for(RoomEntity roomEntity: roomList) {
+                    data.storeRoom(roomEntity);
+                }
+
+                Query<TimetableEntity> timetableEntityQuery = session.createQuery("select a from TimetableEntity a where programEntity = :programName", TimetableEntity.class);
+                timetableEntityQuery.setParameter("programName", programEntity);
+
+                List<TimetableEntity> timetableEntityList = timetableEntityQuery.getResultList();
                 for (TimetableEntity t : timetableEntityList) {
                     data.storeTimetable(t);
                 }
@@ -60,39 +99,6 @@ public class DBHibernateManager implements DBManager<Collection<EntityRepository
         return allData;
     }
 
-
-    /**
-     * Simplifies the construction of the select all query for hibernate
-     * @param session Session used to connect to the database
-     * @param classTable Class of the table to be accessed
-     * @return List of objects present in the database
-     * @param <T> Generic type to simplify the input and output
-     */
-    private <T> List<T> genericSelectAllHibernateQuery(Session session, Class<T> classTable) {
-        return genericSelectAllHibernateQuery(session, classTable, null);
-    }
-
-    /**
-     * Simplifies the construction of the select all query for hibernate but only for a specific program
-     * @param session Session used to connect to the database
-     * @param classTable Class of the table to be accessed
-     * @return List of objects present in the database
-     * @param <T> Generic type to simplify the input and output
-     */
-    private <T> List<T> genericSelectAllHibernateQuery(Session session, Class<T> classTable, String programName) {
-        String whereQuery = null;
-        if(programName != null) {
-            whereQuery = " WHERE a.program = " + programName;
-        }
-        String entityName = session.getMetamodel().entity(classTable).getName();
-        String completeQuery = "Select a from " + entityName + " a";
-        if(whereQuery != null) {
-            completeQuery += whereQuery;
-        }
-        return session.createQuery(completeQuery, classTable).getResultList();
-    }
-
-
     /**
      * Stores all data present in EntityModel into the database
      * @param allData Collection of classes that contain all of the data to be inserted
@@ -103,22 +109,25 @@ public class DBHibernateManager implements DBManager<Collection<EntityRepository
             Transaction tx = session.beginTransaction();
 
             for(EntityRepository data : allData) {
+                ProgramEntity program = data.getProgramEntity();
+                ProgramEntity newProgram = saveOnDatabase(session, program, program.getName());
+                data.storeProgram(newProgram);
 
-                for (TeacherEntity t : data.getTeachers()) {
-                    //session.merge(t);
-                    TeacherEntity newT = saveOnDatabase(session, t, t.getId());
-                    if (!newT.equals(t)) {
-                        data.storeTeacher(newT);
-                    }
-                }
-
-                for (RoomEntity r : data.getRooms()) {
-                    //session.merge(r);
-                    RoomEntity newR = saveOnDatabase(session, r, r.getId());
-                    if (!newR.equals(r)) {
-                        data.storeRoom(newR);
-                    }
-                }
+//                for (TeacherEntity t : data.getTeachers()) {
+//                    //session.merge(t);
+//                    TeacherEntity newT = saveOnDatabase(session, t, t.getId());
+//                    if (!newT.equals(t)) {
+//                        data.storeTeacher(newT);
+//                    }
+//                }
+//
+//                for (RoomEntity r : data.getRooms()) {
+//                    //session.merge(r);
+//                    RoomEntity newR = saveOnDatabase(session, r, r.getId());
+//                    if (!newR.equals(r)) {
+//                        data.storeRoom(newR);
+//                    }
+//                }
 
                 for (CourseEntity c : data.getCourses()) {
                     //session.merge(c);
@@ -128,29 +137,29 @@ public class DBHibernateManager implements DBManager<Collection<EntityRepository
                     }
                 }
 
-                for (ConfigEntity c : data.getConfigs()) {
-                    //session.merge(c);
-                    ConfigEntity newC = saveOnDatabase(session, c, c.getId());
-                    if (!newC.equals(c)) {
-                        data.storeConfig(newC);
-                    }
-                }
-
-                for (SubpartEntity s : data.getSubparts()) {
-                    //session.merge(s);
-                    SubpartEntity newS = saveOnDatabase(session, s, s.getId());
-                    if (!newS.equals(s)) {
-                        data.storeSubpart(newS);
-                    }
-                }
-
-                for (ClassUnitEntity c : data.getClassUnits()) {
-                    //session.merge(c);
-                    ClassUnitEntity newC = saveOnDatabase(session, c, c.getId());
-                    if (!newC.equals(c)) {
-                        data.storeClassUnit(newC);
-                    }
-                }
+//                for (ConfigEntity c : data.getConfigs()) {
+//                    //session.merge(c);
+//                    ConfigEntity newC = saveOnDatabase(session, c, c.getId());
+//                    if (!newC.equals(c)) {
+//                        data.storeConfig(newC);
+//                    }
+//                }
+//
+//                for (SubpartEntity s : data.getSubparts()) {
+//                    //session.merge(s);
+//                    SubpartEntity newS = saveOnDatabase(session, s, s.getId());
+//                    if (!newS.equals(s)) {
+//                        data.storeSubpart(newS);
+//                    }
+//                }
+//
+//                for (ClassUnitEntity c : data.getClassUnits()) {
+//                    //session.merge(c);
+//                    ClassUnitEntity newC = saveOnDatabase(session, c, c.getId());
+//                    if (!newC.equals(c)) {
+//                        data.storeClassUnit(newC);
+//                    }
+//                }
 
                 for (TimetableEntity t : data.getTimetables()) {
                     //session.merge(t);

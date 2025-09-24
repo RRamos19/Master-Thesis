@@ -8,8 +8,8 @@ import thesis.model.domain.components.TimetableConfiguration;
 import java.util.List;
 
 public class WorkDayConstraint extends Constraint {
-    public WorkDayConstraint(String restrictionType, String param1, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
-        super(restrictionType, penalty, required, Integer.valueOf(param1), timetableConfiguration);
+    public WorkDayConstraint(String restrictionType, int param1, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
+        super(restrictionType, penalty, required, param1, timetableConfiguration);
     }
 
     // The authors of this method are Edon Gashi and Kadri Sylejmani

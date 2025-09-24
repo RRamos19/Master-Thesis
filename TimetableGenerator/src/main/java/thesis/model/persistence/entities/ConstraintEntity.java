@@ -16,24 +16,46 @@ public class ConstraintEntity {
     @JoinColumn(name = "constraint_type_id", referencedColumnName = "id", nullable = false)
     private ConstraintTypeEntity constraintTypeEntity;
 
-    @OneToMany(mappedBy = "constraintEntity", orphanRemoval = true, fetch = FetchType.EAGER)
-    private final List<ClassConstraintEntity> classConstraintEntityList = new ArrayList<>();
+    @ManyToMany(mappedBy = "constraintEntityList", fetch = FetchType.EAGER)
+    private final List<ClassUnitEntity> classUnitEntityList = new ArrayList<>();
 
     private Integer penalty;
 
     private Boolean required;
 
+    private Integer first_parameter;
+
+    private Integer second_parameter;
+
     public ConstraintEntity() {}
 
-    public ConstraintEntity(ConstraintTypeEntity constraintType, Integer penalty, Boolean required) {
+    public ConstraintEntity(ConstraintTypeEntity constraintType, Integer first_parameter, Integer second_parameter, Integer penalty, Boolean required) {
         this.constraintTypeEntity = constraintType;
         constraintType.addConstraintEntity(this);
+        this.first_parameter = first_parameter;
+        this.second_parameter = second_parameter;
         this.penalty = penalty;
         this.required = required;
     }
 
     public Integer getId() {
         return id;
+    }
+
+    public void setFirstParameter(Integer first_parameter) {
+        this.first_parameter = first_parameter;
+    }
+
+    public Integer getFirstParameter() {
+        return first_parameter;
+    }
+
+    public void setSecondParameter(Integer second_parameter) {
+        this.second_parameter = second_parameter;
+    }
+
+    public Integer getSecondParameter() {
+        return second_parameter;
     }
 
     public Integer getPenalty() {
@@ -56,12 +78,11 @@ public class ConstraintEntity {
         return constraintTypeEntity;
     }
 
-    public void addClassRestriction(ClassConstraintEntity classConstraintEntity) {
-        classConstraintEntityList.add(classConstraintEntity);
-        classConstraintEntity.setConstraint(this);
+    public void addClassRestriction(ClassUnitEntity classUnitEntity) {
+        classUnitEntityList.add(classUnitEntity);
     }
 
-    public List<ClassConstraintEntity> getClassRestrictionEntityList() {
-        return classConstraintEntityList;
+    public List<ClassUnitEntity> getClassRestrictionEntityList() {
+        return classUnitEntityList;
     }
 }

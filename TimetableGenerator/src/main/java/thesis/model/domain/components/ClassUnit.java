@@ -29,7 +29,7 @@ public class ClassUnit implements TableDisplayable {
         this.parentClassId = parentClassId;
     }
 
-    public void addClassTime(String days, String weeks, int startSlot, int length, int penalty) throws CheckedIllegalArgumentException {
+    public void addClassTime(String days, String weeks, short startSlot, short length, int penalty) throws CheckedIllegalArgumentException {
         classTimesList.put(TimeFactory.create(days, weeks, startSlot, length), penalty);
     }
 

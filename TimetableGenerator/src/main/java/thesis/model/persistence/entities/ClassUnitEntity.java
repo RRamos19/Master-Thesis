@@ -40,8 +40,13 @@ public class ClassUnitEntity {
     @OneToMany(mappedBy = "classUnitEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private final List<ClassRoomEntity> classRoomEntityList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "classUnitEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private final List<ClassConstraintEntity> classConstraintEntityList = new ArrayList<>();
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "class_constraint",
+            joinColumns = @JoinColumn(name = "class_id"),
+            inverseJoinColumns = @JoinColumn(name = "constraint_id")
+    )
+    private final List<ConstraintEntity> constraintEntityList = new ArrayList<>();
 
     @OneToMany(mappedBy = "classUnitEntity", orphanRemoval = true, fetch = FetchType.EAGER)
     private final List<ScheduledLessonEntity> scheduledLessonEntityList = new ArrayList<>();
@@ -78,8 +83,8 @@ public class ClassUnitEntity {
         return parentClass;
     }
 
-    public List<ClassConstraintEntity> getClassRestrictionList() {
-        return classConstraintEntityList;
+    public List<ConstraintEntity> getClassRestrictionList() {
+        return constraintEntityList;
     }
 
     public SubpartEntity getSubpart() {
@@ -103,8 +108,8 @@ public class ClassUnitEntity {
         return classRoomEntityList;
     }
 
-    public List<ClassConstraintEntity> getClassRestrictionEntityList() {
-        return classConstraintEntityList;
+    public List<ConstraintEntity> getClassRestrictionEntityList() {
+        return constraintEntityList;
     }
 
     public List<ScheduledLessonEntity> getScheduledLessonEntityList() {
@@ -123,7 +128,7 @@ public class ClassUnitEntity {
         classRoomEntityList.add(classRoomEntity);
     }
 
-    public void addClassConstraint(ClassConstraintEntity classConstraintEntity) {
-        classConstraintEntityList.add(classConstraintEntity);
+    public void addClassConstraint(ConstraintEntity constraintEntity) {
+        constraintEntityList.add(constraintEntity);
     }
 }

@@ -9,16 +9,16 @@ public class Time {
     // with signed values
     private final short days;
     private final int weeks;
-    private final int startSlot;
-    private final int length;
-    private final int endSlot;
+    private final short startSlot;
+    private final short length;
+    private final short endSlot;
 
-    public Time(short days, int weeks, int startSlot, int length) {
+    public Time(short days, int weeks, short startSlot, short length) {
         this.days = days;
         this.weeks = weeks;
         this.startSlot = startSlot;
         this.length = length;
-        this.endSlot = startSlot + length;
+        this.endSlot = (short) (startSlot + length);
     }
 
     public short getDays() {
@@ -29,15 +29,15 @@ public class Time {
         return weeks;
     }
 
-    public int getStartSlot() {
+    public short getStartSlot() {
         return startSlot;
     }
 
-    public int getLength() {
+    public short getLength() {
         return length;
     }
 
-    public int getEndSlot() {
+    public short getEndSlot() {
         return endSlot;
     }
 
@@ -112,7 +112,7 @@ public class Time {
         return this.startSlot < (other.endSlot + travelTime) && other.startSlot < (this.endSlot + travelTime);
     }
 
-    public String toString(byte numDays, short numWeeks) {
+    public String toString(short numDays, int numWeeks) {
         return "days=\"" + BitToolkit.createSpecificSizeBinaryString(numDays, days) + "\" " +
                 "start=\"" + startSlot + "\" " +
                 "length=\"" + length + "\" " +

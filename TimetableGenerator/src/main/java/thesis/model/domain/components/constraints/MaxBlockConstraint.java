@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MaxBlockConstraint extends Constraint {
-    public MaxBlockConstraint(String restrictionType, String param1, String param2, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
-        super(restrictionType, penalty, required, Integer.parseInt(param1), Integer.parseInt(param2), timetableConfiguration);
+    public MaxBlockConstraint(String restrictionType, int param1, int param2, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
+        super(restrictionType, penalty, required, param1, param2, timetableConfiguration);
     }
 
     // The authors of this method are Edon Gashi and Kadri Sylejmani
