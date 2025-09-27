@@ -17,7 +17,7 @@ public class MinGapConstraint extends Constraint {
     @Override
     protected void getConflictingClasses(Timetable solution, conflictAction action) {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
-        int G = firstParam;
+        int G = getFirstParameter();
 
         int scheduledClassesSize = scheduledClasses.size();
 

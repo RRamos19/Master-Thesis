@@ -1,11 +1,10 @@
 package thesis.view.managers;
 
-import javafx.animation.KeyFrame;
-import javafx.event.EventHandler;
+import javafx.concurrent.Task;
 import javafx.scene.control.ListView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
+import thesis.controller.ControllerInterface;
+import thesis.view.ViewInterface;
 import thesis.view.managers.components.ProgressBarUnit;
 
 import java.util.HashMap;
@@ -13,10 +12,15 @@ import java.util.Map;
 import java.util.UUID;
 
 public class ProgressBarManager {
+    private static final int UPDATE_WAIT = 1000;
+    private final ViewInterface view;
+    private final ControllerInterface controller;
     private final ListView<HBox> progressContainer;
     private final Map<UUID, ProgressBarUnit> progressBarMap = new HashMap<>(); // UUID : ProgressBar
 
-    public ProgressBarManager(ListView<HBox> parent) {
+    public ProgressBarManager(ListView<HBox> parent, ControllerInterface controller, ViewInterface view) {
+        this.view = view;
+        this.controller = controller;
         this.progressContainer = parent;
     }
 
@@ -31,60 +35,78 @@ public class ProgressBarManager {
         progressBarMap.put(uuid, bar);
         progressContainer.getItems().add(bar.getProgressParent());
 
+        final UUID finalUUID = uuid;
+        bar.setCancelAction((event) -> {
+            controller.cancelGeneration(finalUUID);
+            stopProgressBar(finalUUID);
+        });
+
         return uuid;
     }
 
-    public void setCancelAction(UUID progressUUID, EventHandler<MouseEvent> cancelAction) {
+    public void startProgressBar(UUID progressUUID) {
         ProgressBarUnit unit = progressBarMap.get(progressUUID);
 
         if(unit == null) {
             throw new IllegalStateException("The UUID provided has no progress bar!");
         }
 
-        unit.setCancelAction(cancelAction);
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                double maxProgress = 0;
+                double progress;
+                do {
+                    if(isCancelled()) break;
+
+                    progress = controller.getGenerationProgress(progressUUID);
+
+                    if(maxProgress < progress) {
+                        maxProgress = progress;
+                    }
+
+                    updateProgress(maxProgress, 1.0);
+
+                    Thread.sleep(UPDATE_WAIT);
+                } while(progress < 1.0 && !isCancelled());
+
+                return null;
+            }
+        };
+
+        task.setOnFailed(e -> {
+            view.showExceptionMessage((Exception) e.getSource().getException());
+            stopProgressBar(progressUUID);
+            controller.cancelGeneration(progressUUID);
+        });
+
+        task.setOnSucceeded(e -> {
+            view.showInformationAlert("The solution for the program " + unit.getProgramName() + " has been created!\nPerform a double click on it to visualize!");
+            stopProgressBar(progressUUID);
+            view.updateTableView();
+        });
+
+        unit.startProgressBar(task);
     }
 
-    public void startTimeline(UUID progressUUID, int cycleCount, KeyFrame ... keyframes) {
-        ProgressBarUnit unit = progressBarMap.get(progressUUID);
-
-        if(unit == null) {
-            throw new IllegalStateException("The UUID provided has no progress bar!");
-        }
-
-        unit.startTimeline(cycleCount, keyframes);
-    }
-
-    public void stopAndClearTimelines() {
+    public void stopProgressBars() {
         for(ProgressBarUnit unit : progressBarMap.values()) {
-            unit.stopAndClearTimeline();
+            unit.stopProgressBar();
         }
+        progressContainer.getItems().clear();
+        progressBarMap.clear();
     }
 
-    public void stopAndClearTimeline(UUID programUUID) {
+    public void stopProgressBar(UUID programUUID) {
         ProgressBarUnit unit = progressBarMap.get(programUUID);
 
         if(unit == null) {
             throw new IllegalStateException("The UUID provided has no progress bar!");
         }
 
-        unit.stopAndClearTimeline();
+        unit.stopProgressBar();
         progressContainer.getItems().remove(unit.getProgressParent());
         progressBarMap.remove(programUUID);
-    }
-
-    public void setProgress(UUID programUUID, double progress) {
-        ProgressBarUnit unit = progressBarMap.get(programUUID);
-
-        if(unit == null) {
-            throw new IllegalStateException("The UUID provided has no progress bar!");
-        }
-
-        // A verification is made to avoid a progress bar the goes back and forth (which may happen
-        // because the progress of the initial solution is based on the unscheduled classes which can
-        // increase or decrease depending on the situation)
-        if(unit.getProgress() < progress) {
-            unit.setProgress(progress);
-        }
     }
 
     public String getProgramName(UUID programUUID) {

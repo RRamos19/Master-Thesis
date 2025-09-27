@@ -69,11 +69,11 @@
             </ContextMenu>
          </contextMenu>
       </MenuBar>
-      <StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity">
+      <StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" VBox.vgrow="ALWAYS">
          <children>
-            <HBox prefHeight="100.0" prefWidth="200.0">
+            <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity">
                <children>
-                  <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity">
+                  <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" HBox.hgrow="ALWAYS">
                      <children>
                         <HBox alignment="BOTTOM_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" style="-fx-border-style: solid; -fx-border-radius: 10px; -fx-border-color: gray;">
                            <children>
@@ -154,7 +154,7 @@
                               </Button>
                            </children>
                         </HBox>
-                        <HBox alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0">
+                        <HBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" VBox.vgrow="ALWAYS">
                            <children>
                               <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="400.0" prefWidth="168.0">
                                  <children>
@@ -165,7 +165,7 @@
                                     <TreeView fx:id="treeView" showRoot="false" VBox.vgrow="ALWAYS" />
                                  </children>
                               </VBox>
-                              <TableView fx:id="tableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="509.0" />
+                              <TableView fx:id="tableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="509.0" HBox.hgrow="ALWAYS" />
                               <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" spacing="5.0">
                                  <children>
                                     <Button fx:id="reoptimizeButton" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#reoptimizeEvent" text="Reoptimize" visible="false" />
@@ -184,7 +184,7 @@
                         </AnchorPane>
                      </children>
                   </VBox>
-                  <VBox fx:id="taskContainer" spacing="5.0">
+                  <VBox fx:id="taskContainer" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" spacing="5.0">
                      <children>
                         <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-border-style: solid; -fx-border-color: gray; -fx-border-width: 2px;" text="Tasks" textAlignment="CENTER" />
                         <ListView fx:id="progressContainer" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="544.0" prefWidth="238.0" />
@@ -198,7 +198,7 @@
                   </VBox>
                </children>
             </HBox>
-            <VBox fx:id="dragAndDropPane" alignment="CENTER" opacity="0.65" prefHeight="200.0" prefWidth="100.0" style="-fx-background-color: gray;" visible="false">
+            <VBox fx:id="dragAndDropPane" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" opacity="0.65" style="-fx-background-color: gray;" visible="false">
                <children>
                   <Label alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Drag and drop files!" textFill="WHITE">
                      <font>

@@ -12,6 +12,8 @@ public interface ViewInterface {
     void showErrorAlert(String message);
     boolean showConfirmationAlert(String message);
 
+    void updateTableView();
+
     // Runs at the end of the graphical application
     void cleanup();
 }

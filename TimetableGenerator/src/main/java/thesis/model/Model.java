@@ -46,6 +46,7 @@ public class Model implements ModelInterface {
     public void connectToDatabase(String ip, String port, String userName, String password) throws DatabaseException {
         dbManager = new DBHibernateManager(DB_NAME, ip, port, userName, password);
 
+        //TODO: just for testing
         try {
             fetchDatabaseData();
         } catch (Exception e) {
@@ -79,7 +80,7 @@ public class Model implements ModelInterface {
 
     @Override
     public void disconnectFromDatabase() {
-        dbManager = null;
+        //TODO: remove auto fetch from database
     }
 
     @Override

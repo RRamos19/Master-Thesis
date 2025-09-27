@@ -1,8 +1,6 @@
-package thesis.model.domain;
+package thesis.model.domain.components;
 
 import org.junit.jupiter.api.Test;
-import thesis.model.domain.components.Time;
-import thesis.model.domain.components.TimeFactory;
 import thesis.model.exceptions.CheckedIllegalArgumentException;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;

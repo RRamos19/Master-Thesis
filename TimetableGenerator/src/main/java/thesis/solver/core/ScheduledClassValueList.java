@@ -12,6 +12,9 @@ public class ScheduledClassValueList implements ISGValueList<DefaultISGValue> {
     private final List<DefaultISGValue> defaultISGValueList = new ArrayList<>();
 
     public ScheduledClassValueList(InMemoryRepository dataModel, DefaultISGVariable selectedVariable) {
+        if(selectedVariable == null) {
+            throw new IllegalStateException("ScheduledClassValueList: The selected variable shouldn't be null");
+        }
         ClassUnit classUnit = selectedVariable.variable();
         String classId = classUnit.getClassId();
 

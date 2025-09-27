@@ -150,8 +150,17 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
         ScheduledLesson valueLesson = value.value();
         Set<String> conflicts = new HashSet<>();
 
+        DefaultISGVariable var = value.variable();
+        if(var == null) {
+            throw new IllegalStateException("conflictIds: value has no variable!");
+        }
+        ClassUnit cls = var.variable();
+        if(cls == null) {
+            throw new IllegalStateException("conflictIds: variable doesn't represent a class unit!");
+        }
+
         // Add the constraint conflicts
-        for (Constraint constraint : value.variable().variable().getConstraintList()) {
+        for (Constraint constraint : cls.getConstraintList()) {
             constraint.computeConflicts(valueLesson, timetable, conflicts);
         }
 
@@ -223,10 +232,6 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
     public void convertToUnassigned(DefaultISGVariable var) {
         if(!variableCollection.contains(var)) {
             // Should be impossible, unless there is a bug
-            System.out.println("Help!!");
-            System.out.println(var);
-            System.out.println(variableCollection);
-            System.out.println();
             throw new RuntimeException("Assigned variable was not found!");
         }
 

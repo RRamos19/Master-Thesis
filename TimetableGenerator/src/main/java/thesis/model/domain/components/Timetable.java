@@ -15,8 +15,10 @@ public class Timetable implements Cloneable, TableDisplayable, XmlResult {
     private Map<String, ScheduledLesson> scheduledLessonMap = new HashMap<>(); // ClassId : ScheduledLesson
     private InMemoryRepository dataModel;
     private Set<Constraint> involvedConstraints = new HashSet<>();             // Contains the constraints of the classes
-    private final List<Constraint> constraintsToRemove = new ArrayList<>();
+    private List<Constraint> constraintsToRemove = new ArrayList<>();
+    private ScheduledLesson originalLesson;
 
+    private Boolean isValid;
     private boolean updateCost = true;
     private int cost;
 
@@ -61,6 +63,8 @@ public class Timetable implements Cloneable, TableDisplayable, XmlResult {
         } else {
             involvedConstraints.addAll(constraintList);
         }
+
+        isValid = null;
     }
 
     public List<ScheduledLesson> getScheduledLessonList() {
@@ -102,7 +106,11 @@ public class Timetable implements Cloneable, TableDisplayable, XmlResult {
     }
 
     public void addTemporaryScheduledLesson(ScheduledLesson temporaryLesson) {
-        scheduledLessonMap.put(temporaryLesson.getClassId(), temporaryLesson);
+        if(!constraintsToRemove.isEmpty()) {
+            throw new IllegalStateException("When adding classes to a timetable only one temporary lesson at a time is supported!");
+        }
+
+        originalLesson = scheduledLessonMap.put(temporaryLesson.getClassId(), temporaryLesson);
 
         if(dataModel != null) {
             updateInvolvedConstraints(temporaryLesson, true);
@@ -116,14 +124,23 @@ public class Timetable implements Cloneable, TableDisplayable, XmlResult {
 
         for(Constraint c : constraintsToRemove) {
             involvedConstraints.remove(c);
+            isValid = null;
         }
         constraintsToRemove.clear();
+
+        if(originalLesson != null) {
+            addScheduledLesson(originalLesson);
+        }
 
         updateCost = true;
     }
 
     public ScheduledLesson getScheduledLesson(String classId) {
         return scheduledLessonMap.get(classId);
+    }
+
+    public Set<Constraint> getInvolvedConstraints() {
+        return involvedConstraints;
     }
 
     public int cost() {
@@ -135,10 +152,15 @@ public class Timetable implements Cloneable, TableDisplayable, XmlResult {
                 cost += scheduledLesson.toInt();
             }
 
+            int timeRoomPenalties = cost;
+            System.out.println("Time and room penalties: " + cost);
+
             // Add the soft constraint penalties (only if they were violated)
             for (Constraint c : involvedConstraints) {
                 cost += c.computePenalties(this);
             }
+
+            System.out.println("Constraint penalties: " + (cost - timeRoomPenalties));
 
             updateCost = false;
         }
@@ -147,15 +169,19 @@ public class Timetable implements Cloneable, TableDisplayable, XmlResult {
     }
 
     public boolean isValid() {
-        List<String> conflicts = new ArrayList<>();
+        if(isValid == null) {
+            List<String> conflicts = new ArrayList<>();
 
-        for(Constraint c : involvedConstraints) {
-            if(c.required) {
-                c.getConflictingClasses(this, (classes) -> Collections.addAll(conflicts, classes));
+            for (Constraint c : involvedConstraints) {
+                if (c.getRequired()) {
+                    c.getConflictingClasses(this, (classes) -> Collections.addAll(conflicts, classes));
+                }
             }
+
+            isValid = conflicts.isEmpty();
         }
 
-        return conflicts.isEmpty();
+        return isValid;
     }
 
     @Override
@@ -190,9 +216,9 @@ public class Timetable implements Cloneable, TableDisplayable, XmlResult {
             clone.programName = programName;
             clone.dateOfCreation = dateOfCreation;
             clone.dataModel = dataModel;
-            clone.involvedConstraints = involvedConstraints;
+            clone.involvedConstraints = new HashSet<>(involvedConstraints);
+            clone.constraintsToRemove = new ArrayList<>(constraintsToRemove);
             clone.scheduledLessonMap = new HashMap<>(scheduledLessonMap);
-            clone.updateCost = updateCost;
             clone.cost = cost;
             return clone;
         } catch (CloneNotSupportedException e) {

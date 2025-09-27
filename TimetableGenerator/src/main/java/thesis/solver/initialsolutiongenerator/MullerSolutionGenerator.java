@@ -12,7 +12,7 @@ import java.util.List;
  * The solution generator presented is based on Tomáš Müller's phd thesis.
  * Source - Constraint Based Timetabling https://muller.unitime.org/phd-thesis.pdf
  */
-public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetable> {
+public class MullerSolutionGenerator implements InitialSolutionGenerator<DefaultISGSolution> {
     private final InMemoryRepository dataModel;
     private final ValueSelection<DefaultISGValue, DefaultISGSolution, DefaultISGVariable> valueSelection = new DefaultValueSelection();
     private final DefaultISGSolutionComparator defaultISGSolutionComparator = new DefaultISGSolutionComparator();
@@ -36,7 +36,7 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
         this.dataModel = data;
     }
 
-    public Timetable generate(Integer maxIterations) {
+    public DefaultISGSolution generate(Integer maxIterations) {
         solution = new DefaultISGSolution(dataModel);
 
         // For each unscheduled class a variable is made which represents the class
@@ -81,7 +81,7 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
             solution.restoreBest();
         }
 
-        return solution.solution();
+        return solution;
     }
 
     /**
@@ -95,6 +95,10 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Timetab
 
     @Override
     public double getProgress() {
+        if(solution == null) {
+            return 0;
+        }
+
         return 1.0 - ((double) solution.getUnassignedVariables().size()) / unscheduled.size();
     }
 

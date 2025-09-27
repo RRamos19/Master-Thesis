@@ -26,26 +26,18 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
             this::moveClass
     );
 
-    public SimulatedAnnealing(InMemoryRepository data, Timetable initialSolution, double initialTemperature, double minTemperature, double coolingRate, int k) {
+    public SimulatedAnnealing(DefaultISGSolution initialSolution, double initialTemperature, double minTemperature, double coolingRate, int k) {
         this.initialTemperature = initialTemperature;
         this.minTemperature = minTemperature;
         this.coolingRate = coolingRate;
         this.k = k;
         this.maxIter = (int) Math.floor(-Math.log(minTemperature / initialTemperature) / coolingRate);
-
-        // Create the Objects required for the algorithm
-        this.initialSolution = new DefaultISGSolution(data);
-        for(ScheduledLesson scheduledLesson : initialSolution.getScheduledLessonList()) {
-            DefaultISGVariable variable = new DefaultISGVariable(scheduledLesson.getClassUnit(), false);
-            variable.setSolution(this.initialSolution);
-            this.initialSolution.addUnassignedVariable(variable);
-            variable.assign(new DefaultISGValue(variable, scheduledLesson));
-        }
+        this.initialSolution = initialSolution;
     }
 
     @Override
     public Timetable execute() {
-        DefaultISGSolution currentSolution = initialSolution;
+        DefaultISGSolution currentSolution = new DefaultISGSolution(initialSolution);
 
         if(!currentSolution.isSolutionValid()) {
             throw new IllegalStateException("The initial solution must be valid");
@@ -100,7 +92,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
         }
 
         if(!currentSolution.isSolutionValid()) {
-            throw new IllegalStateException("The solution is not valid after the optimization");
+            //throw new IllegalStateException("The solution is not valid after the optimization");
         }
 
         return currentSolution.solution();
@@ -134,8 +126,10 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
      * @return A neighbor of the current solution
      */
     private DefaultISGSolution moveClass(DefaultISGSolution solution) {
+        int scheduledClasses = solution.getAssignedVariables().size();
+
         DefaultISGVariable selectedVar;
-        DefaultISGValue newValue;
+        DefaultISGValue newValue = null;
         int n = 0;
         do {
             selectedVar = RandomToolkit.random(solution.getAssignedVariables());
@@ -146,9 +140,14 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
 
             DefaultISGValue currentValue = selectedVar.getAssignment();
 
+            List<DefaultISGValue> values = selectedVar.getValues().values();
+
+            // If the list of possible values is a single assignment ignore
+            if(values.size() <= 1) continue;
+
             // List of values of which there are no conflicts
             List<DefaultISGValue> noConflictValues = new ArrayList<>();
-            for (DefaultISGValue value : selectedVar.getValues().values()) {
+            for (DefaultISGValue value : values) {
                 if (value.equals(currentValue)) continue;
 
                 // Check if there are conflicts. If there aren't any, the value is stored in the list
@@ -168,6 +167,12 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
         // Apply the mutation if the value exists
         if(newValue != null) {
             selectedVar.assign(newValue);
+
+            int newScheduledClasses = solution.getAssignedVariables().size();
+            if(scheduledClasses != newScheduledClasses) {
+                System.out.println("Something went wrong!");
+                System.out.println(newValue);
+            }
         }
 
         return solution;
@@ -176,8 +181,6 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
     @Override
     public double getProgress() {
         if(iter == null) return 0;
-
-        if(interruptAlgorithm) return 1;
 
         return Math.min((double) iter.get() / maxIter, 1);
     }

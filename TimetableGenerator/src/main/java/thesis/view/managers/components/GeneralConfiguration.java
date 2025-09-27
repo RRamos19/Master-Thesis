@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(value = {"updateConfigFile"})
 public class GeneralConfiguration {
-
     // Flag which indicates if the config file must be updated
     private boolean updateConfigFile = false;
 

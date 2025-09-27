@@ -19,16 +19,14 @@ public class MaxBlockConstraint extends Constraint {
     @Override
     protected void getConflictingClasses(Timetable solution, conflictAction action) {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
-        final int M = firstParam;
-        final int S = secondParam;
+        final int M = this.getFirstParameter();
+        final int S = getSecondParameter();
         List<Block> blocks = new ArrayList<>();
         List<Block> mergedBlocks = new ArrayList<>();
         int totalOverflows = 0;
 
-        int scheduledClassesSize = scheduledClasses.size();
-
-        for(int w=0; w < nrWeeks; w++) {
-            for(int d=0; d < nrDays; d++) {
+        for(int w=0; w < getNrWeeks(); w++) {
+            for(int d=0; d < getNrDays(); d++) {
                 blocks.clear();
                 mergedBlocks.clear();
 

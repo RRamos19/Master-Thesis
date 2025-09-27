@@ -1,23 +1,20 @@
 package thesis.view;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.event.ActionEvent;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
-import javafx.util.Duration;
 import thesis.controller.ControllerInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.Timetable;
 import thesis.model.domain.components.TableDisplayable;
-import thesis.utils.DoubleToolkit;
 import thesis.view.managers.ConfigurationManager;
 import thesis.view.managers.ProgressBarManager;
 import thesis.view.managers.components.GeneralConfiguration;
@@ -26,10 +23,9 @@ import thesis.view.managers.WindowManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class JavaFXController implements ViewInterface {
-    private static final int PROGRESSBAR_UPDATE_SECONDS = 2;
-
     private WindowManager windowManager;
     private ControllerInterface controller;
     private boolean isConnected = false;
@@ -83,6 +79,8 @@ public class JavaFXController implements ViewInterface {
     @Override
     public void setController(ControllerInterface controller) {
         this.controller = controller;
+
+        progressBarManager = new ProgressBarManager(progressContainer, controller, this);
     }
 
     @FXML
@@ -160,6 +158,25 @@ public class JavaFXController implements ViewInterface {
         return fileChooser;
     }
 
+    private void importData(List<File> files) {
+        Task<Void> importTask = new Task<>() {
+            @Override
+            protected Void call() {
+                for(File file : files) {
+                    controller.importITCData(file);
+                }
+
+                return null;
+            }
+        };
+
+        importTask.setOnSucceeded(event -> {
+            updateStoredPrograms();
+        });
+
+        new Thread(importTask).start();
+    }
+
     @FXML
     private void importDataITCEvent() {
         FileChooser fileChooser = createXmlFileChooser();
@@ -167,11 +184,7 @@ public class JavaFXController implements ViewInterface {
         List<File> chosenFiles = fileChooser.showOpenMultipleDialog(new Stage());
 
         if(chosenFiles != null) {
-            for(File file : chosenFiles) {
-                controller.importITCData(file);
-            }
-
-            updateStoredPrograms();
+            importData(chosenFiles);
         }
     }
 
@@ -284,11 +297,7 @@ public class JavaFXController implements ViewInterface {
         if(dragboard.hasFiles()) {
             List<File> files = dragboard.getFiles();
 
-            for(File file : files) {
-                controller.importITCData(file);
-            }
-
-            updateStoredPrograms();
+            importData(files);
         }
 
         event.consume();
@@ -302,50 +311,16 @@ public class JavaFXController implements ViewInterface {
         }
 
         UUID progressBarUUID = progressBarManager.insertProgressBar(chosenProgram);
-        progressBarManager.setCancelAction(progressBarUUID, (event) -> {
-            controller.cancelGeneration(progressBarUUID);
-            progressBarManager.stopAndClearTimeline(progressBarUUID);
-        });
 
         controller.startGeneratingSolution(chosenProgram,
-                progressBarUUID,
-                generalConfiguration.getInitialSolutionMaxIterations(),
-                generalConfiguration.getInitialTemperature(),
-                generalConfiguration.getMinTemperature(),
-                generalConfiguration.getCoolingRate(),
-                generalConfiguration.getK());
+                                    progressBarUUID,
+                                    generalConfiguration.getInitialSolutionMaxIterations(),
+                                    generalConfiguration.getInitialTemperature(),
+                                    generalConfiguration.getMinTemperature(),
+                                    generalConfiguration.getCoolingRate(),
+                                    generalConfiguration.getK());
 
-        KeyFrame keyframe = new KeyFrame(Duration.seconds(PROGRESSBAR_UPDATE_SECONDS), e -> progressBarUpdate(e, progressBarUUID));
-        progressBarManager.startTimeline(progressBarUUID, Timeline.INDEFINITE, keyframe);
-    }
-
-    private void progressBarUpdate(ActionEvent actionEvent, UUID progressBarUUID) {
-        try {
-            double progress = controller.getGenerationProgress(progressBarUUID);
-
-            progressBarManager.setProgress(progressBarUUID, progress);
-
-            if (DoubleToolkit.isEqual(progress, 1)) {
-                String programName = progressBarManager.getProgramName(progressBarUUID);
-                progressBarManager.stopAndClearTimeline(progressBarUUID);
-
-                if(programName.equals(chosenProgram)) {
-                    populateTreeView(programName);
-                }
-
-                showInformationAlert("The solution for the program " + programName + " has been created!\nPerform a double click on it to visualize!");
-
-                updateTableView();
-            }
-        } catch (Exception e) {
-            // This should only happen if the process of storing the result is interrupted
-            // but that only happens if the progress is 100%, so it should be impossible
-            progressBarManager.stopAndClearTimeline(progressBarUUID);
-            controller.cancelGeneration(progressBarUUID);
-            showExceptionMessage(e);
-        } finally {
-            actionEvent.consume();
-        }
+        progressBarManager.startProgressBar(progressBarUUID);
     }
 
     @FXML
@@ -388,46 +363,92 @@ public class JavaFXController implements ViewInterface {
         windowManager.getInstructionsWindow().show();
     }
 
+    private static void runOnFxThread(Runnable action) {
+        if (Platform.isFxApplicationThread()) {
+            action.run();
+        } else {
+            Platform.runLater(action);
+        }
+    }
+
     @Override
     public void showInformationAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, message);
-        alert.initStyle(StageStyle.DECORATED);
-        alert.initOwner(primaryWindow);
-        alert.initModality(Modality.WINDOW_MODAL);
+        runOnFxThread(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, message);
+            alert.initStyle(StageStyle.DECORATED);
+            alert.initOwner(primaryWindow);
+            alert.initModality(Modality.WINDOW_MODAL);
 
-        alert.show();
+            alert.show();
+        });
     }
 
     @Override
     public void showErrorAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, message);
-        alert.initStyle(StageStyle.DECORATED);
-        alert.initOwner(primaryWindow);
-        alert.initModality(Modality.WINDOW_MODAL);
+        runOnFxThread(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR, message);
+            alert.initStyle(StageStyle.DECORATED);
+            alert.initOwner(primaryWindow);
+            alert.initModality(Modality.WINDOW_MODAL);
 
-        alert.show();
+            alert.show();
+        });
     }
 
     @Override
     public boolean showConfirmationAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message);
-        alert.initStyle(StageStyle.DECORATED);
-        alert.initOwner(primaryWindow);
-        alert.initModality(Modality.WINDOW_MODAL);
+        if (Platform.isFxApplicationThread()) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
+            alert.initStyle(StageStyle.DECORATED);
+            alert.initOwner(primaryWindow);
+            alert.initModality(Modality.WINDOW_MODAL);
 
-        alert.getButtonTypes().clear();
-        alert.getButtonTypes().add(ButtonType.YES);
-        alert.getButtonTypes().add(ButtonType.NO);
+            Optional<ButtonType> optionalResponse = alert.showAndWait();
 
-        Optional<ButtonType> optionalResponse = alert.showAndWait();
+            if(optionalResponse.isPresent()) {
+                ButtonType response = optionalResponse.get();
 
-        if(optionalResponse.isPresent()) {
-            ButtonType response = optionalResponse.get();
+                return response.equals(ButtonType.YES);
+            }
 
-            return response.equals(ButtonType.YES);
+            return false;
+        } else {
+            final Object lock = new Object();
+            final AtomicReference<Optional<ButtonType>> resultRef = new AtomicReference<>();
+
+            // Run the following code on the JavaFX thread
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
+                alert.initStyle(StageStyle.DECORATED);
+                alert.initOwner(primaryWindow);
+                alert.initModality(Modality.WINDOW_MODAL);
+
+                resultRef.set(alert.showAndWait());
+
+                synchronized (lock) {
+                    lock.notify();
+                }
+            });
+
+            // Synchronize the JavaFX thread with the current thread
+            synchronized (lock) {
+                try {
+                    lock.wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+
+            Optional<ButtonType> optionalResponse = resultRef.get();
+
+            if(optionalResponse.isPresent()) {
+                ButtonType response = optionalResponse.get();
+
+                return response.equals(ButtonType.YES);
+            }
+
+            return false;
         }
-
-        return false;
     }
 
     public void showTimetable(InMemoryRepository data, Timetable timetable) {
@@ -449,7 +470,9 @@ public class JavaFXController implements ViewInterface {
         tableView.getItems().clear();
     }
 
-    private void updateTableView() {
+    public void updateTableView() {
+        populateTreeView(chosenProgram);
+
         // Update the selected table view of the current item
         updateTableView(treeView.getSelectionModel().getSelectedItem());
     }
@@ -528,8 +551,6 @@ public class JavaFXController implements ViewInterface {
         portField.setText(generalConfiguration.getPortField());
         usernameField.setText(generalConfiguration.getUsernameField());
 
-        progressBarManager = new ProgressBarManager(progressContainer);
-
         // Only show the taskContainer if there are any tasks
         taskContainer.managedProperty().bind(taskContainer.visibleProperty());
         taskContainer.visibleProperty().bind(
@@ -559,6 +580,6 @@ public class JavaFXController implements ViewInterface {
             }
         }
 
-        progressBarManager.stopAndClearTimelines();
+        progressBarManager.stopProgressBars();
     }
 }

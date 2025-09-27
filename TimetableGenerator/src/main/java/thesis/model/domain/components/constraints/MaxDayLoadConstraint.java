@@ -17,11 +17,11 @@ public class MaxDayLoadConstraint extends Constraint {
     @Override
     protected void getConflictingClasses(Timetable solution, conflictAction action) {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
-        final int S = firstParam;
+        final int S = getFirstParameter();
         int sum = 0;
 
-        for(int week=0; week < nrWeeks; week++) {
-            for(short day=0; day < nrDays; day++) {
+        for(int week=0; week < getNrWeeks(); week++) {
+            for(short day=0; day < getNrDays(); day++) {
                 int dayLoad = 0;
 
                 for (ScheduledLesson scheduledLesson : scheduledClasses) {

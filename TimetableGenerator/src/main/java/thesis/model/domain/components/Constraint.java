@@ -3,15 +3,15 @@ package thesis.model.domain.components;
 import java.util.*;
 
 public abstract class Constraint implements TableDisplayable {
-    protected final String type;
-    protected final Integer penalty;
-    protected final boolean required;
-    protected final Set<String> classUnitIdList = new HashSet<>();
-    protected final Integer firstParam;
-    protected final Integer secondParam;
-    protected final short distribWeight;
-    protected final int nrWeeks;
-    protected final short nrDays;
+    private final String type;
+    private final Integer penalty;
+    private final boolean required;
+    private final Set<String> classUnitIdList = new HashSet<>();
+    private final Integer firstParam;
+    private final Integer secondParam;
+    private final short distribWeight;
+    private final int nrWeeks;
+    private final short nrDays;
 
     public Constraint(String type, Integer penalty, boolean required, Integer firstParam, Integer secondParam, TimetableConfiguration timetableConfiguration) {
         this.type = type;
@@ -46,6 +46,14 @@ public abstract class Constraint implements TableDisplayable {
 
     public Integer getFirstParameter() {
         return firstParam;
+    }
+
+    protected int getNrWeeks() {
+        return nrWeeks;
+    }
+
+    protected short getNrDays() {
+        return nrDays;
     }
 
     public Integer getSecondParameter() {

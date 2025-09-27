@@ -1,7 +1,6 @@
 package thesis.view.managers.components;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -17,7 +16,7 @@ public class ProgressBarUnit {
     private final ProgressBar progressBar;
     private final HBox progressParent;
     private final Button cancelButton;
-    private Timeline timeline;
+    private Task<Void> task;
 
     public ProgressBarUnit(String programName) {
         this.programName = programName;
@@ -45,14 +44,6 @@ public class ProgressBarUnit {
         cancelButton.addEventHandler(MouseEvent.MOUSE_RELEASED, cancelAction);
     }
 
-    public void setProgress(Double progress) {
-        progressBar.setProgress(progress);
-    }
-
-    public double getProgress() {
-        return progressBar.getProgress();
-    }
-
     public HBox getProgressParent() {
         return progressParent;
     }
@@ -61,18 +52,16 @@ public class ProgressBarUnit {
         return programName;
     }
 
-    public void startTimeline(int cycleCount, KeyFrame... keyFrames) {
-        if(timeline != null) {
-            throw new IllegalStateException("There is a timeline already created for this program!");
-        }
+    public void startProgressBar(Task<Void> task) {
+        this.task = task;
+        progressBar.progressProperty().bind(task.progressProperty());
 
-        timeline = new Timeline(keyFrames);
-        timeline.setCycleCount(cycleCount);
-        timeline.play();
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
     }
 
-    public void stopAndClearTimeline() {
-        timeline.stop();
-        timeline = null;
+    public void stopProgressBar() {
+        task.cancel();
     }
 }

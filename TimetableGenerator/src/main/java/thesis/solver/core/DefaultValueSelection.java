@@ -6,11 +6,11 @@ import thesis.utils.RandomToolkit;
 import java.util.*;
 
 public class DefaultValueSelection implements ValueSelection<DefaultISGValue, DefaultISGSolution, DefaultISGVariable> {
-    private final static float iRandomWalkProb = 0.05F;                          // random walk selection
-    private final static float iWeightCoflicts = 1.0F;                           // weight of a conflict
+    private final static float iRandomWalkProb = 0.02F;                          // random walk selection
+    private final static float iWeightCoflicts = 100.0F;                         // weight of a conflict
     private final static float iWeightValue = 0.0F;                              // weight of a value (value.toInt())
 
-    private final static float iWeightWeightedCoflicts = 0.5F;                    // CBS: CBS weighted conflict weight
+    private final static float iWeightWeightedCoflicts = 1.0F;                   // CBS: CBS weighted conflict weight
 
     private final Map<DefaultISGValue, Long> tabuList = new HashMap<>();
     private final static int TABU_DURATION = 7;
@@ -36,9 +36,9 @@ public class DefaultValueSelection implements ValueSelection<DefaultISGValue, De
                 continue;
             }
 
-            Long tabuUntil = tabuList.get(value);
+            Long tabuUntilIteration = tabuList.get(value);
             // Value is found on the tabu list
-            if(tabuUntil != null && tabuUntil > solution.getIteration()) {
+            if(tabuUntilIteration != null && tabuUntilIteration > solution.getIteration()) {
                 continue;
             }
 

@@ -19,7 +19,7 @@ public class WorkDayConstraint extends Constraint {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
 
         int scheduledClassesSize = scheduledClasses.size();
-        final int S = firstParam;
+        final int S = getFirstParameter();
 
         for(int i=0; i<scheduledClassesSize-1; i++) {
             ScheduledLesson scheduledLesson1 = scheduledClasses.get(i);

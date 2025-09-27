@@ -10,6 +10,17 @@ public class TimetableConfiguration implements TableDisplayable {
     private int numWeeks;
     private short slotsPerDay;
 
+    public TimetableConfiguration(short numDays, int numWeeks, short slotsPerDay, short timeWeight, short roomWeight, short distribWeight) {
+        this.numDays = numDays;
+        this.numWeeks = numWeeks;
+        this.slotsPerDay = slotsPerDay;
+        this.timeWeight = timeWeight;
+        this.roomWeight = roomWeight;
+        this.distribWeight = distribWeight;
+    }
+
+    public TimetableConfiguration() {}
+
     public short getTimeWeight() {
         return timeWeight;
     }

@@ -1,13 +1,9 @@
-package thesis.model.domain;
+package thesis.model.domain.components;
 
 import org.junit.jupiter.api.Test;
-import thesis.model.domain.components.*;
+import thesis.model.domain.DataRepository;
 import thesis.model.exceptions.CheckedIllegalArgumentException;
-import thesis.model.exceptions.InvalidConfigurationException;
-import thesis.model.exceptions.ParsingException;
-import thesis.model.parser.ITCFormatParser;
 
-import java.io.File;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
