@@ -130,7 +130,12 @@ public class DataRepository implements InMemoryRepository {
         }
 
         timetable.getScheduledLessonList().forEach((lesson) -> {
-            ClassUnit cls = getClassUnit(lesson.getClassId());
+            // Bind the lesson to the model if this solution was read from a file
+            if(lesson.getModel() == null) {
+                lesson.bindModel(this);
+            }
+
+            ClassUnit cls = lesson.getClassUnit();
 
             // Corrects the time if this solution was read from a file
             // (its assumed every time definition has the same length)
@@ -138,10 +143,6 @@ public class DataRepository implements InMemoryRepository {
                 lesson.fixTime(cls.getTimeSet().iterator().next());
             }
 
-            // Bind the lesson to the model if this solution was read from a file
-            if(lesson.getModel() == null) {
-                lesson.bindModel(this);
-            }
         });
     }
 

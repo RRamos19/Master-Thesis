@@ -12,14 +12,13 @@ public class PrecedenceConstraint extends Constraint {
     // The authors of this method are Edon Gashi and Kadri Sylejmani
     // source: https://github.com/edongashi/itc-2019
     @Override
-    protected void getConflictingClasses(Timetable solution, conflictAction action) {
+    public int computePenalties(Timetable solution) {
         List<ScheduledLesson> scheduledLessons = this.getScheduledClasses(solution);
-
-        int scheduledClassesSize = scheduledLessons.size();
+        final int scheduledClassesSize = scheduledLessons.size();
+        int conflicts = 0;
 
         for(int i=0; i<scheduledClassesSize-1; i++) {
             ScheduledLesson scheduledLesson1 = scheduledLessons.get(i);
-            String scheduledLesson1Id = scheduledLesson1.getClassId();
             Time scheduledLesson1Time = scheduledLesson1.getScheduledTime();
 
             for(int j=i+1; j<scheduledClassesSize; j++) {
@@ -29,8 +28,10 @@ public class PrecedenceConstraint extends Constraint {
                     continue;
                 }
 
-                action.apply(scheduledLesson1Id, scheduledLesson2.getClassId());
+                conflicts++;
             }
         }
+
+        return getRequired() ? conflicts : conflicts * getPenalty();
     }
 }

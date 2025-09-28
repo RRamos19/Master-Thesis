@@ -17,25 +17,21 @@ public class MaxDaysConstraint extends Constraint {
     // The authors of this method are Edon Gashi and Kadri Sylejmani
     // source: https://github.com/edongashi/itc-2019
     @Override
-    protected void getConflictingClasses(Timetable solution, conflictAction action) {
-        Set<String> conflictingClasses = new HashSet<>();
+    public int computePenalties(Timetable solution) {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
         final int D = getFirstParameter();
         int acc = 0;
 
         for (ScheduledLesson scheduledLesson : scheduledClasses) {
             acc |= scheduledLesson.getDays();
-
-            conflictingClasses.add(scheduledLesson.getClassId());
         }
 
         var count = Integer.bitCount(acc);
         if (count <= D)
         {
-            return;
+            return 0;
         }
 
-        // If the count is larger than the max days then the action is applied
-        conflictingClasses.forEach(action::apply);
+        return getRequired() ? count : count * getPenalty();
     }
 }

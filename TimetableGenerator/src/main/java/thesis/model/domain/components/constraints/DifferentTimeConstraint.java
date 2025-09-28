@@ -15,21 +15,18 @@ public class DifferentTimeConstraint extends Constraint {
     // The authors of this method are Edon Gashi and Kadri Sylejmani
     // source: https://github.com/edongashi/itc-2019
     @Override
-    protected void getConflictingClasses(Timetable solution, conflictAction action) {
+    public int computePenalties(Timetable solution) {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
-
-        int scheduledClassesSize = scheduledClasses.size();
+        final int scheduledClassesSize = scheduledClasses.size();
+        int conflicts = 0;
 
         for(int i=0; i<scheduledClassesSize-1; i++) {
             ScheduledLesson scheduledLesson1 = scheduledClasses.get(i);
-
-            String scheduledClass1Id = scheduledLesson1.getClassId();
             int scheduledLesson1Start = scheduledLesson1.getStartSlot();
             int scheduledLesson1End = scheduledLesson1.getEndSlot();
 
             for(int j=i+1; j<scheduledClassesSize; j++) {
                 ScheduledLesson scheduledLesson2 = scheduledClasses.get(j);
-
                 int scheduledLesson2Start = scheduledLesson2.getStartSlot();
                 int scheduledLesson2End = scheduledLesson2.getEndSlot();
 
@@ -38,8 +35,10 @@ public class DifferentTimeConstraint extends Constraint {
                     continue;
                 }
 
-                action.apply(scheduledClass1Id, scheduledLesson2.getClassId());
+                conflicts++;
             }
         }
+
+        return getRequired() ? conflicts : conflicts * getPenalty();
     }
 }

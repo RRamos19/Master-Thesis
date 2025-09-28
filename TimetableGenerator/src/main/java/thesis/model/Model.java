@@ -44,6 +44,7 @@ public class Model implements ModelInterface {
 
     @Override
     public void connectToDatabase(String ip, String port, String userName, String password) throws DatabaseException {
+        //TODO: cache the result (the creation is very expensive)
         dbManager = new DBHibernateManager(DB_NAME, ip, port, userName, password);
 
         //TODO: just for testing
@@ -57,6 +58,7 @@ public class Model implements ModelInterface {
     }
 
     private void fetchDatabaseData() throws Exception {
+        //TODO: to be implemented
         Collection<EntityRepository> entityRepositories = dbManager.fetchData();
 
         for(EntityRepository entityRepository : entityRepositories) {
@@ -67,6 +69,7 @@ public class Model implements ModelInterface {
     }
 
     private void storeDataInDatabase() {
+        //TODO: to be implemented
         List<EntityRepository> data = new ArrayList<>();
 
         for(InMemoryRepository dataRepository : dataRepositoryHashMap.values()) {

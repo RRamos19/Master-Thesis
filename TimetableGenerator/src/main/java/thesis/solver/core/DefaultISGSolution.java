@@ -160,9 +160,13 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
         }
 
         // Add the constraint conflicts
+        timetable.addTemporaryLesson(valueLesson);
         for (Constraint constraint : cls.getConstraintList()) {
-            constraint.computeConflicts(valueLesson, timetable, conflicts);
+            if(constraint.getRequired() && constraint.computePenalties(timetable) != 0) {
+                conflicts.addAll(constraint.EvaluateConflictingClasses(timetable));
+            }
         }
+        timetable.removeTemporaryLesson(valueLesson);
 
         // Variables to avoid multiple method calls in the for loop
         String valueClassId = valueLesson.getClassId();

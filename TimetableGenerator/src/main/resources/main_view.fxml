@@ -20,7 +20,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox fx:id="applicationPrincipalPane" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" onDragDropped="#dragDroppedEvent" onDragEntered="#dragEnteredEvent" onDragExited="#dragExitedEvent" onDragOver="#dragOverEvent" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="thesis.view.JavaFXController">
+<VBox fx:id="applicationPrincipalPane" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" onDragDropped="#dragDroppedEvent" onDragEntered="#dragEnteredEvent" onDragExited="#dragExitedEvent" onDragOver="#dragOverEvent" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="thesis.view.JavaFXController">
    <children>
       <MenuBar maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity">
         <menus>
@@ -184,10 +184,10 @@
                         </AnchorPane>
                      </children>
                   </VBox>
-                  <VBox fx:id="taskContainer" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" spacing="5.0">
+                  <VBox fx:id="taskContainer" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="5.0">
                      <children>
                         <Label alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-border-style: solid; -fx-border-color: gray; -fx-border-width: 2px;" text="Tasks" textAlignment="CENTER" />
-                        <ListView fx:id="progressContainer" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="544.0" prefWidth="238.0" />
+                        <ListView fx:id="progressContainer" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" VBox.vgrow="ALWAYS" />
                      </children>
                      <HBox.margin>
                         <Insets />

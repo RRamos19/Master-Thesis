@@ -15,9 +15,10 @@ public class MaxDayLoadConstraint extends Constraint {
     // The authors of this method are Edon Gashi and Kadri Sylejmani
     // source: https://github.com/edongashi/itc-2019
     @Override
-    protected void getConflictingClasses(Timetable solution, conflictAction action) {
+    public int computePenalties(Timetable solution) {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
         final int S = getFirstParameter();
+        final int nrWeeks = getNrWeeks();
         int sum = 0;
 
         for(int week=0; week < getNrWeeks(); week++) {
@@ -35,9 +36,8 @@ public class MaxDayLoadConstraint extends Constraint {
             }
         }
 
-        // TODO: confirm it is correct
-        if(sum > 0) {
-            scheduledClasses.forEach((cls) -> action.apply(cls.getClassId()));
-        }
+        return getRequired()
+                ? sum > 0 ? Math.max(1, sum / nrWeeks) : 0
+                : getPenalty() * sum / nrWeeks;
     }
 }

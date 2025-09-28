@@ -21,31 +21,15 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Default
     private DefaultISGSolution solution;
 
     public MullerSolutionGenerator(InMemoryRepository data) {
-        this.unscheduled = new ArrayList<>();
-
-        // Every class in every subpart must be allocated in the timetable. As such, every course
-        // config and subpart needs to be searched.
-        for(Course course : data.getCourses()) {
-            for(Config config : course.getConfigList()) {
-                for (Subpart subpart : config.getSubpartList()) {
-                    this.unscheduled.addAll(subpart.getClassUnitList());
-                }
-            }
-        }
+        // Every class in every subpart must be allocated in the timetable.
+        this.unscheduled = new ArrayList<>(data.getClassUnits());
 
         this.dataModel = data;
     }
 
     public DefaultISGSolution generate(Integer maxIterations) {
         solution = new DefaultISGSolution(dataModel);
-
-        // For each unscheduled class a variable is made which represents the class
-        // Each variable is then assigned a value which represents the Room, Time and Teachers combination
-        for(ClassUnit cls : unscheduled) {
-            DefaultISGVariable var = new DefaultISGVariable(cls, true);
-            solution.addUnassignedVariable(var);
-            var.setSolution(solution);
-        }
+        convertToVariables(solution, unscheduled);
 
         while(!solution.isSolutionValid()) {
             if(interruptAlgorithm) {
@@ -86,11 +70,30 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Default
 
     /**
      * Choose a class at random from the list of unscheduled classes
-     * @param solution Contains all of the data needed to create a solution.
+     * @param solution Contains all the data needed to create a solution.
      * @return Class to be scheduled
      */
     private DefaultISGVariable selectVariable(DefaultISGSolution solution) {
-        return RandomToolkit.random(solution.getUnassignedVariables());
+        DefaultISGVariable variable = RandomToolkit.random(solution.getUnassignedVariables());
+        if(variable == null) {
+            variable = RandomToolkit.random(solution.getAssignedVariables());
+        }
+
+        if(variable == null) {
+            throw new IllegalStateException("selectVariable: selected variable was null!");
+        }
+
+        return variable;
+    }
+
+    private void convertToVariables(DefaultISGSolution solution, List<ClassUnit> classUnitList) {
+        // For each unscheduled class a variable is made which represents the class
+        // Each variable is then assigned a value which represents the Room, Time and Teachers combination
+        for(ClassUnit cls : classUnitList) {
+            DefaultISGVariable var = new DefaultISGVariable(cls, true);
+            solution.addUnassignedVariable(var);
+            var.setSolution(solution);
+        }
     }
 
     @Override

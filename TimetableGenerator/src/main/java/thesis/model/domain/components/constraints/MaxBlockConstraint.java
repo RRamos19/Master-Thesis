@@ -17,10 +17,11 @@ public class MaxBlockConstraint extends Constraint {
     // The authors of this method are Edon Gashi and Kadri Sylejmani
     // source: https://github.com/edongashi/itc-2019
     @Override
-    protected void getConflictingClasses(Timetable solution, conflictAction action) {
+    public int computePenalties(Timetable solution) {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
         final int M = this.getFirstParameter();
         final int S = getSecondParameter();
+        final int nrWeeks = getNrWeeks();
         List<Block> blocks = new ArrayList<>();
         List<Block> mergedBlocks = new ArrayList<>();
         int totalOverflows = 0;
@@ -86,9 +87,8 @@ public class MaxBlockConstraint extends Constraint {
             }
         }
 
-        // TODO: confirm it is correct
-        if(totalOverflows > 0) {
-            scheduledClasses.forEach((cls) -> action.apply(cls.getClassId()));
-        }
+        return getRequired()
+                ? totalOverflows > 0 ? Math.max(1, totalOverflows / nrWeeks) : 0
+                : getPenalty() * totalOverflows / nrWeeks;
     }
 }

@@ -15,13 +15,13 @@ public class DifferentDaysConstraint extends Constraint {
     // The authors of this method are Edon Gashi and Kadri Sylejmani
     // source: https://github.com/edongashi/itc-2019
     @Override
-    protected void getConflictingClasses(Timetable solution, conflictAction action) {
+    public int computePenalties(Timetable solution) {
         List<ScheduledLesson> scheduledLessons = this.getScheduledClasses(solution);
-        int scheduledLessonsSize = scheduledLessons.size();
+        final int scheduledLessonsSize = scheduledLessons.size();
+        int conflicts = 0;
 
         for(int i=0; i < scheduledLessonsSize-1; i++) {
             ScheduledLesson scheduledLesson1 = scheduledLessons.get(i);
-            String scheduledLesson1Id = scheduledLesson1.getClassId();
 
             for(int j=i+1; j < scheduledLessonsSize; j++) {
                 ScheduledLesson scheduledLesson2 = scheduledLessons.get(j);
@@ -30,8 +30,10 @@ public class DifferentDaysConstraint extends Constraint {
                     continue;
                 }
 
-                action.apply(scheduledLesson1Id, scheduledLesson2.getClassId());
+                conflicts++;
             }
         }
+
+        return getRequired() ? conflicts : conflicts * getPenalty();
     }
 }

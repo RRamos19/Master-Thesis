@@ -15,15 +15,14 @@ public class MinGapConstraint extends Constraint {
     // The authors of this method are Edon Gashi and Kadri Sylejmani
     // source: https://github.com/edongashi/itc-2019
     @Override
-    protected void getConflictingClasses(Timetable solution, conflictAction action) {
+    public int computePenalties(Timetable solution) {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
-        int G = getFirstParameter();
-
-        int scheduledClassesSize = scheduledClasses.size();
+        final int G = getFirstParameter();
+        final int scheduledClassesSize = scheduledClasses.size();
+        int conflicts = 0;
 
         for(int i=0; i<scheduledClassesSize-1; i++) {
             ScheduledLesson scheduledLesson1 = scheduledClasses.get(i);
-            String scheduledClass1Id = scheduledLesson1.getClassId();
             int scheduledLesson1Start = scheduledLesson1.getStartSlot();
             int scheduledLesson1End = scheduledLesson1.getEndSlot();
 
@@ -39,8 +38,10 @@ public class MinGapConstraint extends Constraint {
                     continue;
                 }
 
-                action.apply(scheduledClass1Id, scheduledLesson2.getClassId());
+                conflicts++;
             }
         }
+
+        return getRequired() ? conflicts : conflicts * getPenalty();
     }
 }

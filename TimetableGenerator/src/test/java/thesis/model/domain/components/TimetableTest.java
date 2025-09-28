@@ -63,17 +63,25 @@ public class TimetableTest {
         Time time2 = TimeFactory.create((short) 5, 255, (short) 10, (short) 10);
         Time time3 = TimeFactory.create((short) 7, 255, (short) 10, (short) 10);
 
+        Room room1 = RoomFactory.createRoom("1");
+        Room room2 = RoomFactory.createRoom("2");
+        Room room3 = RoomFactory.createRoom("3");
+
+        repository.addRoom(room1);
+        repository.addRoom(room2);
+        repository.addRoom(room3);
+
         ScheduledLesson scheduledLesson1 = new ScheduledLesson(class1.getClassId(), "1", time1);
         ScheduledLesson scheduledLesson2 = new ScheduledLesson(class2.getClassId(), "2", time2);
         ScheduledLesson scheduledLesson3 = new ScheduledLesson(class3.getClassId(), "3", time3);
         ScheduledLesson scheduledLesson4 = new ScheduledLesson(class4.getClassId(), "3", time3);
 
         Timetable timetable = new Timetable();
-        repository.addTimetable(timetable);
         timetable.addScheduledLesson(scheduledLesson1);
         timetable.addScheduledLesson(scheduledLesson2);
+        repository.addTimetable(timetable);
 
-        Set<Constraint> constraintSet = timetable.getInvolvedConstraints();
+        Set<Constraint> constraintSet = timetable.getConstraintSet();
         assertEquals(2, constraintSet.size());
         assertTrue(constraintSet.contains(constraint1));
         assertTrue(constraintSet.contains(constraint2));
@@ -82,14 +90,16 @@ public class TimetableTest {
 
         // Test class 3 temporary
 
-        timetable.addTemporaryScheduledLesson(scheduledLesson3);
+        timetable.addTemporaryLesson(scheduledLesson3);
+        constraintSet = timetable.getConstraintSet();
         assertEquals(4, constraintSet.size());
         assertTrue(constraintSet.contains(constraint1));
         assertTrue(constraintSet.contains(constraint2));
         assertTrue(constraintSet.contains(constraint3));
         assertTrue(constraintSet.contains(constraint4));
 
-        timetable.removeTemporaryScheduledLesson(scheduledLesson3);
+        timetable.removeTemporaryLesson(scheduledLesson3);
+        constraintSet = timetable.getConstraintSet();
         assertEquals(2, constraintSet.size());
         assertTrue(constraintSet.contains(constraint1));
         assertTrue(constraintSet.contains(constraint2));
@@ -98,14 +108,16 @@ public class TimetableTest {
 
         // Test class 4 temporary
 
-        timetable.addTemporaryScheduledLesson(scheduledLesson4);
+        timetable.addTemporaryLesson(scheduledLesson4);
+        constraintSet = timetable.getConstraintSet();
         assertEquals(3, constraintSet.size());
         assertTrue(constraintSet.contains(constraint1));
         assertTrue(constraintSet.contains(constraint2));
         assertTrue(constraintSet.contains(constraint3));
         assertFalse(constraintSet.contains(constraint4));
 
-        timetable.removeTemporaryScheduledLesson(scheduledLesson4);
+        timetable.removeTemporaryLesson(scheduledLesson4);
+        constraintSet = timetable.getConstraintSet();
         assertEquals(2, constraintSet.size());
         assertTrue(constraintSet.contains(constraint1));
         assertTrue(constraintSet.contains(constraint2));

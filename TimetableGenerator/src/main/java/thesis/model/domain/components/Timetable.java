@@ -7,64 +7,52 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-public class Timetable implements Cloneable, TableDisplayable, XmlResult {
+public class Timetable implements TableDisplayable, XmlResult {
     private static final DateTimeFormatter dateOfCreationFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
-    private LocalDateTime dateOfCreation = LocalDateTime.now();
+    private LocalDateTime dateOfCreation;
     private String programName;
-    private long runtime;                                                      // Sum of the durations of the initial solution and optimization algorithms
-    private Map<String, ScheduledLesson> scheduledLessonMap = new HashMap<>(); // ClassId : ScheduledLesson
+    private long runtime;                                                            // Sum of the durations of the initial solution and optimization algorithms
+    private final Map<String, ScheduledLesson> scheduledLessonMap = new HashMap<>(); // ClassId : ScheduledLesson
     private InMemoryRepository dataModel;
-    private Set<Constraint> involvedConstraints = new HashSet<>();             // Contains the constraints of the classes
-    private List<Constraint> constraintsToRemove = new ArrayList<>();
+
+    // Reserved for temporary classes (to check conflicts)
+    private boolean hasTemporaryLesson = false;
     private ScheduledLesson originalLesson;
 
+    // Cache of constraints
+    private Set<Constraint> constraintSet;
+    private boolean updateConstraints = true;
+
+    // Cache of validation and cost
     private Boolean isValid;
     private boolean updateCost = true;
     private int cost;
 
-    public Timetable(String programName) {
-        this.programName = programName;
+    public Timetable(Timetable other) {
+        this.dateOfCreation = other.dateOfCreation;
+        this.programName = other.programName;
+        this.runtime = other.runtime;
+        this.scheduledLessonMap.putAll(other.scheduledLessonMap);
+        this.dataModel = other.dataModel;
     }
 
-    public Timetable() {}
+    public Timetable(String programName, LocalDateTime dateOfCreation) {
+        this.programName = programName;
+        this.dateOfCreation = dateOfCreation;
+    }
+
+    public Timetable(String programName) {
+        this(programName, LocalDateTime.now());
+    }
+
+    public Timetable() {
+        this(null, LocalDateTime.now());
+    }
 
     public void bindDataModel(InMemoryRepository model) {
         this.dataModel = model;
 
-        // Update constraints with already stored classes
-        scheduledLessonMap.values().forEach((lesson) -> updateInvolvedConstraints(lesson, false));
-
         updateCost = true;
-    }
-
-    private void updateInvolvedConstraints(ScheduledLesson lesson, boolean temporary) {
-        if(dataModel == null) {
-            throw new IllegalStateException("ScheduledClassService should have already been bound!");
-        }
-
-        String classId = lesson.getClassId();
-
-        ClassUnit classUnit = dataModel.getClassUnit(classId);
-
-        if (classUnit == null) {
-            throw new RuntimeException("Class Unit " + classId + " couldn't be found");
-        }
-
-        List<Constraint> constraintList = classUnit.getConstraintList();
-
-        // Add all the constraints only related to the temporary lesson
-        if(temporary) {
-            for(Constraint c : constraintList) {
-                if(!involvedConstraints.contains(c)) {
-                    constraintsToRemove.add(c);
-                }
-                involvedConstraints.add(c);
-            }
-        } else {
-            involvedConstraints.addAll(constraintList);
-        }
-
-        isValid = null;
     }
 
     public List<ScheduledLesson> getScheduledLessonList() {
@@ -99,48 +87,59 @@ public class Timetable implements Cloneable, TableDisplayable, XmlResult {
         scheduledLessonMap.put(scheduledLesson.getClassId(), scheduledLesson);
 
         if(dataModel != null) {
-            updateInvolvedConstraints(scheduledLesson, false);
+            scheduledLesson.bindModel(dataModel);
         }
 
         updateCost = true;
+        updateConstraints = true;
     }
 
-    public void addTemporaryScheduledLesson(ScheduledLesson temporaryLesson) {
-        if(!constraintsToRemove.isEmpty()) {
-            throw new IllegalStateException("When adding classes to a timetable only one temporary lesson at a time is supported!");
+    public void addTemporaryLesson(ScheduledLesson scheduledLesson) {
+        if(hasTemporaryLesson) {
+            throw new IllegalStateException("Timetable: Only one temporary lesson should be added at a time!");
         }
-
-        originalLesson = scheduledLessonMap.put(temporaryLesson.getClassId(), temporaryLesson);
+        originalLesson = scheduledLessonMap.put(scheduledLesson.getClassId(), scheduledLesson);
 
         if(dataModel != null) {
-            updateInvolvedConstraints(temporaryLesson, true);
+            scheduledLesson.bindModel(dataModel);
         }
 
         updateCost = true;
+        hasTemporaryLesson = true;
+        updateConstraints = true;
     }
 
-    public void removeTemporaryScheduledLesson(ScheduledLesson temporaryLesson) {
-        scheduledLessonMap.remove(temporaryLesson.getClassId());
-
-        for(Constraint c : constraintsToRemove) {
-            involvedConstraints.remove(c);
-            isValid = null;
-        }
-        constraintsToRemove.clear();
+    public void removeTemporaryLesson(ScheduledLesson scheduledLesson) {
+        scheduledLessonMap.remove(scheduledLesson.getClassId());
 
         if(originalLesson != null) {
             addScheduledLesson(originalLesson);
         }
 
-        updateCost = true;
+        hasTemporaryLesson = false;
+        updateConstraints = true;
     }
 
     public ScheduledLesson getScheduledLesson(String classId) {
         return scheduledLessonMap.get(classId);
     }
 
-    public Set<Constraint> getInvolvedConstraints() {
-        return involvedConstraints;
+    public Set<Constraint> getConstraintSet() {
+        if(updateConstraints) {
+            constraintSet = new HashSet<>();
+
+            for (ScheduledLesson scheduledLesson : scheduledLessonMap.values()) {
+                ClassUnit cls = scheduledLesson.getClassUnit();
+                if (cls == null) {
+                    throw new IllegalStateException("Timetable: ClassUnit of scheduled lesson is null!");
+                }
+                constraintSet.addAll(cls.getConstraintList());
+            }
+
+            updateConstraints = false;
+        }
+
+        return constraintSet;
     }
 
     public int cost() {
@@ -152,15 +151,12 @@ public class Timetable implements Cloneable, TableDisplayable, XmlResult {
                 cost += scheduledLesson.toInt();
             }
 
-            int timeRoomPenalties = cost;
-            System.out.println("Time and room penalties: " + cost);
-
-            // Add the soft constraint penalties (only if they were violated)
-            for (Constraint c : involvedConstraints) {
-                cost += c.computePenalties(this);
+            // Add the soft constraint penalties
+            int constraintCost = 0;
+            for(Constraint c : getConstraintSet()) {
+                constraintCost += c.computePenalties(this);
             }
-
-            System.out.println("Constraint penalties: " + (cost - timeRoomPenalties));
+            cost += constraintCost * dataModel.getTimetableConfiguration().getDistribWeight();
 
             updateCost = false;
         }
@@ -170,15 +166,14 @@ public class Timetable implements Cloneable, TableDisplayable, XmlResult {
 
     public boolean isValid() {
         if(isValid == null) {
-            List<String> conflicts = new ArrayList<>();
-
-            for (Constraint c : involvedConstraints) {
-                if (c.getRequired()) {
-                    c.getConflictingClasses(this, (classes) -> Collections.addAll(conflicts, classes));
+            for(Constraint c : getConstraintSet()) {
+                if(c.getRequired() && c.computePenalties(this) != 0) {
+                    isValid = false;
+                    break;
                 }
             }
 
-            isValid = conflicts.isEmpty();
+            if(isValid == null) isValid = true;
         }
 
         return isValid;
@@ -210,19 +205,14 @@ public class Timetable implements Cloneable, TableDisplayable, XmlResult {
     }
 
     @Override
-    public Timetable clone() {
-        try {
-            Timetable clone = (Timetable) super.clone();
-            clone.programName = programName;
-            clone.dateOfCreation = dateOfCreation;
-            clone.dataModel = dataModel;
-            clone.involvedConstraints = new HashSet<>(involvedConstraints);
-            clone.constraintsToRemove = new ArrayList<>(constraintsToRemove);
-            clone.scheduledLessonMap = new HashMap<>(scheduledLessonMap);
-            clone.cost = cost;
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
+    public boolean equals(Object o) {
+        if (!(o instanceof Timetable)) return false;
+        Timetable timetable = (Timetable) o;
+        return Objects.equals(programName, timetable.programName) && Objects.equals(scheduledLessonMap, timetable.scheduledLessonMap);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(programName, scheduledLessonMap);
     }
 }

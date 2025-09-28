@@ -92,7 +92,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
         }
 
         if(!currentSolution.isSolutionValid()) {
-            //throw new IllegalStateException("The solution is not valid after the optimization");
+            throw new IllegalStateException("The solution is not valid after the optimization");
         }
 
         return currentSolution.solution();
@@ -126,8 +126,6 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
      * @return A neighbor of the current solution
      */
     private DefaultISGSolution moveClass(DefaultISGSolution solution) {
-        int scheduledClasses = solution.getAssignedVariables().size();
-
         DefaultISGVariable selectedVar;
         DefaultISGValue newValue = null;
         int n = 0;
@@ -167,12 +165,6 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
         // Apply the mutation if the value exists
         if(newValue != null) {
             selectedVar.assign(newValue);
-
-            int newScheduledClasses = solution.getAssignedVariables().size();
-            if(scheduledClasses != newScheduledClasses) {
-                System.out.println("Something went wrong!");
-                System.out.println(newValue);
-            }
         }
 
         return solution;

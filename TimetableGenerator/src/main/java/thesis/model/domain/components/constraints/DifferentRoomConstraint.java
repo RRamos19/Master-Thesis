@@ -15,14 +15,13 @@ public class DifferentRoomConstraint extends Constraint {
     // The authors of this method are Edon Gashi and Kadri Sylejmani
     // source: https://github.com/edongashi/itc-2019
     @Override
-    protected void getConflictingClasses(Timetable solution, conflictAction action) {
+    public int computePenalties(Timetable solution) {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
-
-        int scheduledClassesSize = scheduledClasses.size();
+        final int scheduledClassesSize = scheduledClasses.size();
+        int conflicts = 0;
 
         for(int i=0; i<scheduledClassesSize-1; i++) {
             ScheduledLesson scheduledLesson1 = scheduledClasses.get(i);
-            String scheduledLesson1Id = scheduledLesson1.getClassId();
             String scheduledLesson1Room = scheduledLesson1.getRoomId();
 
             for(int j=i+1; j<scheduledClassesSize; j++) {
@@ -32,8 +31,10 @@ public class DifferentRoomConstraint extends Constraint {
                     continue;
                 }
 
-                action.apply(scheduledLesson1Id, scheduledLesson2.getClassId());
+                conflicts++;
             }
         }
+
+        return getRequired() ? conflicts : conflicts * getPenalty();
     }
 }
