@@ -1,20 +1,21 @@
 package thesis.controller;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import thesis.model.ModelInterface;
 import thesis.model.domain.InMemoryRepository;
-import thesis.model.domain.components.TableDisplayable;
-import thesis.model.domain.components.Timetable;
+import thesis.model.domain.components.*;
+import thesis.model.exceptions.CheckedIllegalStateException;
 import thesis.model.exceptions.InvalidConfigurationException;
 import thesis.model.parser.XmlResult;
 import thesis.view.ViewInterface;
+import thesis.view.viewobjects.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class Controller implements ControllerInterface {
     private ModelInterface model;
@@ -63,8 +64,146 @@ public class Controller implements ControllerInterface {
     }
 
     @Override
-    public Map<String, List<TableDisplayable>> getAllDisplayableData(String progName) {
-        return model.getAllDisplayableData(progName);
+    public ObservableList<ViewModel> getCourses(String progName) {
+        List<Course> courseList;
+        try {
+            courseList = model.getCourses(progName);
+        } catch (CheckedIllegalStateException e) {
+            view.showExceptionMessage(e);
+            return null;
+        }
+
+        List<ViewModel> courseViewModels = courseList.stream()
+                .map(c -> new CourseViewModel(c.getCourseId(), c.getConfigList().size()))
+                .collect(Collectors.toList());
+
+        return FXCollections.observableList(courseViewModels);
+    }
+
+    @Override
+    public ObservableList<ViewModel> getConfigs(String progName) {
+        List<Config> configList;
+        try {
+            configList = model.getConfigs(progName);
+        } catch (CheckedIllegalStateException e) {
+            view.showExceptionMessage(e);
+            return null;
+        }
+
+        List<ViewModel> configViewModels = configList.stream()
+                .map(c -> new ConfigViewModel(c.getConfigId(), c.getSubpartList().size()))
+                .collect(Collectors.toList());
+
+        return FXCollections.observableList(configViewModels);
+    }
+
+    @Override
+    public ObservableList<ViewModel> getSubparts(String progName) {
+        List<Subpart> subpartList;
+        try {
+            subpartList = model.getSubparts(progName);
+        } catch (CheckedIllegalStateException e) {
+            view.showExceptionMessage(e);
+            return null;
+        }
+
+        List<ViewModel> subpartViewModels = subpartList.stream()
+                .map(c -> new SubpartViewModel(c.getSubpartId(), c.getClassUnitList().size()))
+                .collect(Collectors.toList());
+
+        return FXCollections.observableList(subpartViewModels);
+    }
+
+    @Override
+    public ObservableList<ViewModel> getClassUnits(String progName) {
+        List<ClassUnit> classUnitList;
+        try {
+            classUnitList = model.getClassUnits(progName);
+        } catch (CheckedIllegalStateException e) {
+            view.showExceptionMessage(e);
+            return null;
+        }
+
+        List<ViewModel> classUnitViewModels = classUnitList.stream()
+                .map(c -> new ClassUnitViewModel(c.getClassId(), c.getParentClassId()))
+                .collect(Collectors.toList());
+
+        return FXCollections.observableList(classUnitViewModels);
+    }
+
+    @Override
+    public ObservableList<ViewModel> getConfiguration(String progName) {
+        TimetableConfiguration timetableConfiguration;
+        try {
+            timetableConfiguration = model.getConfiguration(progName);
+        } catch (CheckedIllegalStateException e) {
+            view.showExceptionMessage(e);
+            return null;
+        }
+
+        List<ViewModel> configurationViewModelList = new ArrayList<>();
+        configurationViewModelList.add(new ConfigurationViewModel(
+                timetableConfiguration.getNumDays(),
+                timetableConfiguration.getNumWeeks(),
+                timetableConfiguration.getSlotsPerDay(),
+                timetableConfiguration.getTimeWeight(),
+                timetableConfiguration.getRoomWeight(),
+                timetableConfiguration.getDistribWeight()));
+
+        return FXCollections.observableList(configurationViewModelList);
+    }
+
+    @Override
+    public ObservableList<ViewModel> getConstraints(String progName) {
+        List<Constraint> constraintList;
+        try {
+            constraintList = model.getConstraints(progName);
+        } catch (CheckedIllegalStateException e) {
+            view.showExceptionMessage(e);
+            return null;
+        }
+
+        List<ViewModel> constraintViewModels = constraintList.stream()
+                .map(c -> new ConstraintViewModel(c.getType(),
+                        c.getFirstParameter(), c.getSecondParameter(), c.getPenalty(),
+                        c.getRequired(), c.getClassUnitIdList().size()))
+                .collect(Collectors.toList());
+
+        return FXCollections.observableList(constraintViewModels);
+    }
+
+    @Override
+    public ObservableList<ViewModel> getRooms(String progName) {
+        List<Room> roomList;
+        try {
+            roomList = model.getRooms(progName);
+        } catch (CheckedIllegalStateException e) {
+            view.showExceptionMessage(e);
+            return null;
+        }
+
+        List<ViewModel> roomViewModels = roomList.stream()
+                .map(c -> new RoomViewModel(c.getRoomId(), c.getRoomUnavailabilities().size(), c.getRoomDistances().size()))
+                .collect(Collectors.toList());
+
+        return FXCollections.observableList(roomViewModels);
+    }
+
+    @Override
+    public ObservableList<ViewModel> getTimetables(String progName) {
+        List<Timetable> timetableList;
+        try {
+            timetableList = model.getTimetables(progName);
+        } catch (CheckedIllegalStateException e) {
+            view.showExceptionMessage(e);
+            return null;
+        }
+
+        List<ViewModel> timetableViewModels = timetableList.stream()
+                .map(c -> new TimetableViewModel(c.getLocalDateOfCreation(), c.getRuntime(), c.cost(), c.getScheduledLessonList().size(), c.isValid(), c))
+                .collect(Collectors.toList());
+
+        return FXCollections.observableList(timetableViewModels);
     }
 
     @Override
@@ -111,8 +250,8 @@ public class Controller implements ControllerInterface {
     }
 
     @Override
-    public void startGeneratingSolution(String programName, UUID progressUUID, Integer initSolutionMaxIter, double initialTemperature, double minTemperature, double coolingRate, int k) {
-        model.startGeneratingSolution(programName, progressUUID, initSolutionMaxIter, initialTemperature, minTemperature, coolingRate, k);
+    public void startGeneratingSolution(String programName, UUID progressUUID, double initialTemperature, double minTemperature, double coolingRate, int k) {
+        model.startGeneratingSolution(programName, progressUUID, initialTemperature, minTemperature, coolingRate, k);
     }
 
     @Override

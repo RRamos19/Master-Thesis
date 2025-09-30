@@ -9,45 +9,53 @@ CREATE TABLE tb_program (
 	slots_per_day SMALLINT NOT NULL
 );
 
+CREATE TABLE time_block (
+	id SERIAL PRIMARY KEY,
+	duration SMALLINT NOT NULL,
+	start_slot SMALLINT NOT NULL,
+	days SMALLINT NOT NULL,
+	weeks INT NOT NULL
+);
+
 CREATE TABLE teacher (
     id INT PRIMARY KEY,
     name VARCHAR(30) NOT NULL
 );
 
 CREATE TABLE course (
-	id UUID PRIMARY KEY,
+	id SERIAL PRIMARY KEY,
 	program_id INT NOT NULL,
     name VARCHAR(10) NOT NULL UNIQUE,
 	CONSTRAINT course_program_fk FOREIGN KEY (program_id) REFERENCES tb_program(id)
 );
 
 CREATE TABLE config (
-	id UUID PRIMARY KEY,
-	course_id UUID,
+	id SERIAL PRIMARY KEY,
+	course_id INT,
 	name VARCHAR(10) NOT NULL UNIQUE,
 	CONSTRAINT config_course_fk FOREIGN KEY (course_id) REFERENCES course(id)
 );
 
 CREATE TABLE subpart (
-	id UUID PRIMARY KEY,
-	config_id UUID,
+	id SERIAL PRIMARY KEY,
+	config_id INT,
 	name VARCHAR(10) NOT NULL UNIQUE,
 	CONSTRAINT subpart_config_fk FOREIGN KEY (config_id) REFERENCES config(id)
 );
 
 CREATE TABLE class_unit (
-	id UUID PRIMARY KEY,
-	subpart_id UUID,
+	id SERIAL PRIMARY KEY,
+	subpart_id INT,
     name VARCHAR(10) NOT NULL UNIQUE,
-	parent_class_id UUID,
+	parent_class_id INT,
 	CONSTRAINT class_class_parent_fk FOREIGN KEY (parent_class_id) REFERENCES class_unit(id),
 	CONSTRAINT class_subpart_fk FOREIGN KEY (subpart_id) REFERENCES subpart(id)
 );
 
 CREATE TABLE timetable (
-    id UUID PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
 	program_id INT NOT NULL,
-	creation_date VARCHAR NOT NULL,
+	creation_date TIMESTAMP NOT NULL,
 	CONSTRAINT timetable_program_fk FOREIGN KEY (program_id) REFERENCES tb_program(id)
 );
 
@@ -58,16 +66,18 @@ CREATE TABLE constraint_type (
 
 CREATE TABLE timetable_constraint (
 	id SERIAL PRIMARY KEY,
+	program_id INT NOT NULL,
 	constraint_type_id INT NOT NULL,
 	penalty INT,
 	required BOOL,
 	first_parameter INT,
 	second_parameter INT,
-	CONSTRAINT constraint_type_id_fk FOREIGN KEY (constraint_type_id) REFERENCES constraint_type(id)
+	CONSTRAINT constraint_type_id_fk FOREIGN KEY (constraint_type_id) REFERENCES constraint_type(id),
+	CONSTRAINT constraint_program_id_fk FOREIGN KEY (program_id) REFERENCES tb_program(id)
 );
 
 CREATE TABLE class_constraint (
-	class_id UUID NOT NULL,
+	class_id INT NOT NULL,
 	constraint_id INT NOT NULL,
 	CONSTRAINT class_constraint_class_fk FOREIGN KEY (class_id) REFERENCES class_unit(id),
 	CONSTRAINT class_contraint_constraint_fk FOREIGN KEY (constraint_id) REFERENCES timetable_constraint(id),
@@ -82,24 +92,22 @@ CREATE TABLE room (
 CREATE TABLE teacher_unavailability (
 	id SERIAL,
 	teacher_id INT NOT NULL,
-	duration SMALLINT NOT NULL,
-	start_slot SMALLINT NOT NULL,
-	days SMALLINT NOT NULL,
-	weeks INT NOT NULL,
+	time_block_id INT NOT NULL,
+	CONSTRAINT teacher_unavailability_time_block_fk FOREIGN KEY (time_block_id) REFERENCES time_block(id),
 	CONSTRAINT teacher_unavailability_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id),
 	CONSTRAINT teacher_unavailability_pk PRIMARY KEY (id, teacher_id)
 );
 
 CREATE TABLE teacher_class (
 	teacher_id INT,
-	class_id UUID,
+	class_id INT,
 	CONSTRAINT teacher_class_class_fk FOREIGN KEY (class_id) REFERENCES class_unit(id),
 	CONSTRAINT teacher_class_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id),
 	CONSTRAINT teacher_class_pk PRIMARY KEY (teacher_id, class_id)
 );
 
 CREATE TABLE class_room (
-	class_id UUID,
+	class_id INT,
 	room_id INT,
 	penalty INT NOT NULL,
 	CONSTRAINT class_room_class_fk FOREIGN KEY (class_id) REFERENCES class_unit(id),
@@ -119,34 +127,28 @@ CREATE TABLE room_distance (
 CREATE TABLE room_unavailability (
 	id SERIAL PRIMARY KEY,
 	room_id INT NOT NULL,
-	days SMALLINT NOT NULL,
-	weeks INT NOT NULL,
-	start_slot SMALLINT NOT NULL,
-	duration SMALLINT NOT NULL,
+	time_block_id INT NOT NULL,
+	CONSTRAINT room_unavailability_time_block_fk FOREIGN KEY (time_block_id) REFERENCES time_block(id),
 	CONSTRAINT room_unavailability_room_fk FOREIGN KEY (room_id) REFERENCES room(id)
 );
 
 CREATE TABLE class_time (
-	id UUID,
-	class_id UUID,
+	id SERIAL,
+	class_id INT,
 	penalty INT NOT NULL,
-	days SMALLINT NOT NULL,
-	start_slot SMALLINT NOT NULL,
-	duration SMALLINT NOT NULL,
-	weeks INT NOT NULL,
+	time_block_id INT NOT NULL,
+	CONSTRAINT class_time_time_block_fk FOREIGN KEY (time_block_id) REFERENCES time_block(id),
 	CONSTRAINT class_time_class_fk FOREIGN KEY (class_id) REFERENCES class_unit(id),
 	CONSTRAINT class_time_pk PRIMARY KEY (id, class_id)
 );
 
 CREATE TABLE scheduled_lesson (
-	id UUID,
-	timetable_id UUID NOT NULL,
-	class_id UUID NOT NULL,
+	id SERIAL,
+	timetable_id INT NOT NULL,
+	class_id INT NOT NULL,
 	room_id INT,
-	days SMALLINT NOT NULL,
-	weeks INT NOT NULL,
-	start_slot SMALLINT NOT NULL,
-	duration SMALLINT NOT NULL,
+	time_block_id INT NOT NULL,
+	CONSTRAINT scheduled_lesson_time_block_fk FOREIGN KEY (time_block_id) REFERENCES time_block(id),
 	CONSTRAINT scheduled_lesson_class_fk FOREIGN KEY (class_id) REFERENCES class_unit(id),
 	CONSTRAINT scheduled_lesson_room_fk FOREIGN KEY (room_id) REFERENCES room(id),
 	CONSTRAINT scheduled_lesson_timetable_fk FOREIGN KEY (timetable_id) REFERENCES timetable(id),
@@ -154,8 +156,8 @@ CREATE TABLE scheduled_lesson (
 );
 
 CREATE TABLE scheduled_lesson_teacher (
-	scheduled_lesson_id UUID NOT NULL,
-	scheduled_lesson_timetable_id UUID NOT NULL,
+	scheduled_lesson_id INT NOT NULL,
+	scheduled_lesson_timetable_id INT NOT NULL,
 	teacher_id INT NOT NULL,
 	CONSTRAINT scheduled_lesson_teacher_lesson_id_fk FOREIGN KEY (scheduled_lesson_id, scheduled_lesson_timetable_id) REFERENCES scheduled_lesson(id, timetable_id),
 	CONSTRAINT scheduled_lesson_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id),

@@ -74,6 +74,15 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
         );
     }
 
+    public void deactivateRemovals() {
+        for(DefaultISGVariable variable : unassignedVariableCollection) {
+            variable.deactivateRemovals();
+        }
+        for(DefaultISGVariable variable : variableCollection) {
+            variable.deactivateRemovals();
+        }
+    }
+
     @Override
     public Timetable solution() {
         if(updateSolution) {

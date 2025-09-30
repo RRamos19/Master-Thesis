@@ -15,10 +15,10 @@ public class VariableTest {
         ClassUnit cls2 = new ClassUnit("2");
         ClassUnit cls3 = new ClassUnit("3");
 
-        DefaultISGVariable variable1 = new DefaultISGVariable(cls1, false);
-        DefaultISGVariable anotherVariable1 = new DefaultISGVariable(cls1, true);
-        DefaultISGVariable variable2 = new DefaultISGVariable(cls2, false);
-        DefaultISGVariable variable3 = new DefaultISGVariable(cls3, false);
+        DefaultISGVariable variable1 = new DefaultISGVariable(cls1);
+        DefaultISGVariable anotherVariable1 = new DefaultISGVariable(cls1);
+        DefaultISGVariable variable2 = new DefaultISGVariable(cls2);
+        DefaultISGVariable variable3 = new DefaultISGVariable(cls3);
 
         assertEquals(variable1, anotherVariable1);
 

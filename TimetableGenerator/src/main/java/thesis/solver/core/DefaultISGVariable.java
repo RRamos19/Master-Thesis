@@ -5,20 +5,15 @@ import thesis.model.domain.components.ClassUnit;
 import java.util.*;
 
 public class DefaultISGVariable implements ISGVariable<DefaultISGVariable, DefaultISGValue, DefaultISGSolution> {
-    private final Map<DefaultISGValue, Integer> removalCount; // Counts the number of times a certain value has been unassigned
+    private Map<DefaultISGValue, Integer> removalCount;       // Counts the number of times a certain value has been unassigned
     private final ClassUnit classUnit;                        // Assigned ClassUnit. Value will be linked to said class
     private DefaultISGValue iAssignment;                      // Assigned value
     private DefaultISGValue iBestAssignment;                  // Best assignment value
     private DefaultISGSolution solution;                      // Solution of which the variable belongs to
 
-    public DefaultISGVariable(ClassUnit classUnit, boolean useRemovalCount) {
+    public DefaultISGVariable(ClassUnit classUnit) {
         this.classUnit = classUnit;
-
-        if(useRemovalCount) {
-            this.removalCount = new HashMap<>();
-        } else {
-            this.removalCount = null;
-        }
+        this.removalCount = new HashMap<>();
     }
 
     public DefaultISGVariable(DefaultISGSolution newSol, DefaultISGVariable other) {
@@ -39,6 +34,11 @@ public class DefaultISGVariable implements ISGVariable<DefaultISGVariable, Defau
         }
 
         this.solution = newSol;
+    }
+
+    @Override
+    public void deactivateRemovals() {
+        removalCount = null;
     }
 
     @Override

@@ -7,7 +7,6 @@ public class GeneralConfiguration {
     // Flag which indicates if the config file must be updated
     private boolean updateConfigFile = false;
 
-    private Integer initialSolutionMaxIterations = null;
     private double initialTemperature = 200;
     private double minTemperature = 1e-4;
     private double coolingRate = 0.05;
@@ -23,15 +22,6 @@ public class GeneralConfiguration {
 
     public boolean getUpdateConfigFile() {
         return updateConfigFile;
-    }
-
-    public Integer getInitialSolutionMaxIterations() {
-        return initialSolutionMaxIterations;
-    }
-
-    public void setInitialSolutionMaxIterations(Integer maxIterations) {
-        initialSolutionMaxIterations = maxIterations;
-        setUpdateConfigFile();
     }
 
     public double getInitialTemperature() {

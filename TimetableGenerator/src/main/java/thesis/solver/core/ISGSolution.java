@@ -28,6 +28,8 @@ public interface ISGSolution<modelRepository extends InMemoryRepository, Val ext
     void incrementIteration();
     long getIteration();
 
+    void deactivateRemovals();
+
     modelRepository getDataModel();
 
     /**

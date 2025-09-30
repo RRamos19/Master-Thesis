@@ -8,5 +8,5 @@ public interface InitialSolutionGenerator<T> {
      *
      * @return The solution generated
      */
-    T generate(Integer maxIterations);
+    T generate();
 }

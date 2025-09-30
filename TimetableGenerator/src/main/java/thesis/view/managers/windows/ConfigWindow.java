@@ -13,10 +13,12 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import thesis.view.ViewInterface;
 import thesis.view.utils.AppIcons;
 import thesis.view.managers.components.GeneralConfiguration;
 
 public class ConfigWindow {
+    private final ViewInterface view;
     private final Stage configStage;
     private final GeneralConfiguration generalConfiguration;
 
@@ -24,16 +26,14 @@ public class ConfigWindow {
     private TextField maxHourField;
     private TextField minHourField;
 
-    // Initial Algorithm Section
-    private TextField maxIterField;
-
     // Optimization Section
     private TextField initTempField;
     private TextField minTempField;
     private TextField coolingRateField;
     private TextField kField;
 
-    public ConfigWindow(Window primaryWindow, GeneralConfiguration generalConfiguration) {
+    public ConfigWindow(Window primaryWindow, GeneralConfiguration generalConfiguration, ViewInterface view) {
+        this.view = view;
         this.generalConfiguration = generalConfiguration;
 
         configStage = new Stage();
@@ -44,28 +44,27 @@ public class ConfigWindow {
         configStage.setTitle("Configuration");
 
         Node timetableBox = createTimetableSection();
-        Node initialSolutionBox = createInitialAlgorithmSection();
         Node optimizAlgorithmBox = createOptimizationAlgorithmSection();
 
-        VBox configurationStructure = new VBox(10, timetableBox, initialSolutionBox, optimizAlgorithmBox);
+        VBox configurationStructure = new VBox(10, timetableBox, optimizAlgorithmBox);
 
         // Save button
         Button saveBtn = new Button("Save");
         saveBtn.setOnAction(event -> {
-            // Timetable Section
-            generalConfiguration.setMaxHour(Integer.parseInt(maxHourField.getText()));
-            generalConfiguration.setMinHour(Integer.parseInt(minHourField.getText()));
+            try {
+                // Timetable Section
+                generalConfiguration.setMaxHour(Integer.parseInt(maxHourField.getText()));
+                generalConfiguration.setMinHour(Integer.parseInt(minHourField.getText()));
 
-            // Initial Algorithm Section
-            String maxIterString = maxIterField.getText();
-            Integer maxIter = maxIterString.isEmpty() ? null : Integer.parseInt(maxIterString);
-            generalConfiguration.setInitialSolutionMaxIterations(maxIter);
-
-            // Optimization Section
-            generalConfiguration.setInitialTemperature(Double.parseDouble(initTempField.getText()));
-            generalConfiguration.setMinTemperature(Double.parseDouble(minTempField.getText()));
-            generalConfiguration.setCoolingRate(Double.parseDouble(coolingRateField.getText()));
-            generalConfiguration.setK(Integer.parseInt(kField.getText()));
+                // Optimization Section
+                generalConfiguration.setInitialTemperature(Double.parseDouble(initTempField.getText()));
+                generalConfiguration.setMinTemperature(Double.parseDouble(minTempField.getText()));
+                generalConfiguration.setCoolingRate(Double.parseDouble(coolingRateField.getText()));
+                generalConfiguration.setK(Integer.parseInt(kField.getText()));
+            } catch (Exception e) {
+                view.showExceptionMessage(e);
+                return;
+            }
 
             configStage.close();
         });
@@ -96,17 +95,6 @@ public class ConfigWindow {
         timetableRow.setAlignment(Pos.CENTER);
 
         return new VBox(10, timetableLabel, timetableRow);
-    }
-
-    private Node createInitialAlgorithmSection() {
-        Label initialAlgorithmLabel = new Label("Initial Solution Algorithm Configuration");
-
-        Label maxIterLabel = new Label("Max Iterations:");
-        maxIterField = new TextField();
-        HBox maxIterBox = new HBox(10, maxIterLabel, maxIterField);
-        maxIterBox.setAlignment(Pos.CENTER);
-
-        return new VBox(10, initialAlgorithmLabel, maxIterBox);
     }
 
     private Node createOptimizationAlgorithmSection() {
@@ -145,11 +133,6 @@ public class ConfigWindow {
         // Timetable Section
         maxHourField.setText(String.valueOf(generalConfiguration.getMaxHour()));
         minHourField.setText(String.valueOf(generalConfiguration.getMinHour()));
-
-        // Initial Algorithm Section
-        Integer maxIter = generalConfiguration.getInitialSolutionMaxIterations();
-        String maxIterString = maxIter != null ? String.valueOf(maxIter) : "";
-        maxIterField.setText(maxIterString);
 
         // Optimization Section
         initTempField.setText(String.valueOf(generalConfiguration.getInitialTemperature()));

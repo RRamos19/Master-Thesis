@@ -4,7 +4,6 @@ import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.Timetable;
 import thesis.model.exceptions.InvalidConfigurationException;
 import thesis.solver.core.DefaultISGSolution;
-import thesis.solver.core.DefaultISGVariable;
 import thesis.solver.initialsolutiongenerator.InitialSolutionGenerator;
 import thesis.solver.initialsolutiongenerator.MullerSolutionGenerator;
 import thesis.solver.solutionoptimizer.HeuristicAlgorithm;
@@ -14,7 +13,6 @@ import thesis.utils.DoubleToolkit;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -27,7 +25,7 @@ public class TaskManager {
     private final Map<UUID, HeuristicAlgorithm<Timetable>> heuristicAlgorithmsMap = new ConcurrentHashMap<>();                         // ProgramUUID : HeuristicAlgorithm
     private final Map<UUID, CountDownLatch> synchronizationMap = new ConcurrentHashMap<>();                                            // ProgramUUID : CountDownLatch (to synchronize the threads and perform cleanup safely)
     private final ExecutorService threadPool = Executors.newFixedThreadPool(
-            Runtime.getRuntime().availableProcessors(),
+            2,//Runtime.getRuntime().availableProcessors(),
             new DaemonThreadFactory()
     );
 
@@ -36,7 +34,7 @@ public class TaskManager {
         bean.setThreadCpuTimeEnabled(true);
     }
 
-    public void startGeneratingSolution(String programName, UUID progressUUID, Integer initSolutionMaxIter, double initialTemperature, double minTemperature, double coolingRate, int k) {
+    public void startGeneratingSolution(String programName, UUID progressUUID, double initialTemperature, double minTemperature, double coolingRate, int k) {
         InMemoryRepository data = model.getDataRepository(programName);
 
         // Should never happen
@@ -45,7 +43,7 @@ public class TaskManager {
         }
 
         // Pool the generation task
-        generatedTimetables.put(progressUUID, threadPool.submit(() -> generateTimetable(data, progressUUID, initSolutionMaxIter, initialTemperature, minTemperature, coolingRate, k)));
+        generatedTimetables.put(progressUUID, threadPool.submit(() -> generateTimetable(data, progressUUID, initialTemperature, minTemperature, coolingRate, k)));
     }
 
     public double getGenerationProgress(UUID progressUUID) throws ExecutionException, InterruptedException, InvalidConfigurationException {
@@ -87,7 +85,7 @@ public class TaskManager {
         }
     }
 
-    private Timetable generateTimetable(InMemoryRepository data, UUID progressUUID, Integer initSolutionMaxIter, double initialTemperature, double minTemperature, double coolingRate, int k) throws InvalidConfigurationException {
+    private Timetable generateTimetable(InMemoryRepository data, UUID progressUUID, double initialTemperature, double minTemperature, double coolingRate, int k) throws InvalidConfigurationException {
         long id = Thread.currentThread().getId();
         long startCpu = bean.getThreadCpuTime(id); // Start time in nanoseconds
 
@@ -96,7 +94,7 @@ public class TaskManager {
 
         InitialSolutionGenerator<DefaultISGSolution> initialSolutionGen = new MullerSolutionGenerator(data);
         initialSolutionGeneratorsMap.put(progressUUID, initialSolutionGen);
-        DefaultISGSolution initialSolution = initialSolutionGen.generate(initSolutionMaxIter);
+        DefaultISGSolution initialSolution = initialSolutionGen.generate();
 
         // The generation task was canceled
         if(initialSolution == null) {

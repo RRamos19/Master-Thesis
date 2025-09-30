@@ -13,6 +13,7 @@ import javafx.stage.Window;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.ScheduledLesson;
 import thesis.model.domain.components.Timetable;
+import thesis.view.ViewInterface;
 import thesis.view.utils.AppIcons;
 import thesis.view.managers.components.GeneralConfiguration;
 import thesis.view.managers.windows.ConfigWindow;
@@ -25,14 +26,15 @@ import java.util.stream.Collectors;
 public class WindowManager {
     private static final List<String> DAYS_OF_WEEK = List.of("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
     private final Window primaryWindow;
-
+    private final ViewInterface view;
     private ExceptionMessageWindow exceptionMessageWindow;
     private Stage instructionsWindow;
     private ConfigWindow configWindow;
     private Stage timetableWindow;
 
-    public WindowManager(Window primaryWindow) {
+    public WindowManager(Window primaryWindow, ViewInterface view) {
         this.primaryWindow = primaryWindow;
+        this.view = view;
     }
 
     public Stage getExceptionMessage(Exception e) {
@@ -115,7 +117,7 @@ public class WindowManager {
 
     public Stage getConfigWindow(GeneralConfiguration generalConfiguration) {
         if(configWindow == null) {
-            configWindow = new ConfigWindow(primaryWindow, generalConfiguration);
+            configWindow = new ConfigWindow(primaryWindow, generalConfiguration, view);
         }
 
         configWindow.resetLabels();

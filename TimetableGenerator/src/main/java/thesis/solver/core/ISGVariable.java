@@ -12,6 +12,7 @@ public interface ISGVariable<Var extends ISGVariable<Var, Val, ?>, Val extends I
     void unassign();
 
     int getRemovals(Val value);
+    void deactivateRemovals();
 
     ISGValueList<Val> getValues();
 

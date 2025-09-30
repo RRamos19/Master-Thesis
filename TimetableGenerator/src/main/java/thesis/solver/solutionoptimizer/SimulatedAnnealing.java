@@ -38,6 +38,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
     @Override
     public Timetable execute() {
         DefaultISGSolution currentSolution = new DefaultISGSolution(initialSolution);
+        currentSolution.deactivateRemovals();
 
         if(!currentSolution.isSolutionValid()) {
             throw new IllegalStateException("The initial solution must be valid");
@@ -127,7 +128,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
      */
     private DefaultISGSolution moveClass(DefaultISGSolution solution) {
         DefaultISGVariable selectedVar;
-        DefaultISGValue newValue = null;
+        DefaultISGValue newValue;
         int n = 0;
         do {
             selectedVar = RandomToolkit.random(solution.getAssignedVariables());
@@ -138,10 +139,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
 
             DefaultISGValue currentValue = selectedVar.getAssignment();
 
-            List<DefaultISGValue> values = selectedVar.getValues().values();
-
-            // If the list of possible values is a single assignment ignore
-            if(values.size() <= 1) continue;
+            ISGValueList<DefaultISGValue> values = selectedVar.getValues();
 
             // List of values of which there are no conflicts
             List<DefaultISGValue> noConflictValues = new ArrayList<>();

@@ -29,6 +29,9 @@ public interface InMemoryRepository extends XmlResult {
     Course getCourse(String courseId);
     List<Course> getCourses();
 
+    List<Config> getConfigs();
+    List<Subpart> getSubparts();
+
     void addClassUnit(ClassUnit classUnit);
     List<ClassUnit> getClassUnits();
     ClassUnit getClassUnit(String classUnitId);

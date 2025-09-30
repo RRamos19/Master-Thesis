@@ -27,7 +27,7 @@ public class ValueTest {
         ScheduledLesson scheduledLesson4 = new ScheduledLesson(classId1, roomId1, time2);
         ScheduledLesson scheduledLesson5 = new ScheduledLesson(classId1, roomId2, time2);
 
-        DefaultISGVariable variable = new DefaultISGVariable(cls1, false);
+        DefaultISGVariable variable = new DefaultISGVariable(cls1);
         DefaultISGValue value1 = new DefaultISGValue(variable, scheduledLesson1);
         DefaultISGValue value2 = new DefaultISGValue(variable, scheduledLesson2);
         DefaultISGValue value3 = new DefaultISGValue(variable, scheduledLesson3);

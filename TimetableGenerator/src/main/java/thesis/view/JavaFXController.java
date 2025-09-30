@@ -2,9 +2,9 @@ package thesis.view;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -14,14 +14,15 @@ import javafx.stage.*;
 import thesis.controller.ControllerInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.Timetable;
-import thesis.model.domain.components.TableDisplayable;
 import thesis.view.managers.ConfigurationManager;
 import thesis.view.managers.ProgressBarManager;
 import thesis.view.managers.components.GeneralConfiguration;
 import thesis.view.managers.WindowManager;
+import thesis.view.viewobjects.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -34,47 +35,57 @@ public class JavaFXController implements ViewInterface {
     private GeneralConfiguration generalConfiguration;
     private ProgressBarManager progressBarManager;
 
-    @FXML
-    private Pane applicationPrincipalPane;
+    // UI Components
+    @FXML private Pane applicationPrincipalPane;
+    @FXML private Pane dragAndDropPane;
+    @FXML private TextField ipField;
+    @FXML private TextField portField;
+    @FXML private TextField usernameField;
+    @FXML private PasswordField passwordField;
+    @FXML private TreeView<TableType> treeView;
+    @FXML private Button connectBtn;
+    @FXML private VBox taskContainer;
+    @FXML private ListView<HBox> progressContainer;
+    @FXML private ChoiceBox<String> programsChoiceBox;
+    @FXML private TableView<ViewModel> tableView;
+    @FXML private Button reoptimizeButton;
+    @FXML private Button removeButton;
 
-    @FXML
-    private Pane dragAndDropPane;
-
-    @FXML
-    private TextField ipField;
-
-    @FXML
-    private TextField portField;
-
-    @FXML
-    private TextField usernameField;
-
-    @FXML
-    private PasswordField passwordField;
-
-    @FXML
-    private TreeView<String> treeView;
-
-    @FXML
-    private Button connectBtn;
-
-    @FXML
-    private VBox taskContainer;
-
-    @FXML
-    private ListView<HBox> progressContainer;
-
-    @FXML
-    private ChoiceBox<String> programsChoiceBox;
-
-    @FXML
-    private TableView<TableDisplayable> tableView;
-
-    @FXML
-    private Button reoptimizeButton;
-
-    @FXML
-    private Button removeButton;
+    // Types of values that can be shown on the table view
+    public enum TableType {
+        CLASSES {
+            @Override
+            public String toString() {return "Classes";}
+        },
+        CONFIGURATION {
+            @Override
+            public String toString() {return "Configuration";}
+        },
+        CONFIG {
+            @Override
+            public String toString() {return "Configs";}
+        },
+        CONSTRAINT {
+            @Override
+            public String toString() {return "Constraints";}
+        },
+        COURSE {
+            @Override
+            public String toString() {return "Courses";}
+        },
+        ROOM {
+            @Override
+            public String toString() {return "Rooms";}
+        },
+        SUBPART {
+            @Override
+            public String toString() {return "Subparts";}
+        },
+        TIMETABLE {
+            @Override
+            public String toString() {return "Timetables";}
+        }
+    }
 
     @Override
     public void setController(ControllerInterface controller) {
@@ -162,11 +173,11 @@ public class JavaFXController implements ViewInterface {
         Task<Void> importTask = new Task<>() {
             @Override
             protected Void call() {
-                for(File file : files) {
-                    controller.importITCData(file);
-                }
+            for(File file : files) {
+                controller.importITCData(file);
+            }
 
-                return null;
+            return null;
             }
         };
 
@@ -270,7 +281,6 @@ public class JavaFXController implements ViewInterface {
     @FXML
     private void dragOverEvent(DragEvent event) {
         event.acceptTransferModes(TransferMode.MOVE);
-
         event.consume();
     }
 
@@ -280,14 +290,12 @@ public class JavaFXController implements ViewInterface {
                 event.getDragboard().hasFiles()) {
             dragAndDropPane.setVisible(true);
         }
-
         event.consume();
     }
 
     @FXML
     private void dragExitedEvent(DragEvent event) {
         dragAndDropPane.setVisible(false);
-
         event.consume();
     }
 
@@ -296,10 +304,8 @@ public class JavaFXController implements ViewInterface {
         Dragboard dragboard = event.getDragboard();
         if(dragboard.hasFiles()) {
             List<File> files = dragboard.getFiles();
-
             importData(files);
         }
-
         event.consume();
     }
 
@@ -314,7 +320,6 @@ public class JavaFXController implements ViewInterface {
 
         controller.startGeneratingSolution(chosenProgram,
                                     progressBarUUID,
-                                    generalConfiguration.getInitialSolutionMaxIterations(),
                                     generalConfiguration.getInitialTemperature(),
                                     generalConfiguration.getMinTemperature(),
                                     generalConfiguration.getCoolingRate(),
@@ -340,22 +345,8 @@ public class JavaFXController implements ViewInterface {
         if (selectedItem instanceof Timetable) {
             Timetable timetable = (Timetable) selectedItem;
             //controller.optimizeTimetable(timetable);
+            //TODO: to be implemented
         }
-    }
-
-    private void populateTreeView(String progname) {
-        TreeItem<String> root = new TreeItem<>("Data");
-
-        Map<String, List<TableDisplayable>> data = controller.getAllDisplayableData(progname);
-
-        if(!data.isEmpty()) {
-            data.keySet().forEach((s) -> {
-                TreeItem<String> item = new TreeItem<>(s);
-                root.getChildren().add(item);
-            });
-        }
-
-        treeView.setRoot(root);
     }
 
     @FXML
@@ -410,8 +401,6 @@ public class JavaFXController implements ViewInterface {
 
                 return response.equals(ButtonType.YES);
             }
-
-            return false;
         } else {
             final Object lock = new Object();
             final AtomicReference<Optional<ButtonType>> resultRef = new AtomicReference<>();
@@ -446,9 +435,9 @@ public class JavaFXController implements ViewInterface {
 
                 return response.equals(ButtonType.YES);
             }
-
-            return false;
         }
+
+        return false;
     }
 
     public void showTimetable(InMemoryRepository data, Timetable timetable) {
@@ -471,80 +460,180 @@ public class JavaFXController implements ViewInterface {
     }
 
     public void updateTableView() {
-        populateTreeView(chosenProgram);
-
         // Update the selected table view of the current item
         updateTableView(treeView.getSelectionModel().getSelectedItem());
     }
 
-    private void updateTableView(TreeItem<String> item) {
+    private void setTableViewData(ObservableList<ViewModel> rowData, TableColumn<ViewModel, ?> ... columnData) {
+        tableView.getColumns().setAll(FXCollections.observableArrayList(columnData));
+        tableView.setItems(rowData);
+    }
+
+    private void updateTableView(TreeItem<TableType> item) {
         if (item != null) {
             clearTableView();
 
-            Map<String, List<TableDisplayable>> displayableData = controller.getAllDisplayableData(chosenProgram);
+            removeButton.setVisible(false);
+            reoptimizeButton.setVisible(false);
 
-            List<TableDisplayable> dataToDisplay = displayableData.get(item.getValue());
+            switch(item.getValue()) {
+                case CONFIGURATION:
+                    TableColumn<ViewModel, Number> nDays = new TableColumn<>("Number of Days");
+                    TableColumn<ViewModel, Number> nWeeks = new TableColumn<>("Number of Weeks");
+                    TableColumn<ViewModel, Number> nSlots = new TableColumn<>("Slots per Day");
+                    TableColumn<ViewModel, Number> timeWeight = new TableColumn<>("Time Weight");
+                    TableColumn<ViewModel, Number> roomWeight = new TableColumn<>("Room Weight");
+                    TableColumn<ViewModel, Number> distributionWeight = new TableColumn<>("Distribution Weight");
 
-            if(dataToDisplay == null || dataToDisplay.isEmpty()) {
-                return;
+                    nDays.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).nDaysProperty());
+                    nWeeks.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).nWeeksProperty());
+                    nSlots.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).nSlotsProperty());
+                    timeWeight.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).timeWeightProperty());
+                    roomWeight.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).roomWeightProperty());
+                    distributionWeight.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).distributionWeightProperty());
+
+                    setTableViewData(controller.getConfiguration(chosenProgram), nDays, nWeeks, nSlots, timeWeight, roomWeight, distributionWeight);
+                    break;
+                case COURSE:
+                    TableColumn<ViewModel, String> courseId = new TableColumn<>("Course Id");
+                    TableColumn<ViewModel, Number> nConfigs = new TableColumn<>("Nº of Configs");
+
+                    courseId.setCellValueFactory(data -> ((CourseViewModel) data.getValue()).idProperty());
+                    nConfigs.setCellValueFactory(data -> ((CourseViewModel) data.getValue()).nConfigsProperty());
+
+                    setTableViewData(controller.getCourses(chosenProgram), courseId, nConfigs);
+                    break;
+                case CONFIG:
+                    TableColumn<ViewModel, String> configId = new TableColumn<>("Config Id");
+                    TableColumn<ViewModel, Number> nSubparts = new TableColumn<>("Nº of Subparts");
+
+                    configId.setCellValueFactory(data -> ((ConfigViewModel) data.getValue()).idProperty());
+                    nSubparts.setCellValueFactory(data -> ((ConfigViewModel) data.getValue()).nSubpartsProperty());
+
+                    setTableViewData(controller.getConfigs(chosenProgram), configId, nSubparts);
+                    break;
+                case SUBPART:
+                    TableColumn<ViewModel, String> subpartId = new TableColumn<>("Subpart Id");
+                    TableColumn<ViewModel, Number> nClasses = new TableColumn<>("Nº of Classes");
+
+                    subpartId.setCellValueFactory(data -> ((SubpartViewModel) data.getValue()).idProperty());
+                    nClasses.setCellValueFactory(data -> ((SubpartViewModel) data.getValue()).nClassesProperty());
+
+                    setTableViewData(controller.getSubparts(chosenProgram), subpartId, nClasses);
+                    break;
+                case CLASSES:
+                    TableColumn<ViewModel, String> classId = new TableColumn<>("Class Id");
+                    TableColumn<ViewModel, String> classParentId = new TableColumn<>("Parent Id");
+
+                    classId.setCellValueFactory(data -> ((ClassUnitViewModel) data.getValue()).idProperty());
+                    classParentId.setCellValueFactory(data -> ((ClassUnitViewModel) data.getValue()).parentIdProperty());
+
+                    setTableViewData(controller.getClassUnits(chosenProgram), classId, classParentId);
+                    break;
+                case CONSTRAINT:
+                    TableColumn<ViewModel, String> type = new TableColumn<>("Constraint Type");
+                    TableColumn<ViewModel, Integer> firstParam = new TableColumn<>("First Parameter");
+                    TableColumn<ViewModel, Integer> secondParam = new TableColumn<>("Second Parameter");
+                    TableColumn<ViewModel, Integer> penalty = new TableColumn<>("Penalty");
+                    TableColumn<ViewModel, Boolean> required = new TableColumn<>("Required");
+                    TableColumn<ViewModel, Number> nConstraintClasses = new TableColumn<>("Nº of Classes");
+
+                    type.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).typeProperty());
+                    firstParam.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).firstParameterProperty());
+                    secondParam.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).secondParameterProperty());
+                    penalty.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).penaltyProperty());
+                    required.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).requiredProperty());
+                    nConstraintClasses.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).nClassesProperty());
+
+                    setTableViewData(controller.getConstraints(chosenProgram), type, firstParam, secondParam, penalty, required, nConstraintClasses);
+                    break;
+                case ROOM:
+                    TableColumn<ViewModel, String> roomId = new TableColumn<>("Room Id");
+                    TableColumn<ViewModel, Number> roomUnavailabilities = new TableColumn<>("Nº of Unavailabilities");
+                    TableColumn<ViewModel, Number> roomDistances = new TableColumn<>("Nº of Distances");
+
+                    roomId.setCellValueFactory(data -> ((RoomViewModel) data.getValue()).idProperty());
+                    roomUnavailabilities.setCellValueFactory(data -> ((RoomViewModel) data.getValue()).nUnavailabilitiesProperty());
+                    roomDistances.setCellValueFactory(data -> ((RoomViewModel) data.getValue()).nDistancesProperty());
+
+                    setTableViewData(controller.getRooms(chosenProgram), roomId, roomUnavailabilities, roomDistances);
+                    break;
+                case TIMETABLE:
+                    TableColumn<ViewModel, LocalDate> dateOfCreation = new TableColumn<>("Date of Creation");
+                    TableColumn<ViewModel, Number> runtime = new TableColumn<>("Runtime");
+                    TableColumn<ViewModel, Number> cost = new TableColumn<>("Cost");
+                    TableColumn<ViewModel, Number> nScheduledLessons = new TableColumn<>("Nº of Scheduled Lessons");
+                    TableColumn<ViewModel, Boolean> isValid = new TableColumn<>("is Valid");
+
+                    dateOfCreation.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).dateOfCreationProperty());
+                    runtime.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).runtimeProperty());
+                    cost.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).costProperty());
+                    nScheduledLessons.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).nScheduledClassesProperty());
+                    isValid.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).isValidProperty());
+
+                    setTableViewData(controller.getTimetables(chosenProgram), dateOfCreation, runtime, cost, nScheduledLessons, isValid);
+
+                    removeButton.setVisible(true);
+                    //reoptimizeButton.setVisible(true);
+                    break;
             }
-
-            TableDisplayable firstElement = dataToDisplay.get(0);
-            List<String> columnNames = firstElement.getColumnNames();
-            for (int colIndex = 0; colIndex < columnNames.size(); colIndex++) {
-                TableColumn<TableDisplayable, String> column = new TableColumn<>(columnNames.get(colIndex));
-
-                final int index = colIndex;
-                column.setCellValueFactory(cellData -> {
-                    Object value = cellData.getValue().getColumnValues().get(index);
-                    return new SimpleStringProperty(value != null ? value.toString() : "");
-                });
-
-                tableView.getColumns().add(column);
-            }
-
-            tableView.getItems().addAll(dataToDisplay);
-
-            removeButton.setVisible(firstElement.isRemovable());
-            reoptimizeButton.setVisible(firstElement.isOptimizable());
         }
+    }
+
+    private void populateTreeView() {
+        TreeItem<TableType> root = new TreeItem<>(null);
+
+        TreeItem<TableType> constraints = new TreeItem<>(TableType.CONSTRAINT);
+        TreeItem<TableType> configuration = new TreeItem<>(TableType.CONFIGURATION);
+        TreeItem<TableType> courses = new TreeItem<>(TableType.COURSE);
+        TreeItem<TableType> configs = new TreeItem<>(TableType.CONFIG);
+        TreeItem<TableType> subparts = new TreeItem<>(TableType.SUBPART);
+        TreeItem<TableType> classes = new TreeItem<>(TableType.CLASSES);
+        TreeItem<TableType> rooms = new TreeItem<>(TableType.ROOM);
+        TreeItem<TableType> timetables = new TreeItem<>(TableType.TIMETABLE);
+
+        ObservableList<TreeItem<TableType>> rootChildren = root.getChildren();
+        rootChildren.addAll(List.of(constraints, configuration, courses, configs, subparts, classes, rooms, timetables));
+        treeView.setRoot(root);
     }
 
     // Runs at the start of the graphical application
     public void initialize(){
+        // Updates the String of the chosen program and clears the table when a program is chosen
         programsChoiceBox.getSelectionModel().selectedItemProperty()
                 .addListener((observable, oldValue, newValue) -> {
             if(newValue == null) return;
 
             chosenProgram = newValue;
-
             clearTableView();
-
-            populateTreeView(newValue);
         });
 
+        // Update the table based on the category chosen on the left menu
         treeView.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldItem, newItem) -> updateTableView(newItem));
 
-        // Add the timetable visualization
+        // Add the timetable visualization when the item is double-clicked
         tableView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 Object selectedItem = tableView.getSelectionModel().getSelectedItem();
-                if (selectedItem instanceof Timetable) {
-                    Timetable timetable = (Timetable) selectedItem;
+                if (selectedItem instanceof TimetableViewModel) {
+                    TimetableViewModel timetableViewModel = (TimetableViewModel) selectedItem;
 
-                    showTimetable(controller.getDataRepository(chosenProgram), timetable);
+                    showTimetable(controller.getDataRepository(chosenProgram), timetableViewModel.getTimetable());
                 }
             }
         });
 
-        windowManager = new WindowManager(primaryWindow);
+        windowManager = new WindowManager(primaryWindow, this);
         try {
             generalConfiguration = ConfigurationManager.loadConfig();
         } catch (IOException e) {
             showExceptionMessage(e);
             System.exit(1);
         }
+
+        // Populates the left menu with the possible options
+        populateTreeView();
 
         // Set the stored values for all the fields
         ipField.setText(generalConfiguration.getIpField());

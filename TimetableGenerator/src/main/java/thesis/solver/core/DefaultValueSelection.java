@@ -28,8 +28,8 @@ public class DefaultValueSelection implements ValueSelection<DefaultISGValue, De
         List<DefaultISGValue> bestValues = null;
         double bestWeightedSum = Double.MAX_VALUE;
 
-        // go through all the values
-        for(DefaultISGValue value : values.values()) {
+        // go through all the values (the ISGValueList creates the objects on demand)
+        for(DefaultISGValue value : values) {
             if(Objects.equals(value, selectedVariable.getAssignment())) {
                 // do not pick the same value as it is currently assigned
                 // if there is a value assigned to the selected variable

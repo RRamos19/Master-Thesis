@@ -27,16 +27,13 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Default
         this.dataModel = data;
     }
 
-    public DefaultISGSolution generate(Integer maxIterations) {
+    public DefaultISGSolution generate() {
         solution = new DefaultISGSolution(dataModel);
         convertToVariables(solution, unscheduled);
 
         while(!solution.isSolutionValid()) {
             if(interruptAlgorithm) {
                 return null;
-            }
-            if(maxIterations != null && solution.getIteration() >= maxIterations) {
-                break;
             }
 
             DefaultISGVariable variable = selectVariable(solution);
@@ -59,10 +56,6 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Default
             }
 
             solution.incrementIteration();
-        }
-
-        if(solution.wasBestSaved()) {
-            solution.restoreBest();
         }
 
         return solution;
@@ -90,7 +83,7 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Default
         // For each unscheduled class a variable is made which represents the class
         // Each variable is then assigned a value which represents the Room, Time and Teachers combination
         for(ClassUnit cls : classUnitList) {
-            DefaultISGVariable var = new DefaultISGVariable(cls, true);
+            DefaultISGVariable var = new DefaultISGVariable(cls);
             solution.addUnassignedVariable(var);
             var.setSolution(solution);
         }

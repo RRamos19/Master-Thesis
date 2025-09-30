@@ -3,6 +3,7 @@ package thesis.model.domain.components;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.parser.XmlResult;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -79,6 +80,10 @@ public class Timetable implements TableDisplayable, XmlResult {
         return runtime;
     }
 
+    public LocalDate getLocalDateOfCreation() {
+        return dateOfCreation.toLocalDate();
+    }
+
     public String getDateOfCreation() {
         return dateOfCreationFormatter.format(dateOfCreation).replace(' ', '_').replace(':', '.');
     }
@@ -92,6 +97,7 @@ public class Timetable implements TableDisplayable, XmlResult {
 
         updateCost = true;
         updateConstraints = true;
+        isValid = null;
     }
 
     public void addTemporaryLesson(ScheduledLesson scheduledLesson) {
@@ -107,6 +113,7 @@ public class Timetable implements TableDisplayable, XmlResult {
         updateCost = true;
         hasTemporaryLesson = true;
         updateConstraints = true;
+        isValid = null;
     }
 
     public void removeTemporaryLesson(ScheduledLesson scheduledLesson) {
@@ -118,6 +125,7 @@ public class Timetable implements TableDisplayable, XmlResult {
 
         hasTemporaryLesson = false;
         updateConstraints = true;
+        isValid = null;
     }
 
     public ScheduledLesson getScheduledLesson(String classId) {

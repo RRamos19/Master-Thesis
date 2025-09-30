@@ -103,6 +103,24 @@ public class DataRepository implements InMemoryRepository {
     }
 
     @Override
+    public List<Config> getConfigs() {
+        List<Config> configList = new ArrayList<>();
+        for(Course course : courseMap.values()) {
+            configList.addAll(course.getConfigList());
+        }
+        return configList;
+    }
+
+    @Override
+    public List<Subpart> getSubparts() {
+        List<Subpart> subpartList = new ArrayList<>();
+        for(Config config : getConfigs()) {
+            subpartList.addAll(config.getSubpartList());
+        }
+        return subpartList;
+    }
+
+    @Override
     public void addClassUnit(ClassUnit classUnit) {
         classUnitMap.put(classUnit.getClassId(), classUnit);
     }

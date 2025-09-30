@@ -2,8 +2,7 @@ package thesis.model;
 
 import thesis.controller.ControllerInterface;
 import thesis.model.domain.InMemoryRepository;
-import thesis.model.domain.components.TableDisplayable;
-import thesis.model.domain.components.Timetable;
+import thesis.model.domain.components.*;
 import thesis.model.exceptions.CheckedIllegalStateException;
 import thesis.model.exceptions.DatabaseException;
 import thesis.model.exceptions.InvalidConfigurationException;
@@ -114,25 +113,6 @@ public class Model implements ModelInterface {
     }
 
     @Override
-    public Map<String, List<TableDisplayable>> getAllDisplayableData(String progName) {
-        InMemoryRepository data = dataRepositoryHashMap.get(progName);
-
-        Map<String, List<TableDisplayable>> result = new HashMap<>();
-
-        if(data != null) {
-            List<TableDisplayable> dataList = data.getAllDisplayableData();
-
-            for(TableDisplayable obj : dataList) {
-                List<TableDisplayable> resultObjectList = result.computeIfAbsent(obj.getTableName(), (s) -> new ArrayList<>());
-
-                resultObjectList.add(obj);
-            }
-        }
-
-        return result;
-    }
-
-    @Override
     public InMemoryRepository getDataRepository(String programName) {
         return dataRepositoryHashMap.get(programName);
     }
@@ -143,8 +123,82 @@ public class Model implements ModelInterface {
     }
 
     @Override
-    public void startGeneratingSolution(String programName, UUID progressUUID, Integer initSolutionMaxIter, double initialTemperature, double minTemperature, double coolingRate, int k) {
-        taskManager.startGeneratingSolution(programName, progressUUID, initSolutionMaxIter, initialTemperature, minTemperature, coolingRate, k);
+    public List<Course> getCourses(String progName) throws CheckedIllegalStateException {
+        InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
+        if(dataRepository == null) {
+            throw new CheckedIllegalStateException("No data was already stored for the solution imported");
+        }
+
+        return dataRepository.getCourses();
+    }
+
+    @Override
+    public List<ClassUnit> getClassUnits(String progName) throws CheckedIllegalStateException {
+        InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
+        if(dataRepository == null) {
+            throw new CheckedIllegalStateException("No data was already stored for the solution imported");
+        }
+
+        return dataRepository.getClassUnits();
+    }
+
+    public TimetableConfiguration getConfiguration(String progName) throws CheckedIllegalStateException {
+        InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
+        if(dataRepository == null) {
+            throw new CheckedIllegalStateException("No data was already stored for the solution imported");
+        }
+
+        return dataRepository.getTimetableConfiguration();
+    }
+
+    public List<Config> getConfigs(String progName) throws CheckedIllegalStateException {
+        InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
+        if(dataRepository == null) {
+            throw new CheckedIllegalStateException("No data was already stored for the solution imported");
+        }
+
+        return dataRepository.getConfigs();
+    }
+
+    public List<Constraint> getConstraints(String progName) throws CheckedIllegalStateException {
+        InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
+        if(dataRepository == null) {
+            throw new CheckedIllegalStateException("No data was already stored for the solution imported");
+        }
+
+        return dataRepository.getConstraints();
+    }
+
+    public List<Room> getRooms(String progName) throws CheckedIllegalStateException {
+        InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
+        if(dataRepository == null) {
+            throw new CheckedIllegalStateException("No data was already stored for the solution imported");
+        }
+
+        return dataRepository.getRooms();
+    }
+
+    public List<Subpart> getSubparts(String progName) throws CheckedIllegalStateException {
+        InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
+        if(dataRepository == null) {
+            throw new CheckedIllegalStateException("No data was already stored for the solution imported");
+        }
+
+        return dataRepository.getSubparts();
+    }
+
+    public List<Timetable> getTimetables(String progName) throws CheckedIllegalStateException {
+        InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
+        if(dataRepository == null) {
+            throw new CheckedIllegalStateException("No data was already stored for the solution imported");
+        }
+
+        return dataRepository.getTimetableList();
+    }
+
+    @Override
+    public void startGeneratingSolution(String programName, UUID progressUUID, double initialTemperature, double minTemperature, double coolingRate, int k) {
+        taskManager.startGeneratingSolution(programName, progressUUID, initialTemperature, minTemperature, coolingRate, k);
     }
 
     @Override
