@@ -12,7 +12,7 @@ import java.util.List;
  * The solution generator presented is based on Tomáš Müller's phd thesis.
  * Source - Constraint Based Timetabling https://muller.unitime.org/phd-thesis.pdf
  */
-public class MullerSolutionGenerator implements InitialSolutionGenerator<DefaultISGSolution> {
+public class MullerBasedSolutionGenerator implements InitialSolutionGenerator<DefaultISGSolution> {
     private final InMemoryRepository dataModel;
     private final ValueSelection<DefaultISGValue, DefaultISGSolution, DefaultISGVariable> valueSelection = new DefaultValueSelection();
     private final DefaultISGSolutionComparator defaultISGSolutionComparator = new DefaultISGSolutionComparator();
@@ -20,7 +20,7 @@ public class MullerSolutionGenerator implements InitialSolutionGenerator<Default
     private volatile boolean interruptAlgorithm = false;
     private DefaultISGSolution solution;
 
-    public MullerSolutionGenerator(InMemoryRepository data) {
+    public MullerBasedSolutionGenerator(InMemoryRepository data) {
         // Every class in every subpart must be allocated in the timetable.
         this.unscheduled = new ArrayList<>(data.getClassUnits());
 

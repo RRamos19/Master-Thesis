@@ -5,7 +5,7 @@ import thesis.model.domain.components.Timetable;
 import thesis.model.exceptions.InvalidConfigurationException;
 import thesis.solver.core.DefaultISGSolution;
 import thesis.solver.initialsolutiongenerator.InitialSolutionGenerator;
-import thesis.solver.initialsolutiongenerator.MullerSolutionGenerator;
+import thesis.solver.initialsolutiongenerator.MullerBasedSolutionGenerator;
 import thesis.solver.solutionoptimizer.HeuristicAlgorithm;
 import thesis.solver.solutionoptimizer.SimulatedAnnealing;
 import thesis.utils.DaemonThreadFactory;
@@ -92,7 +92,7 @@ public class TaskManager {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         synchronizationMap.put(progressUUID, countDownLatch);
 
-        InitialSolutionGenerator<DefaultISGSolution> initialSolutionGen = new MullerSolutionGenerator(data);
+        InitialSolutionGenerator<DefaultISGSolution> initialSolutionGen = new MullerBasedSolutionGenerator(data);
         initialSolutionGeneratorsMap.put(progressUUID, initialSolutionGen);
         DefaultISGSolution initialSolution = initialSolutionGen.generate();
 

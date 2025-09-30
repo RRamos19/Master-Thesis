@@ -43,8 +43,6 @@ public interface InMemoryRepository extends XmlResult {
     void removeTimetable(Timetable timetable);
     List<Timetable> getTimetableList();
 
-    List<TableDisplayable> getAllDisplayableData();
-
     void merge(InMemoryRepository other);
 
     void verifyValidity() throws InvalidConfigurationException;

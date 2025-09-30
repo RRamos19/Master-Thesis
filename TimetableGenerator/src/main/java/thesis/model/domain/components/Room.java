@@ -6,7 +6,7 @@ import thesis.model.exceptions.CheckedIllegalArgumentException;
 
 import java.util.*;
 
-public class Room implements TableDisplayable {
+public class Room {
     private final String roomId;
     private final int intId;
 
@@ -59,31 +59,5 @@ public class Room implements TableDisplayable {
 
     public int getRoomDistance(int room2Id) {
         return fastRoomDistances.getOrDefault(room2Id, 0);
-        //return roomDistances.getOrDefault(room2Id, 0);
-    }
-
-    @Override
-    public String getTableName() {
-        return "Rooms";
-    }
-
-    @Override
-    public List<String> getColumnNames() {
-        return List.of("Id", "Nº of Unavailabilities", "Nº of room distances");
-    }
-
-    @Override
-    public List<Object> getColumnValues() {
-        return List.of(roomId, roomUnavailabilities.size(), roomDistances.size());
-    }
-
-    @Override
-    public boolean isOptimizable() {
-        return false;
-    }
-
-    @Override
-    public boolean isRemovable() {
-        return false;
     }
 }

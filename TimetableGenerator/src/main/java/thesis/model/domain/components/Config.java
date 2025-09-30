@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Config implements TableDisplayable {
+public class Config {
     private final String configId;
     private final List<Subpart> subpartList = new ArrayList<>();
 
@@ -22,30 +22,5 @@ public class Config implements TableDisplayable {
 
     public List<Subpart> getSubpartList() {
         return Collections.unmodifiableList(subpartList);
-    }
-
-    @Override
-    public String getTableName() {
-        return "Configs";
-    }
-
-    @Override
-    public List<String> getColumnNames() {
-        return List.of("Id", "Nº of Subparts");
-    }
-
-    @Override
-    public List<Object> getColumnValues() {
-        return List.of(configId, subpartList.size());
-    }
-
-    @Override
-    public boolean isOptimizable() {
-        return false;
-    }
-
-    @Override
-    public boolean isRemovable() {
-        return false;
     }
 }

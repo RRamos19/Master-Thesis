@@ -2,7 +2,6 @@ package thesis.model.domain;
 
 import thesis.model.domain.components.*;
 import thesis.model.exceptions.InvalidConfigurationException;
-import thesis.model.domain.components.TableDisplayable;
 
 import java.util.*;
 
@@ -177,37 +176,6 @@ public class DataRepository implements InMemoryRepository {
     @Override
     public List<Timetable> getTimetableList() {
         return timetableList;
-    }
-
-    @Override
-    public List<TableDisplayable> getAllDisplayableData() {
-        List<Course> courses = getCourses();
-
-        List<TableDisplayable> result = new ArrayList<>(courses);
-
-        courses.forEach((course) -> {
-            List<Config> configs = course.getConfigList();
-            result.addAll(configs);
-
-            configs.forEach((conf) -> {
-                List<Subpart> subparts = conf.getSubpartList();
-                result.addAll(subparts);
-
-                subparts.forEach((sub) -> result.addAll(sub.getClassUnitList()));
-            });
-        });
-
-        result.addAll(roomMap.values());
-
-        result.addAll(teacherMap.values());
-
-        result.addAll(timetableList);
-
-        result.add(timetableConfiguration);
-
-        result.addAll(constraintList);
-
-        return result;
     }
 
     // TODO: complete. It will be used primarily in the database data merges

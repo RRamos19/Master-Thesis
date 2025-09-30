@@ -2,7 +2,7 @@ package thesis.model.domain.components;
 
 import java.util.*;
 
-public abstract class Constraint implements TableDisplayable {
+public abstract class Constraint {
     private final String type;
     private final Integer penalty;
     private final boolean required;
@@ -89,31 +89,6 @@ public abstract class Constraint implements TableDisplayable {
 
     public Set<String> EvaluateConflictingClasses(Timetable solution) {
         return classUnitIdList;
-    }
-
-    @Override
-    public String getTableName() {
-        return "Constraints";
-    }
-
-    @Override
-    public List<String> getColumnNames() {
-        return List.of("Type", "Penalty", "Required", "Nº of Classes");
-    }
-
-    @Override
-    public boolean isOptimizable() {
-        return false;
-    }
-
-    @Override
-    public boolean isRemovable() {
-        return false;
-    }
-
-    @Override
-    public List<Object> getColumnValues() {
-        return Arrays.asList(type, penalty, required, classUnitIdList.size());
     }
 
     @Override

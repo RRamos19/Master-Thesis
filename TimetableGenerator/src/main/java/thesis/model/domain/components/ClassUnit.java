@@ -4,7 +4,7 @@ import thesis.model.exceptions.CheckedIllegalArgumentException;
 
 import java.util.*;
 
-public class ClassUnit implements TableDisplayable {
+public class ClassUnit {
     private final String classId;
     private String parentClassId;
 
@@ -75,31 +75,6 @@ public class ClassUnit implements TableDisplayable {
 
     public List<Constraint> getConstraintList() {
         return Collections.unmodifiableList(constraintList);
-    }
-
-    @Override
-    public String getTableName() {
-        return "Classes";
-    }
-
-    @Override
-    public List<String> getColumnNames() {
-        return List.of("Id", "Parent Id");
-    }
-
-    @Override
-    public List<Object> getColumnValues() {
-        return Arrays.asList(classId, parentClassId);
-    }
-
-    @Override
-    public boolean isOptimizable() {
-        return false;
-    }
-
-    @Override
-    public boolean isRemovable() {
-        return false;
     }
 
     @Override

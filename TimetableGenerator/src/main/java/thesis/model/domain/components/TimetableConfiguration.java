@@ -2,7 +2,7 @@ package thesis.model.domain.components;
 
 import java.util.List;
 
-public class TimetableConfiguration implements TableDisplayable {
+public class TimetableConfiguration {
     private short timeWeight;
     private short roomWeight;
     private short distribWeight;
@@ -67,30 +67,5 @@ public class TimetableConfiguration implements TableDisplayable {
 
     public void setSlotsPerDay(short slotsPerDay) {
         this.slotsPerDay = slotsPerDay;
-    }
-
-    @Override
-    public String getTableName() {
-        return "Configuration";
-    }
-
-    @Override
-    public List<String> getColumnNames() {
-        return List.of("Nº of days", "Nº of weeks", "Slots per day", "Time Weight", "Room Weight", "Distribution Weight");
-    }
-
-    @Override
-    public List<Object> getColumnValues() {
-        return List.of(numDays, numWeeks, slotsPerDay, timeWeight, roomWeight, distribWeight);
-    }
-
-    @Override
-    public boolean isOptimizable() {
-        return false;
-    }
-
-    @Override
-    public boolean isRemovable() {
-        return false;
     }
 }

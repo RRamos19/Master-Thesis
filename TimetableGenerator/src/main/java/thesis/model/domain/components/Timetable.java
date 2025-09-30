@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-public class Timetable implements TableDisplayable, XmlResult {
+public class Timetable implements XmlResult {
     private static final DateTimeFormatter dateOfCreationFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
     private LocalDateTime dateOfCreation;
     private String programName;
@@ -185,31 +185,6 @@ public class Timetable implements TableDisplayable, XmlResult {
         }
 
         return isValid;
-    }
-
-    @Override
-    public String getTableName() {
-        return "Timetables";
-    }
-
-    @Override
-    public List<String> getColumnNames() {
-        return List.of("Date of Creation", "Runtime (s)", "Cost", "Nº of Scheduled Lessons", "Is valid");
-    }
-
-    @Override
-    public List<Object> getColumnValues() {
-        return List.of(dateOfCreation.format(dateOfCreationFormatter), runtime, cost(), scheduledLessonMap.size(), isValid());
-    }
-
-    @Override
-    public boolean isOptimizable() {
-        return true;
-    }
-
-    @Override
-    public boolean isRemovable() {
-        return true;
     }
 
     @Override

@@ -1,5 +1,7 @@
 # Master Thesis
 
+![isel-logo](Logo/ISEL-Logo.png)
+
 Project Work: Tool for generating course schedules with constraints
 
 Advisors: [Nuno Leite](https://github.com/nleite-isel) and [Artur Ferreira](https://github.com/arturj)

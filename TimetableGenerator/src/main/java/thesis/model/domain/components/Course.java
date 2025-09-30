@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Course implements TableDisplayable {
+public class Course {
     private final String courseId;
     private final List<Config> configList = new ArrayList<>();
 
@@ -22,30 +22,5 @@ public class Course implements TableDisplayable {
 
     public List<Config> getConfigList() {
         return Collections.unmodifiableList(configList);
-    }
-
-    @Override
-    public String getTableName() {
-        return "Courses";
-    }
-
-    @Override
-    public List<String> getColumnNames() {
-        return List.of("Id", "Nº of Configs");
-    }
-
-    @Override
-    public List<Object> getColumnValues() {
-        return List.of(courseId, configList.size());
-    }
-
-    @Override
-    public boolean isOptimizable() {
-        return false;
-    }
-
-    @Override
-    public boolean isRemovable() {
-        return false;
     }
 }
