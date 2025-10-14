@@ -12,8 +12,8 @@ services:
       - ./data:/var/lib/postgresql/data
       - ./setup-master:/docker-entrypoint-initdb.d
     environment:
-      POSTGRES_PASSWORD: 123
-      POSTGRES_DB: timetabling_db
+      POSTGRES_DB: "timetabling_db"
+    env_file: "timetabling.env"
     healthcheck: #checks if db is operating normally, i.e. accepting connections. It is a readiness probe
        test: ["CMD-SHELL", "pg_isready -U postgres"]
        interval: 10s

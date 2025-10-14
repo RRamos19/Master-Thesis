@@ -30,7 +30,19 @@ The algorithms used on the timetabling creation were two. The first algorithm is
 - [ ] Export timetable to PDF
 - [ ] Export timetable to PNG
 
-## Building
+## Setup the database
+
+Docker is required to instantiate the database
+
+To setup the database a .env file is used. For security purposes it should be created by user. The file should follow the following format.
+
+```
+POSTGRES_PASSWORD=insert password here
+```
+
+More variables may be defined to customize the PostgreSQL instance.
+
+## Building the application
 
 Java JDK (11 or higher) and Maven are required to build the application
 

@@ -2,6 +2,7 @@ package thesis.solver.core;
 
 import org.junit.jupiter.api.Test;
 import thesis.model.domain.components.ClassUnit;
+import thesis.model.solver.core.DefaultISGVariable;
 
 import java.util.List;
 

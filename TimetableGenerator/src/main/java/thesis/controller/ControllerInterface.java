@@ -4,7 +4,9 @@ import javafx.collections.ObservableList;
 import thesis.model.ModelInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.Timetable;
+import thesis.model.exceptions.CheckedIllegalStateException;
 import thesis.model.exceptions.InvalidConfigurationException;
+import thesis.model.exceptions.ParsingException;
 import thesis.view.ViewInterface;
 import thesis.view.viewobjects.*;
 
@@ -42,7 +44,7 @@ public interface ControllerInterface {
     void removeTimetable(Timetable timetable);
 
     // Data import methods
-    void importITCData(File file);
+    void importITCData(File file) throws CheckedIllegalStateException, InvalidConfigurationException, ParsingException;
 
     // Data export methods
     void exportSolutionsToITC(String programName);

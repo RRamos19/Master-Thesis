@@ -27,18 +27,14 @@ public class ProgressBarManager {
     public UUID insertProgressBar(String programName) {
         ProgressBarUnit bar = new ProgressBarUnit(programName);
 
-        UUID uuid;
-        do {
-             uuid = UUID.randomUUID();
-        } while(progressBarMap.get(uuid) != null);
+        final UUID uuid = UUID.randomUUID();
 
         progressBarMap.put(uuid, bar);
         progressContainer.getItems().add(bar.getProgressParent());
 
-        final UUID finalUUID = uuid;
         bar.setCancelAction((event) -> {
-            controller.cancelGeneration(finalUUID);
-            stopProgressBar(finalUUID);
+            controller.cancelGeneration(uuid);
+            stopProgressBar(uuid);
         });
 
         return uuid;
@@ -65,17 +61,17 @@ public class ProgressBarManager {
                         maxProgress = progress;
                     }
 
-                    updateProgress(maxProgress, 1.0);
+                    updateProgress(maxProgress, 1);
 
                     Thread.sleep(UPDATE_WAIT);
-                } while(progress < 1.0 && !isCancelled());
+                } while(progress < 1.0);
 
                 return null;
             }
         };
 
         task.setOnFailed(e -> {
-            view.showExceptionMessage((Exception) e.getSource().getException());
+            view.showExceptionMessage(e.getSource().getException());
             stopProgressBar(progressUUID);
             controller.cancelGeneration(progressUUID);
         });

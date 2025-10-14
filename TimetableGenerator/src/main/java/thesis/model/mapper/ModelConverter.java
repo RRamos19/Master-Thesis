@@ -1,18 +1,23 @@
 package thesis.model.mapper;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import thesis.model.domain.DataRepository;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.*;
 import thesis.model.domain.components.constraints.ConstraintFactory;
-import thesis.model.persistence.EntityRepository;
-import thesis.model.persistence.entities.*;
+import thesis.model.exceptions.CheckedIllegalArgumentException;
+import thesis.model.exceptions.InvalidConfigurationException;
+import thesis.model.persistence.repository.EntityRepository;
+import thesis.model.persistence.repository.entities.*;
+import thesis.model.persistence.repository.entities.utils.ConstraintTypeFactory;
+import thesis.model.persistence.repository.entities.utils.TimeBlockFactory;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class ModelConverter {
-    public static InMemoryRepository convertToDomain(EntityRepository entityRepository) throws Exception {
+    public static InMemoryRepository convertToDomain(EntityRepository entityRepository) throws CheckedIllegalArgumentException, InvalidConfigurationException {
         InMemoryRepository data = new DataRepository(entityRepository.getProgramName());
 
         ProgramEntity programEntity = entityRepository.getProgramEntity();
@@ -31,10 +36,11 @@ public class ModelConverter {
         for(RoomEntity roomEntity : entityRepository.getRooms()) {
             Room room = RoomFactory.createRoom(roomEntity.getName());
 
-            for(RoomDistanceEntity roomDistanceEntity : roomEntity.getRoom1DistanceList()) {
+            for(RoomDistanceEntity roomDistanceEntity : roomEntity.getRoom1DistanceSet()) {
                 room.addRoomDistance(roomDistanceEntity.getRoom2().getName(), roomDistanceEntity.getDistance());
             }
-            for(RoomUnavailabilityEntity roomUnavailabilityEntity : roomEntity.getRoomUnavailabilityList()) {
+
+            for(TimeBlockEntity roomUnavailabilityEntity : roomEntity.getRoomUnavailabilityList()) {
                 room.addUnavailability(
                         roomUnavailabilityEntity.getDays(),
                         roomUnavailabilityEntity.getWeeks(),
@@ -45,17 +51,35 @@ public class ModelConverter {
             data.addRoom(room);
         }
 
+        Map<ConstraintEntity, Constraint> constraintMap = new HashMap<>();
+        for(ConstraintEntity constraintEntity : entityRepository.getConstraintEntities()) {
+            Constraint constraint = ConstraintFactory.createConstraint(
+                    constraintEntity.getConstraintTypeEntity().getName(),
+                    constraintEntity.getFirstParameter(),
+                    constraintEntity.getSecondParameter(),
+                    constraintEntity.getPenalty(),
+                    constraintEntity.getRequired(),
+                    data.getTimetableConfiguration());
+
+            data.addConstraint(constraint);
+
+            constraintMap.put(constraintEntity, constraint);
+        }
+
         // Add the courses, configs, subparts, classes and respective teachers
         for(CourseEntity courseEntity : entityRepository.getCourses()) {
             Course course = new Course(courseEntity.getName());
-            for(ConfigEntity configEntity : courseEntity.getConfigList()) {
+            for(ConfigEntity configEntity : courseEntity.getConfigSet()) {
                 Config config = new Config(configEntity.getName());
-                for(SubpartEntity subpartEntity : configEntity.getSubpartList()) {
+                for(SubpartEntity subpartEntity : configEntity.getSubpartSet()) {
                     Subpart subpart = new Subpart(subpartEntity.getName());
-                    for(ClassUnitEntity classUnitEntity : subpartEntity.getClassUnits()) {
+                    for(ClassUnitEntity classUnitEntity : subpartEntity.getClassUnitSet()) {
                         ClassUnit classUnit = new ClassUnit(classUnitEntity.getName());
-                        for(TeacherEntity teacherEntity : classUnitEntity.getTeacherEntityClassList()) {
+                        for(TeacherEntity teacherEntity : classUnitEntity.getTeacherEntitySet()) {
                             classUnit.addTeacher(teacherEntity.getId());
+                        }
+                        for(ConstraintEntity constraintEntity : classUnitEntity.getConstraintEntitySet()) {
+                            classUnit.addConstraint(constraintMap.get(constraintEntity));
                         }
 
                         subpart.addClassUnit(classUnit);
@@ -72,7 +96,7 @@ public class ModelConverter {
         for(TeacherEntity teacherEntity : entityRepository.getTeachers()) {
             Teacher teacher = new Teacher(teacherEntity.getId(), teacherEntity.getName());
 
-            for(TeacherUnavailabilityEntity teacherUnavailabilityEntity : teacherEntity.getTeacherUnavailabilityEntityList()) {
+            for(TeacherUnavailabilityEntity teacherUnavailabilityEntity : teacherEntity.getTeacherUnavailabilityEntitySet()) {
                 teacher.addUnavailability(
                         teacherUnavailabilityEntity.getDays(),
                         teacherUnavailabilityEntity.getWeeks(),
@@ -106,94 +130,122 @@ public class ModelConverter {
             data.addTimetable(timetable);
         }
 
-        for(ConstraintEntity constraintEntity : entityRepository.getConstraintEntities()) {
-            Constraint constraint = ConstraintFactory.createConstraint(constraintEntity.getConstraintTypeEntity().getName(), constraintEntity.getFirstParameter(), constraintEntity.getSecondParameter(), constraintEntity.getPenalty(), constraintEntity.getRequired(), data.getTimetableConfiguration());
-
-            // Add the classes
-            for(ClassUnitEntity classUnitEntity : constraintEntity.getClassRestrictionEntityList()) {
-                constraint.addClassUnitId(classUnitEntity.getName());
-            }
-
-            data.addConstraint(constraint);
-        }
-
         return data;
     }
 
-    public static EntityRepository convertToEntity(InMemoryRepository inMemoryRepository) {
+    private static TimeBlockEntity getTimeBlockEntityFromTime(TimeBlockFactory timeBlockFactory, Time time) {
+        return timeBlockFactory.getOrCreate(time.getStartSlot(), time.getLength(), time.getDays(), time.getWeeks());
+    }
+
+    public static EntityRepository convertToEntity(SessionFactory sessionFactory, InMemoryRepository inMemoryRepository) {
         EntityRepository data = new EntityRepository();
 
-        TimetableConfiguration timetableConfiguration = inMemoryRepository.getTimetableConfiguration();
+        try(Session session = sessionFactory.openSession()) {
+            TimeBlockFactory timeBlockFactory = new TimeBlockFactory(session.getEntityManagerFactory().createEntityManager());
+            ConstraintTypeFactory constraintTypeFactory = new ConstraintTypeFactory(session.getEntityManagerFactory().createEntityManager());
 
-        ProgramEntity programEntity = new ProgramEntity(inMemoryRepository.getProgramName(),
+            TimetableConfiguration timetableConfiguration = inMemoryRepository.getTimetableConfiguration();
+
+            ProgramEntity programEntity = new ProgramEntity(inMemoryRepository.getProgramName(),
                 timetableConfiguration.getNumDays(), timetableConfiguration.getNumWeeks(), timetableConfiguration.getSlotsPerDay(),
-                timetableConfiguration.getTimeWeight(), timetableConfiguration.getRoomWeight(), timetableConfiguration.getDistribWeight());
+                timetableConfiguration.getTimeWeight(), timetableConfiguration.getRoomWeight(), timetableConfiguration.getDistribWeight(), inMemoryRepository.getLastUpdatedAt());
 
-        data.storeProgram(programEntity);
+            data.storeProgram(programEntity);
 
-        for(Course course : inMemoryRepository.getCourses()) {
-            CourseEntity courseEntity = new CourseEntity(programEntity, course.getCourseId());
+            for (Teacher teacher : inMemoryRepository.getTeachers()) {
+                TeacherEntity teacherEntity = new TeacherEntity(teacher.getId(), teacher.getName());
 
-            for(Config config : course.getConfigList()) {
-                ConfigEntity configEntity = new ConfigEntity(courseEntity, config.getConfigId());
+                for (Time unavailability : teacher.getTeacherUnavailabilities()) {
+                    new TeacherUnavailabilityEntity(teacherEntity,
+                        getTimeBlockEntityFromTime(timeBlockFactory, unavailability));
+                }
 
-                for(Subpart subpart : config.getSubpartList()) {
-                    SubpartEntity subpartEntity = new SubpartEntity(configEntity, subpart.getSubpartId());
+                data.storeTeacher(teacherEntity);
+            }
 
-                    for(ClassUnit classUnit : subpart.getClassUnitList()) {
-                        ClassUnitEntity classUnitEntity = new ClassUnitEntity(subpartEntity, classUnit.getClassId());
-                    }
+            // Add the rooms and unavailabilities
+            for (Room room : inMemoryRepository.getRooms()) {
+                RoomEntity roomEntity = new RoomEntity(room.getRoomId());
+
+                for (Time unavailability : room.getRoomUnavailabilities()) {
+                    roomEntity.addRoomUnavailability(getTimeBlockEntityFromTime(timeBlockFactory, unavailability));
+                }
+
+                data.storeRoom(roomEntity);
+            }
+
+            // Add the room distances
+            //TODO: may add multiple equal distances. Example room1 -> room2 and room2 -> room1
+            for (Room room : inMemoryRepository.getRooms()) {
+                RoomEntity room1 = data.getRoom(room.getRoomId());
+
+                for (Map.Entry<String, Integer> roomDistance : room.getRoomDistances().entrySet()) {
+                    RoomEntity room2 = data.getRoom(roomDistance.getKey());
+
+                    if(room2 == null) continue;
+
+                    new RoomDistanceEntity(room1, room2, roomDistance.getValue());
                 }
             }
 
-            data.storeCourse(courseEntity);
-        }
+            Map<Constraint, ConstraintEntity> constraintMap = new HashMap<>();
+            for(Constraint constraint : inMemoryRepository.getConstraints()) {
+                ConstraintTypeEntity constraintTypeEntity =
+                        constraintTypeFactory.getConstraintType(constraint.getType());
 
-        for(Teacher teacher : inMemoryRepository.getTeachers()) {
-            TeacherEntity teacherEntity = new TeacherEntity(teacher.getId(), teacher.getName());
+                ConstraintEntity constraintEntity = new ConstraintEntity(constraintTypeEntity,
+                        constraint.getFirstParameter(), constraint.getSecondParameter(),
+                        constraint.getPenalty(), constraint.getRequired());
 
-            for(Time unavailability : teacher.getTeacherUnavailabilities()) {
-                teacherEntity.addUnavailability(new TeacherUnavailabilityEntity(teacherEntity,
-                        unavailability.getLength(), unavailability.getStartSlot(), unavailability.getDays(), unavailability.getWeeks()));
+                constraintMap.put(constraint, constraintEntity);
             }
 
-            data.storeTeacher(teacherEntity);
-        }
+            for (Course course : inMemoryRepository.getCourses()) {
+                CourseEntity courseEntity = new CourseEntity(programEntity, course.getCourseId());
 
-        // Add the rooms and unavailabilities
-        for(Room room : inMemoryRepository.getRooms()) {
-            RoomEntity roomEntity = new RoomEntity(room.getRoomId());
+                for (Config config : course.getConfigList()) {
+                    ConfigEntity configEntity = new ConfigEntity(courseEntity, config.getConfigId());
 
-            for(Time unavailability : room.getRoomUnavailabilities()) {
-                RoomUnavailabilityEntity roomUnavailabilityEntity = new RoomUnavailabilityEntity(roomEntity,
-                        unavailability.getDays(), unavailability.getWeeks(), unavailability.getStartSlot(), unavailability.getLength());
+                    for (Subpart subpart : config.getSubpartList()) {
+                        SubpartEntity subpartEntity = new SubpartEntity(configEntity, subpart.getSubpartId());
+
+                        for (ClassUnit classUnit : subpart.getClassUnitList()) {
+                            ClassUnitEntity classUnitEntity = new ClassUnitEntity(subpartEntity, classUnit.getClassId());
+
+                            for(Map.Entry<String, Integer> roomPenalty : classUnit.getClassRoomPenalties().entrySet()) {
+                                RoomEntity roomEntity = data.getRoom(roomPenalty.getKey());
+                                new ClassRoomEntity(classUnitEntity, roomEntity, roomPenalty.getValue());
+                            }
+
+                            for(Map.Entry<Time, Integer> timePenalty : classUnit.getClassTimePenalties().entrySet()) {
+                                Time time = timePenalty.getKey();
+
+                                new ClassTimeEntity(classUnitEntity,
+                                    getTimeBlockEntityFromTime(timeBlockFactory, time), timePenalty.getValue());
+                            }
+
+                            for(Constraint constraint : classUnit.getConstraintList()) {
+                                classUnitEntity.addClassConstraint(constraintMap.get(constraint));
+                            }
+                        }
+                    }
+                }
+
+                data.storeCourse(courseEntity);
             }
 
-            data.storeRoom(roomEntity);
-        }
+            for (Timetable timetable : inMemoryRepository.getTimetableList()) {
+                TimetableEntity timetableEntity = new TimetableEntity(programEntity, timetable.getDateOfCreation());
 
-        // Add the room distances
-        //TODO: may add multiple distances. Example room1 -> room2 and room2 -> room1
-        for(Room room : inMemoryRepository.getRooms()) {
-            RoomEntity room1 = data.getRoom(room.getRoomId());
+                for (ScheduledLesson scheduledLesson : timetable.getScheduledLessonList()) {
+                    ClassUnitEntity classUnitEntity = data.getClassUnit(scheduledLesson.getClassId());
+                    RoomEntity roomEntity = data.getRoom(scheduledLesson.getRoomId());
 
-            for(Map.Entry<String, Integer> roomDistance : room.getRoomDistances().entrySet()) {
-                RoomEntity room2 = data.getRoom(roomDistance.getKey());
+                    new ScheduledLessonEntity(timetableEntity, classUnitEntity, roomEntity, timeBlockFactory.getOrCreate(scheduledLesson.getStartSlot(), scheduledLesson.getLength(), scheduledLesson.getDays(), scheduledLesson.getWeeks()));
+                }
 
-                RoomDistanceEntity roomDistanceEntity = new RoomDistanceEntity(room1, room2, roomDistance.getValue());
+                data.storeTimetable(timetableEntity);
             }
-        }
-
-        for(Timetable timetable : inMemoryRepository.getTimetableList()) {
-            TimetableEntity timetableEntity = new TimetableEntity(programEntity);
-
-            for(ScheduledLesson scheduledLesson : timetable.getScheduledLessonList()) {
-                ClassUnitEntity classUnitEntity = data.getClassUnit(scheduledLesson.getClassId());
-                RoomEntity roomEntity = data.getRoom(scheduledLesson.getRoomId());
-                ScheduledLessonEntity scheduledLessonEntity = new ScheduledLessonEntity(timetableEntity, classUnitEntity, roomEntity, scheduledLesson.getDays(), scheduledLesson.getWeeks(), scheduledLesson.getStartSlot(), scheduledLesson.getLength());
-            }
-
-            data.storeTimetable(timetableEntity);
         }
 
         return data;

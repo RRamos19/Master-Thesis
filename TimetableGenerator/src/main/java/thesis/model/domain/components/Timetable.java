@@ -3,7 +3,6 @@ package thesis.model.domain.components;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.parser.XmlResult;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -53,6 +52,15 @@ public class Timetable implements XmlResult {
     public void bindDataModel(InMemoryRepository model) {
         this.dataModel = model;
 
+        for(ScheduledLesson lesson : scheduledLessonMap.values()) {
+            // Bind the lesson to the model if this solution was read from a file
+            if (lesson.getModel() == null) {
+                lesson.bindModel(model);
+            }
+        }
+
+        isValid = null;
+        updateConstraints = true;
         updateCost = true;
     }
 
@@ -80,12 +88,12 @@ public class Timetable implements XmlResult {
         return runtime;
     }
 
-    public LocalDate getLocalDateOfCreation() {
-        return dateOfCreation.toLocalDate();
+    public LocalDateTime getDateOfCreation() {
+        return dateOfCreation;
     }
 
-    public String getDateOfCreation() {
-        return dateOfCreationFormatter.format(dateOfCreation).replace(' ', '_').replace(':', '.');
+    public String getDateOfCreationString() {
+        return dateOfCreationFormatter.format(dateOfCreation);
     }
 
     public void addScheduledLesson(ScheduledLesson scheduledLesson) {
@@ -123,6 +131,7 @@ public class Timetable implements XmlResult {
             addScheduledLesson(originalLesson);
         }
 
+        updateCost = true;
         hasTemporaryLesson = false;
         updateConstraints = true;
         isValid = null;
@@ -176,6 +185,9 @@ public class Timetable implements XmlResult {
         if(isValid == null) {
             for(Constraint c : getConstraintSet()) {
                 if(c.getRequired() && c.computePenalties(this) != 0) {
+                    System.out.println(c.getType());
+                    System.out.println(c.getClassUnitIdList());
+                    System.out.println(c.EvaluateConflictingClasses(this));
                     isValid = false;
                     break;
                 }
@@ -191,11 +203,13 @@ public class Timetable implements XmlResult {
     public boolean equals(Object o) {
         if (!(o instanceof Timetable)) return false;
         Timetable timetable = (Timetable) o;
-        return Objects.equals(programName, timetable.programName) && Objects.equals(scheduledLessonMap, timetable.scheduledLessonMap);
+        return Objects.equals(programName, timetable.programName) &&
+                Objects.equals(dateOfCreation, timetable.dateOfCreation) &&
+                Objects.equals(scheduledLessonMap, timetable.scheduledLessonMap);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(programName, scheduledLessonMap);
+        return Objects.hash(programName, dateOfCreation, scheduledLessonMap);
     }
 }

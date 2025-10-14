@@ -3,18 +3,18 @@ package thesis.view.viewobjects;
 import javafx.beans.property.*;
 import thesis.model.domain.components.Timetable;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class TimetableViewModel implements ViewModel {
-    private final ObjectProperty<LocalDate> dateOfCreation;
+    private final StringProperty dateOfCreation;
     private final LongProperty runtime;
     private final IntegerProperty cost;
     private final IntegerProperty nScheduledClasses;
     private final BooleanProperty isValid;
     private final Timetable timetable;
 
-    public TimetableViewModel(LocalDate dateOfCreation, long runtime, int cost, int nScheduledClasses, boolean isValid, Timetable timetable) {
-        this.dateOfCreation = new SimpleObjectProperty<>(dateOfCreation);
+    public TimetableViewModel(String dateOfCreation, long runtime, int cost, int nScheduledClasses, boolean isValid, Timetable timetable) {
+        this.dateOfCreation = new SimpleStringProperty(dateOfCreation);
         this.runtime = new SimpleLongProperty(runtime);
         this.cost = new SimpleIntegerProperty(cost);
         this.nScheduledClasses = new SimpleIntegerProperty(nScheduledClasses);
@@ -22,11 +22,11 @@ public class TimetableViewModel implements ViewModel {
         this.timetable = timetable;
     }
 
-    public LocalDate getDateOfCreation() {
+    public String getDateOfCreation() {
         return dateOfCreation.get();
     }
 
-    public ObjectProperty<LocalDate> dateOfCreationProperty() {
+    public StringProperty dateOfCreationProperty() {
         return dateOfCreation;
     }
 

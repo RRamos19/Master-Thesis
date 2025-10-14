@@ -6,15 +6,17 @@ CREATE TABLE tb_program (
 	distribution_weight SMALLINT NOT NULL,
 	number_days SMALLINT NOT NULL,
 	number_weeks INT NOT NULL,
-	slots_per_day SMALLINT NOT NULL
+	slots_per_day SMALLINT NOT NULL,
+	last_updated_at TIMESTAMP NOT NULL
 );
 
 CREATE TABLE time_block (
 	id SERIAL PRIMARY KEY,
-	duration SMALLINT NOT NULL,
 	start_slot SMALLINT NOT NULL,
+	duration SMALLINT NOT NULL,
 	days SMALLINT NOT NULL,
-	weeks INT NOT NULL
+	weeks INT NOT NULL,
+	CONSTRAINT time_block_unique UNIQUE(start_slot, duration, days, weeks)
 );
 
 CREATE TABLE teacher (
@@ -66,14 +68,12 @@ CREATE TABLE constraint_type (
 
 CREATE TABLE timetable_constraint (
 	id SERIAL PRIMARY KEY,
-	program_id INT NOT NULL,
 	constraint_type_id INT NOT NULL,
 	penalty INT,
 	required BOOL,
 	first_parameter INT,
 	second_parameter INT,
-	CONSTRAINT constraint_type_id_fk FOREIGN KEY (constraint_type_id) REFERENCES constraint_type(id),
-	CONSTRAINT constraint_program_id_fk FOREIGN KEY (program_id) REFERENCES tb_program(id)
+	CONSTRAINT constraint_type_id_fk FOREIGN KEY (constraint_type_id) REFERENCES constraint_type(id)
 );
 
 CREATE TABLE class_constraint (
@@ -133,17 +133,15 @@ CREATE TABLE room_unavailability (
 );
 
 CREATE TABLE class_time (
-	id SERIAL,
 	class_id INT,
+	time_block_id INT,
 	penalty INT NOT NULL,
-	time_block_id INT NOT NULL,
 	CONSTRAINT class_time_time_block_fk FOREIGN KEY (time_block_id) REFERENCES time_block(id),
 	CONSTRAINT class_time_class_fk FOREIGN KEY (class_id) REFERENCES class_unit(id),
-	CONSTRAINT class_time_pk PRIMARY KEY (id, class_id)
+	CONSTRAINT class_time_pk PRIMARY KEY (class_id, time_block_id)
 );
 
 CREATE TABLE scheduled_lesson (
-	id SERIAL,
 	timetable_id INT NOT NULL,
 	class_id INT NOT NULL,
 	room_id INT,
@@ -152,14 +150,15 @@ CREATE TABLE scheduled_lesson (
 	CONSTRAINT scheduled_lesson_class_fk FOREIGN KEY (class_id) REFERENCES class_unit(id),
 	CONSTRAINT scheduled_lesson_room_fk FOREIGN KEY (room_id) REFERENCES room(id),
 	CONSTRAINT scheduled_lesson_timetable_fk FOREIGN KEY (timetable_id) REFERENCES timetable(id),
-	CONSTRAINT scheduled_lesson_pk PRIMARY KEY (id, timetable_id)
+	CONSTRAINT scheduled_lesson_pk PRIMARY KEY (timetable_id, class_id, time_block_id)
 );
 
 CREATE TABLE scheduled_lesson_teacher (
-	scheduled_lesson_id INT NOT NULL,
 	scheduled_lesson_timetable_id INT NOT NULL,
+	scheduled_lesson_class_id INT NOT NULL,
+	scheduled_lesson_time_block_id INT NOT NULL,
 	teacher_id INT NOT NULL,
-	CONSTRAINT scheduled_lesson_teacher_lesson_id_fk FOREIGN KEY (scheduled_lesson_id, scheduled_lesson_timetable_id) REFERENCES scheduled_lesson(id, timetable_id),
+	CONSTRAINT scheduled_lesson_teacher_lesson_id_fk FOREIGN KEY (scheduled_lesson_timetable_id, scheduled_lesson_class_id, scheduled_lesson_time_block_id) REFERENCES scheduled_lesson(timetable_id, class_id, time_block_id),
 	CONSTRAINT scheduled_lesson_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id),
-	CONSTRAINT scheduled_lesson_teacher_pk PRIMARY KEY (scheduled_lesson_id, scheduled_lesson_timetable_id, teacher_id)
+	CONSTRAINT scheduled_lesson_teacher_pk PRIMARY KEY (scheduled_lesson_timetable_id, scheduled_lesson_class_id, scheduled_lesson_time_block_id, teacher_id)
 );

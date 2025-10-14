@@ -14,6 +14,9 @@ import javafx.stage.*;
 import thesis.controller.ControllerInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.Timetable;
+import thesis.model.exceptions.CheckedIllegalStateException;
+import thesis.model.exceptions.InvalidConfigurationException;
+import thesis.model.exceptions.ParsingException;
 import thesis.view.managers.ConfigurationManager;
 import thesis.view.managers.ProgressBarManager;
 import thesis.view.managers.components.GeneralConfiguration;
@@ -22,7 +25,6 @@ import thesis.view.viewobjects.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -172,7 +174,7 @@ public class JavaFXController implements ViewInterface {
     private void importData(List<File> files) {
         Task<Void> importTask = new Task<>() {
             @Override
-            protected Void call() {
+            protected Void call() throws CheckedIllegalStateException, InvalidConfigurationException, ParsingException {
             for(File file : files) {
                 controller.importITCData(file);
             }
@@ -183,6 +185,10 @@ public class JavaFXController implements ViewInterface {
 
         importTask.setOnSucceeded(event -> {
             updateStoredPrograms();
+        });
+
+        importTask.setOnFailed(event -> {
+            showExceptionMessage(event.getSource().getException());
         });
 
         new Thread(importTask).start();
@@ -331,9 +337,10 @@ public class JavaFXController implements ViewInterface {
     @FXML
     private void removeEvent() {
         Object selectedItem = tableView.getSelectionModel().getSelectedItem();
-        if (selectedItem instanceof Timetable) {
-            Timetable timetable = (Timetable) selectedItem;
-            controller.removeTimetable(timetable);
+        if (selectedItem instanceof TimetableViewModel) {
+            TimetableViewModel timetableViewModel = (TimetableViewModel) selectedItem;
+            windowManager.removeTimetableCache(timetableViewModel.getTimetable());
+            controller.removeTimetable(timetableViewModel.getTimetable());
 
             updateTableView();
         }
@@ -441,11 +448,11 @@ public class JavaFXController implements ViewInterface {
     }
 
     public void showTimetable(InMemoryRepository data, Timetable timetable) {
-        windowManager.getTimetableWindow(data, timetable, generalConfiguration).show();
+        windowManager.getTimetableWindow(data, timetable).show();
     }
 
     @Override
-    public void showExceptionMessage(Exception e) {
+    public void showExceptionMessage(Throwable e) {
         windowManager.getExceptionMessage(e).show();
     }
 
@@ -459,22 +466,25 @@ public class JavaFXController implements ViewInterface {
         tableView.getItems().clear();
     }
 
+    @Override
     public void updateTableView() {
         // Update the selected table view of the current item
         updateTableView(treeView.getSelectionModel().getSelectedItem());
     }
 
+    @SafeVarargs
     private void setTableViewData(ObservableList<ViewModel> rowData, TableColumn<ViewModel, ?> ... columnData) {
         tableView.getColumns().setAll(FXCollections.observableArrayList(columnData));
         tableView.setItems(rowData);
     }
 
     private void updateTableView(TreeItem<TableType> item) {
-        if (item != null) {
-            clearTableView();
+        clearTableView();
+        removeButton.setVisible(false);
+        reoptimizeButton.setVisible(false);
 
-            removeButton.setVisible(false);
-            reoptimizeButton.setVisible(false);
+        if (item != null && chosenProgram != null) {
+            final String chosenProgramStr = chosenProgram;
 
             switch(item.getValue()) {
                 case CONFIGURATION:
@@ -492,7 +502,7 @@ public class JavaFXController implements ViewInterface {
                     roomWeight.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).roomWeightProperty());
                     distributionWeight.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).distributionWeightProperty());
 
-                    setTableViewData(controller.getConfiguration(chosenProgram), nDays, nWeeks, nSlots, timeWeight, roomWeight, distributionWeight);
+                    setTableViewData(controller.getConfiguration(chosenProgramStr), nDays, nWeeks, nSlots, timeWeight, roomWeight, distributionWeight);
                     break;
                 case COURSE:
                     TableColumn<ViewModel, String> courseId = new TableColumn<>("Course Id");
@@ -501,7 +511,7 @@ public class JavaFXController implements ViewInterface {
                     courseId.setCellValueFactory(data -> ((CourseViewModel) data.getValue()).idProperty());
                     nConfigs.setCellValueFactory(data -> ((CourseViewModel) data.getValue()).nConfigsProperty());
 
-                    setTableViewData(controller.getCourses(chosenProgram), courseId, nConfigs);
+                    setTableViewData(controller.getCourses(chosenProgramStr), courseId, nConfigs);
                     break;
                 case CONFIG:
                     TableColumn<ViewModel, String> configId = new TableColumn<>("Config Id");
@@ -510,7 +520,7 @@ public class JavaFXController implements ViewInterface {
                     configId.setCellValueFactory(data -> ((ConfigViewModel) data.getValue()).idProperty());
                     nSubparts.setCellValueFactory(data -> ((ConfigViewModel) data.getValue()).nSubpartsProperty());
 
-                    setTableViewData(controller.getConfigs(chosenProgram), configId, nSubparts);
+                    setTableViewData(controller.getConfigs(chosenProgramStr), configId, nSubparts);
                     break;
                 case SUBPART:
                     TableColumn<ViewModel, String> subpartId = new TableColumn<>("Subpart Id");
@@ -519,7 +529,7 @@ public class JavaFXController implements ViewInterface {
                     subpartId.setCellValueFactory(data -> ((SubpartViewModel) data.getValue()).idProperty());
                     nClasses.setCellValueFactory(data -> ((SubpartViewModel) data.getValue()).nClassesProperty());
 
-                    setTableViewData(controller.getSubparts(chosenProgram), subpartId, nClasses);
+                    setTableViewData(controller.getSubparts(chosenProgramStr), subpartId, nClasses);
                     break;
                 case CLASSES:
                     TableColumn<ViewModel, String> classId = new TableColumn<>("Class Id");
@@ -528,7 +538,7 @@ public class JavaFXController implements ViewInterface {
                     classId.setCellValueFactory(data -> ((ClassUnitViewModel) data.getValue()).idProperty());
                     classParentId.setCellValueFactory(data -> ((ClassUnitViewModel) data.getValue()).parentIdProperty());
 
-                    setTableViewData(controller.getClassUnits(chosenProgram), classId, classParentId);
+                    setTableViewData(controller.getClassUnits(chosenProgramStr), classId, classParentId);
                     break;
                 case CONSTRAINT:
                     TableColumn<ViewModel, String> type = new TableColumn<>("Constraint Type");
@@ -545,7 +555,7 @@ public class JavaFXController implements ViewInterface {
                     required.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).requiredProperty());
                     nConstraintClasses.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).nClassesProperty());
 
-                    setTableViewData(controller.getConstraints(chosenProgram), type, firstParam, secondParam, penalty, required, nConstraintClasses);
+                    setTableViewData(controller.getConstraints(chosenProgramStr), type, firstParam, secondParam, penalty, required, nConstraintClasses);
                     break;
                 case ROOM:
                     TableColumn<ViewModel, String> roomId = new TableColumn<>("Room Id");
@@ -556,10 +566,10 @@ public class JavaFXController implements ViewInterface {
                     roomUnavailabilities.setCellValueFactory(data -> ((RoomViewModel) data.getValue()).nUnavailabilitiesProperty());
                     roomDistances.setCellValueFactory(data -> ((RoomViewModel) data.getValue()).nDistancesProperty());
 
-                    setTableViewData(controller.getRooms(chosenProgram), roomId, roomUnavailabilities, roomDistances);
+                    setTableViewData(controller.getRooms(chosenProgramStr), roomId, roomUnavailabilities, roomDistances);
                     break;
                 case TIMETABLE:
-                    TableColumn<ViewModel, LocalDate> dateOfCreation = new TableColumn<>("Date of Creation");
+                    TableColumn<ViewModel, String> dateOfCreation = new TableColumn<>("Date of Creation");
                     TableColumn<ViewModel, Number> runtime = new TableColumn<>("Runtime");
                     TableColumn<ViewModel, Number> cost = new TableColumn<>("Cost");
                     TableColumn<ViewModel, Number> nScheduledLessons = new TableColumn<>("Nº of Scheduled Lessons");
@@ -571,7 +581,7 @@ public class JavaFXController implements ViewInterface {
                     nScheduledLessons.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).nScheduledClassesProperty());
                     isValid.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).isValidProperty());
 
-                    setTableViewData(controller.getTimetables(chosenProgram), dateOfCreation, runtime, cost, nScheduledLessons, isValid);
+                    setTableViewData(controller.getTimetables(chosenProgramStr), dateOfCreation, runtime, cost, nScheduledLessons, isValid);
 
                     removeButton.setVisible(true);
                     //reoptimizeButton.setVisible(true);
@@ -593,7 +603,7 @@ public class JavaFXController implements ViewInterface {
         TreeItem<TableType> timetables = new TreeItem<>(TableType.TIMETABLE);
 
         ObservableList<TreeItem<TableType>> rootChildren = root.getChildren();
-        rootChildren.addAll(List.of(constraints, configuration, courses, configs, subparts, classes, rooms, timetables));
+        rootChildren.addAll(List.of(configuration, courses, configs, subparts, classes, constraints, rooms, timetables));
         treeView.setRoot(root);
     }
 
@@ -605,6 +615,9 @@ public class JavaFXController implements ViewInterface {
             if(newValue == null) return;
 
             chosenProgram = newValue;
+
+            // Clear the table and selected item on the left
+            treeView.getSelectionModel().clearSelection();
             clearTableView();
         });
 
@@ -624,13 +637,13 @@ public class JavaFXController implements ViewInterface {
             }
         });
 
-        windowManager = new WindowManager(primaryWindow, this);
         try {
             generalConfiguration = ConfigurationManager.loadConfig();
         } catch (IOException e) {
             showExceptionMessage(e);
             System.exit(1);
         }
+        windowManager = new WindowManager(primaryWindow, this, generalConfiguration);
 
         // Populates the left menu with the possible options
         populateTreeView();

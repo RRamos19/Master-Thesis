@@ -27,24 +27,26 @@ public class WindowManager {
     private static final List<String> DAYS_OF_WEEK = List.of("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
     private final Window primaryWindow;
     private final ViewInterface view;
+    private final GeneralConfiguration generalConfiguration;
     private ExceptionMessageWindow exceptionMessageWindow;
     private Stage instructionsWindow;
     private ConfigWindow configWindow;
-    private Stage timetableWindow;
+    private Map<Timetable, Stage> timetableWindowCache = new HashMap<>();
 
-    public WindowManager(Window primaryWindow, ViewInterface view) {
+    public WindowManager(Window primaryWindow, ViewInterface view, GeneralConfiguration generalConfiguration) {
         this.primaryWindow = primaryWindow;
         this.view = view;
+        this.generalConfiguration = generalConfiguration;
     }
 
-    public Stage getExceptionMessage(Exception e) {
+    public Alert getExceptionMessage(Throwable e) {
         if(exceptionMessageWindow == null) {
-            exceptionMessageWindow = new ExceptionMessageWindow(primaryWindow);
+            exceptionMessageWindow = new ExceptionMessageWindow();
         }
 
         exceptionMessageWindow.setMessages(e);
 
-        return exceptionMessageWindow.getExceptionStage();
+        return exceptionMessageWindow.getExceptionAlert();
     }
 
     public Stage getInstructionsWindow() {
@@ -184,34 +186,13 @@ public class WindowManager {
         }
 
         // Build column constraints: col 0 = time, then sum(subColsPerDay) subcolumns
-        //ColumnConstraints timeCol = new ColumnConstraints();
-        //timeCol.setMinWidth(timeColWidth);
-        //timeCol.setPrefWidth(timeColWidth);
-        //timeCol.setHgrow(Priority.NEVER);
-        //grid.getColumnConstraints().add(timeCol);
+        ColumnConstraints timeCol = new ColumnConstraints();
+        timeCol.setMinWidth(timeColWidth);
+        timeCol.setPrefWidth(timeColWidth);
+        timeCol.setHgrow(Priority.NEVER);
+        grid.getColumnConstraints().add(timeCol);
 
         int totalSubCols = Arrays.stream(subColsPerDay).sum();
-//        for (int i = 0; i < totalSubCols; i++) {
-//            ColumnConstraints cc = new ColumnConstraints();
-//            cc.setMinWidth(daySubColWidth);
-//            cc.setPrefWidth(daySubColWidth);
-//            cc.setHgrow(Priority.ALWAYS);
-//            grid.getColumnConstraints().add(cc);
-//        }
-
-        // Number of Rows = header + visibleSlots
-//        RowConstraints headerRow = new RowConstraints();
-//        headerRow.setMinHeight(rowHeight);
-//        headerRow.setPrefHeight(rowHeight);
-//        headerRow.setMaxHeight(rowHeight);
-//        grid.getRowConstraints().add(headerRow);
-//        for (int r = 0; r < visibleSlots; r++) {
-//            RowConstraints rc = new RowConstraints();
-//            rc.setMinHeight(rowHeight);
-//            rc.setPrefHeight(rowHeight);
-//            rc.setMaxHeight(rowHeight);
-//            grid.getRowConstraints().add(rc);
-//        }
 
         // Header: one label per day spanning its sub-columns in width
         int colCursor = 1;
@@ -302,103 +283,114 @@ public class WindowManager {
             }
         }
 
-        // set preferred size so ScrollPane will show scrollbars properly
+        // Create a line between days
+
+        // set preferred size so ScrollPane shows scrollbars properly
         double prefWidth = timeColWidth + totalSubCols * daySubColWidth;
-        double prefHeight = (visibleSlots + 1) * rowHeight;
-        grid.setPrefSize(prefWidth, prefHeight);
+        grid.setPrefWidth(prefWidth);
         grid.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
         return grid;
     }
 
-    public Stage getTimetableWindow(InMemoryRepository data, Timetable timetable, GeneralConfiguration generalConfiguration) {
-        timetableWindow = new Stage();
-        timetableWindow.getIcons().addAll(AppIcons.getAppIcons());
-        timetableWindow.setTitle(timetable.getProgramName());
+    public void removeTimetableCache(Timetable timetable) {
+        timetableWindowCache.remove(timetable);
+    }
 
-        if (primaryWindow != null) {
-            timetableWindow.initOwner(primaryWindow);
-            timetableWindow.initModality(Modality.WINDOW_MODAL);
-        }
+    public Stage getTimetableWindow(InMemoryRepository data, Timetable timetable) {
+        Stage timetableWindow = timetableWindowCache.get(timetable);
 
-        int numSlots = data.getTimetableConfiguration().getSlotsPerDay();
-        int minutesPerSlot = 24 * 60 / numSlots;
-        int minHour = generalConfiguration.getMinHour();
-        int maxHour = generalConfiguration.getMaxHour();
+        if(timetableWindow == null) {
+            timetableWindow = new Stage();
+            timetableWindow.getIcons().addAll(AppIcons.getAppIcons());
+            timetableWindow.setTitle(timetable.getProgramName());
 
-        // slots per hour and min visible slot index
-        int slotsPerHour = 60 / minutesPerSlot;
-        int minSlot = minHour * slotsPerHour;
-        int visibleSlots = (maxHour - minHour) * slotsPerHour;
-
-        final double TIME_COL_WIDTH = 120;
-        final double DAY_SUBCOL_WIDTH = 140;
-        final double ROW_HEIGHT = 40;
-
-        // Group weeks by unique pattern of active lessons
-        int maxWeeks = data.getTimetableConfiguration().getNumWeeks();
-
-        // key -> list of week numbers
-        LinkedHashMap<String, List<Integer>> weekGroups = new LinkedHashMap<>();
-        // key -> list of ScheduledLesson objects for that key
-        Map<String, List<ScheduledLesson>> lessonsByKey = new HashMap<>();
-
-        for (int week = 0; week < maxWeeks; week++) {
-            final int finalWeek = week;
-            // collect active lessons this week
-            List<ScheduledLesson> active = timetable.getScheduledLessonList().stream()
-                    .filter(l -> {
-                        String weeks = l.getWeeksBinaryString();
-                        return finalWeek < weeks.length() && weeks.charAt(finalWeek) == '1';
-                    })
-                    .collect(Collectors.toList());
-
-            // create a key to represent all lessons
-            List<String> ids = active.stream()
-                    .map(ScheduledLesson::getClassId)
-                    .sorted()
-                    .collect(Collectors.toList());
-
-            String key = String.join("|", ids); // key creation
-
-            if (weekGroups.containsKey(key)) {
-                weekGroups.get(key).add(week + 1);
-            } else {
-                weekGroups.put(key, new ArrayList<>(List.of(week + 1)));
-                lessonsByKey.put(key, active);
+            if (primaryWindow != null) {
+                timetableWindow.initOwner(primaryWindow);
+                timetableWindow.initModality(Modality.WINDOW_MODAL);
             }
+
+            int numSlots = data.getTimetableConfiguration().getSlotsPerDay();
+            int minutesPerSlot = 24 * 60 / numSlots;
+            int minHour = generalConfiguration.getMinHour();
+            int maxHour = generalConfiguration.getMaxHour();
+
+            // slots per hour and min visible slot index
+            int slotsPerHour = 60 / minutesPerSlot;
+            int minSlot = minHour * slotsPerHour;
+            int visibleSlots = (maxHour - minHour) * slotsPerHour;
+
+            final double TIME_COL_WIDTH = 120;
+            final double DAY_SUBCOL_WIDTH = 140;
+            final double ROW_HEIGHT = 40;
+
+            // Group weeks by unique pattern of active lessons
+            int maxWeeks = data.getTimetableConfiguration().getNumWeeks();
+
+            // key -> list of week numbers
+            LinkedHashMap<String, List<Integer>> weekGroups = new LinkedHashMap<>();
+            // key -> list of ScheduledLesson objects for that key
+            Map<String, List<ScheduledLesson>> lessonsByKey = new HashMap<>();
+
+            for (int week = 0; week < maxWeeks; week++) {
+                final int finalWeek = week;
+                // collect active lessons this week
+                List<ScheduledLesson> active = timetable.getScheduledLessonList().stream()
+                        .filter(l -> {
+                            String weeks = l.getWeeksBinaryString();
+                            return finalWeek < weeks.length() && weeks.charAt(finalWeek) == '1';
+                        })
+                        .collect(Collectors.toList());
+
+                // create a key to represent all lessons
+                List<String> ids = active.stream()
+                        .map(ScheduledLesson::getClassId)
+                        .sorted()
+                        .collect(Collectors.toList());
+
+                String key = String.join("|", ids); // key creation
+
+                if (weekGroups.containsKey(key)) {
+                    weekGroups.get(key).add(week + 1);
+                } else {
+                    weekGroups.put(key, new ArrayList<>(List.of(week + 1)));
+                    lessonsByKey.put(key, active);
+                }
+            }
+
+            // TabPane: one tab per unique week pattern
+            TabPane tabPane = new TabPane();
+            tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+
+            for (Map.Entry<String, List<Integer>> entry : weekGroups.entrySet()) {
+                String key = entry.getKey();
+                List<Integer> weeks = entry.getValue();
+
+                List<ScheduledLesson> lessonsForPattern = lessonsByKey.get(key);
+                if (lessonsForPattern == null) continue;
+
+                GridPane grid = buildGridForLessons(
+                        lessonsForPattern,
+                        data,
+                        minutesPerSlot,
+                        minSlot,
+                        visibleSlots,
+                        TIME_COL_WIDTH,
+                        DAY_SUBCOL_WIDTH,
+                        ROW_HEIGHT
+                );
+
+                // Tab title shows the weeks that share this timetable
+                String tabTitle = "Weeks " + weeks.toString();
+                Tab tab = new Tab(tabTitle, new ScrollPane(grid));
+                tabPane.getTabs().add(tab);
+            }
+
+            Scene scene = new Scene(tabPane, Defaults.DEFAULT_WIDTH, Defaults.DEFAULT_HEIGHT);
+            timetableWindow.setScene(scene);
+
+            timetableWindowCache.put(timetable, timetableWindow);
         }
-
-        // TabPane: one tab per unique week pattern
-        TabPane tabPane = new TabPane();
-        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-
-        for (Map.Entry<String, List<Integer>> entry : weekGroups.entrySet()) {
-            String key = entry.getKey();
-            List<Integer> weeks = entry.getValue();
-
-            List<ScheduledLesson> lessonsForPattern = lessonsByKey.get(key);
-            if (lessonsForPattern == null) continue;
-
-            GridPane grid = buildGridForLessons(
-                    lessonsForPattern,
-                    data,
-                    minutesPerSlot,
-                    minSlot,
-                    visibleSlots,
-                    TIME_COL_WIDTH,
-                    DAY_SUBCOL_WIDTH,
-                    ROW_HEIGHT
-            );
-
-            // Tab title shows the weeks that share this timetable
-            String tabTitle = "Weeks " + weeks.toString();
-            Tab tab = new Tab(tabTitle, new ScrollPane(grid));
-            tabPane.getTabs().add(tab);
-        }
-
-        Scene scene = new Scene(tabPane, Defaults.DEFAULT_WIDTH, Defaults.DEFAULT_HEIGHT);
-        timetableWindow.setScene(scene);
 
         return timetableWindow;
     }

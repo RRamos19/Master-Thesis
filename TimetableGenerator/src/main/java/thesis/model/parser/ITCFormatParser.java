@@ -226,6 +226,9 @@ public class ITCFormatParser implements InputFileReader {
         for(Room room : data.getRooms()) {
             room.fixRoomDistances();
         }
+
+        // Set the last updated at timestamp
+        data.setLastUpdatedAt();
         
         return data;
     }

@@ -7,6 +7,7 @@ import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.*;
 import thesis.model.exceptions.CheckedIllegalStateException;
 import thesis.model.exceptions.InvalidConfigurationException;
+import thesis.model.exceptions.ParsingException;
 import thesis.model.parser.XmlResult;
 import thesis.view.ViewInterface;
 import thesis.view.viewobjects.*;
@@ -65,7 +66,7 @@ public class Controller implements ControllerInterface {
 
     @Override
     public ObservableList<ViewModel> getCourses(String progName) {
-        List<Course> courseList;
+        Collection<Course> courseList;
         try {
             courseList = model.getCourses(progName);
         } catch (CheckedIllegalStateException e) {
@@ -82,7 +83,7 @@ public class Controller implements ControllerInterface {
 
     @Override
     public ObservableList<ViewModel> getConfigs(String progName) {
-        List<Config> configList;
+        Collection<Config> configList;
         try {
             configList = model.getConfigs(progName);
         } catch (CheckedIllegalStateException e) {
@@ -99,7 +100,7 @@ public class Controller implements ControllerInterface {
 
     @Override
     public ObservableList<ViewModel> getSubparts(String progName) {
-        List<Subpart> subpartList;
+        Collection<Subpart> subpartList;
         try {
             subpartList = model.getSubparts(progName);
         } catch (CheckedIllegalStateException e) {
@@ -116,7 +117,7 @@ public class Controller implements ControllerInterface {
 
     @Override
     public ObservableList<ViewModel> getClassUnits(String progName) {
-        List<ClassUnit> classUnitList;
+        Collection<ClassUnit> classUnitList;
         try {
             classUnitList = model.getClassUnits(progName);
         } catch (CheckedIllegalStateException e) {
@@ -155,7 +156,7 @@ public class Controller implements ControllerInterface {
 
     @Override
     public ObservableList<ViewModel> getConstraints(String progName) {
-        List<Constraint> constraintList;
+        Collection<Constraint> constraintList;
         try {
             constraintList = model.getConstraints(progName);
         } catch (CheckedIllegalStateException e) {
@@ -174,7 +175,7 @@ public class Controller implements ControllerInterface {
 
     @Override
     public ObservableList<ViewModel> getRooms(String progName) {
-        List<Room> roomList;
+        Collection<Room> roomList;
         try {
             roomList = model.getRooms(progName);
         } catch (CheckedIllegalStateException e) {
@@ -191,7 +192,7 @@ public class Controller implements ControllerInterface {
 
     @Override
     public ObservableList<ViewModel> getTimetables(String progName) {
-        List<Timetable> timetableList;
+        Collection<Timetable> timetableList;
         try {
             timetableList = model.getTimetables(progName);
         } catch (CheckedIllegalStateException e) {
@@ -200,22 +201,17 @@ public class Controller implements ControllerInterface {
         }
 
         List<ViewModel> timetableViewModels = timetableList.stream()
-                .map(c -> new TimetableViewModel(c.getLocalDateOfCreation(), c.getRuntime(), c.cost(), c.getScheduledLessonList().size(), c.isValid(), c))
+                .map(c -> new TimetableViewModel(c.getDateOfCreationString(), c.getRuntime(), c.cost(), c.getScheduledLessonList().size(), c.isValid(), c))
                 .collect(Collectors.toList());
 
         return FXCollections.observableList(timetableViewModels);
     }
 
     @Override
-    public void importITCData(File file) {
+    public void importITCData(File file) throws CheckedIllegalStateException, InvalidConfigurationException, ParsingException {
         XmlResult result;
 
-        try {
-            result = model.readFile(file);
-        } catch (Exception e) {
-            view.showExceptionMessage(e);
-            return;
-        }
+        result = model.readFile(file);
 
         if(result instanceof InMemoryRepository) {
             InMemoryRepository dataRepository = (InMemoryRepository) result;
@@ -227,23 +223,17 @@ public class Controller implements ControllerInterface {
             } else {
                 if(view.showConfirmationAlert("There is already a program stored which is equal to the program of the file provided. Overwrite (while retaining the solutions if possible) ?")) {
                     for(Timetable solution : storedData.getTimetableList()) {
-                        try {
-                            dataRepository.addTimetable(solution);
-                        } catch (InvalidConfigurationException e) {
-                            view.showExceptionMessage(e);
-                        }
+                        dataRepository.addTimetable(solution);
                     }
+
                     model.importRepository(dataRepository);
                 }
             }
         } else if(result instanceof Timetable) {
             Timetable solution = (Timetable) result;
 
-            try {
-                model.importSolution(solution);
-            } catch (Exception e) {
-                view.showExceptionMessage(e);
-            }
+            model.importSolution(solution);
+
         } else {
             throw new IllegalStateException("The resulting type of the parsing is unsupported");
         }

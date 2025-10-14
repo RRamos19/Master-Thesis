@@ -3,13 +3,12 @@ package thesis.model;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.Timetable;
 import thesis.model.exceptions.InvalidConfigurationException;
-import thesis.solver.core.DefaultISGSolution;
-import thesis.solver.initialsolutiongenerator.InitialSolutionGenerator;
-import thesis.solver.initialsolutiongenerator.MullerBasedSolutionGenerator;
-import thesis.solver.solutionoptimizer.HeuristicAlgorithm;
-import thesis.solver.solutionoptimizer.SimulatedAnnealing;
+import thesis.model.solver.core.DefaultISGSolution;
+import thesis.model.solver.initialsolutiongenerator.InitialSolutionGenerator;
+import thesis.model.solver.initialsolutiongenerator.MullerBasedSolutionGenerator;
+import thesis.model.solver.solutionoptimizer.HeuristicAlgorithm;
+import thesis.model.solver.solutionoptimizer.SimulatedAnnealing;
 import thesis.utils.DaemonThreadFactory;
-import thesis.utils.DoubleToolkit;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -20,12 +19,12 @@ import java.util.concurrent.*;
 public class TaskManager {
     private final ModelInterface model;
     private final ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-    private final ConcurrentMap<UUID, Future<Timetable>> generatedTimetables = new ConcurrentHashMap<>();                              // ProgramUUID : Timetable generated
-    private final Map<UUID, InitialSolutionGenerator<DefaultISGSolution>> initialSolutionGeneratorsMap = new ConcurrentHashMap<>();    // ProgramUUID : InitialSolutionGenerator
-    private final Map<UUID, HeuristicAlgorithm<Timetable>> heuristicAlgorithmsMap = new ConcurrentHashMap<>();                         // ProgramUUID : HeuristicAlgorithm
-    private final Map<UUID, CountDownLatch> synchronizationMap = new ConcurrentHashMap<>();                                            // ProgramUUID : CountDownLatch (to synchronize the threads and perform cleanup safely)
+    private final Map<UUID, Future<Timetable>> generatedTimetables = new ConcurrentHashMap<>(); // ProgramUUID : Timetable generated
+    private final Map<UUID, CountDownLatch> synchronizationMap = new ConcurrentHashMap<>();     // ProgramUUID : CountDownLatch (to synchronize the threads and perform cleanup safely)
+    private final Map<UUID, TaskInformation> taskInformationMap = new ConcurrentHashMap<>();
+
     private final ExecutorService threadPool = Executors.newFixedThreadPool(
-            2,//Runtime.getRuntime().availableProcessors(),
+            Runtime.getRuntime().availableProcessors(),
             new DaemonThreadFactory()
     );
 
@@ -43,10 +42,11 @@ public class TaskManager {
         }
 
         // Pool the generation task
-        generatedTimetables.put(progressUUID, threadPool.submit(() -> generateTimetable(data, progressUUID, initialTemperature, minTemperature, coolingRate, k)));
+        taskInformationMap.put(progressUUID, new TaskInformation(data, bean));
+        generatedTimetables.put(progressUUID, threadPool.submit(() -> generateTimetable(progressUUID, initialTemperature, minTemperature, coolingRate, k)));
     }
 
-    public double getGenerationProgress(UUID progressUUID) throws ExecutionException, InterruptedException, InvalidConfigurationException {
+    public double getGenerationProgress(UUID progressUUID) throws ExecutionException, InterruptedException {
         Future<Timetable> taskResult = generatedTimetables.get(progressUUID);
 
         if(taskResult == null) {
@@ -62,83 +62,122 @@ public class TaskManager {
             // In this case it can be ignored
         }
 
-        InitialSolutionGenerator<DefaultISGSolution> initialSolutionGenerator = initialSolutionGeneratorsMap.get(progressUUID);
-        HeuristicAlgorithm<Timetable> heuristicAlgorithm = heuristicAlgorithmsMap.get(progressUUID);
+        TaskInformation taskInformation = taskInformationMap.get(progressUUID);
+        CountDownLatch countDownLatch = synchronizationMap.get(progressUUID);
 
-        // If the heuristicAlgorithm exists then the program has reached the 2nd phase of solution generation.
-        // Otherwise, its only in the 1st phase or hasn't even reached that point.
-        if(heuristicAlgorithm != null) {
-            double progress = 0.5 + heuristicAlgorithm.getProgress() / 2;
+        if(taskInformation != null) {
+            double progress = taskInformation.getGenerationProgress();
 
-            if(DoubleToolkit.isEqual(progress, 1)) {
-                CountDownLatch countDownLatch = synchronizationMap.get(progressUUID);
-                if(countDownLatch != null) {
-                    countDownLatch.countDown();
-                }
+            if(progress >= 1 && countDownLatch != null) {
+                countDownLatch.countDown();
             }
 
             return progress;
-        } else if(initialSolutionGenerator != null) {
-            return initialSolutionGenerator.getProgress() / 2;
         } else {
             return 0;
         }
     }
 
-    private Timetable generateTimetable(InMemoryRepository data, UUID progressUUID, double initialTemperature, double minTemperature, double coolingRate, int k) throws InvalidConfigurationException {
-        long id = Thread.currentThread().getId();
-        long startCpu = bean.getThreadCpuTime(id); // Start time in nanoseconds
-
+    private Timetable generateTimetable(UUID progressUUID, double initialTemperature, double minTemperature, double coolingRate, int k) throws InvalidConfigurationException {
+        TaskInformation taskInformation = taskInformationMap.get(progressUUID);
         CountDownLatch countDownLatch = new CountDownLatch(1);
         synchronizationMap.put(progressUUID, countDownLatch);
 
-        InitialSolutionGenerator<DefaultISGSolution> initialSolutionGen = new MullerBasedSolutionGenerator(data);
-        initialSolutionGeneratorsMap.put(progressUUID, initialSolutionGen);
-        DefaultISGSolution initialSolution = initialSolutionGen.generate();
-
-        // The generation task was canceled
-        if(initialSolution == null) {
-            initialSolutionGeneratorsMap.remove(progressUUID);
-            synchronizationMap.remove(progressUUID);
-            generatedTimetables.remove(progressUUID);
+        Timetable solution;
+        try {
+            solution = taskInformation.startGeneration(initialTemperature, minTemperature, coolingRate, k);
+        } catch (InterruptedException e) {
             return null;
         }
 
-        HeuristicAlgorithm<Timetable> heuristicAlgorithm = new SimulatedAnnealing(initialSolution, initialTemperature, minTemperature, coolingRate, k);
-        heuristicAlgorithmsMap.put(progressUUID, heuristicAlgorithm);
-        Timetable generatedSolution = heuristicAlgorithm.execute();
+        // The generation task was canceled (clear leftover data)
+        if(solution == null) {
+            synchronizationMap.remove(progressUUID);
+            generatedTimetables.remove(progressUUID);
+            taskInformationMap.remove(progressUUID);
+            return null;
+        }
 
-        if(generatedSolution != null) {
-            generatedSolution.setRuntime((bean.getThreadCpuTime(id) - startCpu)/1_000_000_000); // Runtime in seconds
-            data.addTimetable(generatedSolution);
-
-            // Only locks if the final solution was generated
-            try {
-                countDownLatch.await();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+        // Only locks if the final solution was generated
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
         // Clear any leftover data
         generatedTimetables.remove(progressUUID);
-        initialSolutionGeneratorsMap.remove(progressUUID);
-        heuristicAlgorithmsMap.remove(progressUUID);
-        synchronizationMap.remove(progressUUID);
+        taskInformationMap.remove(progressUUID);
 
-        return generatedSolution;
+        return solution;
     }
 
     public void cancelTimetableGeneration(UUID progressUUID) {
-        InitialSolutionGenerator<DefaultISGSolution> initialSolutionGenerator = initialSolutionGeneratorsMap.get(progressUUID);
-        HeuristicAlgorithm<Timetable> heuristicAlgorithm = heuristicAlgorithmsMap.get(progressUUID);
+        TaskInformation taskInformation = taskInformationMap.get(progressUUID);
 
-        if(initialSolutionGenerator != null) {
-            initialSolutionGenerator.stopAlgorithm();
+        if(taskInformation != null) {
+            taskInformation.cancelGeneration();
+        }
+    }
+
+    private static class TaskInformation {
+        private final ThreadMXBean bean;
+        private final InMemoryRepository data;
+        private final InitialSolutionGenerator<DefaultISGSolution> initialSolutionGenerator;
+        private HeuristicAlgorithm<Timetable> heuristicAlgorithm;
+
+        public TaskInformation(InMemoryRepository data, ThreadMXBean bean) {
+            this.data = data;
+            this.bean = bean;
+            initialSolutionGenerator = new MullerBasedSolutionGenerator(data);
         }
 
-        if(heuristicAlgorithm != null) {
-            heuristicAlgorithm.stopAlgorithm();
+        public double getGenerationProgress() {
+            double progress = initialSolutionGenerator.getProgress();
+
+            if(heuristicAlgorithm != null) {
+                progress += heuristicAlgorithm.getProgress();
+            }
+
+            // The progress must be divided by 2 as the tasks have the same weight
+            progress = progress / 2.0;
+
+            // Fix the progress value (the usage of double can introduce error)
+            // the progress is multiplied by 1000 for the final result to be a percentage with
+            // one decimal place
+            progress = Math.min(1, Math.round(progress * 1000) / 1000.0);
+
+            return progress;
+        }
+
+        public Timetable startGeneration(double initialTemperature, double minTemperature, double coolingRate, int k) throws InterruptedException, InvalidConfigurationException {
+            long id = Thread.currentThread().getId();
+            long startCpu = bean.getThreadCpuTime(id); // Start time in nanoseconds
+
+            DefaultISGSolution solution = initialSolutionGenerator.generate();
+
+            // Generation was canceled
+            if(solution == null) {
+                return null;
+            }
+
+            heuristicAlgorithm = new SimulatedAnnealing(solution, initialTemperature, minTemperature, coolingRate, k);
+            Timetable finalSolution = heuristicAlgorithm.execute();
+
+            if(finalSolution != null) {
+                finalSolution.setRuntime((bean.getThreadCpuTime(id) - startCpu)/1_000_000_000); // Runtime in seconds
+                data.addTimetable(finalSolution);
+            }
+
+            return finalSolution;
+        }
+
+        public void cancelGeneration() {
+            initialSolutionGenerator.stopAlgorithm();
+
+            if(heuristicAlgorithm != null) {
+                heuristicAlgorithm.stopAlgorithm();
+            }
         }
     }
 }

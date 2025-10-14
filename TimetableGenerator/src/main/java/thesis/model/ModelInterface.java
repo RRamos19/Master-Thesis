@@ -11,7 +11,7 @@ import thesis.model.parser.XmlResult;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -27,14 +27,14 @@ public interface ModelInterface {
     // Getters
     InMemoryRepository getDataRepository(String programName);
     Set<String> getStoredPrograms();
-    List<Course> getCourses(String progName) throws CheckedIllegalStateException;
-    List<Config> getConfigs(String progName) throws CheckedIllegalStateException;
-    List<Subpart> getSubparts(String progName) throws CheckedIllegalStateException;
-    List<ClassUnit> getClassUnits(String progName) throws CheckedIllegalStateException;
+    Collection<Course> getCourses(String progName) throws CheckedIllegalStateException;
+    Collection<Config> getConfigs(String progName) throws CheckedIllegalStateException;
+    Collection<Subpart> getSubparts(String progName) throws CheckedIllegalStateException;
+    Collection<ClassUnit> getClassUnits(String progName) throws CheckedIllegalStateException;
     TimetableConfiguration getConfiguration(String progName) throws CheckedIllegalStateException;
-    List<Constraint> getConstraints(String progName) throws CheckedIllegalStateException;
-    List<Room> getRooms(String progName) throws CheckedIllegalStateException;
-    List<Timetable> getTimetables(String progName) throws CheckedIllegalStateException;
+    Collection<Constraint> getConstraints(String progName) throws CheckedIllegalStateException;
+    Collection<Room> getRooms(String progName) throws CheckedIllegalStateException;
+    Collection<Timetable> getTimetables(String progName) throws CheckedIllegalStateException;
 
     // Schedule solution generation methods
     void startGeneratingSolution(String programName, UUID progressUUID, double initialTemperature, double minTemperature, double coolingRate, int k);

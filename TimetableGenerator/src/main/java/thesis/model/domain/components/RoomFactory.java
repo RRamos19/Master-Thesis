@@ -1,5 +1,8 @@
 package thesis.model.domain.components;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,6 +11,7 @@ import java.util.Map;
  * The usage of the primitive is much more efficient that using objects on maps and other structures.
  */
 public class RoomFactory {
+    private static final Logger logger = LoggerFactory.getLogger(RoomFactory.class);
     private static final Map<String, Integer> stringToId = new HashMap<>();
 
     private static int getOrCreateId(String key) {
@@ -22,7 +26,9 @@ public class RoomFactory {
         Integer id = stringToId.get(roomId);
 
         if (id == null) {
-            throw new IllegalArgumentException("Room Id not found: " + roomId);
+            String message = "Room Id not found: " + roomId;
+            logger.error(message);
+            throw new IllegalArgumentException(message);
         }
 
         return id;

@@ -6,6 +6,8 @@ import thesis.model.domain.components.ScheduledLesson;
 import thesis.model.domain.components.Time;
 import thesis.model.domain.components.TimeFactory;
 import thesis.model.exceptions.CheckedIllegalArgumentException;
+import thesis.model.solver.core.DefaultISGValue;
+import thesis.model.solver.core.DefaultISGVariable;
 
 import java.util.List;
 

@@ -6,12 +6,7 @@ import thesis.model.domain.components.*;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TimetableDataExporter implements DataExporter {
     private static final String EXPORT_LOCATION_PATH = "exports/";
@@ -63,16 +58,15 @@ public class TimetableDataExporter implements DataExporter {
     public void exportSolutionsToITC(InMemoryRepository data) throws IOException {
         String fileName = "solution_" + data.getProgramName();
         for(Timetable timetable : data.getTimetableList()) {
-            File file = avoidFileOverwriting(fileName + '_' + timetable.getDateOfCreation());
-            LocalDateTime now = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-            String formattedNow = now.format(formatter);
+            String originalDateOfCreation = timetable.getDateOfCreationString();
+            String filenameDateOfCreation = timetable.getDateOfCreationString().replace(' ', '_').replace(':', '.');
+            File file = avoidFileOverwriting(fileName + '_' + filenameDateOfCreation);
             StringBuilder stringBuilder = new StringBuilder();
 
             stringBuilder.append("<solution xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"solution\" name=\"")
                     .append(data.getProgramName())
                     .append("\" runtime=\"").append(timetable.getRuntime())
-                    .append("\" timeStampUTC12=\"").append(formattedNow).append("\">\n");
+                    .append("\" timeStampUTC12=\"").append(originalDateOfCreation).append("\">\n");
 
             Map<Teacher, List<String>> teacherClassMap = new HashMap<>();
             for (ScheduledLesson scheduledLesson : timetable.getScheduledLessonList()) {
@@ -158,7 +152,7 @@ public class TimetableDataExporter implements DataExporter {
                 .append("student=\"").append(0).append("\"/>\n");
 
         // Rooms
-        List<Room> roomList = data.getRooms();
+        Collection<Room> roomList = data.getRooms();
         if(!roomList.isEmpty()) {
             stringBuilder.append(addIndentation(indentation, "<rooms>\n"));
             indentation += INDENT_SIZE;
@@ -195,7 +189,7 @@ public class TimetableDataExporter implements DataExporter {
         }
 
         // Course, configs, subparts and classes
-        List<Course> courseList = data.getCourses();
+        Collection<Course> courseList = data.getCourses();
         if(!courseList.isEmpty()) {
             stringBuilder.append(addIndentation(indentation, "<courses>\n"));
             indentation += INDENT_SIZE;
@@ -209,7 +203,14 @@ public class TimetableDataExporter implements DataExporter {
                         stringBuilder.append(addIndentation(indentation, "<subpart id=\"")).append(subpart.getSubpartId()).append("\">\n");
                         indentation += INDENT_SIZE;
                         for (ClassUnit classUnit : subpart.getClassUnitList()) {
-                            stringBuilder.append(addIndentation(indentation, "<class id=\"")).append(classUnit.getClassId()).append("\">\n");
+                            stringBuilder.append(addIndentation(indentation, "<class id=\"")).append(classUnit.getClassId()).append("\"");
+
+                            String parentClass = classUnit.getParentClassId();
+                            if(parentClass != null) {
+                                stringBuilder.append(" parent=\"").append(parentClass).append("\"");
+                            }
+
+                            stringBuilder.append(">\n");
 
                             indentation += INDENT_SIZE;
                             for (Map.Entry<String, Integer> classRoomPenalties : classUnit.getClassRoomPenalties().entrySet()) {
@@ -239,7 +240,7 @@ public class TimetableDataExporter implements DataExporter {
         }
 
         // Teachers
-        List<Teacher> teacherList = data.getTeachers();
+        Collection<Teacher> teacherList = data.getTeachers();
         if(!teacherList.isEmpty()) {
             stringBuilder.append(addIndentation(indentation,"<teachers>\n"));
             indentation += INDENT_SIZE;
@@ -266,7 +267,7 @@ public class TimetableDataExporter implements DataExporter {
         }
 
         // Constraints
-        List<Constraint> constraintList = data.getConstraints();
+        Collection<Constraint> constraintList = data.getConstraints();
         if(!constraintList.isEmpty()) {
             stringBuilder.append(addIndentation(indentation, "<distributions>\n"));
             indentation += INDENT_SIZE;

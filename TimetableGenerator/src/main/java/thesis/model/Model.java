@@ -1,5 +1,7 @@
 package thesis.model;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import thesis.controller.ControllerInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.*;
@@ -8,12 +10,9 @@ import thesis.model.exceptions.DatabaseException;
 import thesis.model.exceptions.InvalidConfigurationException;
 import thesis.model.exceptions.ParsingException;
 import thesis.model.exporter.DataExporter;
-import thesis.model.mapper.ModelConverter;
 import thesis.model.parser.InputFileReader;
 import thesis.model.parser.XmlResult;
-import thesis.model.persistence.EntityRepository;
-import thesis.model.repository.DBHibernateManager;
-import thesis.model.repository.DBManager;
+import thesis.model.persistence.DBManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,19 +20,21 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class Model implements ModelInterface {
-    private static final String DB_NAME = "timetabling_db";
+    private static final Logger logger = LoggerFactory.getLogger(Model.class);
 
     private ControllerInterface controller;
     private final DataExporter dataExporter;
     private final InputFileReader inputFileReader;
     private final Map<String, InMemoryRepository> dataRepositoryHashMap = new ConcurrentHashMap<>();                            // ProgramName : Corresponding DataRepository
     private final TaskManager taskManager;
-    private DBManager<Collection<EntityRepository>> dbManager;
+    private final DBConnectionCache dbConnectionCache;
+    private DBManager<Collection<InMemoryRepository>> dbManager;
 
     public Model(InputFileReader inputReader, DataExporter dataExporter) {
         this.inputFileReader = inputReader;
         this.dataExporter = dataExporter;
         this.taskManager = new TaskManager(this);
+        this.dbConnectionCache = new DBConnectionCache();
     }
 
     @Override
@@ -43,41 +44,36 @@ public class Model implements ModelInterface {
 
     @Override
     public void connectToDatabase(String ip, String port, String userName, String password) throws DatabaseException {
-        //TODO: cache the result (the creation is very expensive)
-        dbManager = new DBHibernateManager(DB_NAME, ip, port, userName, password);
+        dbManager = dbConnectionCache.connectToDatabase(ip, port, userName, password);
 
         //TODO: just for testing
         try {
-            fetchDatabaseData();
+            fetchFromDatabase();
         } catch (Exception e) {
+            dbConnectionCache.clearCache(ip, port);
+            logger.error(e.getMessage());
             throw new RuntimeException(e);
         }
 
-        storeDataInDatabase();
+        //storeInDatabase();
     }
 
-    private void fetchDatabaseData() throws Exception {
+    private void fetchFromDatabase() {
         //TODO: to be implemented
-        Collection<EntityRepository> entityRepositories = dbManager.fetchData();
+        Collection<InMemoryRepository> inMemoryRepositories = dbManager.fetchData();
 
-        for(EntityRepository entityRepository : entityRepositories) {
-            InMemoryRepository data = ModelConverter.convertToDomain(entityRepository);
+        for(InMemoryRepository data : inMemoryRepositories) {
+            //TODO: verify the last update timestamp
 
+            dataRepositoryHashMap.put(data.getProgramName(), data);
             System.out.println(data);
         }
     }
 
-    private void storeDataInDatabase() {
+    private void storeInDatabase() {
         //TODO: to be implemented
-        List<EntityRepository> data = new ArrayList<>();
-
-        for(InMemoryRepository dataRepository : dataRepositoryHashMap.values()) {
-            EntityRepository entityRepository = ModelConverter.convertToEntity(dataRepository);
-            data.add(entityRepository);
-            System.out.println(entityRepository);
-        }
-
-        dbManager.storeData(data);
+        //TODO: verify the last update timestamp
+        dbManager.storeData(dataRepositoryHashMap.values());
     }
 
     @Override
@@ -92,6 +88,8 @@ public class Model implements ModelInterface {
 
     @Override
     public void importRepository(InMemoryRepository repository) {
+        repository.cleanUnusedData();
+        System.out.println(repository);
         dataRepositoryHashMap.put(repository.getProgramName(), repository);
     }
 
@@ -123,7 +121,7 @@ public class Model implements ModelInterface {
     }
 
     @Override
-    public List<Course> getCourses(String progName) throws CheckedIllegalStateException {
+    public Collection<Course> getCourses(String progName) throws CheckedIllegalStateException {
         InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
         if(dataRepository == null) {
             throw new CheckedIllegalStateException("No data was already stored for the solution imported");
@@ -133,7 +131,7 @@ public class Model implements ModelInterface {
     }
 
     @Override
-    public List<ClassUnit> getClassUnits(String progName) throws CheckedIllegalStateException {
+    public Collection<ClassUnit> getClassUnits(String progName) throws CheckedIllegalStateException {
         InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
         if(dataRepository == null) {
             throw new CheckedIllegalStateException("No data was already stored for the solution imported");
@@ -151,7 +149,7 @@ public class Model implements ModelInterface {
         return dataRepository.getTimetableConfiguration();
     }
 
-    public List<Config> getConfigs(String progName) throws CheckedIllegalStateException {
+    public Collection<Config> getConfigs(String progName) throws CheckedIllegalStateException {
         InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
         if(dataRepository == null) {
             throw new CheckedIllegalStateException("No data was already stored for the solution imported");
@@ -160,7 +158,7 @@ public class Model implements ModelInterface {
         return dataRepository.getConfigs();
     }
 
-    public List<Constraint> getConstraints(String progName) throws CheckedIllegalStateException {
+    public Collection<Constraint> getConstraints(String progName) throws CheckedIllegalStateException {
         InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
         if(dataRepository == null) {
             throw new CheckedIllegalStateException("No data was already stored for the solution imported");
@@ -169,7 +167,7 @@ public class Model implements ModelInterface {
         return dataRepository.getConstraints();
     }
 
-    public List<Room> getRooms(String progName) throws CheckedIllegalStateException {
+    public Collection<Room> getRooms(String progName) throws CheckedIllegalStateException {
         InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
         if(dataRepository == null) {
             throw new CheckedIllegalStateException("No data was already stored for the solution imported");
@@ -178,7 +176,7 @@ public class Model implements ModelInterface {
         return dataRepository.getRooms();
     }
 
-    public List<Subpart> getSubparts(String progName) throws CheckedIllegalStateException {
+    public Collection<Subpart> getSubparts(String progName) throws CheckedIllegalStateException {
         InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
         if(dataRepository == null) {
             throw new CheckedIllegalStateException("No data was already stored for the solution imported");
@@ -187,7 +185,7 @@ public class Model implements ModelInterface {
         return dataRepository.getSubparts();
     }
 
-    public List<Timetable> getTimetables(String progName) throws CheckedIllegalStateException {
+    public Collection<Timetable> getTimetables(String progName) throws CheckedIllegalStateException {
         InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
         if(dataRepository == null) {
             throw new CheckedIllegalStateException("No data was already stored for the solution imported");

@@ -3,6 +3,8 @@ package thesis.model.domain.components;
 import java.util.*;
 
 public abstract class Constraint {
+    private final UUID id = UUID.randomUUID(); // Used to differentiate constraints from each other
+
     private final String type;
     private final Integer penalty;
     private final boolean required;
@@ -95,16 +97,11 @@ public abstract class Constraint {
     public boolean equals(Object o) {
         if (!(o instanceof Constraint)) return false;
         Constraint that = (Constraint) o;
-        return required == that.required &&
-                Objects.equals(type, that.type) &&
-                Objects.equals(penalty, that.penalty) &&
-                Objects.equals(classUnitIdList, that.classUnitIdList) &&
-                Objects.equals(firstParam, that.firstParam) &&
-                Objects.equals(secondParam, that.secondParam);
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, penalty, required, classUnitIdList, firstParam, secondParam);
+        return Objects.hash(id);
     }
 }
