@@ -2,12 +2,12 @@ package thesis.model.persistence.repository.entities;
 
 import jakarta.persistence.*;
 
-import java.util.Objects;
-import java.util.UUID;
+import java.io.Serializable;
+import java.util.*;
 
 @Entity
 @Table(name = "timetable_constraint")
-public class ConstraintEntity {
+public class ConstraintEntity implements Serializable {
     // Serves to distinguish constraints from each other without relying on the classes it is associated to
     @Transient
     private final UUID instanceId = UUID.randomUUID();
@@ -16,9 +16,12 @@ public class ConstraintEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "constraint_type_id", referencedColumnName = "id", nullable = false)
     private ConstraintTypeEntity constraintTypeEntity;
+
+    @OneToMany(mappedBy = "constraintEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private final Set<ClassConstraintEntity> classConstraintEntityList = new HashSet<>();
 
     private Integer penalty;
 
@@ -30,8 +33,8 @@ public class ConstraintEntity {
 
     public ConstraintEntity() {}
 
-    public ConstraintEntity(ConstraintTypeEntity constraintType, Integer first_parameter, Integer second_parameter, Integer penalty, Boolean required) {
-        this.constraintTypeEntity = constraintType;
+    public ConstraintEntity(ConstraintTypeEntity constraintTypeEntity, Integer first_parameter, Integer second_parameter, Integer penalty, Boolean required) {
+        this.constraintTypeEntity = constraintTypeEntity;
         this.first_parameter = first_parameter;
         this.second_parameter = second_parameter;
         this.penalty = penalty;
@@ -80,6 +83,18 @@ public class ConstraintEntity {
 
     public ConstraintTypeEntity getConstraintTypeEntity() {
         return constraintTypeEntity;
+    }
+
+    public void setConstraintTypeEntity(ConstraintTypeEntity constraintTypeEntity) {
+        this.constraintTypeEntity = constraintTypeEntity;
+    }
+
+    public Set<ClassConstraintEntity> getClassConstraintEntityList() {
+        return classConstraintEntityList;
+    }
+
+    public void addClassConstraint(ClassConstraintEntity classConstraintEntity) {
+        this.classConstraintEntityList.add(classConstraintEntity);
     }
 
     @Override

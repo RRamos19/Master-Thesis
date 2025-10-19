@@ -14,17 +14,22 @@ public class HibernateUtils {
         props.setProperty("hibernate.connection.url", "jdbc:postgresql://" + ip + ":" + port + "/" + dbName);
         props.setProperty("hibernate.connection.username", user);
         props.setProperty("hibernate.connection.password", password);
-        props.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
         props.setProperty("hibernate.hbm2ddl.auto", "none");
 
-        //props.setProperty("hibernate.show_sql", "true");
-        //props.setProperty("hibernate.format_sql", "true");
-        //props.setProperty("hibernate.highlight_sql", "true");
+        // Optimization of Hibernate
+        props.setProperty("hibernate.default_batch_fetch_size", "50");
+        props.setProperty("hibernate.jdbc.batch_size", "30");
+        props.setProperty("hibernate.order_inserts", "true");
+        props.setProperty("hibernate.order_updates", "true");
+
+        props.setProperty("hibernate.show_sql", "false");
+        props.setProperty("hibernate.format_sql", "false");
+        props.setProperty("hibernate.highlight_sql", "false");
 
         Configuration cfg = new Configuration();
         cfg.addProperties(props);
 
-        cfg.addAnnotatedClass(TimeBlockEntity.class);
+        cfg.addAnnotatedClass(ClassConstraintEntity.class);
         cfg.addAnnotatedClass(ClassRoomEntity.class);
         cfg.addAnnotatedClass(ClassTimeEntity.class);
         cfg.addAnnotatedClass(ClassUnitEntity.class);
@@ -38,8 +43,10 @@ public class HibernateUtils {
         cfg.addAnnotatedClass(ScheduledLessonEntity.class);
         cfg.addAnnotatedClass(ScheduledLessonTeacherEntity.class);
         cfg.addAnnotatedClass(SubpartEntity.class);
+        cfg.addAnnotatedClass(TeacherClassEntity.class);
         cfg.addAnnotatedClass(TeacherEntity.class);
         cfg.addAnnotatedClass(TeacherUnavailabilityEntity.class);
+        cfg.addAnnotatedClass(TimeBlockEntity.class);
         cfg.addAnnotatedClass(TimetableEntity.class);
 
         return cfg.buildSessionFactory();

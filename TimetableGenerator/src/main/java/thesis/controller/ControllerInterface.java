@@ -1,55 +1,54 @@
 package thesis.controller;
 
-import javafx.collections.ObservableList;
+import javafx.scene.control.TreeItem;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.stage.Window;
 import thesis.model.ModelInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.Timetable;
-import thesis.model.exceptions.CheckedIllegalStateException;
-import thesis.model.exceptions.InvalidConfigurationException;
-import thesis.model.exceptions.ParsingException;
 import thesis.view.ViewInterface;
-import thesis.view.viewobjects.*;
-
-import java.io.File;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 public interface ControllerInterface {
     // Setters
     void setModel(ModelInterface model);
     void setView(ViewInterface view);
+    void setPrimaryWindow(Window primaryWindow);
 
-    // Getters
-    InMemoryRepository getDataRepository(String programName);
-    Set<String> getStoredPrograms();
-    ObservableList<ViewModel> getConfiguration(String progName);
-    ObservableList<ViewModel> getCourses(String progName);
-    ObservableList<ViewModel> getConfigs(String progName);
-    ObservableList<ViewModel> getSubparts(String progName);
-    ObservableList<ViewModel> getClassUnits(String progName);
-    ObservableList<ViewModel> getConstraints(String progName);
-    ObservableList<ViewModel> getRooms(String progName);
-    ObservableList<ViewModel> getTimetables(String progName);
+    // Button events
+    void connectEvent();
+    void importDataITCEvent();
+    void configMenuEvent();
+    void exportDataITCEvent();
+    void exportDataCSVEvent();
+    void exportSolutionsITCEvent();
+    void exportSolutionsPNGEvent();
+    void exportSolutionsPDFEvent();
+    void dragOverEvent(DragEvent event);
+    void dragEnteredEvent(DragEvent event);
+    void dragExitedEvent(DragEvent event);
+    void dragDroppedEvent(DragEvent event);
+    void generateSolutionEvent();
+    void removeTableInstanceEvent();
+    void reoptimizeSolutionEvent();
+    void showInstructionsMenuEvent();
+    void changeProgramChoiceEvent(String newValue);
+    void tableViewMouseClickedEvent(MouseEvent event);
+    void progressContainterResizeEvent();
 
-    // Schedule solution generation methods
-    void startGeneratingSolution(String programName, UUID progressUUID, double initialTemperature, double minTemperature, double coolingRate, int k);
-    double getGenerationProgress(UUID progressUUID) throws InvalidConfigurationException, ExecutionException, InterruptedException;
-    void cancelGeneration(UUID progressUUID);
+    // Show results
+    void updateStoredPrograms();
+    void updateTableView();
+    void updateTableView(TreeItem<Controller.TableType> item);
+    void showTimetable(InMemoryRepository data, Timetable timetable);
 
-    // Database connectivity
-    void connectToDatabase(String ip, String port, String userName, String password) throws Exception;
-    void disconnectFromDatabase();
+    // Show alerts to user
+    void showInformationAlert(String message);
+    void showErrorAlert(String message);
+    boolean showConfirmationAlert(String message);
+    void showExceptionMessage(Throwable e);
 
-    void removeTimetable(Timetable timetable);
-
-    // Data import methods
-    void importITCData(File file) throws CheckedIllegalStateException, InvalidConfigurationException, ParsingException;
-
-    // Data export methods
-    void exportSolutionsToITC(String programName);
-    void exportDataToITC(String programName);
-    void exportToCSV(String programName);
-    void exportToPDF(String programName);
-    void exportToPNG(String programName);
+    // Initialize and cleanup the controller
+    void initialize();
+    void cleanup();
 }

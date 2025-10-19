@@ -63,9 +63,9 @@ public class TimetableTest {
         Time time2 = TimeFactory.create((short) 5, 255, (short) 10, (short) 10);
         Time time3 = TimeFactory.create((short) 7, 255, (short) 10, (short) 10);
 
-        Room room1 = RoomFactory.createRoom("1");
-        Room room2 = RoomFactory.createRoom("2");
-        Room room3 = RoomFactory.createRoom("3");
+        Room room1 = RoomFastIdFactory.createRoom("1");
+        Room room2 = RoomFastIdFactory.createRoom("2");
+        Room room3 = RoomFastIdFactory.createRoom("3");
 
         repository.addRoom(room1);
         repository.addRoom(room2);

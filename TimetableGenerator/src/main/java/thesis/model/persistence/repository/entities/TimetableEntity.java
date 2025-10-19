@@ -1,5 +1,6 @@
 package thesis.model.persistence.repository.entities;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -7,7 +8,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "timetable")
-public class TimetableEntity {
+public class TimetableEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -26,6 +27,7 @@ public class TimetableEntity {
 
     public TimetableEntity(ProgramEntity programEntity, LocalDateTime creationDate){
         this.programEntity = programEntity;
+        this.creationDate = creationDate;
     }
 
     public Integer getId() {
@@ -58,7 +60,7 @@ public class TimetableEntity {
 
     public void addScheduledLesson(ScheduledLessonEntity scheduledLessonEntity) {
         scheduledLessonEntityList.add(scheduledLessonEntity);
-        scheduledLessonEntity.setTimetable(this);
+        scheduledLessonEntity.setTimetableEntity(this);
     }
 
     @Override

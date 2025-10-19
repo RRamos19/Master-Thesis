@@ -1,4 +1,4 @@
-package thesis.view.managers.components;
+package thesis.controller.managers.components;
 
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;

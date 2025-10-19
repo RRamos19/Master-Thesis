@@ -180,12 +180,12 @@ public class DataRepository implements InMemoryRepository {
 
     @Override
     public Collection<Constraint> getConstraints() {
-        return constraintSet;
+        return new ArrayList<>(constraintSet);
     }
 
     @Override
     public Collection<Timetable> getTimetableList() {
-        return timetableList;
+        return new ArrayList<>(timetableList);
     }
 
     @Override
@@ -201,16 +201,6 @@ public class DataRepository implements InMemoryRepository {
     @Override
     public LocalDateTime getLastUpdatedAt() {
         return lastUpdatedAt;
-    }
-
-    // TODO: complete. It will be used primarily in the database data merges
-    public void merge(InMemoryRepository other) {
-        Collection<Course> courseList = other.getCourses();
-
-        for(Course course : courseList) {
-            String courseId = course.getCourseId();
-            courseMap.putIfAbsent(courseId, course);
-        }
     }
 
     @Override
@@ -258,6 +248,39 @@ public class DataRepository implements InMemoryRepository {
                 teacherMap.remove(teacherId);
             }
         });
+
+        // Remove the roomDistances for rooms that are no longer stored
+        for(Room room : roomMap.values()) {
+            for(String room2Id : new ArrayList<>(room.getRoomDistances().keySet())) {
+                if(!roomMap.containsKey(room2Id)) {
+                    room.removeRoomDistance(room2Id);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void setRoomBidirectionalDistances() {
+        // Add bidirectionality to room distances
+        for(Room room1 : roomMap.values()) {
+            String roomId = room1.getRoomId();
+
+            room1.getRoomDistances().forEach((room2Id, distance) -> {
+                Room room2 = roomMap.get(room2Id);
+
+                if(room2 == null) {
+                    throw new RuntimeException("Error while setting room distances. Room " + room2Id + " not found.");
+                }
+
+                room2.addRoomDistance(roomId, distance);
+            });
+        }
+
+        // Now that the bidirectionality is done populate the new map that was made
+        // to optimize the lookups of room distances
+        for(Room room : roomMap.values()) {
+            room.fixRoomDistances();
+        }
     }
 
     /**
@@ -292,7 +315,7 @@ public class DataRepository implements InMemoryRepository {
         for(Room room1 : roomMap.values()) {
             for(String room2Id : room1.getRoomDistances().keySet()) {
                 if(roomMap.get(room2Id) == null) {
-                    throw new InvalidConfigurationException("Problem configuration - The roomId " + room2Id + " in the distance section of room " + room1.getRoomId() + " wasn't defined!");
+                    throw new InvalidConfigurationException("Problem configuration - The roomId " + room2Id + " found in the distance section of room " + room1.getRoomId() + " wasn't defined!");
                 }
             }
         }

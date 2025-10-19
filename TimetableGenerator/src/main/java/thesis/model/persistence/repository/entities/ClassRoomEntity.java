@@ -3,22 +3,23 @@ package thesis.model.persistence.repository.entities;
 import jakarta.persistence.*;
 import thesis.model.persistence.repository.entities.embeddableIds.ClassRoomPK;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
 @Table(name = "class_room")
-public class ClassRoomEntity {
+public class ClassRoomEntity implements Serializable {
     @EmbeddedId
-    private ClassRoomPK id;
+    private ClassRoomPK id = new ClassRoomPK();
 
     @ManyToOne
-    @MapsId("classUnitPK")
-    @JoinColumn(name = "class_id", referencedColumnName = "id")
+    @MapsId("classUnitId")
+    @JoinColumn(name = "class_id")
     private ClassUnitEntity classUnitEntity;
 
     @ManyToOne
     @MapsId("roomId")
-    @JoinColumn(name = "room_id", referencedColumnName = "id")
+    @JoinColumn(name = "room_id")
     private RoomEntity roomEntity;
 
     @Column(nullable = false)
@@ -27,11 +28,11 @@ public class ClassRoomEntity {
     public ClassRoomEntity() {}
 
     public ClassRoomEntity(ClassUnitEntity classUnitEntity, RoomEntity roomEntity, Integer penalty) {
-        this.id = new ClassRoomPK(classUnitEntity.getId(), roomEntity.getId());
-        classUnitEntity.addClassRoom(this);
         this.classUnitEntity = classUnitEntity;
         this.roomEntity = roomEntity;
         this.penalty = penalty;
+
+        classUnitEntity.addClassRoom(this);
     }
 
     public ClassRoomPK getId() {
@@ -56,7 +57,6 @@ public class ClassRoomEntity {
 
     public void setClassUnit(ClassUnitEntity classUnitEntity) {
         this.classUnitEntity = classUnitEntity;
-        this.id.setClassUnitPK(classUnitEntity.getId());
     }
 
     public RoomEntity getRoom() {
@@ -65,7 +65,6 @@ public class ClassRoomEntity {
 
     public void setRoom(RoomEntity roomEntity) {
         this.roomEntity = roomEntity;
-        this.id.setRoomId(roomEntity.getId());
     }
 
     @Override

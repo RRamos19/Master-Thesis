@@ -1,11 +1,11 @@
-package thesis.view.managers;
+package thesis.controller.managers;
 
 import javafx.concurrent.Task;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
 import thesis.controller.ControllerInterface;
-import thesis.view.ViewInterface;
-import thesis.view.managers.components.ProgressBarUnit;
+import thesis.model.ModelInterface;
+import thesis.controller.managers.components.ProgressBarUnit;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,14 +13,14 @@ import java.util.UUID;
 
 public class ProgressBarManager {
     private static final int UPDATE_WAIT = 1000;
-    private final ViewInterface view;
     private final ControllerInterface controller;
+    private final ModelInterface model;
     private final ListView<HBox> progressContainer;
     private final Map<UUID, ProgressBarUnit> progressBarMap = new HashMap<>(); // UUID : ProgressBar
 
-    public ProgressBarManager(ListView<HBox> parent, ControllerInterface controller, ViewInterface view) {
-        this.view = view;
+    public ProgressBarManager(ListView<HBox> parent, ModelInterface model, ControllerInterface controller) {
         this.controller = controller;
+        this.model = model;
         this.progressContainer = parent;
     }
 
@@ -33,7 +33,7 @@ public class ProgressBarManager {
         progressContainer.getItems().add(bar.getProgressParent());
 
         bar.setCancelAction((event) -> {
-            controller.cancelGeneration(uuid);
+            model.cancelTimetableGeneration(uuid);
             stopProgressBar(uuid);
         });
 
@@ -55,7 +55,7 @@ public class ProgressBarManager {
                 do {
                     if(isCancelled()) break;
 
-                    progress = controller.getGenerationProgress(progressUUID);
+                    progress = model.getGenerationProgress(progressUUID);
 
                     if(maxProgress < progress) {
                         maxProgress = progress;
@@ -71,15 +71,15 @@ public class ProgressBarManager {
         };
 
         task.setOnFailed(e -> {
-            view.showExceptionMessage(e.getSource().getException());
+            controller.showExceptionMessage(e.getSource().getException());
             stopProgressBar(progressUUID);
-            controller.cancelGeneration(progressUUID);
+            model.cancelTimetableGeneration(progressUUID);
         });
 
         task.setOnSucceeded(e -> {
-            view.showInformationAlert("The solution for the program " + unit.getProgramName() + " has been created!\nPerform a double click on it to visualize!");
+            controller.showInformationAlert("The solution for the program " + unit.getProgramName() + " has been created!\nPerform a double click on it to visualize!");
             stopProgressBar(progressUUID);
-            view.updateTableView();
+            controller.updateTableView();
         });
 
         unit.startProgressBar(task);

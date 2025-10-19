@@ -3,22 +3,23 @@ package thesis.model.persistence.repository.entities;
 import jakarta.persistence.*;
 import thesis.model.persistence.repository.entities.embeddableIds.ClassTimePK;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
 @Table(name = "class_time")
-public class ClassTimeEntity {
+public class ClassTimeEntity implements Serializable {
     @EmbeddedId
-    private ClassTimePK id;
+    private ClassTimePK id = new ClassTimePK();
 
     @ManyToOne
     @MapsId("classUnitPK")
-    @JoinColumn(name = "class_id", referencedColumnName = "id")
+    @JoinColumn(name = "class_id")
     private ClassUnitEntity classUnitEntity;
 
     @ManyToOne
     @MapsId("timeBlockPK")
-    @JoinColumn(name = "time_block_id", referencedColumnName = "id")
+    @JoinColumn(name = "time_block_id")
     private TimeBlockEntity timeBlockEntity;
 
     @Column(nullable = false)
@@ -27,11 +28,11 @@ public class ClassTimeEntity {
     public ClassTimeEntity() {}
 
     public ClassTimeEntity(ClassUnitEntity classUnitEntity, TimeBlockEntity timeBlockEntity, int penalty) {
-        this.id = new ClassTimePK(classUnitEntity.getId(), timeBlockEntity.getId());
         this.classUnitEntity = classUnitEntity;
-        classUnitEntity.addClassTime(this);
         this.timeBlockEntity = timeBlockEntity;
         this.penalty = penalty;
+
+        classUnitEntity.addClassTime(this);
     }
 
     public ClassTimePK getId() {
@@ -47,8 +48,9 @@ public class ClassTimeEntity {
     }
 
     public void setClassUnit(ClassUnitEntity classUnitEntity) {
-        classUnitEntity.addClassTime(this);
+        this.classUnitEntity.getClassTimeEntitySet().remove(this);
         this.classUnitEntity = classUnitEntity;
+        classUnitEntity.addClassTime(this);
     }
 
     public int getPenalty() {
@@ -59,20 +61,12 @@ public class ClassTimeEntity {
         this.penalty = penalty;
     }
 
-    public short getDays() {
-        return timeBlockEntity.getDays();
+    public TimeBlockEntity getTimeBlockEntity() {
+        return timeBlockEntity;
     }
 
-    public short getStartSlot() {
-        return timeBlockEntity.getStartSlot();
-    }
-
-    public short getDuration() {
-        return timeBlockEntity.getDuration();
-    }
-
-    public int getWeeks() {
-        return timeBlockEntity.getWeeks();
+    public void setTimeBlockEntity(TimeBlockEntity timeBlockEntity) {
+        this.timeBlockEntity = timeBlockEntity;
     }
 
     @Override

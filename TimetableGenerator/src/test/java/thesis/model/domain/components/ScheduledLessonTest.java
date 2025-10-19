@@ -77,10 +77,10 @@ public class ScheduledLessonTest {
         scheduledLesson1.bindModel(data);
         scheduledLesson2.bindModel(data);
 
-        Room room1 = RoomFactory.createRoom(roomId1);
+        Room room1 = RoomFastIdFactory.createRoom(roomId1);
         room1.addUnavailability(time1);
 
-        Room room2 = RoomFactory.createRoom(roomId2);
+        Room room2 = RoomFastIdFactory.createRoom(roomId2);
 
         data.addRoom(room1);
         data.addRoom(room2);

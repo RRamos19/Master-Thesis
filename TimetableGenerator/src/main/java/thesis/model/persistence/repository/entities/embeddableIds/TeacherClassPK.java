@@ -9,43 +9,44 @@ import java.util.Objects;
 @Embeddable
 public class TeacherClassPK implements Serializable {
     @Column(name = "class_id")
-    private Integer classUnitPK;
+    private Integer classUnitId;
 
     @Column(name = "teacher_id")
-    private Integer teacherPK;
+    private Integer teacherId;
 
     public TeacherClassPK() {}
 
-    public TeacherClassPK(Integer classUnitPK, Integer teacherPK) {
-        this.classUnitPK = classUnitPK;
-        this.teacherPK = teacherPK;
+    public TeacherClassPK(Integer classUnitId, Integer teacherId) {
+        this.classUnitId = classUnitId;
+        this.teacherId = teacherId;
     }
 
-    public Integer getClassUnitPK() {
-        return classUnitPK;
+    public Integer getClassUnitId() {
+        return classUnitId;
     }
 
-    public void setClassUnitPK(Integer classUnitPK) {
-        this.classUnitPK = classUnitPK;
+    public void setClassUnitId(Integer classUnitId) {
+        this.classUnitId = classUnitId;
     }
 
-    public Integer getTeacherPK() {
-        return teacherPK;
+    public Integer getTeacherId() {
+        return teacherId;
     }
 
-    public void setTeacherPK(int teacherPK) {
-        this.teacherPK = teacherPK;
+    public void setTeacherId(int teacherId) {
+        this.teacherId = teacherId;
     }
 
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof TeacherClassPK)) return false;
         TeacherClassPK that = (TeacherClassPK) o;
-        return Objects.equals(teacherPK, that.teacherPK) && Objects.equals(classUnitPK, that.classUnitPK);
+        return Objects.equals(teacherId, that.teacherId) &&
+                Objects.equals(classUnitId, that.classUnitId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(classUnitPK, teacherPK);
+        return Objects.hash(classUnitId, teacherId);
     }
 }

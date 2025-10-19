@@ -4,15 +4,23 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import thesis.model.domain.InMemoryRepository;
+import thesis.model.domain.components.*;
 import thesis.model.exceptions.DatabaseException;
 import thesis.model.mapper.ModelConverter;
 import thesis.model.persistence.repository.EntityRepository;
 import thesis.model.persistence.repository.entities.*;
+import thesis.model.persistence.repository.entities.utils.RoomEntityFactory;
+import thesis.model.persistence.repository.entities.utils.TeacherEntityFactory;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
-public class DBHibernateManager implements DBManager<Collection<InMemoryRepository>> {
+public class DBHibernateManager implements DBManager<InMemoryRepository> {
+    private static final Logger logger = LoggerFactory.getLogger(DBHibernateManager.class);
+
     private final SessionFactory sessionFactory;
 
     /**
@@ -31,57 +39,92 @@ public class DBHibernateManager implements DBManager<Collection<InMemoryReposito
         }
     }
 
+    private Collection<String> checkIfFetchIsNeeded(Map<String, InMemoryRepository> storedData) {
+        List<String> programsToFetch = new ArrayList<>();
+
+        try(Session session = sessionFactory.openSession()) {
+            List<Object[]> programs = session.createQuery("select a.name, a.lastUpdatedAt from ProgramEntity a", Object[].class).getResultList();
+
+            for(Object[] data : programs) {
+                String programName = (String) data[0];
+                LocalDateTime dataLastUpdate = (LocalDateTime) data[1];
+
+                InMemoryRepository programData = storedData.get(programName);
+
+                if(programData != null) {
+                    LocalDateTime storedDataLastUpdate = programData.getLastUpdatedAt();
+
+                    // If the stored data is the same or more recent there is no need to fetch
+                    if(storedDataLastUpdate.equals(dataLastUpdate) ||
+                        storedDataLastUpdate.isAfter(dataLastUpdate)) {
+                        continue;
+                    }
+                }
+
+                programsToFetch.add(programName);
+            }
+        }
+
+        return programsToFetch;
+    }
+
     /**
      * Selects all the data available in the database and stores in its respective objects
      * @return Aggregate of all the data stored in the database
      */
-    public Collection<InMemoryRepository> fetchData() {
+    public Collection<InMemoryRepository> fetchData(Map<String, InMemoryRepository> storedData) {
         Collection<InMemoryRepository> allData = new ArrayList<>();
+        Collection<String> programsToFetch = checkIfFetchIsNeeded(storedData);
 
         try(Session session = sessionFactory.openSession()) {
             Transaction tx = session.beginTransaction();
 
-            List<ProgramEntity> programs = session.createQuery("select a from ProgramEntity a", ProgramEntity.class).getResultList();
+            for(String programName : programsToFetch) {
+                List<ProgramEntity> programs = session.createQuery("SELECT a FROM ProgramEntity a WHERE a.name = :name", ProgramEntity.class)
+                        .setParameter("name", programName)
+                        .getResultList();
 
-            for(ProgramEntity programEntity : programs) {
-                EntityRepository data = new EntityRepository();
-                data.storeProgram(programEntity);
+                for (ProgramEntity programEntity : programs) {
+                    EntityRepository data = new EntityRepository();
+                    data.storeProgram(programEntity);
 
-                for(CourseEntity courseEntity : programEntity.getCourseEntitySet()) {
-                    data.storeCourse(courseEntity);
+                    for (CourseEntity courseEntity : programEntity.getCourseEntitySet()) {
+                        data.storeCourse(courseEntity);
 
-                    // Get all the rooms and teachers for this problem
-                    for(ConfigEntity configEntity: courseEntity.getConfigSet()) {
-                        for(SubpartEntity subpartEntity : configEntity.getSubpartSet()) {
-                            for(ClassUnitEntity classUnitEntity : subpartEntity.getClassUnitSet()) {
-                                // Get every room
-                                for(ClassRoomEntity classRoomEntity : classUnitEntity.getClassRoomEntitySet()) {
-                                    data.storeRoom(classRoomEntity.getRoom());
-                                }
+                        // Get all the rooms and teachers for this problem
+                        for (ConfigEntity configEntity : courseEntity.getConfigSet()) {
+                            for (SubpartEntity subpartEntity : configEntity.getSubpartSet()) {
+                                for (ClassUnitEntity classUnitEntity : subpartEntity.getClassUnitSet()) {
+                                    // Get every room
+                                    for (ClassRoomEntity classRoomEntity : classUnitEntity.getClassRoomEntitySet()) {
+                                        data.storeRoom(classRoomEntity.getRoom());
+                                    }
 
-                                // Get every teacher
-                                for(TeacherEntity teacherEntity : classUnitEntity.getTeacherEntitySet()) {
-                                    data.storeTeacher(teacherEntity);
-                                }
+                                    // Get every teacher
+                                    for (TeacherClassEntity teacherClassEntity : classUnitEntity.getTeacherClassEntitySet()) {
+                                        data.storeTeacher(teacherClassEntity.getTeacherEntity());
+                                    }
 
-                                // Get every constraint
-                                for(ConstraintEntity constraintEntity : classUnitEntity.getConstraintEntitySet()) {
-                                    data.storeConstraintEntity(constraintEntity);
+                                    // Get every constraint
+                                    for (ClassConstraintEntity classConstraintEntity : classUnitEntity.getClassConstraintEntitySet()) {
+                                        data.storeConstraintEntity(classConstraintEntity.getConstraintEntity());
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                for (TimetableEntity timetableEntity : programEntity.getTimetableEntitySet()) {
-                    data.storeTimetable(timetableEntity);
-                }
+                    for (TimetableEntity timetableEntity : programEntity.getTimetableEntitySet()) {
+                        data.storeTimetable(timetableEntity);
+                    }
 
-                try {
-                    allData.add(ModelConverter.convertToDomain(data));
-                } catch (Exception ignored) {
-                    // Should be impossible, unless the data that causes the problem
-                    // was added on the database manually
+                    try {
+                        allData.add(ModelConverter.convertToDomain(data));
+                    } catch (Exception ignored) {
+                        // Should be impossible, unless the data that causes the problem
+                        // was added on the database manually
+                        logger.error("An exception occurred: {}\nStacktrace: {}", ignored.getMessage(), Arrays.toString(ignored.getStackTrace()));
+                    }
                 }
             }
 
@@ -91,46 +134,69 @@ public class DBHibernateManager implements DBManager<Collection<InMemoryReposito
         return allData;
     }
 
-    /**
-     * Stores all data present in EntityModel into the database
-     * @param allData Collection of classes that contain all the data to be inserted
-     */
-    public void storeData(Collection<InMemoryRepository> allData) {
-        List<EntityRepository> convertedData = new ArrayList<>();
-        for(InMemoryRepository data : allData) {
-            convertedData.add(ModelConverter.convertToEntity(sessionFactory, data));
+    private Collection<String> checkIfStoreIsNeeded(Map<String, InMemoryRepository> storedData) {
+        List<String> programsToStore = new ArrayList<>(storedData.keySet());
+
+        try(Session session = sessionFactory.openSession()) {
+            List<Object[]> programs = session.createQuery("select a.name, a.lastUpdatedAt from ProgramEntity a", Object[].class).getResultList();
+
+            for(Object[] data : programs) {
+                String programName = (String) data[0];
+                LocalDateTime dataLastUpdate = (LocalDateTime) data[1];
+
+                InMemoryRepository programData = storedData.get(programName);
+
+                if(programData != null) {
+                    LocalDateTime storedDataLastUpdate = programData.getLastUpdatedAt();
+
+                    // If the data in the database is the same or more recent there is no need to fetch
+                    if(storedDataLastUpdate.equals(dataLastUpdate) ||
+                        storedDataLastUpdate.isBefore(dataLastUpdate)) {
+                        programsToStore.remove(programName);
+                    }
+                }
+            }
         }
 
-        // TODO: Fix method
+        return programsToStore;
+    }
+
+    /**
+     * Stores all data present in EntityModel into the database
+     * @param storedData Collection of classes that contain all the data to be inserted
+     */
+    public void storeData(Map<String, InMemoryRepository> storedData) {
+        Collection<String> dataToStore = checkIfStoreIsNeeded(storedData);
+
         try(Session session = sessionFactory.openSession()) {
             Transaction tx = session.beginTransaction();
 
             try {
-                for (EntityRepository data : convertedData) {
-                    ProgramEntity program = data.getProgramEntity();
+                for (String programToStore : dataToStore) {
+                    InMemoryRepository inMemoryRepository = storedData.get(programToStore);
 
                     List<ProgramEntity> storedPrograms = session.createQuery(
                                     "SELECT p FROM ProgramEntity p WHERE p.name = :name", ProgramEntity.class)
-                            .setParameter("name", program.getName())
+                            .setParameter("name", programToStore)
                             .getResultList();
 
                     // As the name of the program is unique, at most only a single result should be returned
-                    ProgramEntity storedProgram = storedPrograms.isEmpty() ? null : storedPrograms.get(0);
+                    ProgramEntity dbProgram = storedPrograms.isEmpty() ? null : storedPrograms.get(0);
 
-                    ProgramEntity newProgram;
-                    if (storedProgram != null) {
-                        // Set the same id to overwrite the stored values
-                        program.setId(storedProgram.getId());
+                    if (dbProgram == null) {
+                        // Create a complete new instance
+                        EntityRepository entityRepository = ModelConverter.convertToEntity(session, inMemoryRepository);
 
-                        newProgram = session.merge(program);
-                        data.storeProgram(newProgram);
+                        session.persist(entityRepository.getProgramEntity());
                     } else {
-                        session.persist(program);
+                        // Merge the data of the instance with the local data
+                        mergeData(session, dbProgram, inMemoryRepository);
                     }
                 }
                 tx.commit();
 
             } catch (Exception e) {
+                logger.error("An exception occurred: {}\nStacktrace: {}", e.getMessage(), Arrays.toString(e.getStackTrace()));
                 if (tx.getStatus().canRollback()) {
                     tx.rollback();
                 }
@@ -141,28 +207,58 @@ public class DBHibernateManager implements DBManager<Collection<InMemoryReposito
         }
     }
 
-    public SessionFactory getSessionFactory() {
-        return sessionFactory;
+    private void mergeData(Session session, ProgramEntity programEntity, InMemoryRepository programData) {
+        TeacherEntityFactory teacherEntityFactory = new TeacherEntityFactory(session);
+        RoomEntityFactory roomEntityFactory = new RoomEntityFactory(session);
+
+        DataMerger dataMerger = new DataMerger(session, roomEntityFactory, teacherEntityFactory);
+
+        TimetableConfiguration timetableConfiguration = programData.getTimetableConfiguration();
+
+        programEntity.setNumberDays(timetableConfiguration.getNumDays());
+        programEntity.setNumberWeeks(timetableConfiguration.getNumWeeks());
+        programEntity.setSlotsPerDay(timetableConfiguration.getSlotsPerDay());
+
+        programEntity.setRoomWeight(timetableConfiguration.getRoomWeight());
+        programEntity.setTimeWeight(timetableConfiguration.getTimeWeight());
+        programEntity.setDistributionWeight(timetableConfiguration.getDistribWeight());
+
+        programEntity.setLastUpdatedAt(programData.getLastUpdatedAt());
+
+        // Create the room instances
+        programData.getRooms().forEach((room) -> {
+            RoomEntity roomEntity = roomEntityFactory.getOrCreateRoom(room.getRoomId());
+
+            room.getRoomDistances().forEach((roomId, distance) -> {
+                boolean alreadyExists = false;
+
+                for(RoomDistanceEntity roomDistanceEntity : roomEntity.getRoom1DistanceSet()) {
+                    if(Objects.equals(roomDistanceEntity.getRoom2().getName(), roomId)) {
+                        alreadyExists = true;
+                        roomDistanceEntity.setDistance(distance);
+                        break;
+                    }
+                }
+
+                if(!alreadyExists) {
+                    new RoomDistanceEntity(roomEntity, roomEntityFactory.getOrCreateRoom(roomId), distance);
+                }
+            });
+        });
+
+        // Create the teacher instances
+        programData.getTeachers().forEach((teacher) -> {
+            TeacherEntity teacherEntity = teacherEntityFactory.get(teacher.getId());
+            if(teacherEntity == null) {
+                teacherEntityFactory.create(teacher.getId(), teacher.getName());
+            }
+        });
+
+        // Merge the classes
+        dataMerger.mergeClasses(programEntity, programData);
+
+        programData.getTimetableList().forEach((timetable -> {
+
+        }));
     }
-
-
-//    /**
-//     * Saves or updates the data provided on the database
-//     * @param session Session used to connect to the database
-//     * @param o Object that is to be stored
-//     * @param objId Primary key of the object provided
-//     * @return Either the same object provided in the case of persist or the return of the merge
-//     * @param <T> Type of the object provided
-//     */
-//    private <T> T saveOnDatabase(Session session, T o, Object objId) {
-//        if(objId == null || session.find(o.getClass(), objId) == null) {
-//            // If the object isn't found in the DB then a persist
-//            // is needed to create the entity in the database
-//            session.persist(o);
-//            return o;
-//        } else {
-//            // If the object is found we just need to merge with the database to update the values
-//            return session.merge(o);
-//        }
-//    }
 }

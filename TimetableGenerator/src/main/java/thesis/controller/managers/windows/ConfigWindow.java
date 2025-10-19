@@ -1,4 +1,4 @@
-package thesis.view.managers.windows;
+package thesis.controller.managers.windows;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -13,12 +13,11 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-import thesis.view.ViewInterface;
+import thesis.controller.ControllerInterface;
 import thesis.view.utils.AppIcons;
-import thesis.view.managers.components.GeneralConfiguration;
+import thesis.controller.managers.components.GeneralConfiguration;
 
 public class ConfigWindow {
-    private final ViewInterface view;
     private final Stage configStage;
     private final GeneralConfiguration generalConfiguration;
 
@@ -32,8 +31,7 @@ public class ConfigWindow {
     private TextField coolingRateField;
     private TextField kField;
 
-    public ConfigWindow(Window primaryWindow, GeneralConfiguration generalConfiguration, ViewInterface view) {
-        this.view = view;
+    public ConfigWindow(Window primaryWindow, GeneralConfiguration generalConfiguration, ControllerInterface controller) {
         this.generalConfiguration = generalConfiguration;
 
         configStage = new Stage();
@@ -62,7 +60,7 @@ public class ConfigWindow {
                 generalConfiguration.setCoolingRate(Double.parseDouble(coolingRateField.getText()));
                 generalConfiguration.setK(Integer.parseInt(kField.getText()));
             } catch (Exception e) {
-                view.showExceptionMessage(e);
+                controller.showExceptionMessage(e);
                 return;
             }
 

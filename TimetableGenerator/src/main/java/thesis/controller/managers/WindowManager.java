@@ -1,4 +1,4 @@
-package thesis.view.managers;
+package thesis.controller.managers;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -10,14 +10,14 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import thesis.controller.ControllerInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.ScheduledLesson;
 import thesis.model.domain.components.Timetable;
-import thesis.view.ViewInterface;
 import thesis.view.utils.AppIcons;
-import thesis.view.managers.components.GeneralConfiguration;
-import thesis.view.managers.windows.ConfigWindow;
-import thesis.view.managers.windows.ExceptionMessageWindow;
+import thesis.controller.managers.components.GeneralConfiguration;
+import thesis.controller.managers.windows.ConfigWindow;
+import thesis.controller.managers.windows.ExceptionMessageWindow;
 import thesis.view.utils.Defaults;
 
 import java.util.*;
@@ -26,16 +26,16 @@ import java.util.stream.Collectors;
 public class WindowManager {
     private static final List<String> DAYS_OF_WEEK = List.of("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
     private final Window primaryWindow;
-    private final ViewInterface view;
+    private final ControllerInterface controller;
     private final GeneralConfiguration generalConfiguration;
     private ExceptionMessageWindow exceptionMessageWindow;
     private Stage instructionsWindow;
     private ConfigWindow configWindow;
-    private Map<Timetable, Stage> timetableWindowCache = new HashMap<>();
+    private final Map<Timetable, Stage> timetableWindowCache = new HashMap<>();
 
-    public WindowManager(Window primaryWindow, ViewInterface view, GeneralConfiguration generalConfiguration) {
+    public WindowManager(Window primaryWindow, ControllerInterface controller, GeneralConfiguration generalConfiguration) {
         this.primaryWindow = primaryWindow;
-        this.view = view;
+        this.controller = controller;
         this.generalConfiguration = generalConfiguration;
     }
 
@@ -119,7 +119,7 @@ public class WindowManager {
 
     public Stage getConfigWindow(GeneralConfiguration generalConfiguration) {
         if(configWindow == null) {
-            configWindow = new ConfigWindow(primaryWindow, generalConfiguration, view);
+            configWindow = new ConfigWindow(primaryWindow, generalConfiguration, controller);
         }
 
         configWindow.resetLabels();

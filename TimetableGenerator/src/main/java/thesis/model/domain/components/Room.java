@@ -43,9 +43,13 @@ public class Room {
         roomDistances.put(roomId, distance);
     }
 
+    public void removeRoomDistance(String roomId) {
+        roomDistances.remove(roomId);
+    }
+
     public void fixRoomDistances() {
         for(Map.Entry<String, Integer> roomDistance : roomDistances.entrySet()) {
-            fastRoomDistances.put(RoomFactory.getId(roomDistance.getKey()), roomDistance.getValue().intValue());
+            fastRoomDistances.put(RoomFastIdFactory.getId(roomDistance.getKey()), roomDistance.getValue().intValue());
         }
     }
 

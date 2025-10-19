@@ -1,37 +1,41 @@
 package thesis.model.persistence.repository.entities;
 
 import jakarta.persistence.*;
+import thesis.model.persistence.repository.entities.embeddableIds.TeacherUnavailabilityPK;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
 @Table(name = "teacher_unavailability")
-public class TeacherUnavailabilityEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+public class TeacherUnavailabilityEntity implements Serializable {
+    @EmbeddedId
+    private TeacherUnavailabilityPK id = new TeacherUnavailabilityPK();
 
     @ManyToOne
-    @JoinColumn(name = "teacher_id", referencedColumnName = "id")
+    @MapsId("teacherId")
+    @JoinColumn(name = "teacher_id")
     private TeacherEntity teacherEntity;
 
     @ManyToOne
-    @JoinColumn(name = "time_block_id", referencedColumnName = "id")
+    @MapsId("timeBlockId")
+    @JoinColumn(name = "time_block_id")
     private TimeBlockEntity timeBlockEntity;
 
     public TeacherUnavailabilityEntity() {}
 
     public TeacherUnavailabilityEntity(TeacherEntity teacherEntity, TimeBlockEntity timeBlockEntity) {
-        teacherEntity.addUnavailability(this);
         this.teacherEntity = teacherEntity;
         this.timeBlockEntity = timeBlockEntity;
+
+        teacherEntity.addUnavailability(this);
     }
 
-    public Integer getId() {
+    public TeacherUnavailabilityPK getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(TeacherUnavailabilityPK id) {
         this.id = id;
     }
 

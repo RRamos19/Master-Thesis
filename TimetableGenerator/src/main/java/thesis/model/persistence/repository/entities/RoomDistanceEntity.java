@@ -3,22 +3,23 @@ package thesis.model.persistence.repository.entities;
 import jakarta.persistence.*;
 import thesis.model.persistence.repository.entities.embeddableIds.RoomDistancePK;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
 @Table(name = "room_distance")
-public class RoomDistanceEntity {
+public class RoomDistanceEntity implements Serializable {
     @EmbeddedId
-    private RoomDistancePK id;
+    private RoomDistancePK id = new RoomDistancePK();
 
     @ManyToOne
     @MapsId("roomId1")
-    @JoinColumn(name = "room_id_1", referencedColumnName = "id")
+    @JoinColumn(name = "room_id_1")
     private RoomEntity roomEntity1;
 
     @ManyToOne
     @MapsId("roomId2")
-    @JoinColumn(name = "room_id_2", referencedColumnName = "id")
+    @JoinColumn(name = "room_id_2")
     private RoomEntity roomEntity2;
 
     @Column(nullable = false)
@@ -27,11 +28,11 @@ public class RoomDistanceEntity {
     public RoomDistanceEntity() {}
 
     public RoomDistanceEntity(RoomEntity roomEntity1, RoomEntity roomEntity2, int travelDistance) {
-        this.id = new RoomDistancePK(roomEntity1.getId(), roomEntity2.getId());
-        roomEntity1.addRoom1Distance(this);
         this.roomEntity1 = roomEntity1;
         this.roomEntity2 = roomEntity2;
         this.distance = travelDistance;
+
+        roomEntity1.addRoom1Distance(this);
     }
 
     public RoomDistancePK getId() {
@@ -50,9 +51,12 @@ public class RoomDistanceEntity {
         return distance;
     }
 
+    public void setDistance(int distance) {
+        this.distance = distance;
+    }
+
     public void setRoom1(RoomEntity roomEntity1) {
         this.roomEntity1 = roomEntity1;
-        this.id.setRoomId1(roomEntity1.getId());
     }
 
     public RoomEntity getRoom2() {
@@ -61,7 +65,6 @@ public class RoomDistanceEntity {
 
     public void setRoom2(RoomEntity roomEntity2) {
         this.roomEntity2 = roomEntity2;
-        this.id.setRoomId2(roomEntity2.getId());
     }
 
     @Override

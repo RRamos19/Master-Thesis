@@ -1,4 +1,4 @@
-package thesis.view.managers.windows;
+package thesis.controller.managers.windows;
 
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;

@@ -2,11 +2,12 @@ package thesis.model.persistence.repository.entities;
 
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
 @Table(name = "constraint_type")
-public class ConstraintTypeEntity {
+public class ConstraintTypeEntity implements Serializable {
     @Id
     private Integer id;
 

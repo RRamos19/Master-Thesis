@@ -2,11 +2,12 @@ package thesis.model.persistence.repository.entities;
 
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.util.*;
 
 @Entity
 @Table(name = "room")
-public class RoomEntity {
+public class RoomEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

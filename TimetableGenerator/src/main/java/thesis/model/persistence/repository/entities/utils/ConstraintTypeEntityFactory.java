@@ -1,18 +1,18 @@
 package thesis.model.persistence.repository.entities.utils;
 
-import jakarta.persistence.EntityManager;
+import org.hibernate.Session;
 import thesis.model.persistence.repository.entities.ConstraintTypeEntity;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ConstraintTypeFactory {
-    private final EntityManager entityManager;
+public class ConstraintTypeEntityFactory {
+    private final Session session;
     private final Map<String, ConstraintTypeEntity> constraintTypeEntityMap = new HashMap<>();
 
-    public ConstraintTypeFactory(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    public ConstraintTypeEntityFactory(Session session) {
+        this.session = session;
         updateCache();
     }
 
@@ -27,7 +27,7 @@ public class ConstraintTypeFactory {
     }
 
     private void updateCache() {
-        List<ConstraintTypeEntity> storedData = entityManager.createQuery("SELECT a FROM ConstraintTypeEntity a", ConstraintTypeEntity.class).getResultList();
+        List<ConstraintTypeEntity> storedData = session.createQuery("SELECT a FROM ConstraintTypeEntity a", ConstraintTypeEntity.class).getResultList();
         for (ConstraintTypeEntity constraintTypeEntity : storedData) {
             constraintTypeEntityMap.put(constraintTypeEntity.getName(), constraintTypeEntity);
         }

@@ -1,7 +1,7 @@
-package thesis.view.managers;
+package thesis.controller.managers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import thesis.view.managers.components.GeneralConfiguration;
+import thesis.controller.managers.components.GeneralConfiguration;
 
 import java.io.File;
 import java.io.IOException;

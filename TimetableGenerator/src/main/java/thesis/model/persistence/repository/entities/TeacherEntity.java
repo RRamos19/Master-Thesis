@@ -2,11 +2,12 @@ package thesis.model.persistence.repository.entities;
 
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.util.*;
 
 @Entity
 @Table(name = "teacher")
-public class TeacherEntity {
+public class TeacherEntity implements Serializable {
     @Id
     private Integer id;
 

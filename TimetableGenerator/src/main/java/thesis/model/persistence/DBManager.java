@@ -1,19 +1,18 @@
 package thesis.model.persistence;
 
-import org.hibernate.SessionFactory;
+import java.util.Collection;
+import java.util.Map;
 
 public interface DBManager<T> {
     /**
      * Fetches all the data present in the database
      * @return An aggregation of the data present in the database
      */
-    T fetchData();
+    Collection<T> fetchData(Map<String, T> programsToFetch);
 
     /**
      * Inserts the data provided into the database. The insertion should be done in a transaction to avoid inconsistencies
      * @param data Class that contains all the data to be inserted
      */
-    void storeData(T data);
-
-    SessionFactory getSessionFactory();
+    void storeData(Map<String, T> data);
 }

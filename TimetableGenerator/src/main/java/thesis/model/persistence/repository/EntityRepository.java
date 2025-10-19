@@ -102,37 +102,6 @@ public class EntityRepository {
         return new ArrayList<>(rooms.values());
     }
 
-    /**
-     * Merges this instance with another instance. Values that are already present on this object are overwritten with the one passed in the parameters. The values of optimization or configuration are not merged.
-     * @param timetableData Instance of StructuredTimetableData to be merged with.
-     */
-    public void mergeWithTimetable(EntityRepository timetableData) {
-        if(timetableData == null) {
-            // Should never happen
-            throw new IllegalArgumentException("The timetable provided is null");
-        }
-
-        for(CourseEntity c : timetableData.getCourses()) {
-            storeCourse(c);
-        }
-
-        for(TeacherEntity t : timetableData.getTeachers()) {
-            storeTeacher(t);
-        }
-
-        for(ConstraintEntity r : timetableData.getConstraintEntities()) {
-            storeConstraintEntity(r);
-        }
-
-        for(TimetableEntity t : timetableData.getTimetables()) {
-            storeTimetable(t);
-        }
-
-        for(RoomEntity r : timetableData.getRooms()) {
-            storeRoom(r);
-        }
-    }
-
     @Override
     public String toString() {
         int nrConfigs = 0, nrSubparts = 0, nrClasses = 0;

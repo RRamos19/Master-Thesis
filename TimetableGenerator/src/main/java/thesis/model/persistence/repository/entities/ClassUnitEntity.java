@@ -2,11 +2,12 @@ package thesis.model.persistence.repository.entities;
 
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.util.*;
 
 @Entity
 @Table(name = "class_unit")
-public class ClassUnitEntity {
+public class ClassUnitEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -22,13 +23,8 @@ public class ClassUnitEntity {
     @Column(length = 10)
     private String name;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "teacher_class",
-            joinColumns = { @JoinColumn(name = "class_id") },
-            inverseJoinColumns = { @JoinColumn(name = "teacher_id") }
-    )
-    private final Set<TeacherEntity> teacherClassEntitySet = new HashSet<>();
+    @OneToMany(mappedBy = "classUnitEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private final Set<TeacherClassEntity> teacherClassEntitySet = new HashSet<>();
 
     @OneToMany(mappedBy = "classUnitEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final Set<ClassTimeEntity> classTimeEntitySet = new HashSet<>();
@@ -36,13 +32,8 @@ public class ClassUnitEntity {
     @OneToMany(mappedBy = "classUnitEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final Set<ClassRoomEntity> classRoomEntitySet = new HashSet<>();
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "class_constraint",
-            joinColumns = @JoinColumn(name = "class_id"),
-            inverseJoinColumns = @JoinColumn(name = "constraint_id")
-    )
-    private final Set<ConstraintEntity> constraintEntitySet = new HashSet<>();
+    @OneToMany(mappedBy = "classUnitEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private final Set<ClassConstraintEntity> classConstraintEntitySet = new HashSet<>();
 
     public ClassUnitEntity() {}
 
@@ -84,7 +75,7 @@ public class ClassUnitEntity {
         return subpartEntity;
     }
 
-    public Set<TeacherEntity> getTeacherEntitySet() {
+    public Set<TeacherClassEntity> getTeacherClassEntitySet() {
         return teacherClassEntitySet;
     }
 
@@ -96,12 +87,12 @@ public class ClassUnitEntity {
         return classRoomEntitySet;
     }
 
-    public Set<ConstraintEntity> getConstraintEntitySet() {
-        return constraintEntitySet;
+    public Set<ClassConstraintEntity> getClassConstraintEntitySet() {
+        return classConstraintEntitySet;
     }
 
-    public void addTeacherClass(TeacherEntity teacherEntity) {
-        teacherClassEntitySet.add(teacherEntity);
+    public void addTeacherClass(TeacherClassEntity teacherClassEntity) {
+        teacherClassEntitySet.add(teacherClassEntity);
     }
 
     public void addClassTime(ClassTimeEntity classTimeEntity) {
@@ -112,8 +103,8 @@ public class ClassUnitEntity {
         classRoomEntitySet.add(classRoomEntity);
     }
 
-    public void addClassConstraint(ConstraintEntity constraintEntity) {
-        constraintEntitySet.add(constraintEntity);
+    public void addClassConstraint(ClassConstraintEntity classConstraintEntity) {
+        classConstraintEntitySet.add(classConstraintEntity);
     }
 
     @Override

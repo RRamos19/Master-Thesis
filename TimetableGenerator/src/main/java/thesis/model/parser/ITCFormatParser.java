@@ -22,7 +22,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class ITCFormatParser implements InputFileReader {
     private static final DateTimeFormatter timeStampUTC12Formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -208,25 +207,6 @@ public class ITCFormatParser implements InputFileReader {
 
         data.verifyValidity();
 
-        // Add bidirectionality to room distances
-        for(Room room1 : data.getRooms()) {
-            String roomId = room1.getRoomId();
-
-            for(Map.Entry<String, Integer> roomDistances : room1.getRoomDistances().entrySet()) {
-                Room room2 = data.getRoom(roomDistances.getKey());
-
-                if(room2 != null) {
-                    room2.addRoomDistance(roomId, roomDistances.getValue());
-                }
-            }
-        }
-
-        // Now that the bidirectionality is done populate the new map that was made
-        // to optimize the lookups of room distances
-        for(Room room : data.getRooms()) {
-            room.fixRoomDistances();
-        }
-
         // Set the last updated at timestamp
         data.setLastUpdatedAt();
         
@@ -334,7 +314,7 @@ public class ITCFormatParser implements InputFileReader {
                         case ROOM_TAG:
                             String roomName = getAttributeValue(startElement, "id");
 
-                            room = RoomFactory.createRoom(roomName);
+                            room = RoomFastIdFactory.createRoom(roomName);
                             break;
                         case TRAVEL_TAG:
                             if(room == null){

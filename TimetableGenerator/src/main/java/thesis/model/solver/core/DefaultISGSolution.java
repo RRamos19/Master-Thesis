@@ -190,7 +190,7 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
                 if (classId.equals(valueClassId) || conflicts.contains(classId)) continue;
 
                 Room scheduledLessonRoom = scheduledLesson.getRoom();
-                int travelTime = scheduledLessonRoom != null ? scheduledLessonRoom.getRoomDistance(RoomFactory.getId(valueRoomId)) : 0;
+                int travelTime = scheduledLessonRoom != null ? scheduledLessonRoom.getRoomDistance(RoomFastIdFactory.getId(valueRoomId)) : 0;
 
                 // There is only a conflict if the times overlap
                 if (scheduledLesson.getScheduledTime().overlaps(valueTime, travelTime)) {

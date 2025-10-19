@@ -43,7 +43,7 @@ public interface ModelInterface {
 
     // Data import methods
     XmlResult readFile(File file) throws ParsingException, InvalidConfigurationException;
-    void importRepository(InMemoryRepository repository);
+    void importRepository(InMemoryRepository repository) throws InvalidConfigurationException;
     void importSolution(Timetable solution) throws InvalidConfigurationException, CheckedIllegalStateException;
 
     void removeTimetable(Timetable timetable);

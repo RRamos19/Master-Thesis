@@ -2,12 +2,13 @@ package thesis.model.persistence.repository.entities;
 
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
 @Table(name = "tb_program")
-public class ProgramEntity {
+public class ProgramEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -75,7 +76,7 @@ public class ProgramEntity {
         return numberDays;
     }
 
-    public void setNumberDays(byte numberDays) {
+    public void setNumberDays(short numberDays) {
         this.numberDays = numberDays;
     }
 
@@ -83,7 +84,7 @@ public class ProgramEntity {
         return numberWeeks;
     }
 
-    public void setNumberWeeks(short numberWeeks) {
+    public void setNumberWeeks(int numberWeeks) {
         this.numberWeeks = numberWeeks;
     }
 
@@ -121,6 +122,10 @@ public class ProgramEntity {
 
     public LocalDateTime getLastUpdatedAt() {
         return lastUpdatedAt;
+    }
+
+    public void setLastUpdatedAt(LocalDateTime lastUpdatedAt) {
+        this.lastUpdatedAt = lastUpdatedAt;
     }
 
     public void addCourse(CourseEntity courseEntity) {

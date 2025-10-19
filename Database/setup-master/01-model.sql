@@ -90,12 +90,11 @@ CREATE TABLE room (
 );
 
 CREATE TABLE teacher_unavailability (
-	id SERIAL,
 	teacher_id INT NOT NULL,
 	time_block_id INT NOT NULL,
 	CONSTRAINT teacher_unavailability_time_block_fk FOREIGN KEY (time_block_id) REFERENCES time_block(id),
 	CONSTRAINT teacher_unavailability_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id),
-	CONSTRAINT teacher_unavailability_pk PRIMARY KEY (id, teacher_id)
+	CONSTRAINT teacher_unavailability_pk PRIMARY KEY (teacher_id, time_block_id)
 );
 
 CREATE TABLE teacher_class (
@@ -125,11 +124,11 @@ CREATE TABLE room_distance (
 );
 
 CREATE TABLE room_unavailability (
-	id SERIAL PRIMARY KEY,
 	room_id INT NOT NULL,
 	time_block_id INT NOT NULL,
 	CONSTRAINT room_unavailability_time_block_fk FOREIGN KEY (time_block_id) REFERENCES time_block(id),
-	CONSTRAINT room_unavailability_room_fk FOREIGN KEY (room_id) REFERENCES room(id)
+	CONSTRAINT room_unavailability_room_fk FOREIGN KEY (room_id) REFERENCES room(id),
+	CONSTRAINT room_unavailability_pk PRIMARY KEY (room_id, time_block_id)
 );
 
 CREATE TABLE class_time (

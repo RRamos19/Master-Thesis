@@ -20,7 +20,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox fx:id="applicationPrincipalPane" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" onDragDropped="#dragDroppedEvent" onDragEntered="#dragEnteredEvent" onDragExited="#dragExitedEvent" onDragOver="#dragOverEvent" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="thesis.view.JavaFXController">
+<VBox fx:id="applicationPrincipalPane" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <MenuBar maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity">
         <menus>
@@ -28,22 +28,22 @@
             <items>
                   <Menu mnemonicParsing="false" text="Import">
                     <items>
-                      <MenuItem mnemonicParsing="false" onAction="#importDataITCEvent" text="ITC" />
+                      <MenuItem fx:id="importITCBtn" mnemonicParsing="false" text="ITC" />
                     </items>
                   </Menu>
                   <Menu mnemonicParsing="false" text="Export">
                     <items>
                         <Menu mnemonicParsing="false" text="Data">
                           <items>
-                            <MenuItem mnemonicParsing="false" onAction="#exportDataITCEvent" text="Export as ITC" />
-                              <MenuItem mnemonicParsing="false" onAction="#exportDataCSVEvent" text="Export as CSV" />
+                            <MenuItem fx:id="exportDataITCBtn" mnemonicParsing="false" text="Export as ITC" />
+                              <MenuItem fx:id="exportDataCSVBtn" mnemonicParsing="false" text="Export as CSV" />
                           </items>
                         </Menu>
                         <Menu mnemonicParsing="false" text="Solutions">
                           <items>
-                            <MenuItem mnemonicParsing="false" onAction="#exportSolutionsITCEvent" text="Export as ITC" />
-                              <MenuItem mnemonicParsing="false" onAction="#exportSolutionsPNGEvent" text="Export as PNG" />
-                              <MenuItem mnemonicParsing="false" onAction="#exportSolutionsPDFEvent" text="Export as PDF" />
+                            <MenuItem fx:id="exportSolutionsITCBtn" mnemonicParsing="false" text="Export as ITC" />
+                              <MenuItem fx:id="exportSolutionsPNGBtn" mnemonicParsing="false" text="Export as PNG" />
+                              <MenuItem fx:id="exportSolutionsPDFBtn" mnemonicParsing="false" text="Export as PDF" />
                           </items>
                         </Menu>
                     </items>
@@ -52,12 +52,12 @@
           </Menu>
           <Menu mnemonicParsing="false" text="Settings">
             <items>
-              <MenuItem mnemonicParsing="false" onAction="#configMenuEvent" text="Configuration" />
+              <MenuItem fx:id="configurationBtn" mnemonicParsing="false" text="Configuration" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Help">
             <items>
-              <MenuItem mnemonicParsing="false" onAction="#showInstructionsMenuEvent" text="Instructions" />
+              <MenuItem fx:id="instructionsBtn" mnemonicParsing="false" text="Instructions" />
             </items>
           </Menu>
         </menus>
@@ -147,7 +147,7 @@
                                     </VBox>
                                  </children>
                               </VBox>
-                              <Button fx:id="connectBtn" alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#connectEvent" text="Connect">
+                              <Button fx:id="connectBtn" alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" text="Connect">
                                  <HBox.margin>
                                     <Insets bottom="10.0" right="10.0" />
                                  </HBox.margin>
@@ -156,7 +156,7 @@
                         </HBox>
                         <HBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" VBox.vgrow="ALWAYS">
                            <children>
-                              <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="400.0" prefWidth="168.0">
+                              <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="168.0">
                                  <children>
                                     <Label alignment="CENTER" maxWidth="1.7976931348623157E308" minHeight="25.0" text="Program:" textAlignment="CENTER" />
                                     <ChoiceBox fx:id="programsChoiceBox" maxWidth="1.7976931348623157E308" />
@@ -168,8 +168,8 @@
                               <TableView fx:id="tableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="509.0" HBox.hgrow="ALWAYS" />
                               <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" spacing="5.0">
                                  <children>
-                                    <Button fx:id="reoptimizeButton" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#reoptimizeEvent" text="Reoptimize" visible="false" />
-                                    <Button fx:id="removeButton" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#removeEvent" text="Remove" visible="false" />
+                                    <Button fx:id="reoptimizeButton" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" text="Reoptimize" visible="false" />
+                                    <Button fx:id="removeButton" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" text="Remove" visible="false" />
                                  </children>
                                  <HBox.margin>
                                     <Insets left="10.0" right="10.0" top="10.0" />
@@ -177,9 +177,9 @@
                               </VBox>
                            </children>
                         </HBox>
-                        <AnchorPane>
+                        <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity">
                            <children>
-                              <Button alignment="TOP_LEFT" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#generateSolutionEvent" text="Generate" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0" />
+                              <Button fx:id="generateSolutionBtn" alignment="TOP_LEFT" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" text="Generate" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0" />
                            </children>
                         </AnchorPane>
                      </children>

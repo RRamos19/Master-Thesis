@@ -9,24 +9,24 @@ import java.util.Objects;
 @Embeddable
 public class ClassRoomPK implements Serializable {
     @Column(name = "class_id")
-    private Integer classUnitPK;
+    private Integer classUnitId;
 
     @Column(name = "room_id")
     private Integer roomId;
 
     public ClassRoomPK() {}
 
-    public ClassRoomPK(Integer classUnitPK, Integer roomId) {
-        this.classUnitPK = classUnitPK;
+    public ClassRoomPK(Integer classUnitId, Integer roomId) {
+        this.classUnitId = classUnitId;
         this.roomId = roomId;
     }
 
-    public Integer getClassUnitPK() {
-        return classUnitPK;
+    public Integer getClassUnitId() {
+        return classUnitId;
     }
 
-    public void setClassUnitPK(int classUnitPK) {
-        this.classUnitPK = classUnitPK;
+    public void setClassUnitId(int classUnitId) {
+        this.classUnitId = classUnitId;
     }
 
     public Integer getRoomId() {
@@ -42,11 +42,11 @@ public class ClassRoomPK implements Serializable {
         if (!(o instanceof ClassRoomPK)) return false;
         ClassRoomPK that = (ClassRoomPK) o;
         return Objects.equals(roomId, that.roomId) &&
-                Objects.equals(classUnitPK, that.classUnitPK);
+                Objects.equals(classUnitId, that.classUnitId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(classUnitPK, roomId);
+        return Objects.hash(classUnitId, roomId);
     }
 }

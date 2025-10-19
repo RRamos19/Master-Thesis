@@ -28,7 +28,7 @@ public class Model implements ModelInterface {
     private final Map<String, InMemoryRepository> dataRepositoryHashMap = new ConcurrentHashMap<>();                            // ProgramName : Corresponding DataRepository
     private final TaskManager taskManager;
     private final DBConnectionCache dbConnectionCache;
-    private DBManager<Collection<InMemoryRepository>> dbManager;
+    private DBManager<InMemoryRepository> dbManager;
 
     public Model(InputFileReader inputReader, DataExporter dataExporter) {
         this.inputFileReader = inputReader;
@@ -55,25 +55,24 @@ public class Model implements ModelInterface {
             throw new RuntimeException(e);
         }
 
-        //storeInDatabase();
+        storeInDatabase();
     }
 
-    private void fetchFromDatabase() {
-        //TODO: to be implemented
-        Collection<InMemoryRepository> inMemoryRepositories = dbManager.fetchData();
+    private void fetchFromDatabase() throws InvalidConfigurationException {
+        Collection<InMemoryRepository> inMemoryRepositories = dbManager.fetchData(dataRepositoryHashMap);
 
         for(InMemoryRepository data : inMemoryRepositories) {
-            //TODO: verify the last update timestamp
-
-            dataRepositoryHashMap.put(data.getProgramName(), data);
-            System.out.println(data);
+            importRepository(data);
         }
+
+        controller.updateStoredPrograms();
+        controller.updateTableView();
     }
 
     private void storeInDatabase() {
         //TODO: to be implemented
         //TODO: verify the last update timestamp
-        dbManager.storeData(dataRepositoryHashMap.values());
+        dbManager.storeData(dataRepositoryHashMap);
     }
 
     @Override
@@ -87,9 +86,10 @@ public class Model implements ModelInterface {
     }
 
     @Override
-    public void importRepository(InMemoryRepository repository) {
+    public void importRepository(InMemoryRepository repository) throws InvalidConfigurationException {
         repository.cleanUnusedData();
-        System.out.println(repository);
+        repository.verifyValidity();
+        repository.setRoomBidirectionalDistances();
         dataRepositoryHashMap.put(repository.getProgramName(), repository);
     }
 

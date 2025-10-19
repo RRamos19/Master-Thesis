@@ -11,7 +11,6 @@ public interface InMemoryRepository extends XmlResult {
     // Setter and Getter of the problem's name
     String getProgramName();
     void setProgramName(String programName);
-
     void setLastUpdatedAt();
     void setLastUpdatedAt(LocalDateTime updateTime);
     LocalDateTime getLastUpdatedAt();
@@ -48,10 +47,10 @@ public interface InMemoryRepository extends XmlResult {
     void removeTimetable(Timetable timetable);
     Collection<Timetable> getTimetableList();
 
-    void merge(InMemoryRepository other);
+    // Is used to optimize constraint verifications
+    void setRoomBidirectionalDistances();
 
     void cleanUnusedData();
-
 
     void verifyValidity() throws InvalidConfigurationException;
 }

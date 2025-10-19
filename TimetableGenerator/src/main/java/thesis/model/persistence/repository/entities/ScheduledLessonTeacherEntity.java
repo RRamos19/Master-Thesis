@@ -3,35 +3,31 @@ package thesis.model.persistence.repository.entities;
 import jakarta.persistence.*;
 import thesis.model.persistence.repository.entities.embeddableIds.ScheduledLessonTeacherPK;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
 @Table(name = "scheduled_lesson_teacher")
-public class ScheduledLessonTeacherEntity {
+public class ScheduledLessonTeacherEntity implements Serializable {
     @EmbeddedId
-    private ScheduledLessonTeacherPK id;
+    private ScheduledLessonTeacherPK id = new ScheduledLessonTeacherPK();
 
     @ManyToOne
     @MapsId("teacherId")
-    @JoinColumn(name = "teacher_id", referencedColumnName = "id")
+    @JoinColumn(name = "teacher_id")
     private TeacherEntity teacherEntity;
 
     @ManyToOne
     @MapsId("scheduledLessonPK")
-    @JoinColumns({
-            @JoinColumn(name = "scheduled_lesson_timetable_id", referencedColumnName = "timetable_id"),
-            @JoinColumn(name = "scheduled_lesson_time_block_id", referencedColumnName = "time_block_id"),
-            @JoinColumn(name = "scheduled_lesson_class_id", referencedColumnName = "class_id")
-    })
     private ScheduledLessonEntity scheduledLessonEntity;
 
     public ScheduledLessonTeacherEntity() {}
 
     public ScheduledLessonTeacherEntity(TeacherEntity teacherEntity, ScheduledLessonEntity scheduledLessonEntity) {
-        this.id = new ScheduledLessonTeacherPK(scheduledLessonEntity.getId(), teacherEntity.getId());
         this.teacherEntity = teacherEntity;
-        scheduledLessonEntity.addScheduledLessonTeacherEntity(this);
         this.scheduledLessonEntity = scheduledLessonEntity;
+
+        scheduledLessonEntity.addScheduledLessonTeacherEntity(this);
     }
 
     public ScheduledLessonTeacherPK getId() {

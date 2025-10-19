@@ -1,5 +1,7 @@
 package thesis.model.solver.solutionoptimizer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import thesis.model.domain.components.Timetable;
 import thesis.model.solver.core.DefaultISGSolution;
 import thesis.model.solver.core.DefaultISGValue;
@@ -12,6 +14,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
+    private static final Logger logger = LoggerFactory.getLogger(SimulatedAnnealing.class);
+
     private final static int MAX_TRIES = 5;
     private final DefaultISGSolution initialSolution;
     private final double initialTemperature;
@@ -178,6 +182,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
 
     @Override
     public void stopAlgorithm() {
+        logger.info("Optimizing algorithm cancelled!");
         interruptAlgorithm = true;
     }
 }

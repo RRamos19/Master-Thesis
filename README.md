@@ -52,8 +52,8 @@ To build go to the folder ./TimetableGenerator and execute the following command
 mvn package
 ```
 
-After the previous command has completed two jar files were generated on the target folder. Execute the jar file with "-jar-with-dependencies" in its name. To execute a jar file simply double click it or run the command:
+After the previous command has completed one jar file was generated on the shade folder. To execute a jar file simply double click it or run the command:
 
 ```
-java -jar TimetableGenerator-1.0-jar-with-dependencies.jar
+java -jar TimetableGenerator.jar
 ```

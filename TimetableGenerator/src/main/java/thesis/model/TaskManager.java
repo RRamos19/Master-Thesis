@@ -1,5 +1,7 @@
 package thesis.model;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.Timetable;
 import thesis.model.exceptions.InvalidConfigurationException;
@@ -17,6 +19,8 @@ import java.util.UUID;
 import java.util.concurrent.*;
 
 public class TaskManager {
+    private static final Logger logger = LoggerFactory.getLogger(TaskManager.class);
+
     private final ModelInterface model;
     private final ThreadMXBean bean = ManagementFactory.getThreadMXBean();
     private final Map<UUID, Future<Timetable>> generatedTimetables = new ConcurrentHashMap<>(); // ProgramUUID : Timetable generated
@@ -150,6 +154,11 @@ public class TaskManager {
             return progress;
         }
 
+        private long getTimeElapsed(long currentTime, long startTime) {
+            // Assuming the input is in nanoseconds the result is in seconds
+            return (currentTime - startTime)/1_000_000_000;
+        }
+
         public Timetable startGeneration(double initialTemperature, double minTemperature, double coolingRate, int k) throws InterruptedException, InvalidConfigurationException {
             long id = Thread.currentThread().getId();
             long startCpu = bean.getThreadCpuTime(id); // Start time in nanoseconds
@@ -161,13 +170,21 @@ public class TaskManager {
                 return null;
             }
 
+            logger.info("Thread {} finished generating the initial solution and it took {} seconds", id, getTimeElapsed(bean.getThreadCpuTime(id), startCpu));
+
+            long startOpt = bean.getThreadCpuTime(id); // Start time in nanoseconds
             heuristicAlgorithm = new SimulatedAnnealing(solution, initialTemperature, minTemperature, coolingRate, k);
             Timetable finalSolution = heuristicAlgorithm.execute();
 
-            if(finalSolution != null) {
-                finalSolution.setRuntime((bean.getThreadCpuTime(id) - startCpu)/1_000_000_000); // Runtime in seconds
-                data.addTimetable(finalSolution);
+            // Optimization was canceled
+            if(finalSolution == null) {
+                return null;
             }
+
+            logger.info("Thread {} finished optimizing the solution and it took {} seconds", id, getTimeElapsed(bean.getThreadCpuTime(id), startOpt));
+
+            finalSolution.setRuntime(getTimeElapsed(bean.getThreadCpuTime(id), startCpu)); // Runtime in seconds
+            data.addTimetable(finalSolution);
 
             return finalSolution;
         }

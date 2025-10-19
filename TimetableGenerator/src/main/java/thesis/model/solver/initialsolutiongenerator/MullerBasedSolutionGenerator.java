@@ -1,5 +1,7 @@
 package thesis.model.solver.initialsolutiongenerator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.*;
 import thesis.model.solver.core.*;
@@ -13,6 +15,8 @@ import java.util.List;
  * Source - Constraint Based Timetabling https://muller.unitime.org/phd-thesis.pdf
  */
 public class MullerBasedSolutionGenerator implements InitialSolutionGenerator<DefaultISGSolution> {
+    private static final Logger logger = LoggerFactory.getLogger(MullerBasedSolutionGenerator.class);
+
     private final InMemoryRepository dataModel;
     private final ValueSelection<DefaultISGValue, DefaultISGSolution, DefaultISGVariable> valueSelection = new DefaultValueSelection();
     private final DefaultISGSolutionComparator defaultISGSolutionComparator = new DefaultISGSolutionComparator();
@@ -105,6 +109,7 @@ public class MullerBasedSolutionGenerator implements InitialSolutionGenerator<De
 
     @Override
     public void stopAlgorithm() {
+        logger.info("Initial solution generator cancelled!");
         interruptAlgorithm = true;
     }
 }

@@ -1,19 +1,29 @@
 package thesis.view;
 
-import javafx.stage.Window;
-import thesis.controller.ControllerInterface;
+import javafx.scene.Parent;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import thesis.controller.Controller;
+import thesis.view.viewobjects.ViewModel;
 
 public interface ViewInterface {
-    void setController(ControllerInterface controller);
-    void showExceptionMessage(Throwable e);
-    void setPrimaryWindow(Window primaryWindow);
+    Parent getRoot();
 
-    void showInformationAlert(String message);
-    void showErrorAlert(String message);
-    boolean showConfirmationAlert(String message);
-
-    void updateTableView();
-
-    // Runs at the end of the graphical application
-    void cleanup();
+    // Getters for the UI components
+    Pane getApplicationPrincipalPane();
+    Pane getDragAndDropPane();
+    TextField getIpField();
+    TextField getPortField();
+    TextField getUsernameField();
+    PasswordField getPasswordField();
+    TreeView<Controller.TableType> getTreeView();
+    Button getConnectBtn();
+    VBox getTaskContainer();
+    ListView<HBox> getProgressContainer();
+    ChoiceBox<String> getProgramsChoiceBox();
+    TableView<ViewModel> getTableView();
+    Button getReoptimizeButton();
+    Button getRemoveButton();
 }
