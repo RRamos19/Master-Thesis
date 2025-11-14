@@ -19,10 +19,10 @@ public class TimeFactory {
     // Prevents instantiation
     private TimeFactory() {}
 
-    public static Time create(String days, String weeks, short startSlot, short length) throws CheckedIllegalArgumentException {
+    public static Time create(String days, String weeks, String startSlot, String length) throws CheckedIllegalArgumentException {
         int daysLength = days.length();
         if(daysLength == 0 || daysLength > 7) {
-            String message = "The days string must have a length between 1 and 7 but it has a length of " + days.length();
+            String message = "The days string must have a length between 1 and 7 (inclusive) but it has a length of " + days.length();
             logger.error(message);
             throw new CheckedIllegalArgumentException(message);
         }
@@ -31,19 +31,39 @@ public class TimeFactory {
             logger.error(message);
             throw new CheckedIllegalArgumentException(message);
         }
+        if(startSlot.isEmpty()) {
+            String message = "The start slot string must have a length bigger than 0";
+            logger.error(message);
+            throw new CheckedIllegalArgumentException(message);
+        }
+        if(length.isEmpty()) {
+            String message = "The length string must have a length bigger than 0";
+            logger.error(message);
+            throw new CheckedIllegalArgumentException(message);
+        }
 
-        return create(Short.parseShort(days, 2), Integer.parseInt(weeks, 2), startSlot, length);
+        return create(Short.parseShort(days, 2), Integer.parseInt(weeks, 2), Short.parseShort(startSlot), Short.parseShort(length));
     }
 
     public static Time create(short days, int weeks, short startSlot, short length) throws CheckedIllegalArgumentException {
         // days must have a lower value than the maximum value for 7 bits
         if(days <= 0) {
-            String message = "The days value must be between 1 and 127 but it has a value of " + days;
+            String message = "The days value must be between 1 and 127, but it has a value of " + days;
             logger.error(message);
             throw new CheckedIllegalArgumentException(message);
         }
         if(weeks <= 0) {
-            String message = "The weeks value must be bigger than 0 but it has a value of " + weeks;
+            String message = "The weeks value must be bigger than 0, but it has a value of " + weeks;
+            logger.error(message);
+            throw new CheckedIllegalArgumentException(message);
+        }
+        if(startSlot < 0) {
+            String message = "The start slot value must be bigger or equal to 0, but it has a value of " + startSlot;
+            logger.error(message);
+            throw new CheckedIllegalArgumentException(message);
+        }
+        if(length < 0) {
+            String message = "The length value must be bigger or equal to 0, but it has a value of " + length;
             logger.error(message);
             throw new CheckedIllegalArgumentException(message);
         }

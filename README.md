@@ -34,10 +34,10 @@ The algorithms used on the timetabling creation were two. The first algorithm is
 
 Docker is required to instantiate the database
 
-To setup the database a .env file is used. For security purposes it should be created by user. The file should follow the following format.
+To setup the database a .env file is used. For security purposes it should be created by the user. The file should have the following variable defined.
 
 ```
-POSTGRES_PASSWORD=insert password here
+POSTGRES_PASSWORD=
 ```
 
 More variables may be defined to customize the PostgreSQL instance.

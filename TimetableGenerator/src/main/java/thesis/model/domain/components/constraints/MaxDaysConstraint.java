@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Set;
 
 public class MaxDaysConstraint extends Constraint {
-    public MaxDaysConstraint(String restrictionType, Integer param1, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
-        super(restrictionType, penalty, required, param1, timetableConfiguration);
+    public MaxDaysConstraint(int id, String restrictionType, Integer param1, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
+        super(id, restrictionType, penalty, required, param1, timetableConfiguration);
     }
 
     // The authors of this method are Edon Gashi and Kadri Sylejmani

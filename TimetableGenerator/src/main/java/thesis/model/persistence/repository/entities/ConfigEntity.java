@@ -21,14 +21,16 @@ public class ConfigEntity implements Serializable {
     @OneToMany(mappedBy = "configEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final Set<SubpartEntity> subpartEntitySet = new HashSet<>();
 
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "name_id", referencedColumnName = "id", nullable = false)
+    private ConfigNameEntity configNameEntity;
 
     public ConfigEntity() {}
 
-    public ConfigEntity(CourseEntity courseEntity, String name) {
+    public ConfigEntity(CourseEntity courseEntity, ConfigNameEntity configNameEntity) {
         courseEntity.addConfig(this);
         this.courseEntity = courseEntity;
-        this.name = name;
+        this.configNameEntity = configNameEntity;
     }
 
     public Integer getId() {
@@ -56,23 +58,23 @@ public class ConfigEntity implements Serializable {
         subpartEntity.setConfig(this);
     }
 
-    public String getName() {
-        return name;
+    public ConfigNameEntity getConfigNameEntity() {
+        return configNameEntity;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setConfigNameEntity(ConfigNameEntity configNameEntity) {
+        this.configNameEntity = configNameEntity;
     }
 
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof ConfigEntity)) return false;
         ConfigEntity that = (ConfigEntity) o;
-        return Objects.equals(name, that.name);
+        return Objects.equals(configNameEntity, that.configNameEntity);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return Objects.hash(configNameEntity);
     }
 }

@@ -30,7 +30,7 @@ public class ScheduledLesson {
         this.scheduledTime = time;
     }
 
-    public ScheduledLesson(String classId, String roomId, String days, String weeks, short startSlot, short length) throws CheckedIllegalArgumentException {
+    public ScheduledLesson(String classId, String roomId, String days, String weeks, String startSlot, String length) throws CheckedIllegalArgumentException {
         this(classId, roomId, TimeFactory.create(days, weeks, startSlot, length));
     }
 

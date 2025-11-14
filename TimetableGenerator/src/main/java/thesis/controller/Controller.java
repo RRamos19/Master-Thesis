@@ -7,6 +7,7 @@ import javafx.concurrent.Task;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.stage.*;
+import org.apache.http.conn.util.InetAddressUtils;
 import thesis.model.ModelInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.Timetable;
@@ -23,8 +24,8 @@ import thesis.view.viewobjects.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Controller implements ControllerInterface {
     private WindowManager windowManager;
@@ -129,7 +130,15 @@ public class Controller implements ControllerInterface {
         String username = view.getUsernameField().getText();
         String password = view.getPasswordField().getText();
 
-        //TODO: Sanitize the user inputs
+        // Validation of the inputs
+        if(!ip.equalsIgnoreCase("localhost") && !InetAddressUtils.isIPv4Address(ip) && !InetAddressUtils.isIPv6Address(ip)) {
+            throw new IllegalStateException("The IP address provided is neither IPv4 nor IPv6");
+        }
+        try {
+            Integer.parseInt(port);
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException("The port field must be a whole number");
+        }
 
         model.connectToDatabase(ip, port, username, password);
 
@@ -163,7 +172,7 @@ public class Controller implements ControllerInterface {
             @Override
             protected Void call() throws CheckedIllegalStateException, InvalidConfigurationException, ParsingException {
             for(File file : files) {
-                importITCData(file);
+                importDataITC(file);
             }
 
             return null;
@@ -172,6 +181,7 @@ public class Controller implements ControllerInterface {
 
         importTask.setOnSucceeded(event -> {
             updateStoredPrograms();
+            updateTableView();
         });
 
         importTask.setOnFailed(event -> {
@@ -181,7 +191,7 @@ public class Controller implements ControllerInterface {
         new Thread(importTask).start();
     }
 
-    private void importITCData(File file) throws CheckedIllegalStateException, InvalidConfigurationException, ParsingException {
+    private void importDataITC(File file) throws CheckedIllegalStateException, InvalidConfigurationException, ParsingException {
         XmlResult result;
 
         result = model.readFile(file);
@@ -196,6 +206,7 @@ public class Controller implements ControllerInterface {
             } else {
                 if(showConfirmationAlert("There is already a program stored which is equal to the program of the file provided. Overwrite (while retaining the solutions, if possible) ?")) {
                     for(Timetable solution : storedData.getTimetableList()) {
+                        solution.clearCache();
                         dataRepository.addTimetable(solution);
                     }
 
@@ -230,7 +241,8 @@ public class Controller implements ControllerInterface {
         Set<String> oldItems = new HashSet<>(programsChoiceBox.getItems());
         Set<String> storedPrograms = model.getStoredPrograms();
 
-        if(oldItems.containsAll(storedPrograms)) {
+        if(oldItems.size() == storedPrograms.size() &&
+            oldItems.containsAll(storedPrograms)) {
             // Nothing changed
             return;
         }
@@ -393,6 +405,12 @@ public class Controller implements ControllerInterface {
     }
 
     @Override
+    public void removeProgramEvent() {
+        model.removeProgram(chosenProgram);
+        updateStoredPrograms();
+    }
+
+    @Override
     public void removeTableInstanceEvent() {
         Object selectedItem = view.getTableView().getSelectionModel().getSelectedItem();
         if (selectedItem instanceof TimetableViewModel) {
@@ -409,7 +427,6 @@ public class Controller implements ControllerInterface {
         Object selectedItem = view.getTableView().getSelectionModel().getSelectedItem();
         if (selectedItem instanceof Timetable) {
             Timetable timetable = (Timetable) selectedItem;
-            //controller.optimizeTimetable(timetable);
             //TODO: to be implemented
         }
     }
@@ -453,53 +470,17 @@ public class Controller implements ControllerInterface {
 
     @Override
     public boolean showConfirmationAlert(String message) {
-        if (Platform.isFxApplicationThread()) {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
-            alert.initStyle(StageStyle.DECORATED);
-            alert.initOwner(primaryWindow);
-            alert.initModality(Modality.WINDOW_MODAL);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
+        alert.initStyle(StageStyle.DECORATED);
+        alert.initOwner(primaryWindow);
+        alert.initModality(Modality.WINDOW_MODAL);
 
-            Optional<ButtonType> optionalResponse = alert.showAndWait();
+        Optional<ButtonType> optionalResponse = alert.showAndWait();
 
-            if(optionalResponse.isPresent()) {
-                ButtonType response = optionalResponse.get();
+        if(optionalResponse.isPresent()) {
+            ButtonType response = optionalResponse.get();
 
-                return response.equals(ButtonType.YES);
-            }
-        } else {
-            final Object lock = new Object();
-            final AtomicReference<Optional<ButtonType>> resultRef = new AtomicReference<>();
-
-            // Run the following code on the JavaFX thread
-            Platform.runLater(() -> {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
-                alert.initStyle(StageStyle.DECORATED);
-                alert.initOwner(primaryWindow);
-                alert.initModality(Modality.WINDOW_MODAL);
-
-                resultRef.set(alert.showAndWait());
-
-                synchronized (lock) {
-                    lock.notify();
-                }
-            });
-
-            // Synchronize the JavaFX thread with the current thread
-            synchronized (lock) {
-                try {
-                    lock.wait();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-
-            Optional<ButtonType> optionalResponse = resultRef.get();
-
-            if(optionalResponse.isPresent()) {
-                ButtonType response = optionalResponse.get();
-
-                return response.equals(ButtonType.YES);
-            }
+            return response.equals(ButtonType.YES);
         }
 
         return false;

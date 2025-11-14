@@ -81,6 +81,11 @@ public class Model implements ModelInterface {
     }
 
     @Override
+    public void removeProgram(String program) {
+        dataRepositoryHashMap.remove(program);
+    }
+
+    @Override
     public XmlResult readFile(File file) throws ParsingException, InvalidConfigurationException {
         return inputFileReader.readXmlFile(file);
     }

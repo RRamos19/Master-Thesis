@@ -24,34 +24,58 @@ CREATE TABLE teacher (
     name VARCHAR(30) NOT NULL
 );
 
+CREATE TABLE course_name (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(10) NOT NULL UNIQUE
+);
+
 CREATE TABLE course (
 	id SERIAL PRIMARY KEY,
 	program_id INT NOT NULL,
-    name VARCHAR(10) NOT NULL UNIQUE,
-	CONSTRAINT course_program_fk FOREIGN KEY (program_id) REFERENCES tb_program(id)
+    name_id INT NOT NULL,
+	CONSTRAINT course_program_fk FOREIGN KEY (program_id) REFERENCES tb_program(id),
+	CONSTRAINT course_name_fk FOREIGN KEY (name_id) REFERENCES course_name(id)
+);
+
+CREATE TABLE config_name (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(10) NOT NULL UNIQUE
 );
 
 CREATE TABLE config (
 	id SERIAL PRIMARY KEY,
-	course_id INT,
-	name VARCHAR(10) NOT NULL UNIQUE,
-	CONSTRAINT config_course_fk FOREIGN KEY (course_id) REFERENCES course(id)
+	course_id INT NOT NULL,
+	name_id INT NOT NULL,
+	CONSTRAINT config_course_fk FOREIGN KEY (course_id) REFERENCES course(id),
+	CONSTRAINT config_name_fk FOREIGN KEY (name_id) REFERENCES config_name(id)
+);
+
+CREATE TABLE subpart_name (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(10) NOT NULL UNIQUE
 );
 
 CREATE TABLE subpart (
 	id SERIAL PRIMARY KEY,
-	config_id INT,
-	name VARCHAR(10) NOT NULL UNIQUE,
-	CONSTRAINT subpart_config_fk FOREIGN KEY (config_id) REFERENCES config(id)
+	config_id INT NOT NULL,
+	name_id INT NOT NULL,
+	CONSTRAINT subpart_config_fk FOREIGN KEY (config_id) REFERENCES config(id),
+	CONSTRAINT subpart_name_fk FOREIGN KEY (name_id) REFERENCES subpart_name(id)
+);
+
+CREATE TABLE class_unit_name (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(10) NOT NULL UNIQUE
 );
 
 CREATE TABLE class_unit (
 	id SERIAL PRIMARY KEY,
-	subpart_id INT,
-    name VARCHAR(10) NOT NULL UNIQUE,
+	subpart_id INT NOT NULL,
+    name_id INT NOT NULL,
 	parent_class_id INT,
 	CONSTRAINT class_class_parent_fk FOREIGN KEY (parent_class_id) REFERENCES class_unit(id),
-	CONSTRAINT class_subpart_fk FOREIGN KEY (subpart_id) REFERENCES subpart(id)
+	CONSTRAINT class_subpart_fk FOREIGN KEY (subpart_id) REFERENCES subpart(id),
+	CONSTRAINT class_name_fk FOREIGN KEY (name_id) REFERENCES class_unit_name(id)
 );
 
 CREATE TABLE timetable (
@@ -63,30 +87,29 @@ CREATE TABLE timetable (
 
 CREATE TABLE constraint_type (
 	id SERIAL PRIMARY KEY,
-	name VARCHAR(30) UNIQUE
+	name VARCHAR(30) NOT NULL UNIQUE
 );
 
 CREATE TABLE timetable_constraint (
-	id SERIAL PRIMARY KEY,
+	constraint_id INT,
+	program_id INT,
 	constraint_type_id INT NOT NULL,
 	penalty INT,
 	required BOOL,
 	first_parameter INT,
 	second_parameter INT,
-	CONSTRAINT constraint_type_id_fk FOREIGN KEY (constraint_type_id) REFERENCES constraint_type(id)
+	CONSTRAINT constraint_type_id_fk FOREIGN KEY (constraint_type_id) REFERENCES constraint_type(id),
+	CONSTRAINT program_id_fk FOREIGN KEY (program_id) REFERENCES tb_program(id),
+	CONSTRAINT timetable_constraint_pk PRIMARY KEY (constraint_id, program_id)
 );
 
 CREATE TABLE class_constraint (
 	class_id INT NOT NULL,
+	program_id INT NOT NULL,
 	constraint_id INT NOT NULL,
 	CONSTRAINT class_constraint_class_fk FOREIGN KEY (class_id) REFERENCES class_unit(id),
-	CONSTRAINT class_contraint_constraint_fk FOREIGN KEY (constraint_id) REFERENCES timetable_constraint(id),
-	CONSTRAINT class_contraint_pk PRIMARY KEY (class_id, constraint_id)
-);
-
-CREATE TABLE room (
-	id SERIAL PRIMARY KEY,
-	name VARCHAR(6) NOT NULL UNIQUE
+	CONSTRAINT class_contraint_constraint_fk FOREIGN KEY (program_id, constraint_id) REFERENCES timetable_constraint(program_id, constraint_id),
+	CONSTRAINT class_contraint_pk PRIMARY KEY (class_id, program_id, constraint_id)
 );
 
 CREATE TABLE teacher_unavailability (
@@ -103,6 +126,11 @@ CREATE TABLE teacher_class (
 	CONSTRAINT teacher_class_class_fk FOREIGN KEY (class_id) REFERENCES class_unit(id),
 	CONSTRAINT teacher_class_teacher_fk FOREIGN KEY (teacher_id) REFERENCES teacher(id),
 	CONSTRAINT teacher_class_pk PRIMARY KEY (teacher_id, class_id)
+);
+
+CREATE TABLE room (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(6) NOT NULL UNIQUE
 );
 
 CREATE TABLE class_room (

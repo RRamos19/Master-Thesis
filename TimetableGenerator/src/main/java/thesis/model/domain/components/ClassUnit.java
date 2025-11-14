@@ -29,7 +29,11 @@ public class ClassUnit {
         this.parentClassId = parentClassId;
     }
 
-    public void addClassTime(String days, String weeks, short startSlot, short length, int penalty) throws CheckedIllegalArgumentException {
+    public void addClassTime(String days, String weeks, String startSlot, String length, int penalty) throws CheckedIllegalArgumentException {
+        classTimesList.put(TimeFactory.create(days, weeks, startSlot, length), penalty);
+    }
+
+    public void addClassTime(short days, int weeks, short startSlot, short length, int penalty) throws CheckedIllegalArgumentException {
         classTimesList.put(TimeFactory.create(days, weeks, startSlot, length), penalty);
     }
 

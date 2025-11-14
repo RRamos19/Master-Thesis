@@ -47,6 +47,7 @@ public interface ModelInterface {
     void importSolution(Timetable solution) throws InvalidConfigurationException, CheckedIllegalStateException;
 
     void removeTimetable(Timetable timetable);
+    void removeProgram(String program);
 
     // Database connectivity
     void connectToDatabase(String ip, String port, String userName, String password) throws DatabaseException;

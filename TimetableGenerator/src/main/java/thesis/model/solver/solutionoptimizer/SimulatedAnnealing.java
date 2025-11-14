@@ -43,6 +43,7 @@ public class SimulatedAnnealing implements HeuristicAlgorithm<Timetable> {
     @Override
     public Timetable execute() {
         DefaultISGSolution currentSolution = new DefaultISGSolution(initialSolution);
+        // This feature should only be used in the generation of the initial solution
         currentSolution.deactivateRemovals();
 
         if(!currentSolution.isSolutionValid()) {

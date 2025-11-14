@@ -44,7 +44,8 @@ public class JavaFXView implements ViewInterface {
     @FXML private TableView<ViewModel> tableView;
     @FXML private Button reoptimizeButton;
     @FXML private Button removeButton;
-    @FXML private Button generateSolutionBtn;
+    @FXML private Button generateSolutionButton;
+    @FXML private Button programRemoveButton;
 
     public JavaFXView(ControllerInterface controller) {
         this.controller = controller;
@@ -70,8 +71,9 @@ public class JavaFXView implements ViewInterface {
             applicationPrincipalPane.setOnDragDropped(e -> controller.dragDroppedEvent(e));
             reoptimizeButton.setOnAction(e -> controller.reoptimizeSolutionEvent());
             removeButton.setOnAction(e -> controller.removeTableInstanceEvent());
-            generateSolutionBtn.setOnAction(e -> controller.generateSolutionEvent());
+            generateSolutionButton.setOnAction(e -> controller.generateSolutionEvent());
             tableView.setOnMouseClicked(e -> controller.tableViewMouseClickedEvent(e));
+            programRemoveButton.setOnAction(e -> controller.removeProgramEvent());
             programsChoiceBox.getSelectionModel().selectedItemProperty()
                     .addListener((observable, oldValue, newValue) -> controller.changeProgramChoiceEvent(newValue));
 

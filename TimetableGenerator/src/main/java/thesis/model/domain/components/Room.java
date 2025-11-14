@@ -27,7 +27,7 @@ public class Room {
         return intId;
     }
 
-    public void addUnavailability(String days, String weeks, short startSlot, short length) throws CheckedIllegalArgumentException {
+    public void addUnavailability(String days, String weeks, String startSlot, String length) throws CheckedIllegalArgumentException {
         roomUnavailabilities.add(TimeFactory.create(days, weeks, startSlot, length));
     }
 

@@ -8,8 +8,8 @@ import thesis.model.domain.components.TimetableConfiguration;
 import java.util.List;
 
 public class SameWeeksConstraint extends Constraint {
-    public SameWeeksConstraint(String type, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
-        super(type, penalty, required, timetableConfiguration);
+    public SameWeeksConstraint(int id, String type, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
+        super(id, type, penalty, required, timetableConfiguration);
     }
 
     // The authors of this method are Edon Gashi and Kadri Sylejmani

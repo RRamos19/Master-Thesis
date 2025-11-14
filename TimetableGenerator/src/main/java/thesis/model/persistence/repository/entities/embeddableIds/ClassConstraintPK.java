@@ -2,6 +2,7 @@ package thesis.model.persistence.repository.entities.embeddableIds;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -11,12 +12,12 @@ public class ClassConstraintPK implements Serializable {
     @Column(name = "class_id")
     private Integer classUnitId;
 
-    @Column(name = "constraint_id")
-    private Integer constraintId;
+    @Embedded
+    private ConstraintPK constraintId;
 
     public ClassConstraintPK() {}
 
-    public ClassConstraintPK(Integer classUnitId, Integer constraintId) {
+    public ClassConstraintPK(Integer classUnitId, ConstraintPK constraintId) {
         this.classUnitId = classUnitId;
         this.constraintId = constraintId;
     }
@@ -29,11 +30,11 @@ public class ClassConstraintPK implements Serializable {
         this.classUnitId = classUnitId;
     }
 
-    public Integer getConstraintId() {
+    public ConstraintPK getConstraintId() {
         return constraintId;
     }
 
-    public void setConstraintId(Integer constraintId) {
+    public void setConstraintId(ConstraintPK constraintId) {
         this.constraintId = constraintId;
     }
 

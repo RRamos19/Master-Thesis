@@ -35,6 +35,7 @@ public interface ControllerInterface {
     void changeProgramChoiceEvent(String newValue);
     void tableViewMouseClickedEvent(MouseEvent event);
     void progressContainterResizeEvent();
+    void removeProgramEvent();
 
     // Show results
     void updateStoredPrograms();

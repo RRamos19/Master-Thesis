@@ -16,18 +16,19 @@ public class SubpartEntity implements Serializable {
     @JoinColumn(name = "config_id", referencedColumnName = "id")
     private ConfigEntity configEntity;
 
-    @Column(length = 10, unique = true, nullable = false)
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "name_id", referencedColumnName = "id", nullable = false)
+    private SubpartNameEntity subpartNameEntity;
 
     @OneToMany(mappedBy = "subpartEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final Set<ClassUnitEntity> classUnitSet = new HashSet<>();
 
     public SubpartEntity() {}
 
-    public SubpartEntity(ConfigEntity configEntity, String name) {
+    public SubpartEntity(ConfigEntity configEntity, SubpartNameEntity subpartNameEntity) {
         configEntity.addSubpart(this);
         this.configEntity = configEntity;
-        this.name = name;
+        this.subpartNameEntity = subpartNameEntity;
     }
 
     public Integer getId() {
@@ -46,12 +47,12 @@ public class SubpartEntity implements Serializable {
         this.configEntity = configEntity;
     }
 
-    public String getName() {
-        return name;
+    public SubpartNameEntity getSubpartNameEntity() {
+        return subpartNameEntity;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setSubpartNameEntity(SubpartNameEntity subpartNameEntity) {
+        this.subpartNameEntity = subpartNameEntity;
     }
 
     public void addClassUnit(ClassUnitEntity classUnitEntity) {
@@ -67,11 +68,11 @@ public class SubpartEntity implements Serializable {
     public boolean equals(Object o) {
         if (!(o instanceof SubpartEntity)) return false;
         SubpartEntity that = (SubpartEntity) o;
-        return Objects.equals(name, that.name);
+        return Objects.equals(subpartNameEntity, that.subpartNameEntity);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return Objects.hash(subpartNameEntity);
     }
 }

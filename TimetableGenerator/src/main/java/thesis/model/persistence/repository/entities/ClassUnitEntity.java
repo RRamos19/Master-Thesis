@@ -20,8 +20,9 @@ public class ClassUnitEntity implements Serializable {
     @JoinColumn(name = "parent_class_id", referencedColumnName = "id")
     private ClassUnitEntity parentClass;
 
-    @Column(length = 10)
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "name_id", referencedColumnName = "id", nullable = false)
+    private ClassUnitNameEntity classUnitNameEntity;
 
     @OneToMany(mappedBy = "classUnitEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final Set<TeacherClassEntity> teacherClassEntitySet = new HashSet<>();
@@ -37,10 +38,10 @@ public class ClassUnitEntity implements Serializable {
 
     public ClassUnitEntity() {}
 
-    public ClassUnitEntity(SubpartEntity subpartEntity, String name) {
+    public ClassUnitEntity(SubpartEntity subpartEntity, ClassUnitNameEntity classUnitNameEntity) {
         subpartEntity.addClassUnit(this);
         this.subpartEntity = subpartEntity;
-        this.name = name;
+        this.classUnitNameEntity = classUnitNameEntity;
     }
 
     public Integer getId() {
@@ -51,12 +52,12 @@ public class ClassUnitEntity implements Serializable {
         this.id = id;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setClassUnitNameEntity(ClassUnitNameEntity classUnitNameEntity) {
+        this.classUnitNameEntity = classUnitNameEntity;
     }
 
-    public String getName() {
-        return name;
+    public ClassUnitNameEntity getClassUnitNameEntity() {
+        return classUnitNameEntity;
     }
 
     public void setSubpart(SubpartEntity subpartEntity) {
@@ -95,6 +96,10 @@ public class ClassUnitEntity implements Serializable {
         teacherClassEntitySet.add(teacherClassEntity);
     }
 
+    public void removeTeacherClass(TeacherClassEntity teacherClassEntity) {
+        teacherClassEntitySet.remove(teacherClassEntity);
+    }
+
     public void addClassTime(ClassTimeEntity classTimeEntity) {
         classTimeEntitySet.add(classTimeEntity);
     }
@@ -107,16 +112,20 @@ public class ClassUnitEntity implements Serializable {
         classConstraintEntitySet.add(classConstraintEntity);
     }
 
+    public void removeClassConstraint(ClassConstraintEntity classConstraintEntity) {
+        classConstraintEntitySet.remove(classConstraintEntity);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof ClassUnitEntity)) return false;
         ClassUnitEntity that = (ClassUnitEntity) o;
         return Objects.equals(parentClass, that.parentClass) &&
-                Objects.equals(name, that.name);
+                Objects.equals(classUnitNameEntity, that.classUnitNameEntity);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(parentClass, name);
+        return Objects.hash(parentClass, classUnitNameEntity);
     }
 }

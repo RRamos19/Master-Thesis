@@ -149,7 +149,7 @@ public class TaskManager {
             // Fix the progress value (the usage of double can introduce error)
             // the progress is multiplied by 1000 for the final result to be a percentage with
             // one decimal place
-            progress = Math.min(1, Math.round(progress * 1000) / 1000.0);
+            progress = Math.min(1, Math.floor(progress * 1000) / 1000.0);
 
             return progress;
         }

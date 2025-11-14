@@ -7,7 +7,7 @@ import java.util.*;
 
 public class DefaultValueSelection implements ValueSelection<DefaultISGValue, DefaultISGSolution, DefaultISGVariable> {
     private final static float iRandomWalkProb = 0.02F;                          // random walk selection
-    private final static float iWeightCoflicts = 100.0F;                         // weight of a conflict
+    private final static float iWeightCoflicts = 10.0F;                         // weight of a conflict
     private final static float iWeightValue = 0.0F;                              // weight of a value (value.toInt())
 
     private final static float iWeightWeightedCoflicts = 1.0F;                   // CBS: CBS weighted conflict weight

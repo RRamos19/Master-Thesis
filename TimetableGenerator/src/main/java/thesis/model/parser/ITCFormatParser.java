@@ -21,7 +21,9 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ITCFormatParser implements InputFileReader {
     private static final DateTimeFormatter timeStampUTC12Formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -43,7 +45,7 @@ public class ITCFormatParser implements InputFileReader {
     private static final String SUBPART_TAG           = "subpart";
     private static final String DISTRIBUTION_TAG      = "distribution";
 
-    // Configuration Tags
+    // Tags with no descendants
     private static final String TRAVEL_TAG            = "travel";
     private static final String UNAVAILABILITY_TAG    = "unavailable";
     private static final String CLASS_TAG             = "class";
@@ -62,7 +64,7 @@ public class ITCFormatParser implements InputFileReader {
      * This method is a generalization of the parsing of files. No matter which file is read the process is the same.
      * @param file File that is to be read
      * @param parser Functional interface made to reduce code repetition and to allow throws of exceptions
-     * @return Either a Timetable or a DataRepository
+     * @return Either a Timetable or a InMemoryRepository
      * @throws ParsingException Exception related to the parsing of the file
      * @throws InvalidConfigurationException Exception related to the configuration
      */
@@ -92,11 +94,11 @@ public class ITCFormatParser implements InputFileReader {
     }
 
     /**
-     *
+     * This method verifies if the file given is a solution or a problem and parses it.
      * @param file File that is to be read
-     * @return Either a Timetable or a DataRepository
-     * @throws ParsingException 
-     * @throws InvalidConfigurationException
+     * @return Either a Timetable or a InMemoryRepository
+     * @throws ParsingException Exception related to the parsing of the file
+     * @throws InvalidConfigurationException Exception related to the configuration
      */
     @Override
     public XmlResult readXmlFile(File file) throws ParsingException, InvalidConfigurationException {
@@ -122,16 +124,126 @@ public class ITCFormatParser implements InputFileReader {
         });
     }
 
-    // TODO: complete comment
     /**
-     *
-     * @param reader
-     * @param startElement
-     * @param event
-     * @return
-     * @throws ParsingException
-     * @throws InvalidConfigurationException
-     * @throws XMLStreamException
+     * Parses the whole solution file.
+     * @param reader Reader of the xml file
+     * @param startElement Starting tag of the solution
+     * @param event Contains the event that was read to check if the file is a problem or a solution
+     * @return Timetable instance filled with the data present in the file
+     * @throws ParsingException Exception related to the parsing of the file
+     * @throws XMLStreamException Exception related to the xml file processing
+     */
+    private Timetable parseSolution(XMLEventReader reader, StartElement startElement, XMLEvent event) throws ParsingException, XMLStreamException {
+        Timetable timetable = new Timetable();
+
+        String solutionName = getAttributeValue(startElement, "name");
+        String dateOfCreationString = getAttributeValue(startElement, "timeStampUTC12");
+        String runtimeString = getAttributeValue(startElement, "runtime");
+
+        LocalDateTime dateOfCreation = dateOfCreationString != null
+                ? LocalDateTime.from(timeStampUTC12Formatter.parse(dateOfCreationString)) : null;
+        int runtime = runtimeString != null ? Integer.parseInt(runtimeString) : 0;
+
+        if (solutionName == null) {
+            throw new ParsingException(event.getLocation(), "A name must be specified in the solution tag");
+        }
+
+        timetable.setProgramName(solutionName);
+        timetable.setRuntime(runtime);
+        if (dateOfCreation != null) timetable.setDateOfCreation(dateOfCreation);
+
+        readScheduledLessons(reader, timetable);
+
+        return timetable;
+    }
+
+    /**
+     * Reads all the scheduled lessons before encountering the termination tag
+     */
+    private void readScheduledLessons(XMLEventReader eventReader, Timetable timetable) throws XMLStreamException, ParsingException {
+        Map<String, ScheduledLesson> scheduledLessonMap = new HashMap<>();
+        Integer teacherId = null;
+
+        while (eventReader.hasNext()) {
+            XMLEvent event;
+            event = eventReader.nextEvent();
+
+            switch (event.getEventType()) {
+                case XMLStreamConstants.START_ELEMENT:
+                    StartElement startElement = event.asStartElement();
+                    String startElementName = startElement.getName().getLocalPart();
+
+                    switch(startElementName) {
+                        case CLASS_TAG:
+                            if(teacherId == null) {
+                                String classId = getAttributeValue(startElement, "id");
+                                String roomId = getAttributeValue(startElement, "room");
+                                String days = getAttributeValue(startElement, "days");
+                                String start = getAttributeValue(startElement, "start");
+                                //String length = getAttributeValue(startElement, "length");
+                                String weeks = getAttributeValue(startElement, "weeks");
+
+                                try {
+                                    ScheduledLesson scheduledLesson = new ScheduledLesson(classId, roomId, days, weeks, start, "0");
+                                    scheduledLessonMap.put(scheduledLesson.getClassId(), scheduledLesson);
+                                    timetable.addScheduledLesson(scheduledLesson);
+                                } catch (CheckedIllegalArgumentException e) {
+                                    throw new ParsingException(event.getLocation(), e.getMessage());
+                                }
+                            } else {
+                                String classId = getAttributeValue(startElement, "id");
+
+                                if(classId != null) {
+                                    ScheduledLesson scheduledLesson = scheduledLessonMap.get(classId);
+                                    if(scheduledLesson != null) {
+                                        scheduledLesson.addTeacherId(teacherId);
+                                    }
+                                }
+                            }
+                            break;
+                        case TEACHER_TAG:
+                            String teacherIdString = getAttributeValue(startElement, "id");
+
+                            try{
+                                if(teacherIdString != null) {
+                                    teacherId = Integer.parseInt(teacherIdString);
+                                }
+                            } catch (NumberFormatException e) {
+                                throw new ParsingException(event.getLocation(), e.getMessage());
+                            }
+                            break;
+                    }
+                    break;
+
+                case XMLStreamConstants.END_ELEMENT:
+                    EndElement endElement = event.asEndElement();
+                    String endElementName = endElement.getName().getLocalPart();
+
+                    switch(endElementName) {
+                        case TEACHER_TAG:
+                            teacherId = null;
+                            break;
+                        case SOLUTION_TAG:
+                            break;
+                    }
+                    if (endElementName.equals(SOLUTION_TAG)) {
+                        // If the end of the tag solution is found the function ends
+                        return;
+                    }
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Parses the whole problem file.
+     * @param reader Reader of the xml file
+     * @param startElement Starting tag of the problem
+     * @param event Contains the event that was read to check if the file is a problem or a solution
+     * @return InMemoryRepository instance filled with the data present in the file
+     * @throws ParsingException Exception related to the parsing of the file
+     * @throws InvalidConfigurationException Exception related to the configuration
+     * @throws XMLStreamException Exception related to the xml file processing
      */
     private InMemoryRepository parseProblem(XMLEventReader reader, StartElement startElement, XMLEvent event) throws ParsingException, InvalidConfigurationException, XMLStreamException {
         InMemoryRepository data = new DataRepository();
@@ -141,9 +253,16 @@ public class ITCFormatParser implements InputFileReader {
         String slotsPerDayString = getAttributeValue(startElement, "slotsPerDay");
         String nrWeeksString = getAttributeValue(startElement, "nrWeeks");
 
-        short nrDays = nrDaysString != null ? Short.parseShort(nrDaysString) : 0;
-        short slotsPerDay = slotsPerDayString != null ? Short.parseShort(slotsPerDayString) : 0;
-        int nrWeeks = nrWeeksString != null ? Integer.parseInt(nrWeeksString) : 0;
+        short nrDays;
+        short slotsPerDay;
+        int nrWeeks;
+        try {
+            nrDays = nrDaysString != null ? Short.parseShort(nrDaysString) : 0;
+            slotsPerDay = slotsPerDayString != null ? Short.parseShort(slotsPerDayString) : 0;
+            nrWeeks = nrWeeksString != null ? Integer.parseInt(nrWeeksString) : 0;
+        } catch (NumberFormatException e) {
+            throw new ParsingException(event.getLocation(), e.getMessage());
+        }
 
         List<String> problemTagErrors = new ArrayList<>();
         if (programName == null) problemTagErrors.add("Program name must be specified");
@@ -171,9 +290,16 @@ public class ITCFormatParser implements InputFileReader {
                             String roomWeightString = getAttributeValue(subStart, "room");
                             String distributionWeightString = getAttributeValue(subStart, "distribution");
 
-                            short timeWeight = timeWeightString != null ? Short.parseShort(timeWeightString) : 0;
-                            short roomWeight = roomWeightString != null ? Short.parseShort(roomWeightString) : 0;
-                            short distributionWeight = distributionWeightString != null ? Short.parseShort(distributionWeightString) : 0;
+                            short timeWeight;
+                            short roomWeight;
+                            short distributionWeight;
+                            try {
+                                timeWeight = timeWeightString != null ? Short.parseShort(timeWeightString) : 0;
+                                roomWeight = roomWeightString != null ? Short.parseShort(roomWeightString) : 0;
+                                distributionWeight = distributionWeightString != null ? Short.parseShort(distributionWeightString) : 0;
+                            } catch (NumberFormatException e) {
+                                throw new ParsingException(subEvent.getLocation(), e.getMessage());
+                            }
 
                             List<String> optimizationTagErrors = new ArrayList<>();
                             if (timeWeight < 1) optimizationTagErrors.add("time >= 1");
@@ -181,7 +307,7 @@ public class ITCFormatParser implements InputFileReader {
                             if (distributionWeight < 1) optimizationTagErrors.add("distribution >= 1");
                             if (!optimizationTagErrors.isEmpty()) {
                                 String errorMessage = "The following conditions must be followed:\n" + String.join("\n", optimizationTagErrors);
-                                throw new ParsingException(event.getLocation(), errorMessage);
+                                throw new ParsingException(subEvent.getLocation(), errorMessage);
                             }
 
                             data.setOptimizationParameters(timeWeight, roomWeight, distributionWeight);
@@ -209,94 +335,12 @@ public class ITCFormatParser implements InputFileReader {
 
         // Set the last updated at timestamp
         data.setLastUpdatedAt();
-        
+
         return data;
     }
 
-    // TODO: complete comment
     /**
-     *
-     * @param reader
-     * @param startElement
-     * @param event
-     * @return
-     * @throws ParsingException
-     * @throws XMLStreamException
-     */
-    private Timetable parseSolution(XMLEventReader reader, StartElement startElement, XMLEvent event) throws ParsingException, XMLStreamException {
-        Timetable timetable = new Timetable();
-
-        String solutionName = getAttributeValue(startElement, "name");
-        String dateOfCreationString = getAttributeValue(startElement, "timeStampUTC12");
-        String runtimeString = getAttributeValue(startElement, "runtime");
-
-        LocalDateTime dateOfCreation = dateOfCreationString != null
-                ? LocalDateTime.from(timeStampUTC12Formatter.parse(dateOfCreationString)) : null;
-        int runtime = runtimeString != null ? Integer.parseInt(runtimeString) : 0;
-
-        if (solutionName == null) {
-            throw new ParsingException(event.getLocation(), "A name must be specified in the solution tag");
-        }
-
-        timetable.setProgramName(solutionName);
-        timetable.setRuntime(runtime);
-        if (dateOfCreation != null) timetable.setDateOfCreation(dateOfCreation);
-
-        readSolution(reader, timetable);
-
-        return timetable;
-    }
-
-    // TODO: complete comment
-    /**
-     * All the scheduled lessons should be read before encountering the termination tag
-     */
-    private void readSolution(XMLEventReader eventReader, Timetable timetable) throws XMLStreamException, ParsingException {
-        while (eventReader.hasNext()) {
-            XMLEvent event;
-            event = eventReader.nextEvent();
-
-            switch (event.getEventType()) {
-                case XMLStreamConstants.START_ELEMENT:
-                    StartElement startElement = event.asStartElement();
-                    String startElementName = startElement.getName().getLocalPart();
-
-                    if (startElementName.equals(CLASS_TAG)) {
-                        String classId = getAttributeValue(startElement, "id");
-                        String roomId = getAttributeValue(startElement, "room");
-                        String days = getAttributeValue(startElement, "days");
-                        String startString = getAttributeValue(startElement, "start");
-                        String lengthString = getAttributeValue(startElement, "length");
-                        String weeks = getAttributeValue(startElement, "weeks");
-
-                        short start = startString != null ? Short.parseShort(startString) : 0;
-                        short length = lengthString != null ? Short.parseShort(lengthString) : 0;
-
-                        try {
-                            ScheduledLesson scheduledLesson = new ScheduledLesson(classId, roomId, days, weeks, start, length);
-                            timetable.addScheduledLesson(scheduledLesson);
-                        } catch (CheckedIllegalArgumentException e) {
-                            throw new ParsingException(event.getLocation(), e.getMessage());
-                        }
-                    }
-                    break;
-
-                case XMLStreamConstants.END_ELEMENT:
-                    EndElement endElement = event.asEndElement();
-                    String endElementName = endElement.getName().getLocalPart();
-
-                    if (endElementName.equals(SOLUTION_TAG)) {
-                        // If the end of the tag solution is found the function ends
-                        return;
-                    }
-                    break;
-            }
-        }
-    }
-
-    // TODO: complete comment
-    /**
-     * All the rooms should be read before encountering the termination tag
+     * Reads all the rooms data before encountering the termination tag
      */
     private void readRooms(XMLEventReader eventReader, InMemoryRepository data) throws XMLStreamException, ParsingException {
         Room room = null;
@@ -325,7 +369,12 @@ public class ITCFormatParser implements InputFileReader {
                             String travelRoomId = getAttributeValue(startElement, "room");
                             String travelPenaltyString = getAttributeValue(startElement, "value");
 
-                            int travelPenalty = travelPenaltyString != null ? Integer.parseInt(travelPenaltyString) : 0;
+                            int travelPenalty;
+                            try {
+                                travelPenalty = travelPenaltyString != null ? Integer.parseInt(travelPenaltyString) : 0;
+                            } catch (NumberFormatException e) {
+                                throw new ParsingException(event.getLocation(), e.getMessage());
+                            }
 
                             room.addRoomDistance(travelRoomId, travelPenalty);
 
@@ -341,11 +390,8 @@ public class ITCFormatParser implements InputFileReader {
                             String lengthString = getAttributeValue(startElement, "length");
                             String weeks = getAttributeValue(startElement, "weeks");
 
-                            short start = startString != null ? Short.parseShort(startString) : 0;
-                            short length = lengthString != null ? Short.parseShort(lengthString) : 0;
-
                             try {
-                                room.addUnavailability(days, weeks, start, length);
+                                room.addUnavailability(days, weeks, startString, lengthString);
                             } catch (Exception e) {
                                 throw new ParsingException(event.getLocation(), e.getMessage());
                             }
@@ -378,9 +424,8 @@ public class ITCFormatParser implements InputFileReader {
         }
     }
 
-    // TODO: complete comment
     /**
-     * All the courses should be read before encountering the termination tag
+     * Reads all the courses, configs, subparts and classes before encountering the courses termination tag
      */
     private void readCourses(XMLEventReader eventReader, InMemoryRepository data) throws XMLStreamException, ParsingException {
         Course course = null;
@@ -465,13 +510,11 @@ public class ITCFormatParser implements InputFileReader {
                             }
 
                             String days = getAttributeValue(startElement, "days");
-                            String startString = getAttributeValue(startElement, "start");
-                            String lengthString = getAttributeValue(startElement, "length");
+                            String start = getAttributeValue(startElement, "start");
+                            String length = getAttributeValue(startElement, "length");
                             String weeks = getAttributeValue(startElement, "weeks");
                             String timePenaltyString = getAttributeValue(startElement, "penalty");
 
-                            short start = startString != null ? Short.parseShort(startString) : 0;
-                            short length = lengthString != null ? Short.parseShort(lengthString) : 0;
                             int timePenalty = timePenaltyString != null ? Integer.parseInt(timePenaltyString) : 0;
 
                             try {
@@ -526,9 +569,8 @@ public class ITCFormatParser implements InputFileReader {
         }
     }
 
-    // TODO: complete comment
     /**
-     * All the teachers should be read before encountering the termination tag
+     * Reads all the teachers data before encountering the termination tag
      */
     private void readTeachers(XMLEventReader eventReader, InMemoryRepository data) throws XMLStreamException, ParsingException {
         Teacher teacher = null;
@@ -575,12 +617,9 @@ public class ITCFormatParser implements InputFileReader {
                             }
 
                             String days = getAttributeValue(startElement,"days");
-                            String startString = getAttributeValue(startElement, "start");
-                            String lengthString = getAttributeValue(startElement, "length");
+                            String start = getAttributeValue(startElement, "start");
+                            String length = getAttributeValue(startElement, "length");
                             String weeks = getAttributeValue(startElement, "weeks");
-
-                            short start = startString != null ? Short.parseShort(startString) : 0;
-                            short length = lengthString != null ? Short.parseShort(lengthString) : 0;
 
                             try {
                                 teacher.addUnavailability(days, weeks, start, length);
@@ -614,12 +653,12 @@ public class ITCFormatParser implements InputFileReader {
         }
     }
 
-    // TODO: complete comment
     /**
-     * All the restrictions should be read before encountering the termination tag
+     * Reads all the restrictions data before encountering the termination tag
      */
     private void readRestrictions(XMLEventReader eventReader, InMemoryRepository data) throws XMLStreamException, ParsingException {
         Constraint constraint = null;
+        int id = 0; // Consists of the index of the restriction read from the file
 
         while (eventReader.hasNext()) {
             XMLEvent event;
@@ -644,7 +683,7 @@ public class ITCFormatParser implements InputFileReader {
                             }
 
                             try {
-                                constraint = ConstraintFactory.createConstraint(restricType, restrictionPenalty, restrictionRequired, data.getTimetableConfiguration());
+                                constraint = ConstraintFactory.createConstraint(id++, restricType, restrictionPenalty, restrictionRequired, data.getTimetableConfiguration());
 
                                 data.addConstraint(constraint);
                             } catch (Exception e) {

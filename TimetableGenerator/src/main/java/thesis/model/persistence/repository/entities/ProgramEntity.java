@@ -43,6 +43,9 @@ public class ProgramEntity implements Serializable {
     @OneToMany(mappedBy = "programEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final Set<TimetableEntity> timetableEntitySet = new HashSet<>();
 
+    @OneToMany(mappedBy = "programEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private final Set<ConstraintEntity> constraintEntitySet = new HashSet<>();
+
     public ProgramEntity() {}
 
     public ProgramEntity(String name, short numberDays, int numberWeeks, short slotsPerDay, short timeWeight, short roomWeight, short distributionWeight, LocalDateTime lastUpdatedAt) {
@@ -142,6 +145,14 @@ public class ProgramEntity implements Serializable {
 
     public Set<TimetableEntity> getTimetableEntitySet() {
         return timetableEntitySet;
+    }
+
+    public void addConstraintEntity(ConstraintEntity constraintEntity) {
+        constraintEntitySet.add(constraintEntity);
+    }
+
+    public Set<ConstraintEntity> getConstraintEntitySet() {
+        return constraintEntitySet;
     }
 
     @Override

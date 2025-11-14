@@ -3,7 +3,7 @@ package thesis.model.domain.components;
 import java.util.*;
 
 public abstract class Constraint {
-    private final UUID id = UUID.randomUUID(); // Used to differentiate constraints from each other
+    private final int id; // Used to differentiate constraints from each other
 
     private final String type;
     private final Integer penalty;
@@ -14,7 +14,8 @@ public abstract class Constraint {
     private final int nrWeeks;
     private final short nrDays;
 
-    public Constraint(String type, Integer penalty, boolean required, Integer firstParam, Integer secondParam, TimetableConfiguration timetableConfiguration) {
+    public Constraint(int id, String type, Integer penalty, boolean required, Integer firstParam, Integer secondParam, TimetableConfiguration timetableConfiguration) {
+        this.id = id;
         this.type = type;
         this.penalty = penalty;
         this.required = required;
@@ -24,12 +25,16 @@ public abstract class Constraint {
         this.nrDays = timetableConfiguration.getNumDays();
     }
 
-    public Constraint(String type, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
-        this(type, penalty, required, null, null, timetableConfiguration);
+    public Constraint(int id, String type, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
+        this(id, type, penalty, required, null, null, timetableConfiguration);
     }
 
-    public Constraint(String type, Integer penalty, boolean required, Integer firstTimeslot, TimetableConfiguration timetableConfiguration) {
-        this(type, penalty, required, firstTimeslot, null, timetableConfiguration);
+    public Constraint(int id, String type, Integer penalty, boolean required, Integer firstTimeslot, TimetableConfiguration timetableConfiguration) {
+        this(id, type, penalty, required, firstTimeslot, null, timetableConfiguration);
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getType() {

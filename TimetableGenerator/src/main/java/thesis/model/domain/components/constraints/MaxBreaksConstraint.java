@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MaxBreaksConstraint extends Constraint {
-    public MaxBreaksConstraint(String restrictionType, int param1, int param2, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
-        super(restrictionType, penalty, required, param1, param2, timetableConfiguration);
+    public MaxBreaksConstraint(int id, String restrictionType, int param1, int param2, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
+        super(id, restrictionType, penalty, required, param1, param2, timetableConfiguration);
     }
 
     // The authors of this method are Edon Gashi and Kadri Sylejmani

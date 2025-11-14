@@ -34,7 +34,7 @@ public class Teacher {
         return Collections.unmodifiableList(teacherClassList);
     }
 
-    public void addUnavailability(String days, String weeks, short startSlot, short length) throws CheckedIllegalArgumentException {
+    public void addUnavailability(String days, String weeks, String startSlot, String length) throws CheckedIllegalArgumentException {
         teacherUnavailabilities.add(TimeFactory.create(days, weeks, startSlot, length));
     }
 

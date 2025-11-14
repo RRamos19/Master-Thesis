@@ -35,7 +35,7 @@ public class EntityRepository {
     }
 
     public void storeCourse(CourseEntity courseEntity) {
-        courses.put(courseEntity.getName(), courseEntity);
+        courses.put(courseEntity.getCourseNameEntity().getName(), courseEntity);
 
         for(ConfigEntity configEntity : courseEntity.getConfigSet()) {
             for(SubpartEntity subpartEntity : configEntity.getSubpartSet()) {
@@ -51,7 +51,7 @@ public class EntityRepository {
     }
 
     public void storeClassUnit(ClassUnitEntity classUnitEntity) {
-        classUnits.put(classUnitEntity.getName(), classUnitEntity);
+        classUnits.put(classUnitEntity.getClassUnitNameEntity().getName(), classUnitEntity);
     }
 
     public ClassUnitEntity getClassUnit(String className) {

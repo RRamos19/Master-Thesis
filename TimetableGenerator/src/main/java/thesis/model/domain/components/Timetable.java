@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class Timetable implements XmlResult {
-    private static final DateTimeFormatter dateOfCreationFormatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy");
+    private static final DateTimeFormatter dateOfCreationFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
     private LocalDateTime dateOfCreation;
     private String programName;
     private long runtime;                                                            // Sum of the durations of the initial solution and optimization algorithms
@@ -197,6 +197,12 @@ public class Timetable implements XmlResult {
         }
 
         return isValid;
+    }
+
+    public void clearCache() {
+        isValid = null;
+        updateConstraints = true;
+        updateCost = true;
     }
 
     @Override

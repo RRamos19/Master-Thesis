@@ -4,10 +4,7 @@ import org.hibernate.Session;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.*;
 import thesis.model.persistence.repository.entities.*;
-import thesis.model.persistence.repository.entities.utils.ConstraintTypeEntityFactory;
-import thesis.model.persistence.repository.entities.utils.RoomEntityFactory;
-import thesis.model.persistence.repository.entities.utils.TeacherEntityFactory;
-import thesis.model.persistence.repository.entities.utils.TimeBlockEntityFactory;
+import thesis.model.persistence.repository.entities.utils.*;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -21,9 +18,12 @@ public class DataMerger {
     private final RoomEntityFactory roomEntityFactory;
     private final TimeBlockEntityFactory timeBlockEntityFactory;
     private final TeacherEntityFactory teacherEntityFactory;
+    private final CourseNameEntityFactory courseNameEntityFactory;
+    private final ConfigNameEntityFactory configNameEntityFactory;
+    private final SubpartNameEntityFactory subpartNameEntityFactory;
+    private final ClassUnitNameEntityFactory classUnitNameEntityFactory;
 
-    private final Map<String, List<Object>> classUnitMap = new HashMap<>();
-    private final Set<Constraint> constraintSet = new HashSet<>();
+    private final Map<String, ClassUnitEntity> classUnitMap = new HashMap<>();
 
     public DataMerger(Session session, RoomEntityFactory roomEntityFactory, TeacherEntityFactory teacherEntityFactory) {
         this.session = session;
@@ -31,6 +31,10 @@ public class DataMerger {
         this.timeBlockEntityFactory = new TimeBlockEntityFactory(session);
         this.roomEntityFactory = roomEntityFactory;
         this.teacherEntityFactory = teacherEntityFactory;
+        this.courseNameEntityFactory = new CourseNameEntityFactory(session);
+        this.configNameEntityFactory = new ConfigNameEntityFactory(session);
+        this.subpartNameEntityFactory = new SubpartNameEntityFactory(session);
+        this.classUnitNameEntityFactory = new ClassUnitNameEntityFactory(session);
     }
 
     public void mergeClasses(ProgramEntity programEntity, InMemoryRepository inMemoryRepository) {
@@ -38,62 +42,39 @@ public class DataMerger {
             inMemoryRepository.getCourses(),
             programEntity.getCourseEntitySet(),
             Course::getCourseId,
-            CourseEntity::getName,
+            (courseEntity) -> courseEntity.getCourseNameEntity().getName(),
             this::mergeCourses,
             (course) -> createCourseEntity(programEntity, course),
             (courseEntity) -> programEntity.getCourseEntitySet().remove(courseEntity)
         );
 
-        // After every class is created the relations of parent class and constraints must be created
-        classUnitMap.values().forEach((clsObjects) -> {
-            ClassUnit classUnit = (ClassUnit) clsObjects.get(0);
-            ClassUnitEntity classUnitEntity = (ClassUnitEntity) clsObjects.get(1);
-
-            String parentClass = classUnit.getParentClassId();
-            if(parentClass != null) {
-                classUnitEntity.setParentClass((ClassUnitEntity) classUnitMap.get(parentClass).get(1));
-            }
-        });
-
-        // Create all the constraints again
-        constraintSet.forEach((constraint) -> {
-            ConstraintTypeEntity constraintTypeEntity = constraintTypeEntityFactory.getConstraintType(constraint.getType());
-
-            ConstraintEntity constraintEntity = new ConstraintEntity(
-                constraintTypeEntity,
-                constraint.getFirstParameter(),
-                constraint.getSecondParameter(),
-                constraint.getPenalty(),
-                constraint.getRequired());
-
-            constraintEntity = session.merge(constraintEntity);
-
-            ConstraintEntity finalConstraintEntity = constraintEntity;
-            constraint.getClassUnitIdList().forEach((classId) -> {
-                List<Object> classObjects = classUnitMap.get(classId);
-                ClassUnitEntity classUnitEntity = (ClassUnitEntity) classObjects.get(1);
-
-                new ClassConstraintEntity(classUnitEntity, finalConstraintEntity);
-            });
-        });
+        mergeCollections(
+            inMemoryRepository.getConstraints(),
+            programEntity.getConstraintEntitySet(),
+            Constraint::getId,
+            (constraintEntity) -> constraintEntity.getId().getConstraintPK(),
+            this::mergeConstraints,
+            (constraint) -> createConstraintEntity(programEntity, constraint),
+            (constraintEntity) -> programEntity.getConstraintEntitySet().remove(constraintEntity)
+        );
     }
 
-    private static <T, E> void mergeCollections(
+    private static <T, E, K> void mergeCollections(
             Collection<T> source,
             Collection<E> target,
-            Function<T, String> sourceKey,
-            Function<E, String> targetKey,
+            Function<T, K> sourceKey,
+            Function<E, K> targetKey,
             BiConsumer<T, E> mergeExisting,
             Consumer<T> createNew,
             Consumer<E> removeOrphan) {
 
         // More efficient for searching matches in keys
-        Map<String, E> targetMap = target.stream()
-                .collect(Collectors.toMap(targetKey, e -> e));
+        Map<K, E> targetMap = target.stream()
+            .collect(Collectors.toMap(targetKey, e -> e));
 
         // Search each value in source to add to the database
         for (T src : source) {
-            String key = sourceKey.apply(src);
+            K key = sourceKey.apply(src);
             E tgt = targetMap.remove(key);
 
             // If an equivalent entity is found then a merge occurs, otherwise a new entity is created
@@ -111,7 +92,7 @@ public class DataMerger {
     }
 
     private void createCourseEntity(ProgramEntity programEntity, Course course) {
-        CourseEntity courseEntity = new CourseEntity(programEntity, course.getCourseId());
+        CourseEntity courseEntity = new CourseEntity(programEntity, courseNameEntityFactory.getOrCreateCourseName(course.getCourseId()));
         session.persist(courseEntity);
 
         for(Config config : course.getConfigList()) {
@@ -124,7 +105,7 @@ public class DataMerger {
             course.getConfigList(),
             courseEntity.getConfigSet(),
             Config::getConfigId,
-            ConfigEntity::getName,
+            (configEntity) -> configEntity.getConfigNameEntity().getName(),
             this::mergeConfigs,
             (config) -> createConfigEntity(courseEntity, config),
             (configEntity -> courseEntity.getConfigSet().remove(configEntity))
@@ -132,7 +113,7 @@ public class DataMerger {
     }
 
     private void createConfigEntity(CourseEntity courseEntity, Config config) {
-        ConfigEntity configEntity = new ConfigEntity(courseEntity, config.getConfigId());
+        ConfigEntity configEntity = new ConfigEntity(courseEntity, configNameEntityFactory.getOrCreateConfigName(config.getConfigId()));
         session.persist(configEntity);
 
         for(Subpart subpart : config.getSubpartList()) {
@@ -145,7 +126,7 @@ public class DataMerger {
             config.getSubpartList(),
             configEntity.getSubpartSet(),
             Subpart::getSubpartId,
-            SubpartEntity::getName,
+            (subpartEntity) -> subpartEntity.getSubpartNameEntity().getName(),
             this::mergeSubparts,
             (subpart) -> createSubpartEntity(configEntity, subpart),
             (subpartEntity -> configEntity.getSubpartSet().remove(subpartEntity))
@@ -153,7 +134,7 @@ public class DataMerger {
     }
 
     private void createSubpartEntity(ConfigEntity configEntity, Subpart subpart) {
-        SubpartEntity subpartEntity = new SubpartEntity(configEntity, subpart.getSubpartId());
+        SubpartEntity subpartEntity = new SubpartEntity(configEntity, subpartNameEntityFactory.getOrCreateSubpartName(subpart.getSubpartId()));
         session.persist(subpartEntity);
 
         for(ClassUnit cls : subpart.getClassUnitList()) {
@@ -166,7 +147,7 @@ public class DataMerger {
             subpart.getClassUnitList(),
             subpartEntity.getClassUnitSet(),
             ClassUnit::getClassId,
-            ClassUnitEntity::getName,
+            (classUnit) -> classUnit.getClassUnitNameEntity().getName(),
             this::mergeClassUnits,
             (classUnit) -> createClassUnitEntity(subpartEntity, classUnit),
             (classUnitEntity -> subpartEntity.getClassUnitSet().remove(classUnitEntity))
@@ -174,7 +155,7 @@ public class DataMerger {
     }
 
     private void createClassUnitEntity(SubpartEntity subpartEntity, ClassUnit classUnit) {
-        ClassUnitEntity classUnitEntity = new ClassUnitEntity(subpartEntity, classUnit.getClassId());
+        ClassUnitEntity classUnitEntity = new ClassUnitEntity(subpartEntity, classUnitNameEntityFactory.getOrCreateClassUnitName(classUnit.getClassId()));
         session.persist(classUnitEntity);
 
         classUnit.getClassTimePenalties().forEach((time, penalty) -> {
@@ -194,8 +175,8 @@ public class DataMerger {
             new TeacherClassEntity(classUnitEntity, teacherEntity);
         });
 
-        classUnitMap.put(classUnit.getClassId(), List.of(classUnit, classUnitEntity));
-        constraintSet.addAll(classUnit.getConstraintList());
+        // Add the class to a map to make the merge of constraint more efficient
+        classUnitMap.put(classUnitEntity.getClassUnitNameEntity().getName(), classUnitEntity);
     }
 
     private List<Object> createTimeId(Time time) {
@@ -209,93 +190,112 @@ public class DataMerger {
     private void mergeClassUnits(ClassUnit classUnit, ClassUnitEntity classUnitEntity) {
         // More efficient for searching matches in keys
         Map<Integer, TeacherClassEntity> teacherMap = classUnitEntity.getTeacherClassEntitySet().stream()
-                .collect(Collectors.toMap((e) -> e.getTeacherEntity().getId(), e -> e));
+                .collect(Collectors.toMap(e -> e.getTeacherEntity().getId(), e -> e));
         Map<String, ClassRoomEntity> classRoomMap = classUnitEntity.getClassRoomEntitySet().stream()
-                .collect(Collectors.toMap((classRoomEntity -> classRoomEntity.getRoom().getName()), e -> e));
+                .collect(Collectors.toMap(classRoomEntity -> classRoomEntity.getRoom().getName(), e -> e));
         Map<List<Object>, ClassTimeEntity> classTimeMap = classUnitEntity.getClassTimeEntitySet().stream()
-                .collect(Collectors.toMap((e) -> createTimeBlockId(e.getTimeBlockEntity()), e -> e));
+                .collect(Collectors.toMap(e -> createTimeBlockId(e.getTimeBlockEntity()), e -> e));
 
-        // Clear every constraint (they will be created again after merging everything)
-        classUnitEntity.getClassConstraintEntitySet().forEach((classConstraint) -> {
-            ConstraintEntity constraintEntity = classConstraint.getConstraintEntity();
-            constraintEntity.getClassConstraintEntityList().clear();
-            session.remove(constraintEntity);
-        });
-        classUnitEntity.getClassConstraintEntitySet().clear();
-
+        // Merge class times
         classUnit.getClassTimePenalties().forEach((time, penalty) -> {
             List<Object> timeId = createTimeId(time);
-            boolean alreadyExists = false;
-            for(ClassTimeEntity classTimeEntity : classUnitEntity.getClassTimeEntitySet()) {
-                List<Object> timeBlockId = createTimeBlockId(classTimeEntity.getTimeBlockEntity());
-                if(Objects.equals(timeBlockId, timeId)) {
-                    alreadyExists = true;
-                    classTimeMap.remove(timeBlockId);
-
-                    // Update penalty
-                    if(classTimeEntity.getPenalty() != penalty) {
-                        classTimeEntity.setPenalty(penalty);
-                    }
-
-                    break;
-                }
-            };
-
-            if(!alreadyExists) {
+            if(!classTimeMap.containsKey(timeId)) {
                 new ClassTimeEntity(
                     classUnitEntity,
                     timeBlockEntityFactory.getOrCreate(time.getStartSlot(), time.getLength(), time.getDays(), time.getWeeks()),
                     penalty);
+            } else {
+                ClassTimeEntity classTimeEntity = classTimeMap.get(timeId);
+
+                // Update penalty
+                classTimeEntity.setPenalty(penalty);
             }
 
-            // Remove the leftovers
-            classTimeMap.values().forEach((classTime) -> {
-                classTime.getClassUnit().getClassTimeEntitySet().remove(classTime);
-            });
+            classTimeMap.remove(timeId);
+        });
+        // Remove the time leftovers
+        classTimeMap.values().forEach((classTime) -> {
+            classTime.getClassUnit().getClassTimeEntitySet().remove(classTime);
         });
 
+        // Merge classrooms
         classUnit.getClassRoomPenalties().forEach((roomId, penalty) -> {
-            boolean alreadyExists = false;
-            for(ClassRoomEntity classRoomEntity : classUnitEntity.getClassRoomEntitySet()) {
-                if(Objects.equals(classRoomEntity.getRoom().getName(), roomId)) {
-                    alreadyExists = true;
-                    classRoomMap.remove(roomId);
-                    break;
-                }
-            }
-
-            if(!alreadyExists) {
+            if(!classRoomMap.containsKey(roomId)) {
                 RoomEntity roomEntity = roomEntityFactory.getOrCreateRoom(roomId);
                 new ClassRoomEntity(classUnitEntity, roomEntity, penalty);
             }
 
-            classRoomMap.values().forEach((classRoom) -> {
-                classRoom.getClassUnit().getClassRoomEntitySet().remove(classRoom);
-            });
+            classRoomMap.remove(roomId);
+        });
+        // Remove classRoom leftovers
+        classRoomMap.values().forEach((classRoom) -> {
+            classRoom.getClassUnit().getClassRoomEntitySet().remove(classRoom);
         });
 
-        classUnit.getTeacherIdList().forEach((teacherId) -> {
-            boolean alreadyExists = false;
-            for(TeacherClassEntity teacherClassEntity : classUnitEntity.getTeacherClassEntitySet()) {
-                TeacherEntity teacherEntity = teacherClassEntity.getTeacherEntity();
-                if(Objects.equals(teacherId, teacherEntity.getId())) {
-                    alreadyExists = true;
-                    teacherMap.remove(teacherId);
-                    break;
-                }
+        // Merge teacher ids
+        classUnit.getTeacherIdList().forEach(teacherId -> {
+            if(!teacherMap.containsKey(teacherId)) {
+                new TeacherClassEntity(classUnitEntity, teacherEntityFactory.get(teacherId));
             }
 
-            if(!alreadyExists) {
-                TeacherEntity teacherEntity = teacherEntityFactory.get(teacherId);
-                new TeacherClassEntity(classUnitEntity, teacherEntity);
+            teacherMap.remove(teacherId);
+        });
+        // Remove teacher leftovers
+        teacherMap.values().forEach(classUnitEntity::removeTeacherClass);
+
+        // Add the class to a map to make the merge of constraint more efficient
+        classUnitMap.put(classUnitEntity.getClassUnitNameEntity().getName(), classUnitEntity);
+    }
+
+    private void createConstraintEntity(ProgramEntity programEntity, Constraint constraint) {
+        ConstraintEntity constraintEntity = new ConstraintEntity(
+            constraint.getId(),
+            programEntity,
+            constraintTypeEntityFactory.getConstraintType(constraint.getType()),
+            constraint.getFirstParameter(),
+            constraint.getSecondParameter(),
+            constraint.getPenalty(),
+            constraint.getRequired());
+
+        session.persist(constraintEntity);
+
+        // Add all the classes to the constraintEntity
+        constraint.getClassUnitIdList().forEach((classId) -> {
+            new ClassConstraintEntity(
+                classUnitMap.get(classId),
+                constraintEntity);
+        });
+    }
+
+    private void mergeConstraints(Constraint constraint, ConstraintEntity constraintEntity) {
+        // Set all the values pertaining to the constraint
+        constraintEntity.setConstraintTypeEntity(constraintTypeEntityFactory.getConstraintType(constraint.getType()));
+        constraintEntity.setFirst_parameter(constraint.getFirstParameter());
+        constraintEntity.setSecond_parameter(constraintEntity.getSecond_parameter());
+        constraintEntity.setPenalty(constraintEntity.getPenalty());
+        constraintEntity.setRequired(constraint.getRequired());
+
+        // Start of the merge of the classes associated to the constraint
+        Map<Integer, ClassConstraintEntity> classConstraintMap = constraintEntity.getClassConstraintEntityList().stream()
+                .collect(Collectors.toMap((e) -> e.getId().getClassUnitId(), e -> e));
+
+        // Check if the classes are the same in both constraint objects
+        // If not, the constraintEntity will remove the ones not found in Constraint and will create the ones missing
+        constraint.getClassUnitIdList().forEach((classId) -> {
+            ClassUnitEntity classUnitEntity = classUnitMap.get(classId);
+            if(classConstraintMap.get(classUnitEntity.getId()) == null) {
+                new ClassConstraintEntity(
+                    classUnitMap.get(classId),
+                    constraintEntity);
             }
 
-            teacherMap.values().forEach((teacherEntity -> {
-                classUnitEntity.getTeacherClassEntitySet().remove(teacherEntity);
-            }));
+            classConstraintMap.remove(classUnitEntity.getId());
         });
 
-        classUnitMap.put(classUnit.getClassId(), List.of(classUnit, classUnitEntity));
-        constraintSet.addAll(classUnit.getConstraintList());
+        // If there are any leftovers they must be removed
+        classConstraintMap.forEach((classBDId, classConstraint) -> {
+            classConstraint.getConstraintEntity().removeClassConstraint(classConstraint);
+            classConstraint.getClassUnitEntity().removeClassConstraint(classConstraint);
+        });
     }
 }

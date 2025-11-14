@@ -1,7 +1,9 @@
 package thesis.controller.managers;
 
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -10,6 +12,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import org.hibernate.tool.schema.spi.ScriptTargetOutput;
 import thesis.controller.ControllerInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.ScheduledLesson;
@@ -155,7 +158,7 @@ public class WindowManager {
             }
         }
 
-        // For each day compute sub-column assignment (interval partitioning / greedy coloring)
+        // For each day compute sub-column assignment
         Map<ScheduledLesson, Integer> assignment = new IdentityHashMap<>();
         int[] subColsPerDay = new int[days];
         for (int d = 0; d < days; d++) {
@@ -167,7 +170,7 @@ public class WindowManager {
             List<Integer> lastEnd = new ArrayList<>(); // end slot for each subcol
             for (ScheduledLesson l : dayList) {
                 int start = l.getStartSlot();
-                int end = start + l.getLength();
+                int end = l.getEndSlot();
                 int found = -1;
                 for (int sc = 0; sc < lastEnd.size(); sc++) {
                     if (start >= lastEnd.get(sc)) {
@@ -200,6 +203,7 @@ public class WindowManager {
             int span = subColsPerDay[d];
             Label dayLabel = new Label(DAYS_OF_WEEK.get(d));
             dayLabel.setAlignment(Pos.CENTER);
+            dayLabel.setMinWidth(dayLabel.getPrefWidth());
             dayLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
             dayLabel.setStyle(
                     "-fx-font-weight: bold;" +
@@ -223,6 +227,8 @@ public class WindowManager {
 
             Label timeLabel = new Label(String.format("%02d:%02d - %02d:%02d", startHour, startMin % 60, endHour, endMin % 60));
             timeLabel.setAlignment(Pos.CENTER);
+            timeLabel.setMinHeight(rowHeight);
+            timeLabel.setPrefHeight(rowHeight);
             timeLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
             timeLabel.setStyle("-fx-border-color: black; -fx-border-width: 1; -fx-background-color: #fafafa;");
             grid.add(timeLabel, 0, s + 1);
@@ -230,7 +236,10 @@ public class WindowManager {
             // add empty panes for each sub-column so borders appear
             for (int c = 1; c <= totalSubCols; c++) {
                 Pane cell = new Pane();
+                cell.setMinHeight(rowHeight);
+                cell.setPrefHeight(rowHeight);
                 cell.setStyle("-fx-border-color: lightgray; -fx-border-width: 1;");
+                GridPane.setVgrow(cell, Priority.NEVER);
                 grid.add(cell, c, s + 1);
             }
         }
@@ -253,10 +262,12 @@ public class WindowManager {
                 int duration = l.getLength();
 
                 // clip to visible window
-                if (startSlot + duration <= minSlotOffset) continue; // ends before visible window
-                if (startSlot >= minSlotOffset + visibleSlots) continue; // starts after visible window
+                if ((startSlot + duration) <= minSlotOffset) continue; // ends before visible window
+                if (startSlot >= (minSlotOffset + visibleSlots)) continue; // starts after visible window
 
-                int relativeStart = Math.max(0, startSlot - minSlotOffset);
+                // A 1 is added because of the header with days of week
+                int relativeStart = Math.max(0, startSlot - minSlotOffset) + 1;
+
                 int visibleSpan = Math.min(duration, (minSlotOffset + visibleSlots) - startSlot);
 
                 List<String> teacherList = new ArrayList<>();
@@ -264,22 +275,31 @@ public class WindowManager {
 
                 Label idLabel = new Label(l.getClassId());
                 Label progLabel = new Label("[" + data.getProgramName() + "]");
-                Label teachersLabel = teacherList.isEmpty() ? null : new Label("[(" + String.join("); ", teacherList) + ")]");
-                Label roomLabel = l.getRoomId() != null ? new Label(l.getRoomId()) : null;
+                Label teachersLabel = teacherList.isEmpty() ? null : new Label("[(" + String.join(");\n ", teacherList) + ")]");
+                Label roomLabel = l.getRoomId() != null ? new Label("[" + l.getRoomId() + "]") : null;
 
                 VBox box = new VBox(2);
-                box.getChildren().add(idLabel);
-                box.getChildren().add(progLabel);
-                if(teachersLabel != null) box.getChildren().add(teachersLabel);
-                if(roomLabel != null) box.getChildren().add(roomLabel);
+                ObservableList<Node> boxChildren = box.getChildren();
+                boxChildren.add(idLabel);
+                boxChildren.add(progLabel);
+
+                if(teachersLabel != null) {
+                    teachersLabel.setTextAlignment(TextAlignment.CENTER);
+                    teachersLabel.setWrapText(true);
+                    teachersLabel.setMaxWidth(box.getPrefWidth());
+                    boxChildren.add(teachersLabel);
+                }
+                if(roomLabel != null) boxChildren.add(roomLabel);
 
                 box.setAlignment(Pos.CENTER);
+                box.setMinHeight(rowHeight*visibleSpan);
+                box.setPrefHeight(rowHeight*visibleSpan);
                 box.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
                 box.setStyle("-fx-background-color: lightblue; -fx-border-color: darkblue; -fx-border-width: 1;");
                 GridPane.setHgrow(box, Priority.ALWAYS);
-                GridPane.setVgrow(box, Priority.ALWAYS);
+                GridPane.setVgrow(box, Priority.NEVER);
 
-                grid.add(box, targetCol, relativeStart + 1, 1, visibleSpan);
+                grid.add(box, targetCol, relativeStart, 1, visibleSpan);
             }
         }
 
@@ -380,9 +400,18 @@ public class WindowManager {
                         ROW_HEIGHT
                 );
 
+                // Let the grid grow
+                grid.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+                // Fit the ScrollPane to the size of the window
+                ScrollPane scrollPane = new ScrollPane(grid);
+                scrollPane.setFitToHeight(true);
+                scrollPane.setFitToWidth(true);
+                scrollPane.setPannable(true);
+
                 // Tab title shows the weeks that share this timetable
                 String tabTitle = "Weeks " + weeks.toString();
-                Tab tab = new Tab(tabTitle, new ScrollPane(grid));
+                Tab tab = new Tab(tabTitle, scrollPane);
                 tabPane.getTabs().add(tab);
             }
 

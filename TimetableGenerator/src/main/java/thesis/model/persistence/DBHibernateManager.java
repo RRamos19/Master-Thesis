@@ -6,11 +6,13 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thesis.model.domain.DataRepository;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.*;
+import thesis.model.domain.components.constraints.ConstraintFactory;
+import thesis.model.exceptions.CheckedIllegalArgumentException;
 import thesis.model.exceptions.DatabaseException;
-import thesis.model.mapper.ModelConverter;
-import thesis.model.persistence.repository.EntityRepository;
+import thesis.model.exceptions.InvalidConfigurationException;
 import thesis.model.persistence.repository.entities.*;
 import thesis.model.persistence.repository.entities.utils.RoomEntityFactory;
 import thesis.model.persistence.repository.entities.utils.TeacherEntityFactory;
@@ -85,45 +87,12 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
                         .getResultList();
 
                 for (ProgramEntity programEntity : programs) {
-                    EntityRepository data = new EntityRepository();
-                    data.storeProgram(programEntity);
-
-                    for (CourseEntity courseEntity : programEntity.getCourseEntitySet()) {
-                        data.storeCourse(courseEntity);
-
-                        // Get all the rooms and teachers for this problem
-                        for (ConfigEntity configEntity : courseEntity.getConfigSet()) {
-                            for (SubpartEntity subpartEntity : configEntity.getSubpartSet()) {
-                                for (ClassUnitEntity classUnitEntity : subpartEntity.getClassUnitSet()) {
-                                    // Get every room
-                                    for (ClassRoomEntity classRoomEntity : classUnitEntity.getClassRoomEntitySet()) {
-                                        data.storeRoom(classRoomEntity.getRoom());
-                                    }
-
-                                    // Get every teacher
-                                    for (TeacherClassEntity teacherClassEntity : classUnitEntity.getTeacherClassEntitySet()) {
-                                        data.storeTeacher(teacherClassEntity.getTeacherEntity());
-                                    }
-
-                                    // Get every constraint
-                                    for (ClassConstraintEntity classConstraintEntity : classUnitEntity.getClassConstraintEntitySet()) {
-                                        data.storeConstraintEntity(classConstraintEntity.getConstraintEntity());
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    for (TimetableEntity timetableEntity : programEntity.getTimetableEntitySet()) {
-                        data.storeTimetable(timetableEntity);
-                    }
-
                     try {
-                        allData.add(ModelConverter.convertToDomain(data));
-                    } catch (Exception ignored) {
+                        allData.add(convertToDomain(programEntity));
+                    } catch (Exception e) {
                         // Should be impossible, unless the data that causes the problem
                         // was added on the database manually
-                        logger.error("An exception occurred: {}\nStacktrace: {}", ignored.getMessage(), Arrays.toString(ignored.getStackTrace()));
+                        logger.error("An exception occurred: {}\nStacktrace: {}", e.getMessage(), Arrays.toString(e.getStackTrace()));
                     }
                 }
             }
@@ -183,15 +152,14 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
                     // As the name of the program is unique, at most only a single result should be returned
                     ProgramEntity dbProgram = storedPrograms.isEmpty() ? null : storedPrograms.get(0);
 
-                    if (dbProgram == null) {
-                        // Create a complete new instance
-                        EntityRepository entityRepository = ModelConverter.convertToEntity(session, inMemoryRepository);
-
-                        session.persist(entityRepository.getProgramEntity());
-                    } else {
-                        // Merge the data of the instance with the local data
-                        mergeData(session, dbProgram, inMemoryRepository);
+                    // Create a new instance if one isn't stored
+                    if(dbProgram == null) {
+                        dbProgram = new ProgramEntity();
+                        dbProgram.setName(programToStore);
                     }
+
+                    // Creates and or merges all the data if there are instances in the database
+                    createOrMergeData(session, dbProgram, inMemoryRepository);
                 }
                 tx.commit();
 
@@ -207,7 +175,7 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
         }
     }
 
-    private void mergeData(Session session, ProgramEntity programEntity, InMemoryRepository programData) {
+    private void createOrMergeData(Session session, ProgramEntity programEntity, InMemoryRepository programData) {
         TeacherEntityFactory teacherEntityFactory = new TeacherEntityFactory(session);
         RoomEntityFactory roomEntityFactory = new RoomEntityFactory(session);
 
@@ -224,6 +192,8 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
         programEntity.setDistributionWeight(timetableConfiguration.getDistribWeight());
 
         programEntity.setLastUpdatedAt(programData.getLastUpdatedAt());
+
+        session.persist(programEntity);
 
         // Create the room instances
         programData.getRooms().forEach((room) -> {
@@ -260,5 +230,166 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
         programData.getTimetableList().forEach((timetable -> {
 
         }));
+    }
+
+    private InMemoryRepository convertToDomain(ProgramEntity programEntity) throws CheckedIllegalArgumentException, InvalidConfigurationException {
+        InMemoryRepository data = new DataRepository(programEntity.getName());
+
+        data.setConfiguration(
+                programEntity.getNumberDays(),
+                programEntity.getNumberWeeks(),
+                programEntity.getSlotsPerDay());
+
+        data.setOptimizationParameters(
+                programEntity.getTimeWeight(),
+                programEntity.getRoomWeight(),
+                programEntity.getDistributionWeight());
+
+        data.setLastUpdatedAt(programEntity.getLastUpdatedAt());
+
+        // Store the teachers, rooms and constraints in lists to perform the creations in the correct order
+        List<TeacherEntity> teacherEntityList = new ArrayList<>();
+        List<RoomEntity> roomEntityList = new ArrayList<>();
+        Set<ConstraintEntity> constraintEntitySet = new HashSet<>();
+        for (CourseEntity courseEntity : programEntity.getCourseEntitySet()) {
+            // Get all the rooms and teachers for this problem
+            for (ConfigEntity configEntity : courseEntity.getConfigSet()) {
+                for (SubpartEntity subpartEntity : configEntity.getSubpartSet()) {
+                    for (ClassUnitEntity classUnitEntity : subpartEntity.getClassUnitSet()) {
+                        // Get every room
+                        for (ClassRoomEntity classRoomEntity : classUnitEntity.getClassRoomEntitySet()) {
+                            roomEntityList.add(classRoomEntity.getRoom());
+                        }
+
+                        // Get every teacher
+                        for (TeacherClassEntity teacherClassEntity : classUnitEntity.getTeacherClassEntitySet()) {
+                            teacherEntityList.add(teacherClassEntity.getTeacherEntity());
+                        }
+
+                        // Get every constraint
+                        for (ClassConstraintEntity classConstraintEntity : classUnitEntity.getClassConstraintEntitySet()) {
+                            constraintEntitySet.add(classConstraintEntity.getConstraintEntity());
+                        }
+                    }
+                }
+            }
+        }
+
+        // Add the rooms and the relations of distance and unavailabilities
+        for(RoomEntity roomEntity : roomEntityList) {
+            Room room = RoomFastIdFactory.createRoom(roomEntity.getName());
+
+            for(RoomDistanceEntity roomDistanceEntity : roomEntity.getRoom1DistanceSet()) {
+                room.addRoomDistance(roomDistanceEntity.getRoom2().getName(), roomDistanceEntity.getDistance());
+            }
+
+            for(TimeBlockEntity roomUnavailabilityEntity : roomEntity.getRoomUnavailabilityList()) {
+                room.addUnavailability(
+                        roomUnavailabilityEntity.getDays(),
+                        roomUnavailabilityEntity.getWeeks(),
+                        roomUnavailabilityEntity.getStartSlot(),
+                        roomUnavailabilityEntity.getDuration());
+            }
+
+            data.addRoom(room);
+        }
+
+        Map<ConstraintEntity, Constraint> constraintMap = new HashMap<>();
+        for(ConstraintEntity constraintEntity : constraintEntitySet) {
+            Constraint constraint = ConstraintFactory.createConstraint(
+                    constraintEntity.getId().getConstraintPK(),
+                    constraintEntity.getConstraintTypeEntity().getName(),
+                    constraintEntity.getFirst_parameter(),
+                    constraintEntity.getSecond_parameter(),
+                    constraintEntity.getPenalty(),
+                    constraintEntity.getRequired(),
+                    data.getTimetableConfiguration());
+
+            data.addConstraint(constraint);
+
+            constraintMap.put(constraintEntity, constraint);
+        }
+
+        // Add the teachers and their unavailabilities
+        Map<TeacherEntity, Teacher> teacherMap = new HashMap<>();
+        for(TeacherEntity teacherEntity : teacherEntityList) {
+            Teacher teacher = new Teacher(teacherEntity.getId(), teacherEntity.getName());
+            teacherMap.put(teacherEntity, teacher);
+
+            for(TeacherUnavailabilityEntity teacherUnavailabilityEntity : teacherEntity.getTeacherUnavailabilityEntitySet()) {
+                teacher.addUnavailability(
+                        teacherUnavailabilityEntity.getDays(),
+                        teacherUnavailabilityEntity.getWeeks(),
+                        teacherUnavailabilityEntity.getStartSlot(),
+                        teacherUnavailabilityEntity.getDuration());
+            }
+
+            data.addTeacher(teacher);
+        }
+
+        // Add the courses, configs, subparts, classes and respective teachers
+        for(CourseEntity courseEntity : programEntity.getCourseEntitySet()) {
+            Course course = new Course(courseEntity.getCourseNameEntity().getName());
+            for(ConfigEntity configEntity : courseEntity.getConfigSet()) {
+                Config config = new Config(configEntity.getConfigNameEntity().getName());
+                for(SubpartEntity subpartEntity : configEntity.getSubpartSet()) {
+                    Subpart subpart = new Subpart(subpartEntity.getSubpartNameEntity().getName());
+                    for(ClassUnitEntity classUnitEntity : subpartEntity.getClassUnitSet()) {
+                        ClassUnit classUnit = new ClassUnit(classUnitEntity.getClassUnitNameEntity().getName());
+                        classUnit.setParentClassId(classUnit.getParentClassId());
+
+                        for(TeacherClassEntity teacherClassEntity : classUnitEntity.getTeacherClassEntitySet()) {
+                            Teacher teacher = teacherMap.get(teacherClassEntity.getTeacherEntity());
+                            classUnit.addTeacher(teacher.getId());
+                            teacher.addClassUnit(classUnit.getClassId());
+                        }
+                        for(ClassConstraintEntity classConstraintEntity : classUnitEntity.getClassConstraintEntitySet()) {
+                            Constraint constraint = constraintMap.get(classConstraintEntity.getConstraintEntity());
+                            classUnit.addConstraint(constraint);
+                            constraint.addClassUnitId(classUnit.getClassId());
+                        }
+                        for(ClassRoomEntity classRoomEntity : classUnitEntity.getClassRoomEntitySet()) {
+                            classUnit.addRoom(classRoomEntity.getRoom().getName(), classRoomEntity.getPenalty());
+                        }
+                        for(ClassTimeEntity classTimeEntity : classUnitEntity.getClassTimeEntitySet()) {
+                            TimeBlockEntity timeBlockEntity = classTimeEntity.getTimeBlockEntity();
+                            classUnit.addClassTime(timeBlockEntity.getDays(), timeBlockEntity.getWeeks(), timeBlockEntity.getStartSlot(), timeBlockEntity.getDuration(), classTimeEntity.getPenalty());
+                        }
+
+                        subpart.addClassUnit(classUnit);
+                        data.addClassUnit(classUnit);
+                    }
+                    config.addSubpart(subpart);
+                }
+                course.addConfig(config);
+            }
+            data.addCourse(course);
+        }
+
+        // Add the timetables, scheduled lessons and respective teachers
+        for(TimetableEntity timetableEntity : programEntity.getTimetableEntitySet()) {
+            Timetable timetable = new Timetable(data.getProgramName());
+
+            for(ScheduledLessonEntity scheduledLessonEntity : timetableEntity.getScheduledLessonEntityList()) {
+                TimeBlockEntity timeBlockEntity = scheduledLessonEntity.getTimeBlockEntity();
+                ScheduledLesson scheduledLesson = new ScheduledLesson(
+                        scheduledLessonEntity.getClassUnitEntity().getClassUnitNameEntity().getName(),
+                        scheduledLessonEntity.getRoomEntity().getName(),
+                        timeBlockEntity.getDays(),
+                        timeBlockEntity.getWeeks(),
+                        timeBlockEntity.getStartSlot(),
+                        timeBlockEntity.getDuration());
+
+                for(ScheduledLessonTeacherEntity scheduledLessonTeacherEntity : scheduledLessonEntity.getScheduledLessonTeacherList()) {
+                    scheduledLesson.addTeacherId(scheduledLessonTeacherEntity.getTeacher().getId());
+                }
+
+                scheduledLesson.bindModel(data);
+                timetable.addScheduledLesson(scheduledLesson);
+            }
+            data.addTimetable(timetable);
+        }
+
+        return data;
     }
 }

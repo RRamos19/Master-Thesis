@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Set;
 
 public class SameAttendeesConstraint extends Constraint {
-    public SameAttendeesConstraint(String type, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
-        super(type, penalty, required, timetableConfiguration);
+    public SameAttendeesConstraint(int id, String type, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
+        super(id, type, penalty, required, timetableConfiguration);
     }
 
     // The authors of this method are Edon Gashi and Kadri Sylejmani
@@ -21,7 +21,6 @@ public class SameAttendeesConstraint extends Constraint {
 
         for(int i=0; i<scheduledClassesSize-1; i++) {
             ScheduledLesson scheduledLesson1 = scheduledClasses.get(i);
-            String scheduledLesson1Id = scheduledLesson1.getClassId();
             Room room1 = scheduledLesson1.getRoom();
             Time time1 = scheduledLesson1.getScheduledTime();
 

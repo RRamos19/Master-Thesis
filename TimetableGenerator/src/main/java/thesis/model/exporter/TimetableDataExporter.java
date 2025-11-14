@@ -1,5 +1,7 @@
 package thesis.model.exporter;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.*;
 
@@ -7,13 +9,51 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.imageio.ImageIO;
+
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName;
 
 public class TimetableDataExporter implements DataExporter {
+    private static final List<String> DAYS_OF_WEEK = List.of("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
     private static final String EXPORT_LOCATION_PATH = "exports/";
 
     private final File exportLocation;
     private final int INDENT_SIZE = 2;
     private final Charset STANDARD_CHARSET = StandardCharsets.UTF_8;
+
+    private static final Color LIGHT_GRAY_COLOR = new Color(210, 210, 210);
+    private static final Color LIGHT_BLUE_COLOR = new Color(173, 216, 230);
+
+    public enum FileFormat {
+        XML("xml"),
+        CSV("csv"),
+        PDF("pdf"),
+        PNG("png");
+
+        private final String text;
+
+        FileFormat(final String text) {
+            this.text = text;
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+    }
 
     public TimetableDataExporter() {
         exportLocation = new File(EXPORT_LOCATION_PATH);
@@ -25,19 +65,20 @@ public class TimetableDataExporter implements DataExporter {
         }
     }
 
-    private File avoidFileOverwriting(String name) {
+    private File avoidFileOverwriting(String name, FileFormat fileFormat) {
         int solutionExportNumber = 0;
         File file;
         do {
             // Checks if the file exists. If the answer is true then a
             // number between parenthesis is added to avoid overwriting an existing file
             String exportNumberString = solutionExportNumber >= 1 ? " (" + solutionExportNumber + ")" : "";
-            file = new File(exportLocation.getAbsolutePath() + '/' + name + exportNumberString + ".xml");
+            file = new File(exportLocation.getAbsolutePath() + '/' + name + exportNumberString + '.' + fileFormat);
             solutionExportNumber++;
         } while(file.exists());
 
         return file;
     }
+
 
     private String addIndentation(int indentation, String str) {
         int finalStringSize = indentation + str.length();
@@ -54,13 +95,17 @@ public class TimetableDataExporter implements DataExporter {
         return exportLocation.getAbsolutePath();
     }
 
+    public String getSolutionName(Timetable solution) {
+        String fileName = "solution_" + solution.getProgramName();
+        String filenameDateOfCreation = solution.getDateOfCreationString().replace(' ', '_').replace(':', '.');
+        return fileName + '_' + filenameDateOfCreation;
+    }
+
     @Override
     public void exportSolutionsToITC(InMemoryRepository data) throws IOException {
-        String fileName = "solution_" + data.getProgramName();
         for(Timetable timetable : data.getTimetableList()) {
             String originalDateOfCreation = timetable.getDateOfCreationString();
-            String filenameDateOfCreation = timetable.getDateOfCreationString().replace(' ', '_').replace(':', '.');
-            File file = avoidFileOverwriting(fileName + '_' + filenameDateOfCreation);
+            File file = avoidFileOverwriting(getSolutionName(timetable), FileFormat.XML);
             StringBuilder stringBuilder = new StringBuilder();
 
             stringBuilder.append("<solution xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"solution\" name=\"")
@@ -94,14 +139,9 @@ public class TimetableDataExporter implements DataExporter {
 
             if(!teacherClassMap.isEmpty()) {
                 int indent = INDENT_SIZE;
-                stringBuilder.append(addIndentation(indent, "<teachers>\n"));
-
-                indent += INDENT_SIZE;
                 for(Map.Entry<Teacher, List<String>> teacherClass : teacherClassMap.entrySet()) {
                     stringBuilder.append(addIndentation(indent, "<teacher id=\""))
-                            .append(teacherClass.getKey().getId()).append("\" ")
-                            .append("name=\"").append(teacherClass.getKey().getName())
-                            .append("\">\n");
+                            .append(teacherClass.getKey().getId()).append("\">\n");
 
                     indent += INDENT_SIZE;
                     for(String classId : teacherClass.getValue()) {
@@ -113,9 +153,6 @@ public class TimetableDataExporter implements DataExporter {
 
                     stringBuilder.append(addIndentation(indent, "</teacher>\n"));
                 }
-                indent -= INDENT_SIZE;
-
-                stringBuilder.append(addIndentation(indent, "</teachers>\n"));
             }
 
             stringBuilder.append("</solution>");
@@ -126,7 +163,7 @@ public class TimetableDataExporter implements DataExporter {
 
     @Override
     public void exportDataToITC(InMemoryRepository data) throws IOException {
-        File file = avoidFileOverwriting(data.getProgramName());
+        File file = avoidFileOverwriting(data.getProgramName(), FileFormat.XML);
         StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
@@ -320,13 +357,300 @@ public class TimetableDataExporter implements DataExporter {
 
     }
 
+    private Pair<Map<String, List<Integer>>, Map<String, List<ScheduledLesson>>> getWeekGroups(Timetable timetable, int maxWeeks) {
+        // key -> list of week numbers
+        LinkedHashMap<String, List<Integer>> weekGroups = new LinkedHashMap<>();
+        // key -> list of ScheduledLesson objects for that key
+        Map<String, List<ScheduledLesson>> lessonsByKey = new HashMap<>();
+
+        for (int week = 0; week < maxWeeks; week++) {
+            final int finalWeek = week;
+            // collect active lessons this week
+            List<ScheduledLesson> active = timetable.getScheduledLessonList().stream()
+                    .filter(l -> {
+                        String weeks = l.getWeeksBinaryString();
+                        return finalWeek < weeks.length() && weeks.charAt(finalWeek) == '1';
+                    })
+                    .collect(Collectors.toList());
+
+            // create a key to represent all lessons
+            List<String> ids = active.stream()
+                    .map(ScheduledLesson::getClassId)
+                    .sorted()
+                    .collect(Collectors.toList());
+
+            String key = String.join("|", ids); // key creation
+
+            if (weekGroups.containsKey(key)) {
+                weekGroups.get(key).add(week + 1);
+            } else {
+                weekGroups.put(key, new ArrayList<>(List.of(week + 1)));
+                lessonsByKey.put(key, active);
+            }
+        }
+
+        return new ImmutablePair<>(weekGroups, lessonsByKey);
+    }
+
     @Override
     public void exportToPNG(InMemoryRepository data) throws IOException {
+        int weeks = data.getTimetableConfiguration().getNumWeeks();
+        for(Timetable timetable : data.getTimetableList()) {
+            Pair<Map<String, List<Integer>>, Map<String, List<ScheduledLesson>>> weeksAssignedLessons = getWeekGroups(timetable, weeks);
+            Map<String, List<Integer>> mapGroups = weeksAssignedLessons.getLeft();
+            Map<String, List<ScheduledLesson>> lessonGroups = weeksAssignedLessons.getRight();
 
+            for(Map.Entry<String, List<Integer>> mapGroup : mapGroups.entrySet()) {
+                List<String> weeksStringList = new ArrayList<>();
+                mapGroup.getValue().forEach((week) -> weeksStringList.add(week.toString()));
+
+                String weeksString = String.join("-", weeksStringList);
+                File file = avoidFileOverwriting(getSolutionName(timetable) + "_weeks_" + weeksString, FileFormat.PNG);
+
+                int days = data.getTimetableConfiguration().getNumDays();
+                int numSlots = data.getTimetableConfiguration().getSlotsPerDay();
+                int minutesPerSlot = 24 * 60 / numSlots;
+
+                int timeColWidth = 100;
+                int cellWidth = 120;
+                int cellHeight = 40;
+
+                int width = timeColWidth + days * cellWidth;
+                int height = (numSlots + 1) * cellHeight;
+
+                BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+                Graphics2D g = image.createGraphics();
+
+                drawTimetableAWT(g, data, lessonGroups.get(mapGroup.getKey()), timeColWidth, cellWidth, cellHeight, minutesPerSlot, numSlots);
+
+                g.dispose();
+                ImageIO.write(image, FileFormat.PNG.toString(), file);
+            }
+        }
     }
 
     @Override
     public void exportToPDF(InMemoryRepository data) throws IOException {
+        for(Timetable timetable : data.getTimetableList()) {
+            File file = avoidFileOverwriting(getSolutionName(timetable), FileFormat.PDF);
 
+            TimetableConfiguration timetableConfiguration = data.getTimetableConfiguration();
+            int days = timetableConfiguration.getNumDays();
+            int weeks = timetableConfiguration.getNumWeeks();
+            int numSlots = timetableConfiguration.getSlotsPerDay();
+            int minutesPerSlot = 24 * 60 / numSlots;
+
+            int timeColWidth = 100;
+            int cellWidth = 120;
+            int cellHeight = 40;
+
+            int width = timeColWidth + days * cellWidth;
+            int height = (numSlots + 1) * cellHeight;
+
+            Pair<Map<String, List<Integer>>, Map<String, List<ScheduledLesson>>> weeksAssignedLessons = getWeekGroups(timetable, weeks);
+            Map<String, List<Integer>> weekGroups = weeksAssignedLessons.getLeft();
+            Map<String, List<ScheduledLesson>> lessonGroups = weeksAssignedLessons.getRight();
+
+            try (PDDocument doc = new PDDocument()) {
+                for(Map.Entry<String, List<Integer>> weekGroup : weekGroups.entrySet()) {
+                    List<ScheduledLesson> assignedLessons = lessonGroups.get(weekGroup.getKey());
+
+                    PDPage page = new PDPage(new PDRectangle(width, height));
+                    doc.addPage(page);
+
+                    try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
+                        drawTimetablePDF(cs, data, assignedLessons, timeColWidth, cellWidth, cellHeight, minutesPerSlot, numSlots);
+                    }
+                }
+
+                doc.save(file);
+            }
+        }
+    }
+
+    private static void drawTimetableAWT(Graphics2D g, InMemoryRepository data, List<ScheduledLesson> assignedLessons,
+                                         int timeColWidth, int cellWidth, int cellHeight,
+                                         int minutesPerSlot, int visibleSlots) {
+
+        int days = data.getTimetableConfiguration().getNumDays();
+
+        // Background
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, timeColWidth + days * cellWidth, (visibleSlots + 1) * cellHeight);
+
+        // Headers
+        g.setFont(new Font("SansSerif", Font.BOLD, 12));
+        for (int d = 0; d < days; d++) {
+            int x = timeColWidth + d * cellWidth;
+            g.setColor(Color.WHITE);
+            g.fillRect(x, 0, cellWidth, cellHeight);
+            g.setColor(Color.BLACK);
+            g.drawRect(x, 0, cellWidth, cellHeight);
+            drawCenteredString(g, DAYS_OF_WEEK.get(d), new Rectangle(x, 0, cellWidth, cellHeight));
+        }
+
+        // Time column
+        g.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        for (int s = 0; s < visibleSlots; s++) {
+            int y = (s + 1) * cellHeight;
+            g.setColor(Color.WHITE);
+            g.fillRect(0, y, timeColWidth, cellHeight);
+            g.setColor(Color.BLACK);
+            g.drawRect(0, y, timeColWidth, cellHeight);
+
+            int startTime = s * minutesPerSlot;
+            int startHour = startTime / 60;
+            int startMinutes = startTime % 60;
+
+            int endTime = startTime + minutesPerSlot;
+            int endHour = endTime / 60;
+            int endMinutes = endTime % 60;
+            String time = String.format("%02d:%02d - %02d:%02d", startHour, startMinutes, endHour, endMinutes);
+            drawCenteredString(g, time, new Rectangle(0, y, timeColWidth, cellHeight));
+        }
+
+        // light grey colored grid
+        g.setColor(LIGHT_GRAY_COLOR);
+        for (int d = 0; d <= days; d++) {
+            int x = timeColWidth + d * cellWidth;
+            g.drawLine(x, 0, x, (visibleSlots + 1) * cellHeight);
+        }
+        for (int s = 0; s <= visibleSlots + 1; s++) {
+            int y = s * cellHeight;
+            g.drawLine(0, y, timeColWidth + days * cellWidth, y);
+        }
+
+        // lessons
+        g.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        for (ScheduledLesson l : assignedLessons) {
+            for (int d = 0; d < days; d++) {
+                if (l.getDaysBinaryString().charAt(d) == '1') {
+                    int x = timeColWidth + d * cellWidth;
+                    int y = (l.getStartSlot() + 1) * cellHeight;
+                    int h = l.getLength() * cellHeight;
+
+                    g.setColor(LIGHT_BLUE_COLOR);
+                    g.fillRect(x, y, cellWidth, h);
+                    g.setColor(Color.BLUE);
+                    g.drawRect(x, y, cellWidth, h);
+
+                    drawCenteredString(g, l.getClassId(), new Rectangle(x, y, cellWidth, h));
+                }
+            }
+        }
+    }
+
+    private static void drawTimetablePDF(PDPageContentStream cs, InMemoryRepository data, List<ScheduledLesson> assignedLessons,
+                                         int timeColWidth, int cellWidth, int cellHeight,
+                                         int minutesPerSlot, int visibleSlots) throws IOException {
+
+        int days = data.getTimetableConfiguration().getNumDays();
+
+        // White Background
+        cs.setNonStrokingColor(Color.WHITE);
+        cs.addRect(0, 0, timeColWidth + days * cellWidth, (visibleSlots + 1) * cellHeight);
+        cs.fill();
+
+        // Header
+        cs.setFont(new PDType1Font(FontName.HELVETICA_BOLD), 10);
+        for (int d = 0; d < days; d++) {
+            int x = timeColWidth + d * cellWidth;
+            int y = visibleSlots * cellHeight;
+            cs.setNonStrokingColor(Color.WHITE);
+            cs.addRect(x, y, cellWidth, cellHeight);
+            cs.fill();
+
+            cs.setStrokingColor(Color.BLACK);
+            cs.addRect(x, y, cellWidth, cellHeight);
+            cs.stroke();
+
+            // Day of week text
+            cs.beginText();
+            cs.setNonStrokingColor(Color.BLACK);
+            cs.newLineAtOffset(x + (float) cellWidth / 2 - 12, y + (float) cellHeight / 2 - 4);
+            cs.showText(DAYS_OF_WEEK.get(d));
+            cs.endText();
+        }
+
+        // Hours column
+        cs.setFont(new PDType1Font(FontName.HELVETICA), 11);
+        {
+            int x = timeColWidth / 2;
+            for (int s = visibleSlots; s > 0; s--) {
+                int y = (s - 1) * cellHeight;
+                cs.setNonStrokingColor(Color.WHITE);
+                cs.addRect(0, y, timeColWidth, cellHeight);
+                cs.fill();
+
+                cs.setNonStrokingColor(Color.BLACK);
+                cs.addRect(0, y, timeColWidth, cellHeight);
+                cs.stroke();
+
+                int startTime = (visibleSlots - s) * minutesPerSlot;
+                int startHour = startTime / 60;
+                int startMinutes = startTime % 60;
+
+                int endTime = startTime + minutesPerSlot;
+                int endHour = endTime / 60;
+                int endMinutes = endTime % 60;
+                String time = String.format("%02d:%02d - %02d:%02d", startHour, startMinutes, endHour, endMinutes);
+
+                cs.beginText();
+                cs.setNonStrokingColor(Color.BLACK);
+                cs.newLineAtOffset(x - 30, y + (float) cellHeight / 2 - 4);
+                cs.showText(time);
+                cs.endText();
+            }
+        }
+
+        // Light grey colored grid
+        cs.setStrokingColor(LIGHT_GRAY_COLOR);
+        for (int d = 0; d <= days; d++) {
+            float x = timeColWidth + d * cellWidth;
+            cs.moveTo(x, 0);
+            cs.lineTo(x, (visibleSlots + 1) * cellHeight);
+        }
+        for (int s = 0; s <= visibleSlots + 1; s++) {
+            float y = s * cellHeight;
+            cs.moveTo(0, y);
+            cs.lineTo(timeColWidth + days * cellWidth, y);
+        }
+        cs.stroke();
+
+        // Lessons
+        cs.setFont(new PDType1Font(FontName.HELVETICA), 9);
+        for (ScheduledLesson l : assignedLessons) {
+            for (int d = 0; d < days; d++) {
+                if (l.getDaysBinaryString().charAt(d) == '1') {
+                    float x = timeColWidth + d * cellWidth;
+                    float y = (visibleSlots - l.getStartSlot()) * cellHeight;
+                    float h = l.getLength() * cellHeight;
+
+                    cs.setNonStrokingColor(LIGHT_BLUE_COLOR);
+                    cs.addRect(x, y - h, cellWidth, h);
+                    cs.fill();
+
+                    cs.setStrokingColor(Color.BLUE);
+                    cs.addRect(x, y - h, cellWidth, h);
+                    cs.stroke();
+
+                    // Centered text
+                    cs.beginText();
+                    cs.setNonStrokingColor(Color.BLACK);
+                    cs.newLineAtOffset(x + 10, y - h / 2);
+                    cs.showText(l.getClassId());
+                    cs.endText();
+                }
+            }
+        }
+    }
+
+    // Centers the text in PNG
+    private static void drawCenteredString(Graphics2D g, String text, Rectangle rect) {
+        FontMetrics metrics = g.getFontMetrics(g.getFont());
+        int x = rect.x + (rect.width - metrics.stringWidth(text)) / 2;
+        int y = rect.y + ((rect.height - metrics.getHeight()) / 2) + metrics.getAscent();
+        g.setColor(Color.BLACK);
+        g.drawString(text, x, y);
     }
 }

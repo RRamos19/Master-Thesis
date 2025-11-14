@@ -1,6 +1,7 @@
 package thesis.model.persistence.repository.entities;
 
 import jakarta.persistence.*;
+import thesis.model.persistence.repository.entities.embeddableIds.ConstraintPK;
 
 import java.io.Serializable;
 import java.util.*;
@@ -8,17 +9,17 @@ import java.util.*;
 @Entity
 @Table(name = "timetable_constraint")
 public class ConstraintEntity implements Serializable {
-    // Serves to distinguish constraints from each other without relying on the classes it is associated to
-    @Transient
-    private final UUID instanceId = UUID.randomUUID();
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @EmbeddedId
+    private ConstraintPK id = new ConstraintPK();
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "constraint_type_id", referencedColumnName = "id", nullable = false)
     private ConstraintTypeEntity constraintTypeEntity;
+
+    @ManyToOne(optional = false)
+    @MapsId("programPK")
+    @JoinColumn(name = "program_id")
+    private ProgramEntity programEntity;
 
     @OneToMany(mappedBy = "constraintEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final Set<ClassConstraintEntity> classConstraintEntityList = new HashSet<>();
@@ -33,7 +34,10 @@ public class ConstraintEntity implements Serializable {
 
     public ConstraintEntity() {}
 
-    public ConstraintEntity(ConstraintTypeEntity constraintTypeEntity, Integer first_parameter, Integer second_parameter, Integer penalty, Boolean required) {
+    public ConstraintEntity(Integer constraintId, ProgramEntity program, ConstraintTypeEntity constraintTypeEntity, Integer first_parameter, Integer second_parameter, Integer penalty, Boolean required) {
+        this.id.setConstraintPK(constraintId);
+        this.programEntity = program;
+        program.addConstraintEntity(this);
         this.constraintTypeEntity = constraintTypeEntity;
         this.first_parameter = first_parameter;
         this.second_parameter = second_parameter;
@@ -41,28 +45,36 @@ public class ConstraintEntity implements Serializable {
         this.required = required;
     }
 
-    public Integer getId() {
+    public ConstraintPK getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(ConstraintPK id) {
         this.id = id;
     }
 
-    public void setFirstParameter(Integer first_parameter) {
-        this.first_parameter = first_parameter;
+    public ProgramEntity getProgramEntity() {
+        return programEntity;
     }
 
-    public Integer getFirstParameter() {
+    public void setProgramEntity(ProgramEntity programEntity) {
+        this.programEntity = programEntity;
+    }
+
+    public Integer getFirst_parameter() {
         return first_parameter;
     }
 
-    public void setSecondParameter(Integer second_parameter) {
-        this.second_parameter = second_parameter;
+    public void setFirst_parameter(Integer first_parameter) {
+        this.first_parameter = first_parameter;
     }
 
-    public Integer getSecondParameter() {
+    public Integer getSecond_parameter() {
         return second_parameter;
+    }
+
+    public void setSecond_parameter(Integer second_parameter) {
+        this.second_parameter = second_parameter;
     }
 
     public Integer getPenalty() {
@@ -97,16 +109,19 @@ public class ConstraintEntity implements Serializable {
         this.classConstraintEntityList.add(classConstraintEntity);
     }
 
+    public void removeClassConstraint(ClassConstraintEntity classConstraintEntity) {
+        this.classConstraintEntityList.remove(classConstraintEntity);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof ConstraintEntity)) return false;
         ConstraintEntity that = (ConstraintEntity) o;
-        return (id != null && Objects.equals(id, that.id)) ||
-                (id == null && that.id == null && Objects.equals(instanceId, that.instanceId));
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return id != null ? id.hashCode() : instanceId.hashCode();
+        return Objects.hashCode(id);
     }
 }

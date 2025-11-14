@@ -18,11 +18,11 @@ public class TimeBlockEntityFactory {
 
     public TimeBlockEntity getOrCreate(short startSlot, short duration, short days, int weeks) {
         return timeBlockEntityMap.computeIfAbsent(List.of(startSlot, duration, days, weeks),
-                (k) -> {
-                    TimeBlockEntity timeBlockEntity = new TimeBlockEntity(startSlot, duration, days, weeks);
-                    session.persist(timeBlockEntity);
-                    return timeBlockEntity;
-                });
+            (k) -> {
+                TimeBlockEntity timeBlockEntity = new TimeBlockEntity(startSlot, duration, days, weeks);
+                session.persist(timeBlockEntity);
+                return timeBlockEntity;
+            });
     }
 
     private void updateCache() {

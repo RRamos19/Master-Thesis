@@ -18,7 +18,10 @@ public class ClassConstraintEntity implements Serializable {
 
     @ManyToOne
     @MapsId("constraintId")
-    @JoinColumn(name = "constraint_id")
+    @JoinColumns({
+        @JoinColumn(name = "program_id", referencedColumnName = "program_id"),
+        @JoinColumn(name = "constraint_id", referencedColumnName = "constraint_id")
+    })
     private ConstraintEntity constraintEntity;
 
     public ClassConstraintEntity() {}

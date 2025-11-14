@@ -31,10 +31,10 @@ public class TimetableTest {
         repository.addClassUnit(class3);
         repository.addClassUnit(class4);
 
-        Constraint constraint1 = ConstraintFactory.createConstraint("SameStart", 2, false, timetableConfiguration);
-        Constraint constraint2 = ConstraintFactory.createConstraint("SameWeeks", 2, false, timetableConfiguration);
-        Constraint constraint3 = ConstraintFactory.createConstraint("SameAttendees", 2, false, timetableConfiguration);
-        Constraint constraint4 = ConstraintFactory.createConstraint("Overlap", 2, false, timetableConfiguration);
+        Constraint constraint1 = ConstraintFactory.createConstraint(0, "SameStart", 2, false, timetableConfiguration);
+        Constraint constraint2 = ConstraintFactory.createConstraint(1, "SameWeeks", 2, false, timetableConfiguration);
+        Constraint constraint3 = ConstraintFactory.createConstraint(2, "SameAttendees", 2, false, timetableConfiguration);
+        Constraint constraint4 = ConstraintFactory.createConstraint(3, "Overlap", 2, false, timetableConfiguration);
 
         repository.addConstraint(constraint1);
         repository.addConstraint(constraint2);

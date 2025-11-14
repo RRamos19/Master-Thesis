@@ -14,8 +14,9 @@ public class CourseEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(length = 10, nullable = false)
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "name_id", referencedColumnName = "id", nullable = false)
+    private CourseNameEntity courseNameEntity;
 
     @ManyToOne
     @JoinColumn(name = "program_id", referencedColumnName = "id", nullable = false)
@@ -26,10 +27,10 @@ public class CourseEntity implements Serializable {
 
     public CourseEntity() {}
 
-    public CourseEntity(ProgramEntity programEntity, String name) {
+    public CourseEntity(ProgramEntity programEntity, CourseNameEntity courseNameEntity) {
         this.programEntity = programEntity;
         programEntity.addCourse(this);
-        this.name = name;
+        this.courseNameEntity = courseNameEntity;
     }
 
     public Integer getId() {
@@ -40,12 +41,12 @@ public class CourseEntity implements Serializable {
         this.id = id;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setCourseNameEntity(CourseNameEntity courseNameEntity) {
+        this.courseNameEntity = courseNameEntity;
     }
 
-    public String getName() {
-        return name;
+    public CourseNameEntity getCourseNameEntity() {
+        return courseNameEntity;
     }
 
     public ProgramEntity getProgramEntity() {
@@ -65,11 +66,12 @@ public class CourseEntity implements Serializable {
     public boolean equals(Object o) {
         if (!(o instanceof CourseEntity)) return false;
         CourseEntity that = (CourseEntity) o;
-        return Objects.equals(name, that.name);
+        return Objects.equals(programEntity, that.programEntity) &&
+                Objects.equals(courseNameEntity, that.courseNameEntity);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return Objects.hash(programEntity, courseNameEntity);
     }
 }
