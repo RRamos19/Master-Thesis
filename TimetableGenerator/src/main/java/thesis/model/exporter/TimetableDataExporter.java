@@ -105,63 +105,61 @@ public class TimetableDataExporter implements DataExporter {
     }
 
     @Override
-    public void exportSolutionsToITC(InMemoryRepository data) throws IOException {
-        for(Timetable timetable : data.getTimetableList()) {
-            String originalDateOfCreation = timetable.getDateOfCreationString();
-            File file = avoidFileOverwriting(getSolutionName(timetable), FileFormat.XML);
-            StringBuilder stringBuilder = new StringBuilder();
+    public void exportSolutionToITC(InMemoryRepository data, Timetable timetable) throws IOException {
+        String originalDateOfCreation = timetable.getDateOfCreationString();
+        File file = avoidFileOverwriting(getSolutionName(timetable), FileFormat.XML);
+        StringBuilder stringBuilder = new StringBuilder();
 
-            stringBuilder.append("<solution xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"solution\" name=\"")
-                    .append(data.getProgramName())
-                    .append("\" runtime=\"").append(timetable.getRuntime())
-                    .append("\" timeStampUTC12=\"").append(originalDateOfCreation).append("\">\n");
+        stringBuilder.append("<solution xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"solution\" name=\"")
+                .append(data.getProgramName())
+                .append("\" runtime=\"").append(timetable.getRuntime())
+                .append("\" timeStampUTC12=\"").append(originalDateOfCreation).append("\">\n");
 
-            Map<Teacher, List<String>> teacherClassMap = new HashMap<>();
-            for (ScheduledLesson scheduledLesson : timetable.getScheduledLessonList()) {
-                String classId = scheduledLesson.getClassId();
-                stringBuilder.append(addIndentation(INDENT_SIZE, "<class id=\"")).append(classId).append("\" ");
+        Map<Teacher, List<String>> teacherClassMap = new HashMap<>();
+        for (ScheduledLesson scheduledLesson : timetable.getScheduledLessonList()) {
+            String classId = scheduledLesson.getClassId();
+            stringBuilder.append(addIndentation(INDENT_SIZE, "<class id=\"")).append(classId).append("\" ");
 
-                List<Teacher> teacherList = scheduledLesson.getTeachers();
-                if(!teacherList.isEmpty()) {
-                    for(Teacher teacher : teacherList) {
-                        List<String> classList = teacherClassMap.computeIfAbsent(teacher, k -> new ArrayList<>());
+            List<Teacher> teacherList = scheduledLesson.getTeachers();
+            if(!teacherList.isEmpty()) {
+                for(Teacher teacher : teacherList) {
+                    List<String> classList = teacherClassMap.computeIfAbsent(teacher, k -> new ArrayList<>());
 
-                        classList.add(classId);
-                    }
-                }
-
-                if(scheduledLesson.getRoomId() != null) {
-                    stringBuilder.append("room=\"").append(scheduledLesson.getRoomId()).append("\" ");
-                }
-
-                stringBuilder.append("days=\"").append(scheduledLesson.getDaysBinaryString()).append("\" ")
-                        .append("start=\"").append(scheduledLesson.getStartSlot()).append("\" ")
-                        .append("weeks=\"").append(scheduledLesson.getWeeksBinaryString()).append("\"")
-                        .append("/>\n");
-            }
-
-            if(!teacherClassMap.isEmpty()) {
-                int indent = INDENT_SIZE;
-                for(Map.Entry<Teacher, List<String>> teacherClass : teacherClassMap.entrySet()) {
-                    stringBuilder.append(addIndentation(indent, "<teacher id=\""))
-                            .append(teacherClass.getKey().getId()).append("\">\n");
-
-                    indent += INDENT_SIZE;
-                    for(String classId : teacherClass.getValue()) {
-                        stringBuilder.append(addIndentation(indent, "<class id=\""))
-                                .append(classId)
-                                .append("\"/>\n");
-                    }
-                    indent -= INDENT_SIZE;
-
-                    stringBuilder.append(addIndentation(indent, "</teacher>\n"));
+                    classList.add(classId);
                 }
             }
 
-            stringBuilder.append("</solution>");
+            if(scheduledLesson.getRoomId() != null) {
+                stringBuilder.append("room=\"").append(scheduledLesson.getRoomId()).append("\" ");
+            }
 
-            writeToFile(file, stringBuilder.toString());
+            stringBuilder.append("days=\"").append(scheduledLesson.getDaysBinaryString()).append("\" ")
+                    .append("start=\"").append(scheduledLesson.getStartSlot()).append("\" ")
+                    .append("weeks=\"").append(scheduledLesson.getWeeksBinaryString()).append("\"")
+                    .append("/>\n");
         }
+
+        if(!teacherClassMap.isEmpty()) {
+            int indent = INDENT_SIZE;
+            for(Map.Entry<Teacher, List<String>> teacherClass : teacherClassMap.entrySet()) {
+                stringBuilder.append(addIndentation(indent, "<teacher id=\""))
+                        .append(teacherClass.getKey().getId()).append("\">\n");
+
+                indent += INDENT_SIZE;
+                for(String classId : teacherClass.getValue()) {
+                    stringBuilder.append(addIndentation(indent, "<class id=\""))
+                            .append(classId)
+                            .append("\"/>\n");
+                }
+                indent -= INDENT_SIZE;
+
+                stringBuilder.append(addIndentation(indent, "</teacher>\n"));
+            }
+        }
+
+        stringBuilder.append("</solution>");
+
+        writeToFile(file, stringBuilder.toString());
     }
 
     @Override
@@ -356,10 +354,9 @@ public class TimetableDataExporter implements DataExporter {
     }
 
     @Override
-    public void exportToCSV(InMemoryRepository data) throws IOException {
+    public void exportDataToCSV(InMemoryRepository data) throws IOException {
         File file = avoidFileOverwriting(data.getProgramName(), FileFormat.CSV);
-
-
+        
     }
 
     private Pair<Map<String, List<Integer>>, Map<String, List<ScheduledLesson>>> getWeekGroups(Timetable timetable, int maxWeeks) {
@@ -398,31 +395,122 @@ public class TimetableDataExporter implements DataExporter {
     }
 
     @Override
-    public void exportToPNG(InMemoryRepository data, int maxHour, int minHour) throws IOException {
+    public void exportSolutionToPNG(InMemoryRepository data, Timetable timetable, int maxHour, int minHour) throws IOException {
         int weeks = data.getTimetableConfiguration().getNumWeeks();
-        for(Timetable timetable : data.getTimetableList()) {
-            Pair<Map<String, List<Integer>>, Map<String, List<ScheduledLesson>>> weeksAssignedLessons = getWeekGroups(timetable, weeks);
-            Map<String, List<Integer>> mapGroups = weeksAssignedLessons.getLeft();
-            Map<String, List<ScheduledLesson>> lessonGroups = weeksAssignedLessons.getRight();
 
-            for(Map.Entry<String, List<Integer>> weekGroup : mapGroups.entrySet()) {
-                List<String> weeksStringList = new ArrayList<>();
-                weekGroup.getValue().forEach((week) -> weeksStringList.add(week.toString()));
+        Pair<Map<String, List<Integer>>, Map<String, List<ScheduledLesson>>> weeksAssignedLessons = getWeekGroups(timetable, weeks);
+        Map<String, List<Integer>> mapGroups = weeksAssignedLessons.getLeft();
+        Map<String, List<ScheduledLesson>> lessonGroups = weeksAssignedLessons.getRight();
 
-                String weeksString = String.join("-", weeksStringList);
-                File file = avoidFileOverwriting(getSolutionName(timetable) + "_weeks_" + weeksString, FileFormat.PNG);
+        for(Map.Entry<String, List<Integer>> weekGroup : mapGroups.entrySet()) {
+            List<String> weeksStringList = new ArrayList<>();
+            weekGroup.getValue().forEach((week) -> weeksStringList.add(week.toString()));
 
-                int days = data.getTimetableConfiguration().getNumDays();
-                int numSlots = data.getTimetableConfiguration().getSlotsPerDay();
-                int minutesPerSlot = 24 * 60 / numSlots;
+            String weeksString = String.join("-", weeksStringList);
+            File file = avoidFileOverwriting(getSolutionName(timetable) + "_weeks_" + weeksString, FileFormat.PNG);
 
-                int startSlot = (minHour * 60) / minutesPerSlot;
-                int endSlot = (maxHour * 60) / minutesPerSlot;
+            int days = data.getTimetableConfiguration().getNumDays();
+            int numSlots = data.getTimetableConfiguration().getSlotsPerDay();
+            int minutesPerSlot = 24 * 60 / numSlots;
 
-                int timeColWidth = 100;
-                int cellWidth = 120;
-                int cellHeight = 40;
+            int startSlot = (minHour * 60) / minutesPerSlot;
+            int endSlot = (maxHour * 60) / minutesPerSlot;
 
+            int timeColWidth = 100;
+            int cellWidth = 120;
+            int cellHeight = 40;
+
+            List<ScheduledLesson> assignedLessons = lessonGroups.get(weekGroup.getKey());
+
+            // Group lessons by day
+            Map<Integer, List<ScheduledLesson>> lessonsByDay = new HashMap<>();
+            for (ScheduledLesson lesson : assignedLessons) {
+                Time lessonTime = lesson.getScheduledTime();
+
+                // Ignore lessons outside of start and end limits
+                if(lessonTime.getStartSlot() < startSlot ||
+                        lessonTime.getEndSlot() > endSlot) {
+                    logger.warn("While exporting to PNG the lesson with id {} was ignored because it was outside the start and end hour limits", lesson.getClassId());
+                    continue;
+                }
+
+                String mask = lesson.getDaysBinaryString();
+                for (int day = 0; day < mask.length() && day < days; day++) {
+                    if (mask.charAt(day) == '1') {
+                        lessonsByDay.computeIfAbsent(day, k -> new ArrayList<>()).add(lesson);
+                    }
+                }
+            }
+
+            // For each day compute sub-column assignment
+            Map<ScheduledLesson, Integer> subColAssignments = new HashMap<>();
+            int[] subColsPerDay = new int[days];
+            for (int day = 0; day < days; day++) {
+                List<ScheduledLesson> dayList = lessonsByDay.getOrDefault(day, List.of())
+                        .stream()
+                        .sorted(Comparator.comparingInt(ScheduledLesson::getStartSlot))
+                        .collect(Collectors.toList());
+
+                List<Integer> lastSubCol = new ArrayList<>(); // end slot for each subcol
+                for (ScheduledLesson lesson : dayList) {
+                    int start = lesson.getStartSlot();
+                    int end = lesson.getEndSlot();
+                    int assignedSubColumn = -1;
+                    for (int subcol = 0; subcol < lastSubCol.size(); subcol++) {
+                        if (start >= lastSubCol.get(subcol)) {
+                            assignedSubColumn = subcol;
+                            lastSubCol.set(subcol, end);
+                            break;
+                        }
+                    }
+                    if (assignedSubColumn == -1) {
+                        assignedSubColumn = lastSubCol.size();
+                        lastSubCol.add(end);
+                    }
+                    subColAssignments.put(lesson, assignedSubColumn);
+                }
+                subColsPerDay[day] = Math.max(1, lastSubCol.size());
+            }
+
+            int totalSubColumns = Arrays.stream(subColsPerDay).sum();
+            int width = timeColWidth + totalSubColumns * cellWidth;
+            int height = (endSlot - startSlot + 1) * cellHeight;
+
+            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = image.createGraphics();
+
+            drawTimetableAWT(g, data, lessonsByDay, timeColWidth, cellWidth, cellHeight, minutesPerSlot, startSlot, endSlot, subColsPerDay, subColAssignments);
+
+            g.dispose();
+            ImageIO.write(image, FileFormat.PNG.toString(), file);
+        }
+    }
+
+    @Override
+    public void exportSolutionToPDF(InMemoryRepository data, Timetable timetable, int maxHour, int minHour) throws IOException {
+        File file = avoidFileOverwriting(getSolutionName(timetable), FileFormat.PDF);
+
+        TimetableConfiguration timetableConfiguration = data.getTimetableConfiguration();
+        int days = timetableConfiguration.getNumDays();
+        int weeks = timetableConfiguration.getNumWeeks();
+        int numSlots = timetableConfiguration.getSlotsPerDay();
+        int minutesPerSlot = 24 * 60 / numSlots;
+
+        int startSlot = (minHour * 60) / minutesPerSlot;
+        int endSlot = (maxHour * 60) / minutesPerSlot;
+
+        int timeColWidth = 100;
+        int cellWidth = 120;
+        int cellHeight = 40;
+
+        int height = (endSlot - startSlot + 1) * cellHeight;
+
+        Pair<Map<String, List<Integer>>, Map<String, List<ScheduledLesson>>> weeksAssignedLessons = getWeekGroups(timetable, weeks);
+        Map<String, List<Integer>> weekGroups = weeksAssignedLessons.getLeft();
+        Map<String, List<ScheduledLesson>> lessonGroups = weeksAssignedLessons.getRight();
+
+        try (PDDocument doc = new PDDocument()) {
+            for(Map.Entry<String, List<Integer>> weekGroup : weekGroups.entrySet()) {
                 List<ScheduledLesson> assignedLessons = lessonGroups.get(weekGroup.getKey());
 
                 // Group lessons by day
@@ -433,7 +521,7 @@ public class TimetableDataExporter implements DataExporter {
                     // Ignore lessons outside of start and end limits
                     if(lessonTime.getStartSlot() < startSlot ||
                             lessonTime.getEndSlot() > endSlot) {
-                        logger.warn("While exporting to PNG the lesson with id {} was ignored because it was outside the start and end hour limits", lesson.getClassId());
+                        logger.warn("While exporting to PDF the lesson with id {} was ignored because it was outside the start and end hour limits", lesson.getClassId());
                         continue;
                     }
 
@@ -454,7 +542,7 @@ public class TimetableDataExporter implements DataExporter {
                             .sorted(Comparator.comparingInt(ScheduledLesson::getStartSlot))
                             .collect(Collectors.toList());
 
-                    List<Integer> lastSubCol = new ArrayList<>(); // end slot for each subcol
+                    List<Integer> lastSubCol = new ArrayList<>(); // end slot for each sub-column
                     for (ScheduledLesson lesson : dayList) {
                         int start = lesson.getStartSlot();
                         int end = lesson.getEndSlot();
@@ -477,110 +565,16 @@ public class TimetableDataExporter implements DataExporter {
 
                 int totalSubColumns = Arrays.stream(subColsPerDay).sum();
                 int width = timeColWidth + totalSubColumns * cellWidth;
-                int height = (endSlot - startSlot + 1) * cellHeight;
 
-                BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-                Graphics2D g = image.createGraphics();
+                PDPage page = new PDPage(new PDRectangle(width, height));
+                doc.addPage(page);
 
-                drawTimetableAWT(g, data, lessonsByDay, timeColWidth, cellWidth, cellHeight, minutesPerSlot, startSlot, endSlot, subColsPerDay, subColAssignments);
-
-                g.dispose();
-                ImageIO.write(image, FileFormat.PNG.toString(), file);
-            }
-        }
-    }
-
-    @Override
-    public void exportToPDF(InMemoryRepository data, int maxHour, int minHour) throws IOException {
-        for(Timetable timetable : data.getTimetableList()) {
-            File file = avoidFileOverwriting(getSolutionName(timetable), FileFormat.PDF);
-
-            TimetableConfiguration timetableConfiguration = data.getTimetableConfiguration();
-            int days = timetableConfiguration.getNumDays();
-            int weeks = timetableConfiguration.getNumWeeks();
-            int numSlots = timetableConfiguration.getSlotsPerDay();
-            int minutesPerSlot = 24 * 60 / numSlots;
-
-            int startSlot = (minHour * 60) / minutesPerSlot;
-            int endSlot = (maxHour * 60) / minutesPerSlot;
-
-            int timeColWidth = 100;
-            int cellWidth = 120;
-            int cellHeight = 40;
-
-            int height = (endSlot - startSlot + 1) * cellHeight;
-
-            Pair<Map<String, List<Integer>>, Map<String, List<ScheduledLesson>>> weeksAssignedLessons = getWeekGroups(timetable, weeks);
-            Map<String, List<Integer>> weekGroups = weeksAssignedLessons.getLeft();
-            Map<String, List<ScheduledLesson>> lessonGroups = weeksAssignedLessons.getRight();
-
-            try (PDDocument doc = new PDDocument()) {
-                for(Map.Entry<String, List<Integer>> weekGroup : weekGroups.entrySet()) {
-                    List<ScheduledLesson> assignedLessons = lessonGroups.get(weekGroup.getKey());
-
-                    // Group lessons by day
-                    Map<Integer, List<ScheduledLesson>> lessonsByDay = new HashMap<>();
-                    for (ScheduledLesson lesson : assignedLessons) {
-                        Time lessonTime = lesson.getScheduledTime();
-
-                        // Ignore lessons outside of start and end limits
-                        if(lessonTime.getStartSlot() < startSlot ||
-                                lessonTime.getEndSlot() > endSlot) {
-                            logger.warn("While exporting to PDF the lesson with id {} was ignored because it was outside the start and end hour limits", lesson.getClassId());
-                            continue;
-                        }
-
-                        String mask = lesson.getDaysBinaryString();
-                        for (int day = 0; day < mask.length() && day < days; day++) {
-                            if (mask.charAt(day) == '1') {
-                                lessonsByDay.computeIfAbsent(day, k -> new ArrayList<>()).add(lesson);
-                            }
-                        }
-                    }
-
-                    // For each day compute sub-column assignment
-                    Map<ScheduledLesson, Integer> subColAssignments = new HashMap<>();
-                    int[] subColsPerDay = new int[days];
-                    for (int day = 0; day < days; day++) {
-                        List<ScheduledLesson> dayList = lessonsByDay.getOrDefault(day, List.of())
-                                .stream()
-                                .sorted(Comparator.comparingInt(ScheduledLesson::getStartSlot))
-                                .collect(Collectors.toList());
-
-                        List<Integer> lastSubCol = new ArrayList<>(); // end slot for each sub-column
-                        for (ScheduledLesson lesson : dayList) {
-                            int start = lesson.getStartSlot();
-                            int end = lesson.getEndSlot();
-                            int assignedSubColumn = -1;
-                            for (int subcol = 0; subcol < lastSubCol.size(); subcol++) {
-                                if (start >= lastSubCol.get(subcol)) {
-                                    assignedSubColumn = subcol;
-                                    lastSubCol.set(subcol, end);
-                                    break;
-                                }
-                            }
-                            if (assignedSubColumn == -1) {
-                                assignedSubColumn = lastSubCol.size();
-                                lastSubCol.add(end);
-                            }
-                            subColAssignments.put(lesson, assignedSubColumn);
-                        }
-                        subColsPerDay[day] = Math.max(1, lastSubCol.size());
-                    }
-
-                    int totalSubColumns = Arrays.stream(subColsPerDay).sum();
-                    int width = timeColWidth + totalSubColumns * cellWidth;
-
-                    PDPage page = new PDPage(new PDRectangle(width, height));
-                    doc.addPage(page);
-
-                    try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
-                        drawTimetablePDF(cs, data, lessonsByDay, timeColWidth, cellWidth, cellHeight, minutesPerSlot, startSlot, endSlot, subColsPerDay, subColAssignments);
-                    }
+                try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
+                    drawTimetablePDF(cs, data, lessonsByDay, timeColWidth, cellWidth, cellHeight, minutesPerSlot, startSlot, endSlot, subColsPerDay, subColAssignments);
                 }
-
-                doc.save(file);
             }
+
+            doc.save(file);
         }
     }
 

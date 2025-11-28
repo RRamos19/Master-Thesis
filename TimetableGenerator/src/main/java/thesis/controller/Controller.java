@@ -298,14 +298,13 @@ public class Controller implements ControllerInterface {
             return;
         }
 
-        String programName = chosenProgram;
+        Object selectedItem = view.getTableView().getSelectionModel().getSelectedItem();
+        if (selectedItem instanceof TimetableViewModel) {
+            TimetableViewModel timetableViewModel = (TimetableViewModel) selectedItem;
 
-        InMemoryRepository data = model.getDataRepository(programName);
-
-        if(!data.getTimetableList().isEmpty()) {
-            export(programName, ModelInterface.ExportType.SOLUTIONS_ITC);
+            export(timetableViewModel.getTimetable(), ModelInterface.ExportType.SOLUTIONS_ITC);
         } else {
-            showErrorAlert("There are no solutions to export!");
+            showErrorAlert("A timetable must be chosen before exporting to ITC format");
         }
     }
 
@@ -315,7 +314,14 @@ public class Controller implements ControllerInterface {
             return;
         }
 
-        export(chosenProgram, generalConfiguration.getMaxHour(), generalConfiguration.getMinHour(), ModelInterface.ExportType.PNG);
+        Object selectedItem = view.getTableView().getSelectionModel().getSelectedItem();
+        if (selectedItem instanceof TimetableViewModel) {
+            TimetableViewModel timetableViewModel = (TimetableViewModel) selectedItem;
+
+            export(timetableViewModel.getTimetable(), generalConfiguration.getMaxHour(), generalConfiguration.getMinHour(), ModelInterface.ExportType.PNG);
+        } else {
+            showErrorAlert("A timetable must be chosen before exporting to PNG format");
+        }
     }
 
     @Override
@@ -324,7 +330,14 @@ public class Controller implements ControllerInterface {
             return;
         }
 
-        export(chosenProgram, generalConfiguration.getMaxHour(), generalConfiguration.getMinHour(), ModelInterface.ExportType.PDF);
+        Object selectedItem = view.getTableView().getSelectionModel().getSelectedItem();
+        if (selectedItem instanceof TimetableViewModel) {
+            TimetableViewModel timetableViewModel = (TimetableViewModel) selectedItem;
+
+            export(timetableViewModel.getTimetable(), generalConfiguration.getMaxHour(), generalConfiguration.getMinHour(), ModelInterface.ExportType.PDF);
+        } else {
+            showErrorAlert("A timetable must be chosen before exporting to PDF format");
+        }
     }
 
     private void export(String programName, ModelInterface.ExportType type) {
@@ -344,11 +357,28 @@ public class Controller implements ControllerInterface {
         new Thread(exportTask).start();
     }
 
-    private void export(String programName, int maxHour, int minHour, ModelInterface.ExportType type) {
+    private void export(Timetable timetable, ModelInterface.ExportType type) {
         Task<Void> exportTask = new Task<>() {
             @Override
             protected Void call() throws IOException {
-                model.export(programName, maxHour, minHour, type);
+                model.export(timetable, type);
+
+                return null;
+            }
+        };
+
+        exportTask.setOnSucceeded((event) -> showInformationAlert("The data was exported successfully to the following location: " + model.getExportLocation()));
+
+        exportTask.setOnFailed((event) -> showExceptionMessage(event.getSource().getException()));
+
+        new Thread(exportTask).start();
+    }
+
+    private void export(Timetable timetable, int maxHour, int minHour, ModelInterface.ExportType type) {
+        Task<Void> exportTask = new Task<>() {
+            @Override
+            protected Void call() throws IOException {
+                model.export(timetable, maxHour, minHour, type);
 
                 return null;
             }
@@ -413,6 +443,10 @@ public class Controller implements ControllerInterface {
 
     @Override
     public void removeProgramEvent() {
+        if(chosenProgram == null) {
+            showErrorAlert("A program must be chosen before removal");
+            return;
+        }
         model.removeProgram(chosenProgram);
         view.getTreeView().getSelectionModel().clearSelection();
         updateStoredPrograms();
@@ -427,6 +461,8 @@ public class Controller implements ControllerInterface {
             model.removeTimetable(timetableViewModel.getTimetable());
 
             updateTableView();
+        } else {
+            showErrorAlert("A timetable must be chosen before removal");
         }
     }
 
@@ -434,7 +470,7 @@ public class Controller implements ControllerInterface {
     public void reoptimizeSolutionEvent() {
         Object selectedItem = view.getTableView().getSelectionModel().getSelectedItem();
         if (selectedItem instanceof TimetableViewModel) {
-            if(chosenProgram == null) {
+            if(chosenProgram == null) { // Should be impossible but for security
                 showErrorAlert("A program must be chosen before starting the generation of a solution!");
                 return;
             }
@@ -450,6 +486,8 @@ public class Controller implements ControllerInterface {
                 generalConfiguration.getK());
 
             progressBarManager.startProgressBar(progressBarUUID);
+        } else {
+            showErrorAlert("A timetable must be chosen before reoptimizing");
         }
     }
 

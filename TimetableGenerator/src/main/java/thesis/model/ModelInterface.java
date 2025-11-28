@@ -60,7 +60,8 @@ public interface ModelInterface {
     // Data export methods
     String getExportLocation();
     void export(String programName, ExportType type) throws IOException;
-    void export(String programName, int maxHour, int minHour, ExportType type) throws IOException;
+    void export(Timetable timetable, int maxHour, int minHour, ExportType type) throws IOException;
+    void export(Timetable timetable, ExportType type) throws IOException;
 
     void cleanup();
 }

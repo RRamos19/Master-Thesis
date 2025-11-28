@@ -244,13 +244,10 @@ public class Model implements ModelInterface {
 
         switch (type) {
             case CSV:
-                dataExporter.exportToCSV(data);
+                dataExporter.exportDataToCSV(data);
                 break;
             case DATA_ITC:
                 dataExporter.exportDataToITC(data);
-                break;
-            case SOLUTIONS_ITC:
-                dataExporter.exportSolutionsToITC(data);
                 break;
             default:
                 throw new IllegalArgumentException("The export type provided couldn't be processed");
@@ -258,18 +255,32 @@ public class Model implements ModelInterface {
     }
 
     @Override
-    public void export(String programName, int maxHour, int minHour, ExportType type) throws IOException {
-        InMemoryRepository data = dataRepositoryHashMap.get(programName);
+    public void export(Timetable timetable, ExportType type) throws IOException {
+        InMemoryRepository data = dataRepositoryHashMap.get(timetable.getProgramName());
         if (data == null) {
-            throw new RuntimeException("The program name provided has no corresponding data");
+            throw new RuntimeException("The timetable provided has no corresponding data");
+        }
+
+        if (type == ExportType.SOLUTIONS_ITC) {
+            dataExporter.exportSolutionToITC(data, timetable);
+        } else {
+            throw new IllegalArgumentException("The export type provided couldn't be processed");
+        }
+    }
+
+    @Override
+    public void export(Timetable timetable, int maxHour, int minHour, ExportType type) throws IOException {
+        InMemoryRepository data = dataRepositoryHashMap.get(timetable.getProgramName());
+        if (data == null) {
+            throw new RuntimeException("The timetable provided has no corresponding data");
         }
 
         switch (type) {
             case PDF:
-                dataExporter.exportToPDF(data, maxHour, minHour);
+                dataExporter.exportSolutionToPDF(data, timetable, maxHour, minHour);
                 break;
             case PNG:
-                dataExporter.exportToPNG(data, maxHour, minHour);
+                dataExporter.exportSolutionToPNG(data, timetable, maxHour, minHour);
                 break;
             default:
                 throw new IllegalArgumentException("The export type provided couldn't be processed");
