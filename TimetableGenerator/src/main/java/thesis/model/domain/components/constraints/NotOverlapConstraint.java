@@ -6,16 +6,18 @@ import java.util.List;
 
 public class NotOverlapConstraint extends Constraint {
     public NotOverlapConstraint(int id, String type, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
-        super(id, type, penalty, required, timetableConfiguration);
+        super(id, type, penalty, required, timetableConfiguration, PenaltyTypes.ConstraintCategory.TIME);
     }
 
     // The authors of this method are Edon Gashi and Kadri Sylejmani
     // source: https://github.com/edongashi/itc-2019
     @Override
-    public int computePenalties(Timetable solution) {
+    public ConstraintResults computePenalties(Timetable solution) {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
         int scheduledClassesSize = scheduledClasses.size();
         int conflicts = 0;
+
+        ConstraintResults results = new ConstraintResults();
 
         for(int i=0; i<scheduledClassesSize-1; i++) {
             ScheduledLesson scheduledLesson1 = scheduledClasses.get(i);
@@ -32,6 +34,9 @@ public class NotOverlapConstraint extends Constraint {
             }
         }
 
-        return getRequired() ? conflicts : conflicts * getPenalty();
+        results.penalty = getRequired() ? conflicts : conflicts * getPenalty();
+        results.conflictingClasses = this.getClassUnitIdList();
+
+        return results;
     }
 }

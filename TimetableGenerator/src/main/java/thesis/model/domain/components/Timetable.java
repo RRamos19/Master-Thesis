@@ -9,13 +9,16 @@ import java.util.*;
 
 public class Timetable implements XmlResult {
     private static final DateTimeFormatter dateOfCreationFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
+    private final UUID timetableId; // Useful for the database synchronization (to easily differentiate timetables from each other)
+
     private LocalDateTime dateOfCreation;
     private String programName;
     private long runtime;                                                            // Sum of the durations of the initial solution and optimization algorithms
     private final Map<String, ScheduledLesson> scheduledLessonMap = new HashMap<>(); // ClassId : ScheduledLesson
     private InMemoryRepository dataModel;
 
-    // Reserved for temporary classes (to check conflicts)
+    // Reserved for temporary classes (which are used to check conflicts)
     private boolean hasTemporaryLesson = false;
     private ScheduledLesson originalLesson;
 
@@ -26,19 +29,16 @@ public class Timetable implements XmlResult {
     // Cache of validation and cost
     private Boolean isValid;
     private boolean updateCost = true;
-    private int cost;
+    private PenaltySum cost;
 
-    public Timetable(Timetable other) {
-        this.dateOfCreation = other.dateOfCreation;
-        this.programName = other.programName;
-        this.runtime = other.runtime;
-        this.scheduledLessonMap.putAll(other.scheduledLessonMap);
-        this.dataModel = other.dataModel;
+    public Timetable(UUID id, String programName, LocalDateTime dateOfCreation) {
+        this.timetableId = Objects.requireNonNullElseGet(id, UUID::randomUUID);
+        this.programName = programName;
+        this.dateOfCreation = dateOfCreation;
     }
 
     public Timetable(String programName, LocalDateTime dateOfCreation) {
-        this.programName = programName;
-        this.dateOfCreation = dateOfCreation;
+        this(null, programName, dateOfCreation);
     }
 
     public Timetable(String programName) {
@@ -60,8 +60,12 @@ public class Timetable implements XmlResult {
         }
 
         isValid = null;
-        updateConstraints = true;
         updateCost = true;
+        updateConstraints = true;
+    }
+
+    public UUID getTimetableId() {
+        return timetableId;
     }
 
     public List<ScheduledLesson> getScheduledLessonList() {
@@ -103,9 +107,9 @@ public class Timetable implements XmlResult {
             scheduledLesson.bindModel(dataModel);
         }
 
+        isValid = null;
         updateCost = true;
         updateConstraints = true;
-        isValid = null;
     }
 
     public void addTemporaryLesson(ScheduledLesson scheduledLesson) {
@@ -118,10 +122,10 @@ public class Timetable implements XmlResult {
             scheduledLesson.bindModel(dataModel);
         }
 
-        updateCost = true;
-        hasTemporaryLesson = true;
-        updateConstraints = true;
         isValid = null;
+        updateCost = true;
+        updateConstraints = true;
+        hasTemporaryLesson = true;
     }
 
     public void removeTemporaryLesson(ScheduledLesson scheduledLesson) {
@@ -159,22 +163,42 @@ public class Timetable implements XmlResult {
         return constraintSet;
     }
 
-    public int cost() {
+    public PenaltySum cost() {
         if(updateCost) {
-            cost = 0;
+            int timePenalty = 0;
+            int roomPenalty = 0;
 
             // Add the Time and Room penalties
             for (ScheduledLesson scheduledLesson : scheduledLessonMap.values()) {
-                cost += scheduledLesson.toInt();
+                PenaltySum scheduledLessonPenalties = scheduledLesson.toInt();
+                timePenalty += scheduledLessonPenalties.getTimePenalty();
+                roomPenalty += scheduledLessonPenalties.getRoomPenalty();
             }
 
             // Add the soft constraint penalties
-            int constraintCost = 0;
+            int roomConstraintCost = 0;
+            int timeConstraintCost = 0;
+            int commonConstraintCost = 0;
             for(Constraint c : getConstraintSet()) {
-                constraintCost += c.computePenalties(this);
+                switch(c.getConstraintCategory()) {
+                    case TIME:
+                        timeConstraintCost += c.computePenalties(this).penalty;
+                        break;
+                    case ROOM:
+                        roomConstraintCost += c.computePenalties(this).penalty;
+                        break;
+                    case COMMON:
+                        commonConstraintCost += c.computePenalties(this).penalty;
+                        break;
+                    default:
+                        throw new RuntimeException("Constraint category " + c.getConstraintCategory() + " unsupported");
+                }
             }
-            cost += constraintCost * dataModel.getTimetableConfiguration().getDistribWeight();
+            roomConstraintCost = roomConstraintCost * dataModel.getTimetableConfiguration().getDistribWeight();
+            timeConstraintCost = timeConstraintCost * dataModel.getTimetableConfiguration().getDistribWeight();
+            commonConstraintCost = commonConstraintCost * dataModel.getTimetableConfiguration().getDistribWeight();
 
+            cost = new PenaltySum(roomPenalty + roomConstraintCost, timePenalty + timeConstraintCost, commonConstraintCost);
             updateCost = false;
         }
 
@@ -184,10 +208,7 @@ public class Timetable implements XmlResult {
     public boolean isValid() {
         if(isValid == null) {
             for(Constraint c : getConstraintSet()) {
-                if(c.getRequired() && c.computePenalties(this) != 0) {
-                    System.out.println(c.getType());
-                    System.out.println(c.getClassUnitIdList());
-                    System.out.println(c.EvaluateConflictingClasses(this));
+                if(c.getRequired() && c.computePenalties(this).penalty != 0) {
                     isValid = false;
                     break;
                 }

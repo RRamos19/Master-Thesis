@@ -18,8 +18,8 @@ import java.io.IOException;
 public class JavaFXView implements ViewInterface {
     private static final String APP_FXML_PATH = "/view/main_view.fxml";
 
-    private Parent root;
-    private ControllerInterface controller;
+    private final Parent root;
+    private final ControllerInterface controller;
 
     // UI Components
     @FXML private Pane applicationPrincipalPane;
@@ -27,9 +27,9 @@ public class JavaFXView implements ViewInterface {
     @FXML private MenuItem importITCBtn;
     @FXML private MenuItem exportDataITCBtn;
     @FXML private MenuItem exportDataCSVBtn;
-    @FXML private MenuItem exportSolutionsITCBtn;
-    @FXML private MenuItem exportSolutionsPNGBtn;
-    @FXML private MenuItem exportSolutionsPDFBtn;
+    @FXML private MenuItem exportSolutionITCBtn;
+    @FXML private MenuItem exportSolutionPNGBtn;
+    @FXML private MenuItem exportSolutionPDFBtn;
     @FXML private MenuItem configurationBtn;
     @FXML private MenuItem instructionsBtn;
     @FXML private TextField ipField;
@@ -60,9 +60,9 @@ public class JavaFXView implements ViewInterface {
             importITCBtn.setOnAction(e -> controller.importDataITCEvent());
             exportDataITCBtn.setOnAction(e -> controller.exportDataITCEvent());
             exportDataCSVBtn.setOnAction(e -> controller.exportDataCSVEvent());
-            exportSolutionsITCBtn.setOnAction(e -> controller.exportSolutionsITCEvent());
-            exportSolutionsPNGBtn.setOnAction(e -> controller.exportSolutionsPNGEvent());
-            exportSolutionsPDFBtn.setOnAction(e -> controller.exportSolutionsPDFEvent());
+            exportSolutionITCBtn.setOnAction(e -> controller.exportSolutionITCEvent());
+            exportSolutionPNGBtn.setOnAction(e -> controller.exportSolutionPNGEvent());
+            exportSolutionPDFBtn.setOnAction(e -> controller.exportSolutionPDFEvent());
             configurationBtn.setOnAction(e -> controller.configMenuEvent());
             instructionsBtn.setOnAction(e -> controller.showInstructionsMenuEvent());
             applicationPrincipalPane.setOnDragOver(e -> controller.dragOverEvent(e));

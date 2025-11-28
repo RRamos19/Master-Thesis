@@ -39,11 +39,11 @@
                               <MenuItem fx:id="exportDataCSVBtn" mnemonicParsing="false" text="Export as CSV" />
                           </items>
                         </Menu>
-                        <Menu mnemonicParsing="false" text="Solutions">
+                        <Menu mnemonicParsing="false" text="Solution">
                           <items>
-                            <MenuItem fx:id="exportSolutionsITCBtn" mnemonicParsing="false" text="Export as ITC" />
-                              <MenuItem fx:id="exportSolutionsPNGBtn" mnemonicParsing="false" text="Export as PNG" />
-                              <MenuItem fx:id="exportSolutionsPDFBtn" mnemonicParsing="false" text="Export as PDF" />
+                            <MenuItem fx:id="exportSolutionITCBtn" mnemonicParsing="false" text="Export as ITC" />
+                              <MenuItem fx:id="exportSolutionPNGBtn" mnemonicParsing="false" text="Export as PNG" />
+                              <MenuItem fx:id="exportSolutionPDFBtn" mnemonicParsing="false" text="Export as PDF" />
                           </items>
                         </Menu>
                     </items>

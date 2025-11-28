@@ -24,8 +24,8 @@ import thesis.view.viewobjects.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Controller implements ControllerInterface {
     private WindowManager windowManager;
@@ -140,7 +140,7 @@ public class Controller implements ControllerInterface {
             throw new IllegalStateException("The port field must be a whole number");
         }
 
-        model.connectToDatabase(ip, port, username, password);
+        model.connectToDatabase(ip, port, username, password, generalConfiguration.getDatabaseSynchronizationTimeMinutes());
 
         generalConfiguration.setIpField(ip);
         generalConfiguration.setPortField(port);
@@ -171,11 +171,11 @@ public class Controller implements ControllerInterface {
         Task<Void> importTask = new Task<>() {
             @Override
             protected Void call() throws CheckedIllegalStateException, InvalidConfigurationException, ParsingException {
-            for(File file : files) {
-                importDataITC(file);
-            }
+                for(File file : files) {
+                    importDataITC(file);
+                }
 
-            return null;
+                return null;
             }
         };
 
@@ -236,26 +236,28 @@ public class Controller implements ControllerInterface {
 
     @Override
     public void updateStoredPrograms() {
-        ChoiceBox<String> programsChoiceBox = view.getProgramsChoiceBox();
+        Platform.runLater(() -> {
+            ChoiceBox<String> programsChoiceBox = view.getProgramsChoiceBox();
 
-        Set<String> oldItems = new HashSet<>(programsChoiceBox.getItems());
-        Set<String> storedPrograms = model.getStoredPrograms();
+            Set<String> oldItems = new HashSet<>(programsChoiceBox.getItems());
+            Set<String> storedPrograms = model.getStoredPrograms();
 
-        if(oldItems.size() == storedPrograms.size() &&
-            oldItems.containsAll(storedPrograms)) {
-            // Nothing changed
-            return;
-        }
-
-        programsChoiceBox.setItems(FXCollections.observableList(new ArrayList<>(storedPrograms)));
-
-        // Choose the first item not present on the list previous to the update
-        for(String item : storedPrograms) {
-            if(!oldItems.contains(item)) {
-                programsChoiceBox.setValue(item);
-                break;
+            if(oldItems.size() == storedPrograms.size() &&
+                    oldItems.containsAll(storedPrograms)) {
+                // Nothing changed
+                return;
             }
-        }
+
+            programsChoiceBox.setItems(FXCollections.observableList(new ArrayList<>(storedPrograms)));
+
+            // Choose the first item not present on the list previous to the update
+            for(String item : storedPrograms) {
+                if(!oldItems.contains(item)) {
+                    programsChoiceBox.setValue(item);
+                    break;
+                }
+            }
+        });
     }
 
     @Override
@@ -278,7 +280,7 @@ public class Controller implements ControllerInterface {
             return;
         }
 
-        exportDataToITC(chosenProgram);
+        export(chosenProgram, ModelInterface.ExportType.DATA_ITC);
     }
 
     @Override
@@ -287,48 +289,17 @@ public class Controller implements ControllerInterface {
             return;
         }
 
-        exportToCSV(chosenProgram);
+        export(chosenProgram, ModelInterface.ExportType.CSV);
     }
 
     @Override
-    public void exportSolutionsITCEvent() {
+    public void exportSolutionITCEvent() {
         if(!checkBeforeExportation()) {
             return;
         }
 
-        exportSolutionsToITC(chosenProgram);
-    }
+        String programName = chosenProgram;
 
-    @Override
-    public void exportSolutionsPNGEvent() {
-        if(!checkBeforeExportation()) {
-            return;
-        }
-
-        exportToPNG(chosenProgram);
-    }
-
-    @Override
-    public void exportSolutionsPDFEvent() {
-        if(!checkBeforeExportation()) {
-            return;
-        }
-
-        exportToPDF(chosenProgram);
-    }
-
-    private void export(String programName, ModelInterface.ExportType type) {
-        try {
-            model.export(programName, type);
-        } catch(IOException e) {
-            showExceptionMessage(e);
-            return;
-        }
-
-        showInformationAlert("The data was exported successfully to the following location: " + model.getExportLocation());
-    }
-
-    private void exportSolutionsToITC(String programName) {
         InMemoryRepository data = model.getDataRepository(programName);
 
         if(!data.getTimetableList().isEmpty()) {
@@ -338,20 +309,56 @@ public class Controller implements ControllerInterface {
         }
     }
 
-    private void exportDataToITC(String programName) {
-        export(programName, ModelInterface.ExportType.DATA_ITC);
+    @Override
+    public void exportSolutionPNGEvent() {
+        if(!checkBeforeExportation()) {
+            return;
+        }
+
+        export(chosenProgram, generalConfiguration.getMaxHour(), generalConfiguration.getMinHour(), ModelInterface.ExportType.PNG);
     }
 
-    private void exportToCSV(String programName) {
-        export(programName, ModelInterface.ExportType.CSV);
+    @Override
+    public void exportSolutionPDFEvent() {
+        if(!checkBeforeExportation()) {
+            return;
+        }
+
+        export(chosenProgram, generalConfiguration.getMaxHour(), generalConfiguration.getMinHour(), ModelInterface.ExportType.PDF);
     }
 
-    private void exportToPDF(String programName) {
-        export(programName, ModelInterface.ExportType.PDF);
+    private void export(String programName, ModelInterface.ExportType type) {
+        Task<Void> exportTask = new Task<>() {
+            @Override
+            protected Void call() throws IOException {
+                model.export(programName, type);
+
+                return null;
+            }
+        };
+
+        exportTask.setOnSucceeded((event) -> showInformationAlert("The data was exported successfully to the following location: " + model.getExportLocation()));
+
+        exportTask.setOnFailed((event) -> showExceptionMessage(event.getSource().getException()));
+
+        new Thread(exportTask).start();
     }
 
-    private void exportToPNG(String programName) {
-        export(programName, ModelInterface.ExportType.PNG);
+    private void export(String programName, int maxHour, int minHour, ModelInterface.ExportType type) {
+        Task<Void> exportTask = new Task<>() {
+            @Override
+            protected Void call() throws IOException {
+                model.export(programName, maxHour, minHour, type);
+
+                return null;
+            }
+        };
+
+        exportTask.setOnSucceeded((event) -> showInformationAlert("The data was exported successfully to the following location: " + model.getExportLocation()));
+
+        exportTask.setOnFailed((event) -> showExceptionMessage(event.getSource().getException()));
+
+        new Thread(exportTask).start();
     }
 
     @Override
@@ -395,11 +402,11 @@ public class Controller implements ControllerInterface {
         UUID progressBarUUID = progressBarManager.insertProgressBar(chosenProgram);
 
         model.startGeneratingSolution(chosenProgram,
-                                    progressBarUUID,
-                                    generalConfiguration.getInitialTemperature(),
-                                    generalConfiguration.getMinTemperature(),
-                                    generalConfiguration.getCoolingRate(),
-                                    generalConfiguration.getK());
+            progressBarUUID,
+            generalConfiguration.getInitialTemperature(),
+            generalConfiguration.getMinTemperature(),
+            generalConfiguration.getCoolingRate(),
+            generalConfiguration.getK());
 
         progressBarManager.startProgressBar(progressBarUUID);
     }
@@ -407,6 +414,7 @@ public class Controller implements ControllerInterface {
     @Override
     public void removeProgramEvent() {
         model.removeProgram(chosenProgram);
+        view.getTreeView().getSelectionModel().clearSelection();
         updateStoredPrograms();
     }
 
@@ -425,9 +433,23 @@ public class Controller implements ControllerInterface {
     @Override
     public void reoptimizeSolutionEvent() {
         Object selectedItem = view.getTableView().getSelectionModel().getSelectedItem();
-        if (selectedItem instanceof Timetable) {
-            Timetable timetable = (Timetable) selectedItem;
-            //TODO: to be implemented
+        if (selectedItem instanceof TimetableViewModel) {
+            if(chosenProgram == null) {
+                showErrorAlert("A program must be chosen before starting the generation of a solution!");
+                return;
+            }
+
+            UUID progressBarUUID = progressBarManager.insertProgressBar(chosenProgram);
+
+            Timetable timetable = ((TimetableViewModel) selectedItem).getTimetable();
+            model.startReoptimizingSolution(timetable,
+                progressBarUUID,
+                generalConfiguration.getInitialTemperature(),
+                generalConfiguration.getMinTemperature(),
+                generalConfiguration.getCoolingRate(),
+                generalConfiguration.getK());
+
+            progressBarManager.startProgressBar(progressBarUUID);
         }
     }
 
@@ -436,17 +458,9 @@ public class Controller implements ControllerInterface {
         windowManager.getInstructionsWindow().show();
     }
 
-    private static void runOnFxThread(Runnable action) {
-        if (Platform.isFxApplicationThread()) {
-            action.run();
-        } else {
-            Platform.runLater(action);
-        }
-    }
-
     @Override
     public void showInformationAlert(String message) {
-        runOnFxThread(() -> {
+        Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION, message);
             alert.initStyle(StageStyle.DECORATED);
             alert.initOwner(primaryWindow);
@@ -458,7 +472,7 @@ public class Controller implements ControllerInterface {
 
     @Override
     public void showErrorAlert(String message) {
-        runOnFxThread(() -> {
+        Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR, message);
             alert.initStyle(StageStyle.DECORATED);
             alert.initOwner(primaryWindow);
@@ -470,12 +484,30 @@ public class Controller implements ControllerInterface {
 
     @Override
     public boolean showConfirmationAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
-        alert.initStyle(StageStyle.DECORATED);
-        alert.initOwner(primaryWindow);
-        alert.initModality(Modality.WINDOW_MODAL);
+        final Object lock = new Object();
+        final AtomicReference<Optional<ButtonType>> resultRef = new AtomicReference<>();
 
-        Optional<ButtonType> optionalResponse = alert.showAndWait();
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
+            alert.initStyle(StageStyle.DECORATED);
+            alert.initOwner(primaryWindow);
+            alert.initModality(Modality.WINDOW_MODAL);
+
+            resultRef.set(alert.showAndWait());
+
+            synchronized (lock) {
+                lock.notify();
+            }
+        });
+
+        // Synchronize the JavaFX thread with the current thread
+        synchronized (lock) {
+            try {
+                lock.wait();
+            } catch (InterruptedException ignored) {}
+        }
+
+        Optional<ButtonType> optionalResponse = resultRef.get();
 
         if(optionalResponse.isPresent()) {
             ButtonType response = optionalResponse.get();
@@ -488,7 +520,10 @@ public class Controller implements ControllerInterface {
 
     @Override
     public void showTimetable(InMemoryRepository data, Timetable timetable) {
-        windowManager.getTimetableWindow(data, timetable).show();
+        Platform.runLater(() -> {
+            Stage timetableWindow = windowManager.getTimetableWindow(data, timetable);
+            timetableWindow.show();
+        });
     }
 
     @Override
@@ -503,14 +538,8 @@ public class Controller implements ControllerInterface {
 
     private void clearTableView() {
         TableView<ViewModel> tableView = view.getTableView();
-        tableView.getColumns().clear();
-        tableView.getItems().clear();
-    }
-
-    @Override
-    public void updateTableView() {
-        // Update the selected table view of the current item
-        updateTableView(view.getTreeView().getSelectionModel().getSelectedItem());
+        if(tableView.getColumns() != null) tableView.getColumns().clear();
+        if(tableView.getItems() != null) tableView.getItems().clear();
     }
 
     @SafeVarargs
@@ -521,119 +550,127 @@ public class Controller implements ControllerInterface {
     }
 
     @Override
+    public void updateTableView() {
+        // Update the selected table view of the current item
+        updateTableView(view.getTreeView().getSelectionModel().getSelectedItem());
+    }
+
+    @Override
     public void updateTableView(TreeItem<TableType> item) {
-        Button removeButton = view.getRemoveButton();
-        Button reoptimizeButton = view.getReoptimizeButton();
+        Platform.runLater(() -> {
+            Button removeButton = view.getRemoveButton();
+            Button reoptimizeButton = view.getReoptimizeButton();
 
-        clearTableView();
-        removeButton.setVisible(false);
-        reoptimizeButton.setVisible(false);
+            clearTableView();
+            removeButton.setVisible(false);
+            reoptimizeButton.setVisible(false);
 
-        if (item != null && chosenProgram != null) {
-            final String chosenProgramStr = chosenProgram;
+            if (item != null && chosenProgram != null) {
+                final String chosenProgramStr = chosenProgram;
 
-            switch(item.getValue()) {
-                case CONFIGURATION:
-                    TableColumn<ViewModel, Number> nDays = new TableColumn<>("Number of Days");
-                    TableColumn<ViewModel, Number> nWeeks = new TableColumn<>("Number of Weeks");
-                    TableColumn<ViewModel, Number> nSlots = new TableColumn<>("Slots per Day");
-                    TableColumn<ViewModel, Number> timeWeight = new TableColumn<>("Time Weight");
-                    TableColumn<ViewModel, Number> roomWeight = new TableColumn<>("Room Weight");
-                    TableColumn<ViewModel, Number> distributionWeight = new TableColumn<>("Distribution Weight");
+                switch(item.getValue()) {
+                    case CONFIGURATION:
+                        TableColumn<ViewModel, Number> nDays = new TableColumn<>("Number of Days");
+                        TableColumn<ViewModel, Number> nWeeks = new TableColumn<>("Number of Weeks");
+                        TableColumn<ViewModel, Number> nSlots = new TableColumn<>("Slots per Day");
+                        TableColumn<ViewModel, Number> timeWeight = new TableColumn<>("Time Weight");
+                        TableColumn<ViewModel, Number> roomWeight = new TableColumn<>("Room Weight");
+                        TableColumn<ViewModel, Number> distributionWeight = new TableColumn<>("Distribution Weight");
 
-                    nDays.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).nDaysProperty());
-                    nWeeks.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).nWeeksProperty());
-                    nSlots.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).nSlotsProperty());
-                    timeWeight.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).timeWeightProperty());
-                    roomWeight.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).roomWeightProperty());
-                    distributionWeight.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).distributionWeightProperty());
+                        nDays.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).nDaysProperty());
+                        nWeeks.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).nWeeksProperty());
+                        nSlots.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).nSlotsProperty());
+                        timeWeight.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).timeWeightProperty());
+                        roomWeight.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).roomWeightProperty());
+                        distributionWeight.setCellValueFactory(data -> ((ConfigurationViewModel) data.getValue()).distributionWeightProperty());
 
-                    setTableViewData(DataConverter.getConfiguration(chosenProgramStr, this, model), nDays, nWeeks, nSlots, timeWeight, roomWeight, distributionWeight);
-                    break;
-                case COURSE:
-                    TableColumn<ViewModel, String> courseId = new TableColumn<>("Course Id");
-                    TableColumn<ViewModel, Number> nConfigs = new TableColumn<>("Nº of Configs");
+                        setTableViewData(DataConverter.getConfiguration(chosenProgramStr, this, model), nDays, nWeeks, nSlots, timeWeight, roomWeight, distributionWeight);
+                        break;
+                    case COURSE:
+                        TableColumn<ViewModel, String> courseId = new TableColumn<>("Course Id");
+                        TableColumn<ViewModel, Number> nConfigs = new TableColumn<>("Nº of Configs");
 
-                    courseId.setCellValueFactory(data -> ((CourseViewModel) data.getValue()).idProperty());
-                    nConfigs.setCellValueFactory(data -> ((CourseViewModel) data.getValue()).nConfigsProperty());
+                        courseId.setCellValueFactory(data -> ((CourseViewModel) data.getValue()).idProperty());
+                        nConfigs.setCellValueFactory(data -> ((CourseViewModel) data.getValue()).nConfigsProperty());
 
-                    setTableViewData(DataConverter.getCourses(chosenProgramStr, this, model), courseId, nConfigs);
-                    break;
-                case CONFIG:
-                    TableColumn<ViewModel, String> configId = new TableColumn<>("Config Id");
-                    TableColumn<ViewModel, Number> nSubparts = new TableColumn<>("Nº of Subparts");
+                        setTableViewData(DataConverter.getCourses(chosenProgramStr, this, model), courseId, nConfigs);
+                        break;
+                    case CONFIG:
+                        TableColumn<ViewModel, String> configId = new TableColumn<>("Config Id");
+                        TableColumn<ViewModel, Number> nSubparts = new TableColumn<>("Nº of Subparts");
 
-                    configId.setCellValueFactory(data -> ((ConfigViewModel) data.getValue()).idProperty());
-                    nSubparts.setCellValueFactory(data -> ((ConfigViewModel) data.getValue()).nSubpartsProperty());
+                        configId.setCellValueFactory(data -> ((ConfigViewModel) data.getValue()).idProperty());
+                        nSubparts.setCellValueFactory(data -> ((ConfigViewModel) data.getValue()).nSubpartsProperty());
 
-                    setTableViewData(DataConverter.getConfigs(chosenProgramStr, this, model), configId, nSubparts);
-                    break;
-                case SUBPART:
-                    TableColumn<ViewModel, String> subpartId = new TableColumn<>("Subpart Id");
-                    TableColumn<ViewModel, Number> nClasses = new TableColumn<>("Nº of Classes");
+                        setTableViewData(DataConverter.getConfigs(chosenProgramStr, this, model), configId, nSubparts);
+                        break;
+                    case SUBPART:
+                        TableColumn<ViewModel, String> subpartId = new TableColumn<>("Subpart Id");
+                        TableColumn<ViewModel, Number> nClasses = new TableColumn<>("Nº of Classes");
 
-                    subpartId.setCellValueFactory(data -> ((SubpartViewModel) data.getValue()).idProperty());
-                    nClasses.setCellValueFactory(data -> ((SubpartViewModel) data.getValue()).nClassesProperty());
+                        subpartId.setCellValueFactory(data -> ((SubpartViewModel) data.getValue()).idProperty());
+                        nClasses.setCellValueFactory(data -> ((SubpartViewModel) data.getValue()).nClassesProperty());
 
-                    setTableViewData(DataConverter.getSubparts(chosenProgramStr, this, model), subpartId, nClasses);
-                    break;
-                case CLASSES:
-                    TableColumn<ViewModel, String> classId = new TableColumn<>("Class Id");
-                    TableColumn<ViewModel, String> classParentId = new TableColumn<>("Parent Id");
+                        setTableViewData(DataConverter.getSubparts(chosenProgramStr, this, model), subpartId, nClasses);
+                        break;
+                    case CLASSES:
+                        TableColumn<ViewModel, String> classId = new TableColumn<>("Class Id");
+                        TableColumn<ViewModel, String> classParentId = new TableColumn<>("Parent Id");
 
-                    classId.setCellValueFactory(data -> ((ClassUnitViewModel) data.getValue()).idProperty());
-                    classParentId.setCellValueFactory(data -> ((ClassUnitViewModel) data.getValue()).parentIdProperty());
+                        classId.setCellValueFactory(data -> ((ClassUnitViewModel) data.getValue()).idProperty());
+                        classParentId.setCellValueFactory(data -> ((ClassUnitViewModel) data.getValue()).parentIdProperty());
 
-                    setTableViewData(DataConverter.getClassUnits(chosenProgramStr, this, model), classId, classParentId);
-                    break;
-                case CONSTRAINT:
-                    TableColumn<ViewModel, String> type = new TableColumn<>("Constraint Type");
-                    TableColumn<ViewModel, Integer> firstParam = new TableColumn<>("First Parameter");
-                    TableColumn<ViewModel, Integer> secondParam = new TableColumn<>("Second Parameter");
-                    TableColumn<ViewModel, Integer> penalty = new TableColumn<>("Penalty");
-                    TableColumn<ViewModel, Boolean> required = new TableColumn<>("Required");
-                    TableColumn<ViewModel, Number> nConstraintClasses = new TableColumn<>("Nº of Classes");
+                        setTableViewData(DataConverter.getClassUnits(chosenProgramStr, this, model), classId, classParentId);
+                        break;
+                    case CONSTRAINT:
+                        TableColumn<ViewModel, String> type = new TableColumn<>("Constraint Type");
+                        TableColumn<ViewModel, Integer> firstParam = new TableColumn<>("First Parameter");
+                        TableColumn<ViewModel, Integer> secondParam = new TableColumn<>("Second Parameter");
+                        TableColumn<ViewModel, Integer> penalty = new TableColumn<>("Penalty");
+                        TableColumn<ViewModel, Boolean> required = new TableColumn<>("Required");
+                        TableColumn<ViewModel, Number> nConstraintClasses = new TableColumn<>("Nº of Classes");
 
-                    type.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).typeProperty());
-                    firstParam.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).firstParameterProperty());
-                    secondParam.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).secondParameterProperty());
-                    penalty.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).penaltyProperty());
-                    required.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).requiredProperty());
-                    nConstraintClasses.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).nClassesProperty());
+                        type.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).typeProperty());
+                        firstParam.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).firstParameterProperty());
+                        secondParam.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).secondParameterProperty());
+                        penalty.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).penaltyProperty());
+                        required.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).requiredProperty());
+                        nConstraintClasses.setCellValueFactory(data -> ((ConstraintViewModel) data.getValue()).nClassesProperty());
 
-                    setTableViewData(DataConverter.getConstraints(chosenProgramStr, this, model), type, firstParam, secondParam, penalty, required, nConstraintClasses);
-                    break;
-                case ROOM:
-                    TableColumn<ViewModel, String> roomId = new TableColumn<>("Room Id");
-                    TableColumn<ViewModel, Number> roomUnavailabilities = new TableColumn<>("Nº of Unavailabilities");
-                    TableColumn<ViewModel, Number> roomDistances = new TableColumn<>("Nº of Distances");
+                        setTableViewData(DataConverter.getConstraints(chosenProgramStr, this, model), type, firstParam, secondParam, penalty, required, nConstraintClasses);
+                        break;
+                    case ROOM:
+                        TableColumn<ViewModel, String> roomId = new TableColumn<>("Room Id");
+                        TableColumn<ViewModel, Number> roomUnavailabilities = new TableColumn<>("Nº of Unavailabilities");
+                        TableColumn<ViewModel, Number> roomDistances = new TableColumn<>("Nº of Distances");
 
-                    roomId.setCellValueFactory(data -> ((RoomViewModel) data.getValue()).idProperty());
-                    roomUnavailabilities.setCellValueFactory(data -> ((RoomViewModel) data.getValue()).nUnavailabilitiesProperty());
-                    roomDistances.setCellValueFactory(data -> ((RoomViewModel) data.getValue()).nDistancesProperty());
+                        roomId.setCellValueFactory(data -> ((RoomViewModel) data.getValue()).idProperty());
+                        roomUnavailabilities.setCellValueFactory(data -> ((RoomViewModel) data.getValue()).nUnavailabilitiesProperty());
+                        roomDistances.setCellValueFactory(data -> ((RoomViewModel) data.getValue()).nDistancesProperty());
 
-                    setTableViewData(DataConverter.getRooms(chosenProgramStr, this, model), roomId, roomUnavailabilities, roomDistances);
-                    break;
-                case TIMETABLE:
-                    TableColumn<ViewModel, String> dateOfCreation = new TableColumn<>("Date of Creation");
-                    TableColumn<ViewModel, Number> runtime = new TableColumn<>("Runtime");
-                    TableColumn<ViewModel, Number> cost = new TableColumn<>("Cost");
-                    TableColumn<ViewModel, Number> nScheduledLessons = new TableColumn<>("Nº of Scheduled Lessons");
-                    TableColumn<ViewModel, Boolean> isValid = new TableColumn<>("is Valid");
+                        setTableViewData(DataConverter.getRooms(chosenProgramStr, this, model), roomId, roomUnavailabilities, roomDistances);
+                        break;
+                    case TIMETABLE:
+                        TableColumn<ViewModel, String> dateOfCreation = new TableColumn<>("Date of Creation");
+                        TableColumn<ViewModel, Number> runtime = new TableColumn<>("Runtime");
+                        TableColumn<ViewModel, Number> cost = new TableColumn<>("Cost");
+                        TableColumn<ViewModel, Number> nScheduledLessons = new TableColumn<>("Nº of Scheduled Lessons");
+                        TableColumn<ViewModel, Boolean> isValid = new TableColumn<>("is Valid");
 
-                    dateOfCreation.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).dateOfCreationProperty());
-                    runtime.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).runtimeProperty());
-                    cost.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).costProperty());
-                    nScheduledLessons.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).nScheduledClassesProperty());
-                    isValid.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).isValidProperty());
+                        dateOfCreation.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).dateOfCreationProperty());
+                        runtime.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).runtimeProperty());
+                        cost.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).costProperty());
+                        nScheduledLessons.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).nScheduledClassesProperty());
+                        isValid.setCellValueFactory(data -> ((TimetableViewModel) data.getValue()).isValidProperty());
 
-                    setTableViewData(DataConverter.getTimetables(chosenProgramStr, this, model), dateOfCreation, runtime, cost, nScheduledLessons, isValid);
+                        setTableViewData(DataConverter.getTimetables(chosenProgramStr, this, model), dateOfCreation, runtime, cost, nScheduledLessons, isValid);
 
-                    removeButton.setVisible(true);
-                    //reoptimizeButton.setVisible(true);
-                    break;
+                        removeButton.setVisible(true);
+                        reoptimizeButton.setVisible(true);
+                        break;
+                }
             }
-        }
+        });
     }
 
     private void populateTreeView() {
@@ -724,5 +761,6 @@ public class Controller implements ControllerInterface {
         }
 
         progressBarManager.stopProgressBars();
+        model.cleanup();
     }
 }

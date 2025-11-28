@@ -13,8 +13,9 @@ public abstract class Constraint {
     private final Integer secondParam;
     private final int nrWeeks;
     private final short nrDays;
+    private final PenaltyTypes.ConstraintCategory constraintCategory;
 
-    public Constraint(int id, String type, Integer penalty, boolean required, Integer firstParam, Integer secondParam, TimetableConfiguration timetableConfiguration) {
+    public Constraint(int id, String type, Integer penalty, boolean required, Integer firstParam, Integer secondParam, TimetableConfiguration timetableConfiguration, PenaltyTypes.ConstraintCategory constraintCategory) {
         this.id = id;
         this.type = type;
         this.penalty = penalty;
@@ -23,14 +24,15 @@ public abstract class Constraint {
         this.secondParam = secondParam;
         this.nrWeeks = timetableConfiguration.getNumWeeks();
         this.nrDays = timetableConfiguration.getNumDays();
+        this.constraintCategory = constraintCategory;
     }
 
-    public Constraint(int id, String type, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
-        this(id, type, penalty, required, null, null, timetableConfiguration);
+    public Constraint(int id, String type, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration, PenaltyTypes.ConstraintCategory constraintCategory) {
+        this(id, type, penalty, required, null, null, timetableConfiguration, constraintCategory);
     }
 
-    public Constraint(int id, String type, Integer penalty, boolean required, Integer firstTimeslot, TimetableConfiguration timetableConfiguration) {
-        this(id, type, penalty, required, firstTimeslot, null, timetableConfiguration);
+    public Constraint(int id, String type, Integer penalty, boolean required, Integer firstTimeslot, TimetableConfiguration timetableConfiguration, PenaltyTypes.ConstraintCategory constraintCategory) {
+        this(id, type, penalty, required, firstTimeslot, null, timetableConfiguration, constraintCategory);
     }
 
     public int getId() {
@@ -73,6 +75,10 @@ public abstract class Constraint {
         return Collections.unmodifiableSet(classUnitIdList);
     }
 
+    public PenaltyTypes.ConstraintCategory getConstraintCategory() {
+        return constraintCategory;
+    }
+
     /**
      * Obtain the classes that are already scheduled and are present in this restriction
      * @param solution
@@ -92,11 +98,7 @@ public abstract class Constraint {
         return scheduledClasses;
     }
 
-    public abstract int computePenalties(Timetable solution);
-
-    public Set<String> EvaluateConflictingClasses(Timetable solution) {
-        return classUnitIdList;
-    }
+    public abstract ConstraintResults computePenalties(Timetable solution);
 
     @Override
     public boolean equals(Object o) {

@@ -21,9 +21,9 @@ public interface ControllerInterface {
     void configMenuEvent();
     void exportDataITCEvent();
     void exportDataCSVEvent();
-    void exportSolutionsITCEvent();
-    void exportSolutionsPNGEvent();
-    void exportSolutionsPDFEvent();
+    void exportSolutionITCEvent();
+    void exportSolutionPNGEvent();
+    void exportSolutionPDFEvent();
     void dragOverEvent(DragEvent event);
     void dragEnteredEvent(DragEvent event);
     void dragExitedEvent(DragEvent event);

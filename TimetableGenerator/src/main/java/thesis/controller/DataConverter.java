@@ -144,7 +144,7 @@ public class DataConverter {
         }
 
         List<ViewModel> timetableViewModels = timetableList.stream()
-                .map(c -> new TimetableViewModel(c.getDateOfCreationString(), c.getRuntime(), c.cost(), c.getScheduledLessonList().size(), c.isValid(), c))
+                .map(c -> new TimetableViewModel(c.getDateOfCreationString(), c.getRuntime(), c.cost().getTotalPenalty(), c.getScheduledLessonList().size(), c.isValid(), c))
                 .collect(Collectors.toList());
 
         return FXCollections.observableList(timetableViewModels);

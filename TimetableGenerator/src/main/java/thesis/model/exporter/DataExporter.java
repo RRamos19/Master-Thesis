@@ -10,6 +10,6 @@ public interface DataExporter {
     void exportSolutionsToITC(InMemoryRepository data) throws IOException;
     void exportDataToITC(InMemoryRepository data) throws IOException;
     void exportToCSV(InMemoryRepository data) throws IOException;
-    void exportToPNG(InMemoryRepository data) throws IOException;
-    void exportToPDF(InMemoryRepository data) throws IOException;
+    void exportToPNG(InMemoryRepository data, int maxHour, int minHour) throws IOException;
+    void exportToPDF(InMemoryRepository data, int maxHour, int minHour) throws IOException;
 }

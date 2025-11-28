@@ -35,7 +35,7 @@ public class DefaultISGValue implements ISGValue<DefaultISGValue, DefaultISGVari
 
     @Override
     public int toInt() {
-        return scheduledLesson.toInt();
+        return scheduledLesson.toInt().getTotalPenalty();
     }
 
     @Override

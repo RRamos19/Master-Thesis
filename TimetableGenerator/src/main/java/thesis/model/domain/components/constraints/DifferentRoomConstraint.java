@@ -1,24 +1,23 @@
 package thesis.model.domain.components.constraints;
 
-import thesis.model.domain.components.Constraint;
-import thesis.model.domain.components.ScheduledLesson;
-import thesis.model.domain.components.Timetable;
-import thesis.model.domain.components.TimetableConfiguration;
+import thesis.model.domain.components.*;
 
 import java.util.List;
 
 public class DifferentRoomConstraint extends Constraint {
     public DifferentRoomConstraint(int id, String type, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
-        super(id, type, penalty, required, timetableConfiguration);
+        super(id, type, penalty, required, timetableConfiguration, PenaltyTypes.ConstraintCategory.ROOM);
     }
 
     // The authors of this method are Edon Gashi and Kadri Sylejmani
     // source: https://github.com/edongashi/itc-2019
     @Override
-    public int computePenalties(Timetable solution) {
+    public ConstraintResults computePenalties(Timetable solution) {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
         final int scheduledClassesSize = scheduledClasses.size();
         int conflicts = 0;
+
+        ConstraintResults results = new ConstraintResults();
 
         for(int i=0; i<scheduledClassesSize-1; i++) {
             ScheduledLesson scheduledLesson1 = scheduledClasses.get(i);
@@ -35,6 +34,9 @@ public class DifferentRoomConstraint extends Constraint {
             }
         }
 
-        return getRequired() ? conflicts : conflicts * getPenalty();
+        results.penalty = getRequired() ? conflicts : conflicts * getPenalty();
+        results.conflictingClasses = this.getClassUnitIdList();
+
+        return results;
     }
 }

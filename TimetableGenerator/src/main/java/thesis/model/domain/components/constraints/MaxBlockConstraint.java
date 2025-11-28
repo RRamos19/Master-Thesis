@@ -1,9 +1,6 @@
 package thesis.model.domain.components.constraints;
 
-import thesis.model.domain.components.Constraint;
-import thesis.model.domain.components.ScheduledLesson;
-import thesis.model.domain.components.Timetable;
-import thesis.model.domain.components.TimetableConfiguration;
+import thesis.model.domain.components.*;
 import thesis.model.domain.components.constraints.utils.Block;
 
 import java.util.ArrayList;
@@ -11,13 +8,13 @@ import java.util.List;
 
 public class MaxBlockConstraint extends Constraint {
     public MaxBlockConstraint(int id, String restrictionType, int param1, int param2, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {
-        super(id, restrictionType, penalty, required, param1, param2, timetableConfiguration);
+        super(id, restrictionType, penalty, required, param1, param2, timetableConfiguration, PenaltyTypes.ConstraintCategory.TIME);
     }
 
     // The authors of this method are Edon Gashi and Kadri Sylejmani
     // source: https://github.com/edongashi/itc-2019
     @Override
-    public int computePenalties(Timetable solution) {
+    public ConstraintResults computePenalties(Timetable solution) {
         List<ScheduledLesson> scheduledClasses = this.getScheduledClasses(solution);
         final int M = this.getFirstParameter();
         final int S = getSecondParameter();
@@ -25,6 +22,8 @@ public class MaxBlockConstraint extends Constraint {
         List<Block> blocks = new ArrayList<>();
         List<Block> mergedBlocks = new ArrayList<>();
         int totalOverflows = 0;
+
+        ConstraintResults results = new ConstraintResults();
 
         for(int w=0; w < getNrWeeks(); w++) {
             for(int d=0; d < getNrDays(); d++) {
@@ -87,8 +86,11 @@ public class MaxBlockConstraint extends Constraint {
             }
         }
 
-        return getRequired()
+        results.penalty = getRequired()
                 ? totalOverflows > 0 ? Math.max(1, totalOverflows / nrWeeks) : 0
                 : getPenalty() * totalOverflows / nrWeeks;
+        results.conflictingClasses = this.getClassUnitIdList();
+
+        return results;
     }
 }

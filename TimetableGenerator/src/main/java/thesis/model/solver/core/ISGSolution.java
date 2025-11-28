@@ -8,6 +8,7 @@ public interface ISGSolution<modelRepository extends InMemoryRepository, Val ext
     Object solution();
 
     void addUnassignedVariable(Var var);
+    void addAssignedVariable(Var var);
     Collection<Var> getUnassignedVariables();
     Collection<Var> getAssignedVariables();
     Collection<Var> getBestUnassignedVariables();

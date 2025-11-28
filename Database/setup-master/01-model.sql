@@ -79,7 +79,7 @@ CREATE TABLE class_unit (
 );
 
 CREATE TABLE timetable (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
 	program_id INT NOT NULL,
 	creation_date TIMESTAMP NOT NULL,
 	CONSTRAINT timetable_program_fk FOREIGN KEY (program_id) REFERENCES tb_program(id)
@@ -169,7 +169,7 @@ CREATE TABLE class_time (
 );
 
 CREATE TABLE scheduled_lesson (
-	timetable_id INT NOT NULL,
+	timetable_id UUID NOT NULL,
 	class_id INT NOT NULL,
 	room_id INT,
 	time_block_id INT NOT NULL,
@@ -181,7 +181,7 @@ CREATE TABLE scheduled_lesson (
 );
 
 CREATE TABLE scheduled_lesson_teacher (
-	scheduled_lesson_timetable_id INT NOT NULL,
+	scheduled_lesson_timetable_id UUID NOT NULL,
 	scheduled_lesson_class_id INT NOT NULL,
 	scheduled_lesson_time_block_id INT NOT NULL,
 	teacher_id INT NOT NULL,

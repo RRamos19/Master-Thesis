@@ -3,7 +3,7 @@ package thesis.model.persistence;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-import thesis.model.persistence.repository.entities.*;
+import thesis.model.persistence.entities.*;
 
 import java.util.Properties;
 

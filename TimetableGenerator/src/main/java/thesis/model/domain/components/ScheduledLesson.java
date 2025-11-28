@@ -21,7 +21,7 @@ public class ScheduledLesson {
     // Cache the lookups
     private List<Teacher> teacherList;
     private Room room;
-    private int penalty = 0;
+    private PenaltySum penalty;
     private boolean calculatePenalty = true;
 
     public ScheduledLesson(String classId, String roomId, Time time) {
@@ -48,6 +48,10 @@ public class ScheduledLesson {
         this.timeWeight = timetableConfiguration.getTimeWeight();
     }
 
+    /**
+     * Checks if the lesson can be scheduled at the defined time block
+     * @return True if it can be scheduled, false otherwise
+     */
     public boolean isAvailable() {
         List<Teacher> teachers = getTeachers();
         Room room = getRoom();
@@ -78,9 +82,11 @@ public class ScheduledLesson {
      * Calculates the penalty sum of the Time penalties and Room penalties of the class
      * @return The sum of penalties of a given class
      */
-    public int toInt() {
+    public PenaltySum toInt() {
         if(calculatePenalty) {
             ClassUnit cls = model.getClassUnit(classId);
+            int timePenalty = 0;
+            int roomPenalty = 0;
 
             // Should never happen but, for security, an exception is thrown
             if (cls == null) {
@@ -89,11 +95,13 @@ public class ScheduledLesson {
 
             if (roomId != null) {
                 // Add the room penalty
-                penalty += cls.getRoomPenalty(roomId) * roomWeight;
+                roomPenalty += cls.getRoomPenalty(roomId) * roomWeight;
             }
 
             // Add the time penalty
-            penalty += cls.getTimePenalty(scheduledTime) * timeWeight;
+            timePenalty += cls.getTimePenalty(scheduledTime) * timeWeight;
+
+            penalty = new PenaltySum(roomPenalty, timePenalty);
 
             calculatePenalty = false;
         }

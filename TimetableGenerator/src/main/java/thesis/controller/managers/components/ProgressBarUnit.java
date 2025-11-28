@@ -38,6 +38,7 @@ public class ProgressBarUnit {
 
         this.progressParent = new HBox(5, progressBarName, progressUnit, cancelButton);
         HBox.setHgrow(progressUnit, Priority.ALWAYS);
+        progressParent.setAlignment(Pos.CENTER);
     }
 
     public void setCancelAction(EventHandler<MouseEvent> cancelAction) {

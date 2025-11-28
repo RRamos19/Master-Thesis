@@ -18,8 +18,8 @@ public class MullerBasedSolutionGenerator implements InitialSolutionGenerator<De
     private static final Logger logger = LoggerFactory.getLogger(MullerBasedSolutionGenerator.class);
 
     private final InMemoryRepository dataModel;
-    private final ValueSelection<DefaultISGValue, DefaultISGSolution, DefaultISGVariable> valueSelection = new DefaultValueSelection();
-    private final DefaultISGSolutionComparator defaultISGSolutionComparator = new DefaultISGSolutionComparator();
+    private final ValueSelection<DefaultISGValue, DefaultISGSolution, DefaultISGVariable> valueSelection;
+    private final DefaultISGSolutionComparator defaultISGSolutionComparator;
     private final List<ClassUnit> unscheduled;
     private volatile boolean interruptAlgorithm = false;
     private DefaultISGSolution solution;
@@ -30,6 +30,9 @@ public class MullerBasedSolutionGenerator implements InitialSolutionGenerator<De
     public MullerBasedSolutionGenerator(InMemoryRepository data) {
         // Every class in every subpart must be allocated in the timetable.
         this.unscheduled = new ArrayList<>(data.getClassUnits());
+
+        valueSelection = new DefaultValueSelection();
+        defaultISGSolutionComparator = new DefaultISGSolutionComparator();
 
         this.dataModel = data;
     }
@@ -77,9 +80,6 @@ public class MullerBasedSolutionGenerator implements InitialSolutionGenerator<De
      */
     private DefaultISGVariable selectVariable(DefaultISGSolution solution) {
         DefaultISGVariable variable = RandomToolkit.random(solution.getUnassignedVariables());
-        if(variable == null) {
-            variable = RandomToolkit.random(solution.getAssignedVariables());
-        }
 
         if(variable == null) {
             throw new IllegalStateException("selectVariable: selected variable was null!");
@@ -90,11 +90,16 @@ public class MullerBasedSolutionGenerator implements InitialSolutionGenerator<De
 
     private void convertToVariables(DefaultISGSolution solution, List<ClassUnit> classUnitList) {
         // For each unscheduled class a variable is made which represents the class
-        // Each variable is then assigned a value which represents the Room, Time and Teachers combination
+        // Each variable is then assigned a value which represents the Room, Time block and Teachers combination
         for(ClassUnit cls : classUnitList) {
             DefaultISGVariable var = new DefaultISGVariable(cls);
             solution.addUnassignedVariable(var);
             var.setSolution(solution);
+        }
+
+        // Simple verification of data consistency
+        if(classUnitList.size() != solution.getUnassignedVariables().size()) {
+            throw new IllegalStateException("The number of variables to be assigned is different from the number of classes!");
         }
     }
 

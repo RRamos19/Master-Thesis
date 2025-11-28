@@ -1,6 +1,7 @@
 package thesis.controller.managers;
 
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -12,7 +13,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-import org.hibernate.tool.schema.spi.ScriptTargetOutput;
 import thesis.controller.ControllerInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.ScheduledLesson;
@@ -59,7 +59,7 @@ public class WindowManager {
             instructionsWindow.initStyle(StageStyle.DECORATED);
             instructionsWindow.initOwner(primaryWindow);
             instructionsWindow.initModality(Modality.WINDOW_MODAL);
-            instructionsWindow.setTitle("System Intructions");
+            instructionsWindow.setTitle("System Instructions");
 
             VBox box = new VBox(5);
             box.setPadding(new Insets(10));
@@ -72,29 +72,32 @@ public class WindowManager {
             box.getChildren().add(title);
 
             List<String> labels = List.of(
-                    "1. For the system to function correctly, follow these steps:",
-                    "\tConnect to the database",
-                    "\tEnter the database IP address and Port in the corresponding fields.",
-                    "\tEnter the username and password in the corresponding fields.",
-                    "\tPress the \"Connect\" button.",
-                    "\tNote - Alternatively, you may import one or more files into the system instead of connecting to a database.",
+                "1. For the system to function correctly, follow these steps:",
+                "\tConnect to a PostgreSQL database",
+                "\tEnter the database IP address and Port in the corresponding fields.",
+                "\tEnter the username and password in the corresponding fields.",
+                "\tPress the \"Connect\" button.",
+                "\tIf the database has data it will then be displayed by the graphical interface.",
+                "\tNote - Alternatively, you may import one or more files into the system instead of connecting to a database.",
 
-                    "2. Verify data availability",
-                    "\tOnce data is loaded, a program name will appear in the top-left corner of the interface.",
-                    "\tBelow it, you will find selectable items. When clicked, these display the contents of the corresponding tables in the central area of the window.",
+                "2. Verify data availability",
+                "\tOnce data is loaded, a program name will appear in the top-left corner of the interface.",
+                "\tOn the right side of the program name an X button may be pressed to remove said data from the interface.",
+                "\tBelow it, you will find selectable items. When clicked, these display the contents of the corresponding tables in the central area of the window.",
 
-                    "3. Generate timetables",
-                    "\tPress the button located at the bottom-right corner to start the generation process.",
-                    "\tA progress bar at the bottom of the window will indicate task progress.",
-                    "\tAfter completion, a new item called \"Timetable\" will appear on the left. Selecting it displays all solutions for the chosen program.",
+                "3. Generate timetables",
+                "\tPress the button located at the bottom-right corner to start the generation process.",
+                "\tA progress bar at the bottom of the window will indicate task progress.",
+                "\tAfter completion, the item called \"Timetable\" may be selected to display all generated solutions for the chosen program.",
 
-                    "4. Task management",
-                    "\tThe application supports multiple generation tasks running in parallel.",
-                    "\tMultiple tasks can be executed at a time. Each one has a button to cancel said task.",
+                "4. Task management",
+                "\tThe application supports multiple generation tasks running in parallel.",
+                "\tMultiple tasks can be executed at a time. Each one has a button to cancel said task.",
 
-                    "5. Exporting the data",
-                    "\tOn the top menu, the option \"File\" contains all the choices of exportation.",
-                    "\tUpon choosing one of the options, all the data of the chosen program will be exported in the choosen format."
+                "5. Exporting the data",
+                "\tOn the top menu, the option \"File\" contains all the choices of exportation.",
+                "\tUpon choosing one of the options, all the data of the chosen program will be exported in the chosen format.",
+                "\tFor the exportation of solutions each one must be chosen before performing the exportation."
             );
 
             for(String line : labels) {
@@ -136,7 +139,7 @@ public class WindowManager {
             List<ScheduledLesson> lessons,
             InMemoryRepository data,
             int minutesPerSlot,
-            int minSlotOffset,
+            int minSlot,
             int visibleSlots,
             double timeColWidth,
             double daySubColWidth,
@@ -149,11 +152,18 @@ public class WindowManager {
 
         // Group lessons by day
         Map<Integer, List<ScheduledLesson>> lessonsByDay = new HashMap<>();
-        for (ScheduledLesson l : lessons) {
-            String mask = l.getDaysBinaryString();
-            for (int d = 0; d < mask.length() && d < days; d++) {
-                if (mask.charAt(d) == '1') {
-                    lessonsByDay.computeIfAbsent(d, k -> new ArrayList<>()).add(l);
+        for (ScheduledLesson lesson : lessons) {
+            int startSlot = lesson.getStartSlot();
+            int duration = lesson.getLength();
+
+            // clip to visible window
+            if ((startSlot + duration) <= minSlot) continue; // ends before visible window
+            if (startSlot >= (minSlot + visibleSlots)) continue; // starts after visible window
+
+            String mask = lesson.getDaysBinaryString();
+            for (int day = 0; day < mask.length() && day < days; day++) {
+                if (mask.charAt(day) == '1') {
+                    lessonsByDay.computeIfAbsent(day, k -> new ArrayList<>()).add(lesson);
                 }
             }
         }
@@ -161,21 +171,21 @@ public class WindowManager {
         // For each day compute sub-column assignment
         Map<ScheduledLesson, Integer> assignment = new IdentityHashMap<>();
         int[] subColsPerDay = new int[days];
-        for (int d = 0; d < days; d++) {
-            List<ScheduledLesson> dayList = lessonsByDay.getOrDefault(d, List.of())
+        for (int day = 0; day < days; day++) {
+            List<ScheduledLesson> dayList = lessonsByDay.getOrDefault(day, List.of())
                     .stream()
                     .sorted(Comparator.comparingInt(ScheduledLesson::getStartSlot))
                     .collect(Collectors.toList());
 
-            List<Integer> lastEnd = new ArrayList<>(); // end slot for each subcol
-            for (ScheduledLesson l : dayList) {
-                int start = l.getStartSlot();
-                int end = l.getEndSlot();
+            List<Integer> lastEnd = new ArrayList<>(); // end slot for each sub-column
+            for (ScheduledLesson lesson : dayList) {
+                int start = lesson.getStartSlot();
+                int end = lesson.getEndSlot();
                 int found = -1;
-                for (int sc = 0; sc < lastEnd.size(); sc++) {
-                    if (start >= lastEnd.get(sc)) {
-                        found = sc;
-                        lastEnd.set(sc, end);
+                for (int subCol = 0; subCol < lastEnd.size(); subCol++) {
+                    if (start >= lastEnd.get(subCol)) {
+                        found = subCol;
+                        lastEnd.set(subCol, end);
                         break;
                     }
                 }
@@ -183,12 +193,12 @@ public class WindowManager {
                     found = lastEnd.size();
                     lastEnd.add(end);
                 }
-                assignment.put(l, found);
+                assignment.put(lesson, found);
             }
-            subColsPerDay[d] = Math.max(1, lastEnd.size());
+            subColsPerDay[day] = Math.max(1, lastEnd.size());
         }
 
-        // Build column constraints: col 0 = time, then sum(subColsPerDay) subcolumns
+        // Build column constraints: col 0 = time, then sum(subColsPerDay) sub-columns
         ColumnConstraints timeCol = new ColumnConstraints();
         timeCol.setMinWidth(timeColWidth);
         timeCol.setPrefWidth(timeColWidth);
@@ -218,8 +228,8 @@ public class WindowManager {
         }
 
         // Time column + empty cells (to show a border in each cell)
-        for (int s = 0; s < visibleSlots; s++) {
-            int globalSlot = minSlotOffset + s;
+        for (int slot = 0; slot < visibleSlots; slot++) {
+            int globalSlot = minSlot + slot;
             int startMin = globalSlot * minutesPerSlot;
             int endMin = (globalSlot + 1) * minutesPerSlot;
             int startHour = startMin / 60;
@@ -231,7 +241,7 @@ public class WindowManager {
             timeLabel.setPrefHeight(rowHeight);
             timeLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
             timeLabel.setStyle("-fx-border-color: black; -fx-border-width: 1; -fx-background-color: #fafafa;");
-            grid.add(timeLabel, 0, s + 1);
+            grid.add(timeLabel, 0, slot + 1);
 
             // add empty panes for each sub-column so borders appear
             for (int c = 1; c <= totalSubCols; c++) {
@@ -240,43 +250,38 @@ public class WindowManager {
                 cell.setPrefHeight(rowHeight);
                 cell.setStyle("-fx-border-color: lightgray; -fx-border-width: 1;");
                 GridPane.setVgrow(cell, Priority.NEVER);
-                grid.add(cell, c, s + 1);
+                grid.add(cell, c, slot + 1);
             }
         }
 
         // Place lessons into assigned sub-column
-        for (ScheduledLesson l : lessons) {
-            String mask = l.getDaysBinaryString();
-            if (mask == null) continue;
-            for (int d = 0; d < mask.length(); d++) {
-                if (mask.charAt(d) != '1') continue;
+        for (int day = 0; day < days; day++) {
+            List<ScheduledLesson> dayLessons = lessonsByDay.get(day);
+            if(dayLessons == null) continue;
 
-                int subColIndex = assignment.getOrDefault(l, 0);
-                // compute column base for day d
+            for (ScheduledLesson lesson : dayLessons) {
+                int startSlot = lesson.getStartSlot();
+                int duration = lesson.getLength();
+
+                int subColIndex = assignment.get(lesson);
+                // compute column base for day
                 int dayColStart = 1; // after time column
-                for (int dd = 0; dd < d; dd++) dayColStart += subColsPerDay[dd];
+                for (int dd = 0; dd < day; dd++) dayColStart += subColsPerDay[dd];
 
                 int targetCol = dayColStart + subColIndex;
 
-                int startSlot = l.getStartSlot();
-                int duration = l.getLength();
-
-                // clip to visible window
-                if ((startSlot + duration) <= minSlotOffset) continue; // ends before visible window
-                if (startSlot >= (minSlotOffset + visibleSlots)) continue; // starts after visible window
-
                 // A 1 is added because of the header with days of week
-                int relativeStart = Math.max(0, startSlot - minSlotOffset) + 1;
+                int relativeStart = Math.max(0, startSlot - minSlot) + 1;
 
-                int visibleSpan = Math.min(duration, (minSlotOffset + visibleSlots) - startSlot);
+                int visibleSpan = Math.min(duration, (minSlot + visibleSlots) - startSlot);
 
                 List<String> teacherList = new ArrayList<>();
-                l.getTeachers().forEach((t) -> teacherList.add(t.getName()));
+                lesson.getTeachers().forEach((t) -> teacherList.add(t.getName()));
 
-                Label idLabel = new Label(l.getClassId());
+                Label idLabel = new Label(lesson.getClassId());
                 Label progLabel = new Label("[" + data.getProgramName() + "]");
                 Label teachersLabel = teacherList.isEmpty() ? null : new Label("[(" + String.join(");\n ", teacherList) + ")]");
-                Label roomLabel = l.getRoomId() != null ? new Label("[" + l.getRoomId() + "]") : null;
+                Label roomLabel = lesson.getRoomId() != null ? new Label("[" + lesson.getRoomId() + "]") : null;
 
                 VBox box = new VBox(2);
                 ObservableList<Node> boxChildren = box.getChildren();
@@ -295,15 +300,13 @@ public class WindowManager {
                 box.setMinHeight(rowHeight*visibleSpan);
                 box.setPrefHeight(rowHeight*visibleSpan);
                 box.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-                box.setStyle("-fx-background-color: lightblue; -fx-border-color: darkblue; -fx-border-width: 1;");
+                box.setStyle("-fx-background-color: lightblue; -fx-border-color: black; -fx-border-width: 1;");
                 GridPane.setHgrow(box, Priority.ALWAYS);
                 GridPane.setVgrow(box, Priority.NEVER);
 
                 grid.add(box, targetCol, relativeStart, 1, visibleSpan);
             }
         }
-
-        // Create a line between days
 
         // set preferred size so ScrollPane shows scrollbars properly
         double prefWidth = timeColWidth + totalSubCols * daySubColWidth;
@@ -390,14 +393,14 @@ public class WindowManager {
                 if (lessonsForPattern == null) continue;
 
                 GridPane grid = buildGridForLessons(
-                        lessonsForPattern,
-                        data,
-                        minutesPerSlot,
-                        minSlot,
-                        visibleSlots,
-                        TIME_COL_WIDTH,
-                        DAY_SUBCOL_WIDTH,
-                        ROW_HEIGHT
+                    lessonsForPattern,
+                    data,
+                    minutesPerSlot,
+                    minSlot,
+                    visibleSlots,
+                    TIME_COL_WIDTH,
+                    DAY_SUBCOL_WIDTH,
+                    ROW_HEIGHT
                 );
 
                 // Let the grid grow

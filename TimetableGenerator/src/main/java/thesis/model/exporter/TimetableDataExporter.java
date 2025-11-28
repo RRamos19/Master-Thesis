@@ -2,6 +2,8 @@ package thesis.model.exporter;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.*;
 
@@ -27,6 +29,7 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName;
 
 public class TimetableDataExporter implements DataExporter {
+    private static final Logger logger = LoggerFactory.getLogger(TimetableDataExporter.class);
     private static final List<String> DAYS_OF_WEEK = List.of("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
     private static final String EXPORT_LOCATION_PATH = "exports/";
 
@@ -354,6 +357,8 @@ public class TimetableDataExporter implements DataExporter {
 
     @Override
     public void exportToCSV(InMemoryRepository data) throws IOException {
+        File file = avoidFileOverwriting(data.getProgramName(), FileFormat.CSV);
+
 
     }
 
@@ -393,16 +398,16 @@ public class TimetableDataExporter implements DataExporter {
     }
 
     @Override
-    public void exportToPNG(InMemoryRepository data) throws IOException {
+    public void exportToPNG(InMemoryRepository data, int maxHour, int minHour) throws IOException {
         int weeks = data.getTimetableConfiguration().getNumWeeks();
         for(Timetable timetable : data.getTimetableList()) {
             Pair<Map<String, List<Integer>>, Map<String, List<ScheduledLesson>>> weeksAssignedLessons = getWeekGroups(timetable, weeks);
             Map<String, List<Integer>> mapGroups = weeksAssignedLessons.getLeft();
             Map<String, List<ScheduledLesson>> lessonGroups = weeksAssignedLessons.getRight();
 
-            for(Map.Entry<String, List<Integer>> mapGroup : mapGroups.entrySet()) {
+            for(Map.Entry<String, List<Integer>> weekGroup : mapGroups.entrySet()) {
                 List<String> weeksStringList = new ArrayList<>();
-                mapGroup.getValue().forEach((week) -> weeksStringList.add(week.toString()));
+                weekGroup.getValue().forEach((week) -> weeksStringList.add(week.toString()));
 
                 String weeksString = String.join("-", weeksStringList);
                 File file = avoidFileOverwriting(getSolutionName(timetable) + "_weeks_" + weeksString, FileFormat.PNG);
@@ -411,17 +416,73 @@ public class TimetableDataExporter implements DataExporter {
                 int numSlots = data.getTimetableConfiguration().getSlotsPerDay();
                 int minutesPerSlot = 24 * 60 / numSlots;
 
+                int startSlot = (minHour * 60) / minutesPerSlot;
+                int endSlot = (maxHour * 60) / minutesPerSlot;
+
                 int timeColWidth = 100;
                 int cellWidth = 120;
                 int cellHeight = 40;
 
-                int width = timeColWidth + days * cellWidth;
-                int height = (numSlots + 1) * cellHeight;
+                List<ScheduledLesson> assignedLessons = lessonGroups.get(weekGroup.getKey());
+
+                // Group lessons by day
+                Map<Integer, List<ScheduledLesson>> lessonsByDay = new HashMap<>();
+                for (ScheduledLesson lesson : assignedLessons) {
+                    Time lessonTime = lesson.getScheduledTime();
+
+                    // Ignore lessons outside of start and end limits
+                    if(lessonTime.getStartSlot() < startSlot ||
+                            lessonTime.getEndSlot() > endSlot) {
+                        logger.warn("While exporting to PNG the lesson with id {} was ignored because it was outside the start and end hour limits", lesson.getClassId());
+                        continue;
+                    }
+
+                    String mask = lesson.getDaysBinaryString();
+                    for (int day = 0; day < mask.length() && day < days; day++) {
+                        if (mask.charAt(day) == '1') {
+                            lessonsByDay.computeIfAbsent(day, k -> new ArrayList<>()).add(lesson);
+                        }
+                    }
+                }
+
+                // For each day compute sub-column assignment
+                Map<ScheduledLesson, Integer> subColAssignments = new HashMap<>();
+                int[] subColsPerDay = new int[days];
+                for (int day = 0; day < days; day++) {
+                    List<ScheduledLesson> dayList = lessonsByDay.getOrDefault(day, List.of())
+                            .stream()
+                            .sorted(Comparator.comparingInt(ScheduledLesson::getStartSlot))
+                            .collect(Collectors.toList());
+
+                    List<Integer> lastSubCol = new ArrayList<>(); // end slot for each subcol
+                    for (ScheduledLesson lesson : dayList) {
+                        int start = lesson.getStartSlot();
+                        int end = lesson.getEndSlot();
+                        int assignedSubColumn = -1;
+                        for (int subcol = 0; subcol < lastSubCol.size(); subcol++) {
+                            if (start >= lastSubCol.get(subcol)) {
+                                assignedSubColumn = subcol;
+                                lastSubCol.set(subcol, end);
+                                break;
+                            }
+                        }
+                        if (assignedSubColumn == -1) {
+                            assignedSubColumn = lastSubCol.size();
+                            lastSubCol.add(end);
+                        }
+                        subColAssignments.put(lesson, assignedSubColumn);
+                    }
+                    subColsPerDay[day] = Math.max(1, lastSubCol.size());
+                }
+
+                int totalSubColumns = Arrays.stream(subColsPerDay).sum();
+                int width = timeColWidth + totalSubColumns * cellWidth;
+                int height = (endSlot - startSlot + 1) * cellHeight;
 
                 BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
                 Graphics2D g = image.createGraphics();
 
-                drawTimetableAWT(g, data, lessonGroups.get(mapGroup.getKey()), timeColWidth, cellWidth, cellHeight, minutesPerSlot, numSlots);
+                drawTimetableAWT(g, data, lessonsByDay, timeColWidth, cellWidth, cellHeight, minutesPerSlot, startSlot, endSlot, subColsPerDay, subColAssignments);
 
                 g.dispose();
                 ImageIO.write(image, FileFormat.PNG.toString(), file);
@@ -430,7 +491,7 @@ public class TimetableDataExporter implements DataExporter {
     }
 
     @Override
-    public void exportToPDF(InMemoryRepository data) throws IOException {
+    public void exportToPDF(InMemoryRepository data, int maxHour, int minHour) throws IOException {
         for(Timetable timetable : data.getTimetableList()) {
             File file = avoidFileOverwriting(getSolutionName(timetable), FileFormat.PDF);
 
@@ -440,12 +501,14 @@ public class TimetableDataExporter implements DataExporter {
             int numSlots = timetableConfiguration.getSlotsPerDay();
             int minutesPerSlot = 24 * 60 / numSlots;
 
+            int startSlot = (minHour * 60) / minutesPerSlot;
+            int endSlot = (maxHour * 60) / minutesPerSlot;
+
             int timeColWidth = 100;
             int cellWidth = 120;
             int cellHeight = 40;
 
-            int width = timeColWidth + days * cellWidth;
-            int height = (numSlots + 1) * cellHeight;
+            int height = (endSlot - startSlot + 1) * cellHeight;
 
             Pair<Map<String, List<Integer>>, Map<String, List<ScheduledLesson>>> weeksAssignedLessons = getWeekGroups(timetable, weeks);
             Map<String, List<Integer>> weekGroups = weeksAssignedLessons.getLeft();
@@ -455,11 +518,64 @@ public class TimetableDataExporter implements DataExporter {
                 for(Map.Entry<String, List<Integer>> weekGroup : weekGroups.entrySet()) {
                     List<ScheduledLesson> assignedLessons = lessonGroups.get(weekGroup.getKey());
 
+                    // Group lessons by day
+                    Map<Integer, List<ScheduledLesson>> lessonsByDay = new HashMap<>();
+                    for (ScheduledLesson lesson : assignedLessons) {
+                        Time lessonTime = lesson.getScheduledTime();
+
+                        // Ignore lessons outside of start and end limits
+                        if(lessonTime.getStartSlot() < startSlot ||
+                                lessonTime.getEndSlot() > endSlot) {
+                            logger.warn("While exporting to PDF the lesson with id {} was ignored because it was outside the start and end hour limits", lesson.getClassId());
+                            continue;
+                        }
+
+                        String mask = lesson.getDaysBinaryString();
+                        for (int day = 0; day < mask.length() && day < days; day++) {
+                            if (mask.charAt(day) == '1') {
+                                lessonsByDay.computeIfAbsent(day, k -> new ArrayList<>()).add(lesson);
+                            }
+                        }
+                    }
+
+                    // For each day compute sub-column assignment
+                    Map<ScheduledLesson, Integer> subColAssignments = new HashMap<>();
+                    int[] subColsPerDay = new int[days];
+                    for (int day = 0; day < days; day++) {
+                        List<ScheduledLesson> dayList = lessonsByDay.getOrDefault(day, List.of())
+                                .stream()
+                                .sorted(Comparator.comparingInt(ScheduledLesson::getStartSlot))
+                                .collect(Collectors.toList());
+
+                        List<Integer> lastSubCol = new ArrayList<>(); // end slot for each sub-column
+                        for (ScheduledLesson lesson : dayList) {
+                            int start = lesson.getStartSlot();
+                            int end = lesson.getEndSlot();
+                            int assignedSubColumn = -1;
+                            for (int subcol = 0; subcol < lastSubCol.size(); subcol++) {
+                                if (start >= lastSubCol.get(subcol)) {
+                                    assignedSubColumn = subcol;
+                                    lastSubCol.set(subcol, end);
+                                    break;
+                                }
+                            }
+                            if (assignedSubColumn == -1) {
+                                assignedSubColumn = lastSubCol.size();
+                                lastSubCol.add(end);
+                            }
+                            subColAssignments.put(lesson, assignedSubColumn);
+                        }
+                        subColsPerDay[day] = Math.max(1, lastSubCol.size());
+                    }
+
+                    int totalSubColumns = Arrays.stream(subColsPerDay).sum();
+                    int width = timeColWidth + totalSubColumns * cellWidth;
+
                     PDPage page = new PDPage(new PDRectangle(width, height));
                     doc.addPage(page);
 
                     try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
-                        drawTimetablePDF(cs, data, assignedLessons, timeColWidth, cellWidth, cellHeight, minutesPerSlot, numSlots);
+                        drawTimetablePDF(cs, data, lessonsByDay, timeColWidth, cellWidth, cellHeight, minutesPerSlot, startSlot, endSlot, subColsPerDay, subColAssignments);
                     }
                 }
 
@@ -468,37 +584,60 @@ public class TimetableDataExporter implements DataExporter {
         }
     }
 
-    private static void drawTimetableAWT(Graphics2D g, InMemoryRepository data, List<ScheduledLesson> assignedLessons,
+    private static void drawTimetableAWT(Graphics2D g, InMemoryRepository data, Map<Integer, List<ScheduledLesson>> lessonsByDay,
                                          int timeColWidth, int cellWidth, int cellHeight,
-                                         int minutesPerSlot, int visibleSlots) {
+                                         int minutesPerSlot, int startSlot, int endSlot,
+                                         int[] subColsPerDay, Map<ScheduledLesson, Integer> subColAssignments) {
 
         int days = data.getTimetableConfiguration().getNumDays();
+        int totalSubColumns = Arrays.stream(subColsPerDay).sum();
+        int visibleSlots = endSlot - startSlot;
 
-        // Background
+        // White Background
         g.setColor(Color.WHITE);
-        g.fillRect(0, 0, timeColWidth + days * cellWidth, (visibleSlots + 1) * cellHeight);
+        g.fillRect(0, 0, timeColWidth + totalSubColumns * cellWidth, (visibleSlots + 1) * cellHeight);
+
+        // light grey colored grid
+        g.setColor(LIGHT_GRAY_COLOR);
+        for (int day = 0; day < days; day++) { // lines in y axis
+            int dayColStart = 0;
+            for (int dd = 0; dd < day; dd++) dayColStart += subColsPerDay[dd];
+
+            for(int subCol = 0; subCol <= subColsPerDay[day]; subCol++) {
+                int x = timeColWidth + (dayColStart + subCol) * cellWidth;
+                g.drawLine(x, 0, x, (visibleSlots + 1) * cellHeight);
+            }
+        }
+        for (int s = 0; s <= visibleSlots + 1; s++) { // lines in x axis
+            int y = s * cellHeight;
+            g.drawLine(0, y, timeColWidth + totalSubColumns * cellWidth, y);
+        }
 
         // Headers
         g.setFont(new Font("SansSerif", Font.BOLD, 12));
-        for (int d = 0; d < days; d++) {
-            int x = timeColWidth + d * cellWidth;
+        for (int day = 0; day < days; day++) {
+            int dayColStart = 0;
+            for (int dd = 0; dd < day; dd++) dayColStart += subColsPerDay[dd];
+
+            int x = timeColWidth + dayColStart * cellWidth;
+            int rectWidth = subColsPerDay[day] * cellWidth;
             g.setColor(Color.WHITE);
-            g.fillRect(x, 0, cellWidth, cellHeight);
+            g.fillRect(x, 0, rectWidth, cellHeight);
             g.setColor(Color.BLACK);
-            g.drawRect(x, 0, cellWidth, cellHeight);
-            drawCenteredString(g, DAYS_OF_WEEK.get(d), new Rectangle(x, 0, cellWidth, cellHeight));
+            g.drawRect(x, 0, rectWidth, cellHeight);
+            drawCenteredString(g, DAYS_OF_WEEK.get(day), new Rectangle(x, 0, rectWidth, cellHeight));
         }
 
         // Time column
         g.setFont(new Font("SansSerif", Font.PLAIN, 11));
-        for (int s = 0; s < visibleSlots; s++) {
-            int y = (s + 1) * cellHeight;
+        for (int slot = startSlot; slot <= endSlot; slot++) {
+            int y = (slot - startSlot + 1) * cellHeight;
             g.setColor(Color.WHITE);
             g.fillRect(0, y, timeColWidth, cellHeight);
             g.setColor(Color.BLACK);
             g.drawRect(0, y, timeColWidth, cellHeight);
 
-            int startTime = s * minutesPerSlot;
+            int startTime = slot * minutesPerSlot;
             int startHour = startTime / 60;
             int startMinutes = startTime % 60;
 
@@ -509,66 +648,95 @@ public class TimetableDataExporter implements DataExporter {
             drawCenteredString(g, time, new Rectangle(0, y, timeColWidth, cellHeight));
         }
 
-        // light grey colored grid
-        g.setColor(LIGHT_GRAY_COLOR);
-        for (int d = 0; d <= days; d++) {
-            int x = timeColWidth + d * cellWidth;
-            g.drawLine(x, 0, x, (visibleSlots + 1) * cellHeight);
-        }
-        for (int s = 0; s <= visibleSlots + 1; s++) {
-            int y = s * cellHeight;
-            g.drawLine(0, y, timeColWidth + days * cellWidth, y);
-        }
-
         // lessons
         g.setFont(new Font("SansSerif", Font.PLAIN, 10));
-        for (ScheduledLesson l : assignedLessons) {
-            for (int d = 0; d < days; d++) {
-                if (l.getDaysBinaryString().charAt(d) == '1') {
-                    int x = timeColWidth + d * cellWidth;
-                    int y = (l.getStartSlot() + 1) * cellHeight;
-                    int h = l.getLength() * cellHeight;
+        for (int day = 0; day < days; day++) {
+            List<ScheduledLesson> dayLessons = lessonsByDay.get(day);
+            if(dayLessons == null) continue;
 
-                    g.setColor(LIGHT_BLUE_COLOR);
-                    g.fillRect(x, y, cellWidth, h);
-                    g.setColor(Color.BLUE);
-                    g.drawRect(x, y, cellWidth, h);
+            for (ScheduledLesson lesson : dayLessons) {
+                int subColIndex = subColAssignments.get(lesson);
 
-                    drawCenteredString(g, l.getClassId(), new Rectangle(x, y, cellWidth, h));
-                }
+                // compute column base for day
+                int dayColStart = 0;
+                for (int dd = 0; dd < day; dd++) dayColStart += subColsPerDay[dd];
+                int targetCol = dayColStart + subColIndex;
+
+                int x = timeColWidth + targetCol * cellWidth;
+                int y = (lesson.getStartSlot() - startSlot + 1) * cellHeight;
+                int height = lesson.getLength() * cellHeight;
+
+                g.setColor(LIGHT_BLUE_COLOR);
+                g.fillRect(x, y, cellWidth, height);
+                g.setColor(Color.BLUE);
+                g.drawRect(x, y, cellWidth, height);
+
+                drawCenteredString(g, lesson.getClassId(), new Rectangle(x, y, cellWidth, height));
+                drawCenteredString(g, "[" + data.getProgramName() + "]", new Rectangle(x, y + 15, cellWidth, height));
+                drawCenteredString(g, "[" + lesson.getRoomId() + "]", new Rectangle(x, y + 30, cellWidth, height));
             }
         }
     }
 
-    private static void drawTimetablePDF(PDPageContentStream cs, InMemoryRepository data, List<ScheduledLesson> assignedLessons,
+    private static float getPDFStringWidth(String text, PDType1Font font, int fontSize) throws IOException {
+        return font.getStringWidth(text) / 1000 * fontSize;
+    }
+
+    private static void drawTimetablePDF(PDPageContentStream cs, InMemoryRepository data, Map<Integer, List<ScheduledLesson>> lessonsByDay,
                                          int timeColWidth, int cellWidth, int cellHeight,
-                                         int minutesPerSlot, int visibleSlots) throws IOException {
+                                         int minutesPerSlot, int startSlot, int endSlot,
+                                         int[] subColsPerDay, Map<ScheduledLesson, Integer> subColAssignments) throws IOException {
 
         int days = data.getTimetableConfiguration().getNumDays();
+        int totalSubColumns = Arrays.stream(subColsPerDay).sum();
+        int visibleSlots = endSlot - startSlot;
 
         // White Background
         cs.setNonStrokingColor(Color.WHITE);
-        cs.addRect(0, 0, timeColWidth + days * cellWidth, (visibleSlots + 1) * cellHeight);
+        cs.addRect(0, 0, timeColWidth + totalSubColumns * cellWidth, (visibleSlots + 1) * cellHeight);
         cs.fill();
+
+        // Light grey colored grid
+        cs.setStrokingColor(LIGHT_GRAY_COLOR);
+        for (int day = 0; day < days; day++) {
+            int dayColStart = 0;
+            for (int dd = 0; dd < day; dd++) dayColStart += subColsPerDay[dd];
+
+            for(int subCol = 0; subCol <= subColsPerDay[day]; subCol++) {
+                float x = timeColWidth + (dayColStart + subCol) * cellWidth;
+                cs.moveTo(x, 0);
+                cs.lineTo(x, visibleSlots * cellHeight);
+            }
+        }
+        for (int slot = 0; slot <= visibleSlots + 1; slot++) {
+            float y = slot * cellHeight;
+            cs.moveTo(0, y);
+            cs.lineTo(timeColWidth + totalSubColumns * cellWidth, y);
+        }
+        cs.stroke();
 
         // Header
         cs.setFont(new PDType1Font(FontName.HELVETICA_BOLD), 10);
-        for (int d = 0; d < days; d++) {
-            int x = timeColWidth + d * cellWidth;
+        for (int day = 0; day < days; day++) {
+            int dayColStart = 0;
+            for (int dd = 0; dd < day; dd++) dayColStart += subColsPerDay[dd];
+
+            int x = timeColWidth + dayColStart * cellWidth;
             int y = visibleSlots * cellHeight;
+
             cs.setNonStrokingColor(Color.WHITE);
-            cs.addRect(x, y, cellWidth, cellHeight);
+            cs.addRect(x, y, subColsPerDay[day] * cellWidth, cellHeight);
             cs.fill();
 
             cs.setStrokingColor(Color.BLACK);
-            cs.addRect(x, y, cellWidth, cellHeight);
+            cs.addRect(x, y, subColsPerDay[day] * cellWidth, cellHeight);
             cs.stroke();
 
             // Day of week text
             cs.beginText();
             cs.setNonStrokingColor(Color.BLACK);
-            cs.newLineAtOffset(x + (float) cellWidth / 2 - 12, y + (float) cellHeight / 2 - 4);
-            cs.showText(DAYS_OF_WEEK.get(d));
+            cs.newLineAtOffset(x + (float) (subColsPerDay[day] * cellWidth) / 2 - 12, y + (float) cellHeight / 2 - 4);
+            cs.showText(DAYS_OF_WEEK.get(day));
             cs.endText();
         }
 
@@ -576,8 +744,8 @@ public class TimetableDataExporter implements DataExporter {
         cs.setFont(new PDType1Font(FontName.HELVETICA), 11);
         {
             int x = timeColWidth / 2;
-            for (int s = visibleSlots; s > 0; s--) {
-                int y = (s - 1) * cellHeight;
+            for (int slot = visibleSlots; slot > 0; slot--) {
+                int y = (slot - 1) * cellHeight;
                 cs.setNonStrokingColor(Color.WHITE);
                 cs.addRect(0, y, timeColWidth, cellHeight);
                 cs.fill();
@@ -586,7 +754,7 @@ public class TimetableDataExporter implements DataExporter {
                 cs.addRect(0, y, timeColWidth, cellHeight);
                 cs.stroke();
 
-                int startTime = (visibleSlots - s) * minutesPerSlot;
+                int startTime = (endSlot - slot) * minutesPerSlot;
                 int startHour = startTime / 60;
                 int startMinutes = startTime % 60;
 
@@ -603,42 +771,53 @@ public class TimetableDataExporter implements DataExporter {
             }
         }
 
-        // Light grey colored grid
-        cs.setStrokingColor(LIGHT_GRAY_COLOR);
-        for (int d = 0; d <= days; d++) {
-            float x = timeColWidth + d * cellWidth;
-            cs.moveTo(x, 0);
-            cs.lineTo(x, (visibleSlots + 1) * cellHeight);
-        }
-        for (int s = 0; s <= visibleSlots + 1; s++) {
-            float y = s * cellHeight;
-            cs.moveTo(0, y);
-            cs.lineTo(timeColWidth + days * cellWidth, y);
-        }
-        cs.stroke();
-
         // Lessons
-        cs.setFont(new PDType1Font(FontName.HELVETICA), 9);
-        for (ScheduledLesson l : assignedLessons) {
-            for (int d = 0; d < days; d++) {
-                if (l.getDaysBinaryString().charAt(d) == '1') {
-                    float x = timeColWidth + d * cellWidth;
-                    float y = (visibleSlots - l.getStartSlot()) * cellHeight;
-                    float h = l.getLength() * cellHeight;
+        PDType1Font lessonFont = new PDType1Font(FontName.HELVETICA);
+        int lessonFontSize = 9;
+        cs.setFont(new PDType1Font(FontName.HELVETICA), lessonFontSize);
+        for (int day = 0; day < days; day++) {
+            List<ScheduledLesson> dayLessons = lessonsByDay.get(day);
+            if(dayLessons == null) continue;
+
+            for (ScheduledLesson lesson : dayLessons) {
+                if (lesson.getDaysBinaryString().charAt(day) == '1') {
+                    int subColIndex = subColAssignments.get(lesson);
+
+                    int dayColStart = 0;
+                    for (int dd = 0; dd < day; dd++) dayColStart += subColsPerDay[dd];
+                    int targetCol = dayColStart + subColIndex;
+
+                    float x = timeColWidth + targetCol * cellWidth;
+                    float y = (endSlot - lesson.getStartSlot()) * cellHeight;
+                    float height = lesson.getLength() * cellHeight;
 
                     cs.setNonStrokingColor(LIGHT_BLUE_COLOR);
-                    cs.addRect(x, y - h, cellWidth, h);
+                    cs.addRect(x, y - height, cellWidth, height);
                     cs.fill();
 
                     cs.setStrokingColor(Color.BLUE);
-                    cs.addRect(x, y - h, cellWidth, h);
+                    cs.addRect(x, y - height, cellWidth, height);
                     cs.stroke();
+
+                    float textX = x + (float) cellWidth / 2;
+                    float textY = y - height / 2;
+                    String line1 = lesson.getClassId();
+                    String line2 = "[" + data.getProgramName() + "]";
+                    String line3 = "[" + lesson.getRoomId() + "]";
+
+                    float line1Width = getPDFStringWidth(line1, lessonFont, lessonFontSize);
+                    float line2Width = getPDFStringWidth(line2, lessonFont, lessonFontSize);
+                    float line3Width = getPDFStringWidth(line3, lessonFont, lessonFontSize);
 
                     // Centered text
                     cs.beginText();
                     cs.setNonStrokingColor(Color.BLACK);
-                    cs.newLineAtOffset(x + 10, y - h / 2);
-                    cs.showText(l.getClassId());
+                    cs.newLineAtOffset(textX - line1Width / 2, textY + 15); // Starting position
+                    cs.showText(line1);
+                    cs.newLineAtOffset((line1Width - line2Width) / 2, -15); // Offset from the previous line
+                    cs.showText(line2);
+                    cs.newLineAtOffset((line2Width - line3Width) / 2, -15); // Offset from the previous line
+                    cs.showText(line3);
                     cs.endText();
                 }
             }

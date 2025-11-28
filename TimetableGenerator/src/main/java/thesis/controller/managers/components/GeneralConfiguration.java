@@ -9,7 +9,7 @@ public class GeneralConfiguration {
 
     private double initialTemperature = 200;
     private double minTemperature = 1e-4;
-    private double coolingRate = 0.05;
+    private double coolingRate = 0.01;
     private int k = 5;
     private int maxHour = 23;
     private int minHour = 8;
@@ -17,6 +17,7 @@ public class GeneralConfiguration {
     private String ipField = "";
     private String portField = "";
     private String usernameField = "";
+    private int databaseSynchronizationTimeMinutes = 5;
 
     public GeneralConfiguration() {}
 
@@ -111,6 +112,15 @@ public class GeneralConfiguration {
 
     public void setUsernameField(String usernameField) {
         this.usernameField = usernameField;
+        setUpdateConfigFile();
+    }
+
+    public int getDatabaseSynchronizationTimeMinutes() {
+        return databaseSynchronizationTimeMinutes;
+    }
+
+    public void setDatabaseSynchronizationTimeMinutes(int databaseSynchronizationTimeMinutes) {
+        this.databaseSynchronizationTimeMinutes = databaseSynchronizationTimeMinutes;
         setUpdateConfigFile();
     }
 

@@ -38,6 +38,7 @@ public interface ModelInterface {
 
     // Schedule solution generation methods
     void startGeneratingSolution(String programName, UUID progressUUID, double initialTemperature, double minTemperature, double coolingRate, int k);
+    void startReoptimizingSolution(Timetable timetable, UUID progressUUID, double initialTemperature, double minTemperature, double coolingRate, int k);
     double getGenerationProgress(UUID progressUUID) throws ExecutionException, InterruptedException, InvalidConfigurationException;
     void cancelTimetableGeneration(UUID progressUUID);
 
@@ -46,14 +47,20 @@ public interface ModelInterface {
     void importRepository(InMemoryRepository repository) throws InvalidConfigurationException;
     void importSolution(Timetable solution) throws InvalidConfigurationException, CheckedIllegalStateException;
 
+    // Data removal methods
     void removeTimetable(Timetable timetable);
     void removeProgram(String program);
 
     // Database connectivity
-    void connectToDatabase(String ip, String port, String userName, String password) throws DatabaseException;
+    void connectToDatabase(String ip, String port, String userName, String password, int synchronizationTimeMinutes) throws DatabaseException;
     void disconnectFromDatabase();
+    void fetchFromDatabase() throws InvalidConfigurationException;
+    void storeInDatabase();
 
     // Data export methods
     String getExportLocation();
     void export(String programName, ExportType type) throws IOException;
+    void export(String programName, int maxHour, int minHour, ExportType type) throws IOException;
+
+    void cleanup();
 }

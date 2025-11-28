@@ -3,9 +3,13 @@ package thesis.model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thesis.model.domain.InMemoryRepository;
+import thesis.model.domain.components.ClassUnit;
+import thesis.model.domain.components.ScheduledLesson;
 import thesis.model.domain.components.Timetable;
 import thesis.model.exceptions.InvalidConfigurationException;
 import thesis.model.solver.core.DefaultISGSolution;
+import thesis.model.solver.core.DefaultISGValue;
+import thesis.model.solver.core.DefaultISGVariable;
 import thesis.model.solver.initialsolutiongenerator.InitialSolutionGenerator;
 import thesis.model.solver.initialsolutiongenerator.MullerBasedSolutionGenerator;
 import thesis.model.solver.solutionoptimizer.HeuristicAlgorithm;
@@ -17,7 +21,12 @@ import java.lang.management.ThreadMXBean;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * This class is in charge of the creation and maintenance of the threads used by the system.
+ * The threads may be for the generation of solutions or the synchronization with the database.
+ */
 public class TaskManager {
     private static final Logger logger = LoggerFactory.getLogger(TaskManager.class);
 
@@ -28,13 +37,47 @@ public class TaskManager {
     private final Map<UUID, TaskInformation> taskInformationMap = new ConcurrentHashMap<>();
 
     private final ExecutorService threadPool = Executors.newFixedThreadPool(
-            Runtime.getRuntime().availableProcessors(),
+            2, //Runtime.getRuntime().availableProcessors(),
             new DaemonThreadFactory()
     );
+
+    private final ScheduledExecutorService synchronizationExecutorService = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> synchronizationTask;
+    private final AtomicInteger numGenerationTasks = new AtomicInteger(0);
+    private static final int BLOCK_SLEEP_TIME = 1000 * 60;
 
     public TaskManager(ModelInterface model) {
         this.model = model;
         bean.setThreadCpuTimeEnabled(true);
+    }
+
+    public void startSynchronizationTask(String ip, String port, int timeInMinutes) {
+        synchronizationTask = synchronizationExecutorService.scheduleAtFixedRate(() -> {
+            while(numGenerationTasks.get() != 0) {
+                try {
+                    Thread.sleep(BLOCK_SLEEP_TIME);
+                } catch (InterruptedException ignored) {}
+            }
+
+            if(Thread.interrupted()) return;
+
+            logger.info("Initiating Synchronization!");
+
+            try {
+                model.fetchFromDatabase();
+            } catch (Exception e) {
+                logger.error(e.getMessage());
+                throw new RuntimeException(e);
+            }
+
+            model.storeInDatabase();
+
+            logger.info("Synchronization Finished!");
+        }, 0, timeInMinutes, TimeUnit.MINUTES);
+    }
+
+    public void stopSynchronizationTask() {
+        synchronizationTask.cancel(true);
     }
 
     public void startGeneratingSolution(String programName, UUID progressUUID, double initialTemperature, double minTemperature, double coolingRate, int k) {
@@ -47,6 +90,19 @@ public class TaskManager {
 
         // Pool the generation task
         taskInformationMap.put(progressUUID, new TaskInformation(data, bean));
+        generatedTimetables.put(progressUUID, threadPool.submit(() -> generateTimetable(progressUUID, initialTemperature, minTemperature, coolingRate, k)));
+    }
+
+    public void startReoptimizingSolution(Timetable timetable, UUID progressUUID, double initialTemperature, double minTemperature, double coolingRate, int k) {
+        InMemoryRepository data = model.getDataRepository(timetable.getProgramName());
+
+        // Should never happen
+        if(data == null) {
+            throw new RuntimeException("The program name provided has no data");
+        }
+
+        // Pool the reoptimization task
+        taskInformationMap.put(progressUUID, new TaskInformation(timetable, data, bean));
         generatedTimetables.put(progressUUID, threadPool.submit(() -> generateTimetable(progressUUID, initialTemperature, minTemperature, coolingRate, k)));
     }
 
@@ -87,10 +143,17 @@ public class TaskManager {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         synchronizationMap.put(progressUUID, countDownLatch);
 
+        // Increment the number of generation tasks
+        // (the synchronization with the db can only be done safely if there are no generation tasks)
+        int numGen = numGenerationTasks.incrementAndGet();
+        logger.info("Number of generations in progress (after starting a new generation) = {}", numGen);
+
         Timetable solution;
         try {
             solution = taskInformation.startGeneration(initialTemperature, minTemperature, coolingRate, k);
         } catch (InterruptedException e) {
+            numGen = numGenerationTasks.decrementAndGet();
+            logger.info("Number of generations in progress (after a generation ended in an error) = {}", numGen);
             return null;
         }
 
@@ -99,19 +162,23 @@ public class TaskManager {
             synchronizationMap.remove(progressUUID);
             generatedTimetables.remove(progressUUID);
             taskInformationMap.remove(progressUUID);
+            numGen = numGenerationTasks.decrementAndGet();
+            logger.info("Number of generations in progress (after a generation was canceled) = {}", numGen);
             return null;
         }
 
         // Only locks if the final solution was generated
         try {
             countDownLatch.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        } catch (InterruptedException ignored) {}
 
         // Clear any leftover data
         generatedTimetables.remove(progressUUID);
         taskInformationMap.remove(progressUUID);
+
+        // Decrement the number of generation tasks
+        numGen = numGenerationTasks.decrementAndGet();
+        logger.info("Number of generations in progress (after a generation finished) = {}", numGen);
 
         return solution;
     }
@@ -124,27 +191,60 @@ public class TaskManager {
         }
     }
 
+    public void cleanup() {
+        threadPool.shutdown();
+        synchronizationExecutorService.shutdown();
+    }
+
     private static class TaskInformation {
         private final ThreadMXBean bean;
         private final InMemoryRepository data;
         private final InitialSolutionGenerator<DefaultISGSolution> initialSolutionGenerator;
         private HeuristicAlgorithm<Timetable> heuristicAlgorithm;
+        private final DefaultISGSolution solutionToReoptimize;
+
+        public TaskInformation(Timetable timetable, InMemoryRepository data, ThreadMXBean bean) {
+            this.data = data;
+            this.bean = bean;
+            initialSolutionGenerator = null;
+
+            solutionToReoptimize = new DefaultISGSolution(data);
+            for(ScheduledLesson lesson : timetable.getScheduledLessonList()) {
+                ClassUnit cls = data.getClassUnit(lesson.getClassId());
+                DefaultISGVariable variable = new DefaultISGVariable(cls);
+                DefaultISGValue value = new DefaultISGValue(variable, lesson);
+
+                variable.setSolution(solutionToReoptimize);
+                solutionToReoptimize.addUnassignedVariable(variable);
+                variable.assign(value);
+            }
+        }
 
         public TaskInformation(InMemoryRepository data, ThreadMXBean bean) {
             this.data = data;
             this.bean = bean;
+            this.solutionToReoptimize = null;
             initialSolutionGenerator = new MullerBasedSolutionGenerator(data);
         }
 
         public double getGenerationProgress() {
-            double progress = initialSolutionGenerator.getProgress();
+            int numTasks;
+            double progress = 0;
+
+            if(initialSolutionGenerator != null) {
+                progress = initialSolutionGenerator.getProgress();
+                numTasks = 2;
+            } else {
+                // Only the reoptimization task
+                numTasks = 1;
+            }
 
             if(heuristicAlgorithm != null) {
                 progress += heuristicAlgorithm.getProgress();
             }
 
-            // The progress must be divided by 2 as the tasks have the same weight
-            progress = progress / 2.0;
+            // The progress must be divided by the number of tasks as they have the same weight
+            progress = progress / numTasks;
 
             // Fix the progress value (the usage of double can introduce error)
             // the progress is multiplied by 1000 for the final result to be a percentage with
@@ -163,14 +263,19 @@ public class TaskManager {
             long id = Thread.currentThread().getId();
             long startCpu = bean.getThreadCpuTime(id); // Start time in nanoseconds
 
-            DefaultISGSolution solution = initialSolutionGenerator.generate();
+            DefaultISGSolution solution;
+            if(solutionToReoptimize == null) {
+                solution = initialSolutionGenerator.generate();
 
-            // Generation was canceled
-            if(solution == null) {
-                return null;
+                // Generation was canceled
+                if (solution == null) {
+                    return null;
+                }
+
+                logger.info("Thread {} finished generating the initial solution and it took {} seconds", id, getTimeElapsed(bean.getThreadCpuTime(id), startCpu));
+            } else {
+                solution = solutionToReoptimize;
             }
-
-            logger.info("Thread {} finished generating the initial solution and it took {} seconds", id, getTimeElapsed(bean.getThreadCpuTime(id), startCpu));
 
             long startOpt = bean.getThreadCpuTime(id); // Start time in nanoseconds
             heuristicAlgorithm = new SimulatedAnnealing(solution, initialTemperature, minTemperature, coolingRate, k);

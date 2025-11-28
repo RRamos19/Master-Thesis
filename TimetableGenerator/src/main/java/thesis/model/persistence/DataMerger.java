@@ -3,8 +3,8 @@ package thesis.model.persistence;
 import org.hibernate.Session;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.*;
-import thesis.model.persistence.repository.entities.*;
-import thesis.model.persistence.repository.entities.utils.*;
+import thesis.model.persistence.entities.*;
+import thesis.model.persistence.entities.utils.*;
 
 import java.util.*;
 import java.util.function.BiConsumer;

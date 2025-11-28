@@ -12,6 +12,7 @@ import thesis.model.exceptions.ParsingException;
 import thesis.model.exporter.DataExporter;
 import thesis.model.parser.InputFileReader;
 import thesis.model.parser.XmlResult;
+import thesis.model.persistence.DBHibernateManager;
 import thesis.model.persistence.DBManager;
 
 import java.io.File;
@@ -21,20 +22,19 @@ import java.util.concurrent.*;
 
 public class Model implements ModelInterface {
     private static final Logger logger = LoggerFactory.getLogger(Model.class);
+    private static final String DB_NAME = "timetabling_db";
 
     private ControllerInterface controller;
     private final DataExporter dataExporter;
     private final InputFileReader inputFileReader;
     private final Map<String, InMemoryRepository> dataRepositoryHashMap = new ConcurrentHashMap<>();                            // ProgramName : Corresponding DataRepository
     private final TaskManager taskManager;
-    private final DBConnectionCache dbConnectionCache;
     private DBManager<InMemoryRepository> dbManager;
 
     public Model(InputFileReader inputReader, DataExporter dataExporter) {
         this.inputFileReader = inputReader;
         this.dataExporter = dataExporter;
         this.taskManager = new TaskManager(this);
-        this.dbConnectionCache = new DBConnectionCache();
     }
 
     @Override
@@ -43,41 +43,50 @@ public class Model implements ModelInterface {
     }
 
     @Override
-    public void connectToDatabase(String ip, String port, String userName, String password) throws DatabaseException {
-        dbManager = dbConnectionCache.connectToDatabase(ip, port, userName, password);
-
-        //TODO: just for testing
-        try {
-            fetchFromDatabase();
-        } catch (Exception e) {
-            dbConnectionCache.clearCache(ip, port);
-            logger.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
-
-        storeInDatabase();
+    public void connectToDatabase(String ip, String port, String username, String password, int synchronizationTimeMinutes) throws DatabaseException {
+        dbManager = new DBHibernateManager(DB_NAME, ip, port, username, password);
+        taskManager.startSynchronizationTask(ip, port, synchronizationTimeMinutes);
     }
 
-    private void fetchFromDatabase() throws InvalidConfigurationException {
+    @Override
+    public void fetchFromDatabase() throws InvalidConfigurationException {
         Collection<InMemoryRepository> inMemoryRepositories = dbManager.fetchData(dataRepositoryHashMap);
 
+        Set<String> programConflicts = new HashSet<>();
         for(InMemoryRepository data : inMemoryRepositories) {
-            importRepository(data);
+            if(dataRepositoryHashMap.containsKey(data.getProgramName())) {
+                programConflicts.add(data.getProgramName());
+            }
+        }
+
+        //TODO: change the confirmation
+
+        boolean overwrite = false;
+        if(!programConflicts.isEmpty()) {
+            overwrite = controller.showConfirmationAlert("When the fetching of data from the database was done, there were conflicts on the following programs: " + programConflicts + ". Overwrite ?");
+        }
+
+        for(InMemoryRepository data : inMemoryRepositories) {
+            // Only import if there are no conflicts, or, if there are, only overwrite if the user confirms.
+            if(!programConflicts.contains(data.getProgramName()) ||
+            programConflicts.contains(data.getProgramName()) && overwrite) {
+                importRepository(data);
+            }
         }
 
         controller.updateStoredPrograms();
         controller.updateTableView();
     }
 
-    private void storeInDatabase() {
-        //TODO: to be implemented
-        //TODO: verify the last update timestamp
+    @Override
+    public void storeInDatabase() {
         dbManager.storeData(dataRepositoryHashMap);
     }
 
     @Override
     public void disconnectFromDatabase() {
-        //TODO: remove auto fetch from database
+        taskManager.stopSynchronizationTask();
+        dbManager = null;
     }
 
     @Override
@@ -222,6 +231,11 @@ public class Model implements ModelInterface {
     }
 
     @Override
+    public void startReoptimizingSolution(Timetable timetable, UUID progressUUID, double initialTemperature, double minTemperature, double coolingRate, int k) {
+        taskManager.startReoptimizingSolution(timetable, progressUUID, initialTemperature, minTemperature, coolingRate, k);
+    }
+
+    @Override
     public void export(String programName, ExportType type) throws IOException {
         InMemoryRepository data = dataRepositoryHashMap.get(programName);
         if (data == null) {
@@ -232,18 +246,38 @@ public class Model implements ModelInterface {
             case CSV:
                 dataExporter.exportToCSV(data);
                 break;
-            case PDF:
-                dataExporter.exportToPDF(data);
-                break;
-            case PNG:
-                dataExporter.exportToPNG(data);
-                break;
             case DATA_ITC:
                 dataExporter.exportDataToITC(data);
                 break;
             case SOLUTIONS_ITC:
                 dataExporter.exportSolutionsToITC(data);
                 break;
+            default:
+                throw new IllegalArgumentException("The export type provided couldn't be processed");
         }
+    }
+
+    @Override
+    public void export(String programName, int maxHour, int minHour, ExportType type) throws IOException {
+        InMemoryRepository data = dataRepositoryHashMap.get(programName);
+        if (data == null) {
+            throw new RuntimeException("The program name provided has no corresponding data");
+        }
+
+        switch (type) {
+            case PDF:
+                dataExporter.exportToPDF(data, maxHour, minHour);
+                break;
+            case PNG:
+                dataExporter.exportToPNG(data, maxHour, minHour);
+                break;
+            default:
+                throw new IllegalArgumentException("The export type provided couldn't be processed");
+        }
+    }
+
+    @Override
+    public void cleanup() {
+        taskManager.cleanup();
     }
 }

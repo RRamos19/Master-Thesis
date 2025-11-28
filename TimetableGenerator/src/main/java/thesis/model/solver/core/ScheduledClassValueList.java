@@ -13,12 +13,28 @@ public class ScheduledClassValueList implements ISGValueList<DefaultISGValue> {
     private final InMemoryRepository dataModel;
     private final DefaultISGVariable selectedVariable;
 
+    ClassUnit classUnit;
+    String classId;
+    List<String> roomList;
+    List<Time> times;
+    List<Integer> teachers;
+
     public ScheduledClassValueList(InMemoryRepository dataModel, DefaultISGVariable selectedVariable) {
         if (selectedVariable == null) {
             throw new IllegalStateException("ScheduledClassValueList: The selected variable shouldn't be null");
         }
         this.dataModel = dataModel;
         this.selectedVariable = selectedVariable;
+
+        this.classUnit = selectedVariable.variable();
+        this.classId = classUnit.getClassId();
+        this.roomList = new ArrayList<>(classUnit.getRoomIds());
+        if (this.roomList.isEmpty()) {
+            this.roomList.add(null);
+        }
+
+        this.times = new ArrayList<>(classUnit.getTimeSet());
+        this.teachers = new ArrayList<>(classUnit.getTeacherIdList());
     }
 
     @Override
@@ -43,15 +59,6 @@ public class ScheduledClassValueList implements ISGValueList<DefaultISGValue> {
 
     @Override
     public Iterator<DefaultISGValue> iterator() {
-        ClassUnit classUnit = selectedVariable.variable();
-        String classId = classUnit.getClassId();
-        List<String> roomList = new ArrayList<>(classUnit.getRoomIds());
-        if (roomList.isEmpty()) {
-            roomList.add(null);
-        }
-        List<Time> times = new ArrayList<>(classUnit.getTimeSet());
-        List<Integer> teachers = new ArrayList<>(classUnit.getTeacherIdList());
-
         return new Iterator<>() {
             private int roomIndex = 0;
             private int timeIndex = 0;

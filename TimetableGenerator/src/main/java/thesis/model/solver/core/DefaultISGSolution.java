@@ -10,6 +10,7 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
     private final InMemoryRepository dataModel;
     private final Collection<DefaultISGVariable> variableCollection = new HashSet<>();
     private final Collection<DefaultISGVariable> unassignedVariableCollection = ConcurrentHashMap.newKeySet();
+
     private List<DefaultISGVariable> bestUnassignedVariableCollection;
     private List<DefaultISGVariable> bestAssignedVariableCollection;
     private Integer bestValue;
@@ -39,20 +40,19 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
             this.unassignedVariableCollection.add(new DefaultISGVariable(this, var));
         });
 
-        // If there was a saveBest copy the best assigned and unassigned variables
-        if(other.bestUnassignedVariableCollection != null) {
-            this.bestUnassignedVariableCollection = new ArrayList<>();
-
-            other.bestUnassignedVariableCollection.forEach((var) -> {
-                this.bestUnassignedVariableCollection.add(new DefaultISGVariable(this, var));
-            });
-        }
-
+        // If there was a saveBest copy the best assigned and best unassigned variables
         if(other.bestAssignedVariableCollection != null) {
             this.bestAssignedVariableCollection = new ArrayList<>();
 
             other.bestAssignedVariableCollection.forEach((var) -> {
                 this.bestAssignedVariableCollection.add(new DefaultISGVariable(this, var));
+            });
+        }
+        if(other.bestUnassignedVariableCollection != null) {
+            this.bestUnassignedVariableCollection = new ArrayList<>();
+
+            other.bestUnassignedVariableCollection.forEach((var) -> {
+                this.bestUnassignedVariableCollection.add(new DefaultISGVariable(this, var));
             });
         }
 
@@ -136,7 +136,7 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
 
     @Override
     public int getTotalValue() {
-        return solution().cost();
+        return solution().cost().getTotalPenalty();
     }
 
     public InMemoryRepository getDataModel() {
@@ -146,6 +146,11 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
     @Override
     public void addUnassignedVariable(DefaultISGVariable var) {
         unassignedVariableCollection.add(var);
+    }
+
+    @Override
+    public void addAssignedVariable(DefaultISGVariable var) {
+        variableCollection.add(var);
     }
 
     @Override
@@ -171,8 +176,9 @@ public class DefaultISGSolution implements ISGSolution<InMemoryRepository, Defau
         // Add the constraint conflicts
         timetable.addTemporaryLesson(valueLesson);
         for (Constraint constraint : cls.getConstraintList()) {
-            if(constraint.getRequired() && constraint.computePenalties(timetable) != 0) {
-                conflicts.addAll(constraint.EvaluateConflictingClasses(timetable));
+            ConstraintResults constraintResults = constraint.computePenalties(timetable);
+            if(constraint.getRequired() && constraintResults.penalty != 0) {
+                conflicts.addAll(constraintResults.conflictingClasses);
             }
         }
         timetable.removeTemporaryLesson(valueLesson);

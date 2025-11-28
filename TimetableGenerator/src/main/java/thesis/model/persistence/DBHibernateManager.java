@@ -13,9 +13,9 @@ import thesis.model.domain.components.constraints.ConstraintFactory;
 import thesis.model.exceptions.CheckedIllegalArgumentException;
 import thesis.model.exceptions.DatabaseException;
 import thesis.model.exceptions.InvalidConfigurationException;
-import thesis.model.persistence.repository.entities.*;
-import thesis.model.persistence.repository.entities.utils.RoomEntityFactory;
-import thesis.model.persistence.repository.entities.utils.TeacherEntityFactory;
+import thesis.model.persistence.entities.*;
+import thesis.model.persistence.entities.utils.RoomEntityFactory;
+import thesis.model.persistence.entities.utils.TeacherEntityFactory;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -368,7 +368,7 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
 
         // Add the timetables, scheduled lessons and respective teachers
         for(TimetableEntity timetableEntity : programEntity.getTimetableEntitySet()) {
-            Timetable timetable = new Timetable(data.getProgramName());
+            Timetable timetable = new Timetable(timetableEntity.getId(), data.getProgramName(), timetableEntity.getCreationDate());
 
             for(ScheduledLessonEntity scheduledLessonEntity : timetableEntity.getScheduledLessonEntityList()) {
                 TimeBlockEntity timeBlockEntity = scheduledLessonEntity.getTimeBlockEntity();
