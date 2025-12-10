@@ -1,7 +1,6 @@
 package thesis.controller.managers;
 
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -48,7 +47,6 @@ public class WindowManager {
         }
 
         exceptionMessageWindow.setMessages(e);
-
         return exceptionMessageWindow.getExceptionAlert();
     }
 

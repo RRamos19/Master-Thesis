@@ -31,14 +31,19 @@ public class Timetable implements XmlResult {
     private boolean updateCost = true;
     private PenaltySum cost;
 
-    public Timetable(UUID id, String programName, LocalDateTime dateOfCreation) {
+    public Timetable(UUID id, String programName, LocalDateTime dateOfCreation, long runtime) {
         this.timetableId = Objects.requireNonNullElseGet(id, UUID::randomUUID);
         this.programName = programName;
         this.dateOfCreation = dateOfCreation;
+        this.runtime = runtime;
+    }
+
+    public Timetable(UUID id, String programName, LocalDateTime dateOfCreation) {
+        this(id, programName, dateOfCreation, 0);
     }
 
     public Timetable(String programName, LocalDateTime dateOfCreation) {
-        this(null, programName, dateOfCreation);
+        this(UUID.randomUUID(), programName, dateOfCreation, 0);
     }
 
     public Timetable(String programName) {

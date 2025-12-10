@@ -1,14 +1,12 @@
 package thesis.model;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thesis.controller.ControllerInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.*;
-import thesis.model.exceptions.CheckedIllegalStateException;
-import thesis.model.exceptions.DatabaseException;
-import thesis.model.exceptions.InvalidConfigurationException;
-import thesis.model.exceptions.ParsingException;
+import thesis.model.exceptions.*;
 import thesis.model.exporter.DataExporter;
 import thesis.model.parser.InputFileReader;
 import thesis.model.parser.XmlResult;
@@ -37,6 +35,10 @@ public class Model implements ModelInterface {
         this.taskManager = new TaskManager(this);
     }
 
+    public ControllerInterface getController() {
+        return controller;
+    }
+
     @Override
     public void setController(ControllerInterface controller) {
         this.controller = controller;
@@ -45,11 +47,11 @@ public class Model implements ModelInterface {
     @Override
     public void connectToDatabase(String ip, String port, String username, String password, int synchronizationTimeMinutes) throws DatabaseException {
         dbManager = new DBHibernateManager(DB_NAME, ip, port, username, password);
-        taskManager.startSynchronizationTask(ip, port, synchronizationTimeMinutes);
+        taskManager.startSynchronizationTask(synchronizationTimeMinutes);
     }
 
     @Override
-    public void fetchFromDatabase() throws InvalidConfigurationException {
+    public void fetchDataFromDatabase() throws InvalidConfigurationException {
         Collection<InMemoryRepository> inMemoryRepositories = dbManager.fetchData(dataRepositoryHashMap);
 
         Set<String> programConflicts = new HashSet<>();
@@ -61,15 +63,26 @@ public class Model implements ModelInterface {
 
         //TODO: change the confirmation
 
-        boolean overwrite = false;
         if(!programConflicts.isEmpty()) {
-            overwrite = controller.showConfirmationAlert("When the fetching of data from the database was done, there were conflicts on the following programs: " + programConflicts + ". Overwrite ?");
-        }
+            controller.showConfirmationAlert("When the fetching of data from the database was done, there were conflicts on the following programs: " + programConflicts + ". Overwrite ?", (confirmation) -> {
+                for(InMemoryRepository data : inMemoryRepositories) {
+                    // Only import if there are no conflicts, or, if there are, only overwrite if the user confirms.
+                    if(!programConflicts.contains(data.getProgramName()) ||
+                        programConflicts.contains(data.getProgramName()) && confirmation) {
+                        try {
+                            importRepository(data);
+                        } catch (InvalidConfigurationException e) {
+                            logger.error("Error ocurred while trying to import data!", e);
+                            controller.showExceptionMessage(e);
+                        }
+                    }
+                }
 
-        for(InMemoryRepository data : inMemoryRepositories) {
-            // Only import if there are no conflicts, or, if there are, only overwrite if the user confirms.
-            if(!programConflicts.contains(data.getProgramName()) ||
-            programConflicts.contains(data.getProgramName()) && overwrite) {
+                controller.updateStoredPrograms();
+                controller.updateTableView();
+            });
+        } else {
+            for(InMemoryRepository data : inMemoryRepositories) {
                 importRepository(data);
             }
         }
@@ -92,11 +105,18 @@ public class Model implements ModelInterface {
     @Override
     public void removeProgram(String program) {
         dataRepositoryHashMap.remove(program);
+
+        // If there is a connection to a database remove the program from it as well
+        if(dbManager != null) {
+            controller.showConfirmationAlert("Remove the program from the database too ?", (confirmation) -> {
+                if(confirmation) dbManager.removeProgram(program);
+            });
+        }
     }
 
     @Override
-    public XmlResult readFile(File file) throws ParsingException, InvalidConfigurationException {
-        return inputFileReader.readXmlFile(file);
+    public XmlResult readFile(File file) throws ParsingException, InvalidConfigurationException, IOException, CheckedIllegalArgumentException {
+        return inputFileReader.readFile(file);
     }
 
     @Override
@@ -227,6 +247,13 @@ public class Model implements ModelInterface {
     public void removeTimetable(Timetable timetable) {
         InMemoryRepository data = dataRepositoryHashMap.get(timetable.getProgramName());
 
+        // If there is a connection to a database remove the solution from it as well
+        if(dbManager != null) {
+            controller.showConfirmationAlert("Remove the solution from the database too ?", (confirmation) -> {
+                if(confirmation) dbManager.removeTimetable(timetable.getProgramName(), timetable.getTimetableId());
+            });
+        }
+
         data.removeTimetable(timetable);
     }
 
@@ -236,15 +263,15 @@ public class Model implements ModelInterface {
     }
 
     @Override
-    public void export(String programName, ExportType type) throws IOException {
+    public void export(String programName, ExportType type) throws IOException, InvalidFormatException {
         InMemoryRepository data = dataRepositoryHashMap.get(programName);
         if (data == null) {
             throw new RuntimeException("The program name provided has no corresponding data");
         }
 
         switch (type) {
-            case CSV:
-                dataExporter.exportDataToCSV(data);
+            case XLSX:
+                dataExporter.exportDataToXLSX(data);
                 break;
             case DATA_ITC:
                 dataExporter.exportDataToITC(data);

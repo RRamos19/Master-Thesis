@@ -12,7 +12,7 @@ public class RoomEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(length = 6, unique = true, nullable = false)
+    @Column(unique = true, nullable = false)
     private String name;
 
     @OneToMany(mappedBy = "roomEntity1", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

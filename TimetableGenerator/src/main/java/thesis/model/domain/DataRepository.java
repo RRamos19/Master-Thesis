@@ -14,7 +14,7 @@ public class DataRepository implements InMemoryRepository {
     private final Set<Constraint> constraintSet = new HashSet<>();
     private final Map<String, Room> roomMap = new HashMap<>();
     private final Map<Integer, Teacher> teacherMap = new HashMap<>();
-    private final List<Timetable> timetableList = new ArrayList<>();
+    private final Map<UUID, Timetable> timetableMap = new HashMap<>();
     private LocalDateTime lastUpdatedAt;
 
     public DataRepository() {}
@@ -139,12 +139,12 @@ public class DataRepository implements InMemoryRepository {
     @Override
     public void addTimetable(Timetable timetable) throws InvalidConfigurationException {
         timetable.bindDataModel(this);
-        timetableList.add(timetable);
+        timetableMap.put(timetable.getTimetableId(), timetable);
 
         try {
             verifyValidity();
         } catch (InvalidConfigurationException e) {
-            timetableList.remove(timetable);
+            timetableMap.remove(timetable.getTimetableId());
             throw e;
         }
 
@@ -175,7 +175,7 @@ public class DataRepository implements InMemoryRepository {
 
     @Override
     public void removeTimetable(Timetable timetable) {
-        timetableList.remove(timetable);
+        timetableMap.remove(timetable.getTimetableId());
     }
 
     @Override
@@ -185,7 +185,12 @@ public class DataRepository implements InMemoryRepository {
 
     @Override
     public Collection<Timetable> getTimetableList() {
-        return new ArrayList<>(timetableList);
+        return new ArrayList<>(timetableMap.values());
+    }
+
+    @Override
+    public Timetable getTimetable(UUID id) {
+        return timetableMap.get(id);
     }
 
     @Override
@@ -320,7 +325,7 @@ public class DataRepository implements InMemoryRepository {
             }
         }
 
-        for(Timetable timetable : timetableList) {
+        for(Timetable timetable : timetableMap.values()) {
             for(ScheduledLesson lesson : timetable.getScheduledLessonList()) {
                 ClassUnit cls = getClassUnit(lesson.getClassId());
 
@@ -361,6 +366,6 @@ public class DataRepository implements InMemoryRepository {
         return String.format("nrDays = %d, slotsPerDay = %d, nrWeeks = %d", timetableConfiguration.getNumDays(), timetableConfiguration.getSlotsPerDay(), timetableConfiguration.getNumWeeks()) + "\n" +
                 String.format("timeWeight = %d, roomWeight = %d, distributionWeight = %d", timetableConfiguration.getTimeWeight(), timetableConfiguration.getRoomWeight(), timetableConfiguration.getDistribWeight()) + "\n" +
                 String.format("nrCourses = %d, nrConfigs = %d, nrSubparts = %d, nrClasses = %d, nrTeachers = %d, nrTimetables = %d, nrRooms = %d, nrDist = %d",
-                        courseMap.size(), nrConfigs, nrSubparts, nrClasses, teacherMap.size(), timetableList.size(), roomMap.size(), constraintSet.size());
+                        courseMap.size(), nrConfigs, nrSubparts, nrClasses, teacherMap.size(), timetableMap.size(), roomMap.size(), constraintSet.size());
     }
 }

@@ -9,6 +9,8 @@ import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.Timetable;
 import thesis.view.ViewInterface;
 
+import java.util.function.Consumer;
+
 public interface ControllerInterface {
     // Setters
     void setModel(ModelInterface model);
@@ -20,7 +22,7 @@ public interface ControllerInterface {
     void importDataITCEvent();
     void configMenuEvent();
     void exportDataITCEvent();
-    void exportDataCSVEvent();
+    void exportDataXLSXEvent();
     void exportSolutionITCEvent();
     void exportSolutionPNGEvent();
     void exportSolutionPDFEvent();
@@ -46,7 +48,7 @@ public interface ControllerInterface {
     // Show alerts to user
     void showInformationAlert(String message);
     void showErrorAlert(String message);
-    boolean showConfirmationAlert(String message);
+    void showConfirmationAlert(String message, Consumer<Boolean> callback);
     void showExceptionMessage(Throwable e);
 
     // Initialize and cleanup the controller

@@ -2,6 +2,7 @@ package thesis.model;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thesis.controller.ControllerInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.ClassUnit;
 import thesis.model.domain.components.ScheduledLesson;
@@ -51,33 +52,47 @@ public class TaskManager {
         bean.setThreadCpuTimeEnabled(true);
     }
 
-    public void startSynchronizationTask(String ip, String port, int timeInMinutes) {
+    public void startSynchronizationTask(int timeInMinutes) {
+        logger.info("Starting Auto Synchronization Task!");
+
         synchronizationTask = synchronizationExecutorService.scheduleAtFixedRate(() -> {
-            while(numGenerationTasks.get() != 0) {
-                try {
-                    Thread.sleep(BLOCK_SLEEP_TIME);
-                } catch (InterruptedException ignored) {}
-            }
-
-            if(Thread.interrupted()) return;
-
-            logger.info("Initiating Synchronization!");
-
             try {
-                model.fetchFromDatabase();
+                while (numGenerationTasks.get() != 0) {
+                    try {
+                        Thread.sleep(BLOCK_SLEEP_TIME);
+                    } catch (InterruptedException ignored) {}
+                }
+
+                if (Thread.interrupted()) return;
+
+                logger.info("Initiating Synchronization!");
+
+                try {
+                    model.fetchDataFromDatabase();
+                } catch (Exception e) {
+                    logger.error(e.getMessage());
+                    ControllerInterface controller = model.getController();
+                    if (controller != null) {
+                        controller.showExceptionMessage(e);
+                    }
+                }
+
+                model.storeInDatabase();
+
+                logger.info("Synchronization Finished!");
             } catch (Exception e) {
                 logger.error(e.getMessage());
-                throw new RuntimeException(e);
+                ControllerInterface controller = model.getController();
+                if (controller != null) {
+                    controller.showExceptionMessage(e);
+                }
             }
-
-            model.storeInDatabase();
-
-            logger.info("Synchronization Finished!");
         }, 0, timeInMinutes, TimeUnit.MINUTES);
     }
 
     public void stopSynchronizationTask() {
         synchronizationTask.cancel(true);
+        logger.info("Synchronization Cancelled!");
     }
 
     public void startGeneratingSolution(String programName, UUID progressUUID, double initialTemperature, double minTemperature, double coolingRate, int k) {
@@ -86,6 +101,9 @@ public class TaskManager {
         // Should never happen
         if(data == null) {
             throw new RuntimeException("The program name provided has no data");
+        }
+        if(data.getRooms().isEmpty()) {
+            throw new RuntimeException("There are no rooms stored in this problem, impossible to generate a timetable");
         }
 
         // Pool the generation task
@@ -151,8 +169,9 @@ public class TaskManager {
         Timetable solution;
         try {
             solution = taskInformation.startGeneration(initialTemperature, minTemperature, coolingRate, k);
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             numGen = numGenerationTasks.decrementAndGet();
+            logger.error(e.getMessage());
             logger.info("Number of generations in progress (after a generation ended in an error) = {}", numGen);
             return null;
         }

@@ -3,15 +3,20 @@ package thesis.controller.managers;
 import javafx.concurrent.Task;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import thesis.controller.ControllerInterface;
 import thesis.model.ModelInterface;
 import thesis.controller.managers.components.ProgressBarUnit;
+import thesis.model.exporter.TimetableDataExporter;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class ProgressBarManager {
+    private static final Logger logger = LoggerFactory.getLogger(ProgressBarManager.class);
+
     private static final int UPDATE_WAIT = 1000;
     private final ControllerInterface controller;
     private final ModelInterface model;
@@ -71,6 +76,7 @@ public class ProgressBarManager {
         };
 
         task.setOnFailed(e -> {
+            logger.error(e.getSource().getTitle(), e.getSource().getException());
             controller.showExceptionMessage(e.getSource().getException());
             stopProgressBar(progressUUID);
             model.cancelTimetableGeneration(progressUUID);

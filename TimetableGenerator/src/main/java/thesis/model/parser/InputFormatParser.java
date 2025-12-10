@@ -1,5 +1,11 @@
 package thesis.model.parser;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import thesis.model.XLSXFormat;
 import thesis.model.domain.DataRepository;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.*;
@@ -20,12 +26,9 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class ITCFormatParser implements InputFileReader {
+public class InputFormatParser implements InputFileReader {
     private static final DateTimeFormatter timeStampUTC12Formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     // Principal Tags
@@ -93,6 +96,313 @@ public class ITCFormatParser implements InputFileReader {
         }
     }
 
+    private String cellString(DataFormatter formatter, Row row, int col) {
+        String result = formatter.formatCellValue(row.getCell(col));
+        return result.isEmpty() ? null : result;
+    }
+
+    private int cellInt(DataFormatter formatter, Row row, int col) {
+        return Integer.parseInt(formatter.formatCellValue(row.getCell(col)));
+    }
+
+    private long cellLong(DataFormatter formatter, Row row, int col) {
+        return Long.parseLong(formatter.formatCellValue(row.getCell(col)));
+    }
+
+    private boolean cellBool(DataFormatter formatter, Row row, int col) {
+        return Boolean.parseBoolean(formatter.formatCellValue(row.getCell(col)));
+    }
+
+    private InMemoryRepository readXLSXFile(File file) throws IOException, ParsingException, CheckedIllegalArgumentException, InvalidConfigurationException {
+        DataFormatter formatter = new DataFormatter();
+        try(XSSFWorkbook workbook = new XSSFWorkbook(file)) {
+            InMemoryRepository repository = new DataRepository();
+
+            for (XLSXFormat.SHEET_NAMES sheetName : XLSXFormat.FORMAT_PER_SHEET.keySet()) {
+                XSSFSheet sheet = workbook.getSheet(sheetName.label);
+                if (sheet == null) continue;
+
+                // Ignore header
+                int first = sheet.getFirstRowNum() + 1;
+                int last  = sheet.getLastRowNum();
+
+                switch (sheetName) {
+                    case Configuration:
+                        for(int i = first; i <= last; i++) {
+                            Row row = sheet.getRow(i);
+                            String programName = cellString(formatter, row, 0);
+                            short numDays = (short) cellInt(formatter, row, 1);
+                            short numSlots = (short) cellInt(formatter, row, 2);
+                            int numWeeks = cellInt(formatter, row, 3);
+                            short timeWeight = (short) cellInt(formatter, row, 4);
+                            short roomWeight = (short) cellInt(formatter, row, 5);
+                            short distributionWeight = (short) cellInt(formatter, row, 6);
+
+                            repository.setProgramName(programName);
+                            repository.setConfiguration(numDays, numWeeks, numSlots);
+                            repository.setOptimizationParameters(timeWeight, roomWeight, distributionWeight);
+                        }
+                        break;
+                    case Classes:
+                        Map<String, Config> configMap = new HashMap<>();
+                        Map<String, Subpart> subpartMap = new HashMap<>();
+                        for(int i = first; i <= last; i++) {
+                            Row row = sheet.getRow(i);
+                            String courseId = cellString(formatter, row, 0);
+                            String configId = cellString(formatter, row, 1);
+                            String subpartId = cellString(formatter, row, 2);
+                            String classUnitId = cellString(formatter, row, 3);
+                            String parentClassUnitId = cellString(formatter, row, 4);
+
+                            Course course = repository.getCourse(courseId);
+                            if(course == null) {
+                                course = new Course(courseId);
+                                repository.addCourse(course);
+                            }
+
+                            Config config = configMap.get(configId);
+                            if(config == null) {
+                                config = new Config(configId);
+                                configMap.put(configId, config);
+                                course.addConfig(config);
+                            }
+
+                            Subpart subpart = subpartMap.get(subpartId);
+                            if(subpart == null) {
+                                subpart = new Subpart(subpartId);
+                                subpartMap.put(subpartId, subpart);
+                                config.addSubpart(subpart);
+                            }
+
+                            ClassUnit cls = new ClassUnit(classUnitId);
+                            cls.setParentClassId(parentClassUnitId);
+                            subpart.addClassUnit(cls);
+
+                            repository.addClassUnit(cls);
+                        }
+
+                        break;
+                    case Class_Times:
+                        for(int i = first; i <= last; i++) {
+                            Row row = sheet.getRow(i);
+                            String classUnitId = cellString(formatter, row, 0);
+                            short startSlot = (short) cellInt(formatter, row, 1);
+                            short length = (short) cellInt(formatter, row, 2);
+                            short days = (short) cellInt(formatter, row, 3);
+                            int weeks = cellInt(formatter, row, 4);
+                            int penalty = cellInt(formatter, row, 5);
+
+                            ClassUnit cls = repository.getClassUnit(classUnitId);
+                            if(cls == null) {
+                                throw new ParsingException("Class Unit " + classUnitId + " found in class times wasn't defined as a class");
+                            }
+                            cls.addClassTime(days, weeks, startSlot, length, penalty);
+                        }
+                        break;
+                    case Class_Rooms:
+                        for(int i = first; i <= last; i++) {
+                            Row row = sheet.getRow(i);
+                            String classUnitId = cellString(formatter, row, 0);
+                            String roomId = cellString(formatter, row, 1);
+                            int penalty = cellInt(formatter, row, 2);
+
+                            ClassUnit cls = repository.getClassUnit(classUnitId);
+                            if(cls == null) {
+                                throw new ParsingException("Class Unit " + classUnitId + " found in class rooms wasn't defined as a class");
+                            }
+                            cls.addRoom(roomId, penalty);
+                        }
+                        break;
+                    case Class_Teachers:
+                        for(int i = first; i <= last; i++) {
+                            Row row = sheet.getRow(i);
+                            String classUnitId = cellString(formatter, row, 0);
+                            int teacherId = cellInt(formatter, row, 1);
+
+                            ClassUnit cls = repository.getClassUnit(classUnitId);
+                            if(cls == null) {
+                                throw new ParsingException("Class Unit " + classUnitId + " found in class teachers wasn't defined as a class");
+                            }
+                            Teacher teacher = repository.getTeacher(teacherId);
+                            if(teacher == null) {
+                                throw new ParsingException("Teacher with id " + teacherId + " found in class teachers wasn't defined as a Teacher");
+                            }
+
+                            cls.addTeacher(teacherId);
+                            teacher.addClassUnit(classUnitId);
+                        }
+                        break;
+                    case Constraints:
+                        for(int i = first; i <= last; i++) {
+                            Row row = sheet.getRow(i);
+                            int constraintId = cellInt(formatter, row, 0);
+                            String constraintType = cellString(formatter, row, 1);
+                            int penalty = cellInt(formatter, row, 2);
+                            boolean required = cellBool(formatter, row, 3);
+                            String classList = cellString(formatter, row, 4);
+
+                            Constraint constraint = ConstraintFactory.createConstraint(
+                                constraintId,
+                                constraintType,
+                                penalty,
+                                required,
+                                repository.getTimetableConfiguration());
+
+                            for(String classId : classList.split(",")) {
+                                ClassUnit cls = repository.getClassUnit(classId);
+                                if(cls == null) {
+                                    throw new ParsingException("Class Unit " + classId + " found in constraints wasn't defined as a class");
+                                }
+                                cls.addConstraint(constraint);
+                                constraint.addClassUnitId(classId);
+                            }
+
+                            repository.addConstraint(constraint);
+                        }
+                        break;
+                    case Teachers:
+                        for(int i = first; i <= last; i++) {
+                            Row row = sheet.getRow(i);
+                            int teacherId = cellInt(formatter, row, 0);
+                            String teacherName = cellString(formatter, row, 1);
+
+                            Teacher teacher = new Teacher(teacherId, teacherName);
+                            repository.addTeacher(teacher);
+                        }
+                        break;
+                    case Teacher_Unavailabilities:
+                        for(int i = first; i <= last; i++) {
+                            Row row = sheet.getRow(i);
+                            int teacherId = cellInt(formatter, row, 0);
+                            short startSlot = (short) cellInt(formatter, row, 1);
+                            short length = (short) cellInt(formatter, row, 2);
+                            short days = (short) cellInt(formatter, row, 3);
+                            int weeks = cellInt(formatter, row, 4);
+
+                            Teacher teacher = repository.getTeacher(teacherId);
+                            if(teacher == null) {
+                                throw new ParsingException("Teacher with id " + teacherId + " found in teacher unavailabilities wasn't defined as a Teacher");
+                            }
+                            teacher.addUnavailability(days, weeks, startSlot, length);
+                        }
+                        break;
+                    case Rooms:
+                        for(int i = first; i <= last; i++) {
+                            Row row = sheet.getRow(i);
+                            String roomId = cellString(formatter, row, 0);
+
+                            Room room = RoomFastIdFactory.createRoom(roomId);
+                            repository.addRoom(room);
+                        }
+                        break;
+                    case Room_Unavailabilities:
+                        for(int i = first; i <= last; i++) {
+                            Row row = sheet.getRow(i);
+                            String roomId = cellString(formatter, row, 0);
+                            short startSlot = (short) cellInt(formatter, row, 1);
+                            short length = (short) cellInt(formatter, row, 2);
+                            short days = (short) cellInt(formatter, row, 3);
+                            int weeks = cellInt(formatter, row, 4);
+
+                            Room room = repository.getRoom(roomId);
+                            if(room == null) {
+                                throw new ParsingException("Room with id " + roomId + " found in room unavailabilities wasn't defined as a Room");
+                            }
+                            room.addUnavailability(days, weeks, startSlot, length);
+                        }
+                        break;
+                    case Room_Distances:
+                        for(int i = first; i <= last; i++) {
+                            Row row = sheet.getRow(i);
+                            String room1Id = cellString(formatter, row, 0);
+                            String room2Id = cellString(formatter, row, 1);
+                            int distance = cellInt(formatter, row, 2);
+
+                            Room room1 = repository.getRoom(room1Id);
+                            if(room1 == null) {
+                                throw new ParsingException("Room 1 with id " + room1Id + " found in room distances wasn't defined as a Room");
+                            }
+
+                            room1.addRoomDistance(room2Id, distance);
+                        }
+                        break;
+                    case Solutions:
+                        for(int i = first; i <= last; i++) {
+                            Row row = sheet.getRow(i);
+                            String solutionId = cellString(formatter, row, 0);
+                            long runtime = cellLong(formatter, row, 1);
+                            String dateOfCreation = cellString(formatter, row, 2);
+
+                            if(solutionId == null) {
+                                throw new ParsingException("Solution Id is null");
+                            }
+                            if(dateOfCreation == null) {
+                                throw new ParsingException("Date of Creation of the solution " + solutionId + " is null");
+                            }
+
+                            Timetable timetable = new Timetable(
+                                UUID.fromString(solutionId),
+                                repository.getProgramName(),
+                                LocalDateTime.from(timeStampUTC12Formatter.parse(dateOfCreation)));
+
+                            timetable.setRuntime(runtime);
+
+                            repository.addTimetable(timetable);
+                        }
+                        break;
+                    case Scheduled_Lessons:
+                        for(int i = first; i <= last; i++) {
+                            Row row = sheet.getRow(i);
+                            String solutionId = cellString(formatter, row, 0);
+                            String classId = cellString(formatter, row, 1);
+                            String roomId = cellString(formatter, row, 2);
+                            String teacherIds = cellString(formatter, row, 3);
+                            short startSlot = (short) cellInt(formatter, row, 4);
+                            short length = (short) cellInt(formatter, row, 5);
+                            short days = (short) cellInt(formatter, row, 6);
+                            int weeks = cellInt(formatter, row, 7);
+
+                            if(solutionId == null) {
+                                throw new ParsingException("Solution Id found in scheduled lessons is null");
+                            }
+
+                            Timetable timetable = repository.getTimetable(UUID.fromString(solutionId));
+                            if(timetable == null) {
+                                throw new ParsingException("Timetable with id " + solutionId + " found in scheduled lessons wasn't defined as a Timetable");
+                            }
+
+                            ScheduledLesson scheduledLesson = new ScheduledLesson(classId, roomId, days, weeks, startSlot, length);
+
+                            if(teacherIds != null) {
+                                List<Integer> teacherList = new ArrayList<>();
+                                for (String teacherIdString : teacherIds.split(",")) {
+                                    teacherList.add(Integer.parseInt(teacherIdString));
+                                }
+
+                                for(int teacherId : teacherList) {
+                                    scheduledLesson.addTeacherId(teacherId);
+                                }
+                            }
+
+                            timetable.addScheduledLesson(scheduledLesson);
+                        }
+                        break;
+                }
+            }
+
+            repository.verifyValidity();
+
+            // Set the last updated at timestamp
+            repository.setLastUpdatedAt();
+
+            return repository;
+        } catch (InvalidFormatException ignored) {
+        // This is impossible because this method is only called if this exception doesn't happen in the isXMLFile method
+        }
+
+        return null;
+    }
+
     /**
      * This method verifies if the file given is a solution or a problem and parses it.
      * @param file File that is to be read
@@ -100,7 +410,6 @@ public class ITCFormatParser implements InputFileReader {
      * @throws ParsingException Exception related to the parsing of the file
      * @throws InvalidConfigurationException Exception related to the configuration
      */
-    @Override
     public XmlResult readXmlFile(File file) throws ParsingException, InvalidConfigurationException {
         return processXmlFile(file, reader -> {
             try {
@@ -122,6 +431,40 @@ public class ITCFormatParser implements InputFileReader {
                 throw new ParsingException("Error while processing the XML file. The file may be malformed", e);
             }
         });
+    }
+
+    public boolean isXMLFile(File file) throws IOException {
+        try (FileInputStream fis = new FileInputStream(file);
+             BufferedInputStream bis = new BufferedInputStream(fis)) {
+
+            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLEventReader reader = factory.createXMLEventReader(bis);
+        } catch (XMLStreamException e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean isXLSXFile(File file) throws IOException {
+        try (XSSFWorkbook xssfWorkbook = new XSSFWorkbook(file)) {
+
+        } catch (RuntimeException | InvalidFormatException e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public XmlResult readFile(File file) throws ParsingException, InvalidConfigurationException, IOException, CheckedIllegalArgumentException {
+        if(isXLSXFile(file)) {
+            return readXLSXFile(file);
+        } else if(isXMLFile(file)) {
+            return readXmlFile(file);
+        } else {
+            throw new ParsingException("Input file type is not supported");
+        }
     }
 
     /**
@@ -180,7 +523,6 @@ public class ITCFormatParser implements InputFileReader {
                                 String roomId = getAttributeValue(startElement, "room");
                                 String days = getAttributeValue(startElement, "days");
                                 String start = getAttributeValue(startElement, "start");
-                                //String length = getAttributeValue(startElement, "length");
                                 String weeks = getAttributeValue(startElement, "weeks");
 
                                 try {
@@ -433,6 +775,12 @@ public class ITCFormatParser implements InputFileReader {
         Subpart subpart = null;
         ClassUnit cls = null;
 
+        // Used to verify if there are no equal ids in the same category (course, config, subpart or class)
+        Set<String> courseIds = new HashSet<>();
+        Set<String> configIds = new HashSet<>();
+        Set<String> subpartIds = new HashSet<>();
+        Set<String> classUnitIds = new HashSet<>();
+
         while (eventReader.hasNext()) {
             XMLEvent event;
             event = eventReader.nextEvent();
@@ -446,6 +794,11 @@ public class ITCFormatParser implements InputFileReader {
                         case COURSE_TAG:
                             String courseId = getAttributeValue(startElement, "id");
 
+                            if(courseIds.contains(courseId)) {
+                                throw new ParsingException(event.getLocation(), "The id " + courseId + " is repeated in multiple courses");
+                            }
+                            courseIds.add(courseId);
+
                             course = new Course(courseId);
                             data.addCourse(course);
 
@@ -458,6 +811,11 @@ public class ITCFormatParser implements InputFileReader {
 
                             String configId = getAttributeValue(startElement, "id");
 
+                            if(configIds.contains(configId)) {
+                                throw new ParsingException(event.getLocation(), "The id " + configId + " is repeated in multiple configs");
+                            }
+                            configIds.add(configId);
+
                             config = new Config(configId);
                             course.addConfig(config);
 
@@ -468,6 +826,11 @@ public class ITCFormatParser implements InputFileReader {
                                 throw new ParsingException(event.getLocation(), "There is a subpart tag before a config tag");
                             }
                             String subpartId = getAttributeValue(startElement, "id");
+
+                            if(subpartIds.contains(subpartId)) {
+                                throw new ParsingException(event.getLocation(), "The id " + subpartId + " is repeated in multiple subparts");
+                            }
+                            subpartIds.add(subpartId);
 
                             subpart = new Subpart(subpartId);
                             config.addSubpart(subpart);
@@ -480,6 +843,11 @@ public class ITCFormatParser implements InputFileReader {
                             }
                             String classId = getAttributeValue(startElement, "id");
                             String parentClassId = getAttributeValue(startElement, "parent");
+
+                            if(classUnitIds.contains(classId)) {
+                                throw new ParsingException(event.getLocation(), "The id " + classId + " is repeated in multiple classes");
+                            }
+                            classUnitIds.add(classId);
 
                             cls = new ClassUnit(classId);
                             data.addClassUnit(cls);

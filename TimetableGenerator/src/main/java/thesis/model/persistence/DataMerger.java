@@ -285,7 +285,7 @@ public class DataMerger {
             ClassUnitEntity classUnitEntity = classUnitMap.get(classId);
             if(classConstraintMap.get(classUnitEntity.getId()) == null) {
                 new ClassConstraintEntity(
-                    classUnitMap.get(classId),
+                    classUnitEntity,
                     constraintEntity);
             }
 
@@ -297,5 +297,72 @@ public class DataMerger {
             classConstraint.getConstraintEntity().removeClassConstraint(classConstraint);
             classConstraint.getClassUnitEntity().removeClassConstraint(classConstraint);
         });
+    }
+
+    public void mergeSolutions(ProgramEntity programEntity, InMemoryRepository inMemoryRepository) {
+        mergeCollections(
+            inMemoryRepository.getTimetableList(),
+            programEntity.getTimetableEntitySet(),
+            Timetable::getTimetableId,
+            TimetableEntity::getId,
+            this::mergeTimetables,
+            (timetable) -> createTimetable(programEntity, timetable),
+            (timetableEntity) -> programEntity.getTimetableEntitySet().remove(timetableEntity)
+        );
+    }
+
+    public void mergeTimetables(Timetable timetable, TimetableEntity timetableEntity) {
+        // Start of the merge of the scheduled lessons associated to the timetable
+        Map<String, ScheduledLessonEntity> lessonsMap = timetableEntity.getScheduledLessonEntityList().stream()
+                .collect(Collectors.toMap(e -> e.getClassUnitEntity().getClassUnitNameEntity().getName(), e -> e));
+
+        timetableEntity.setCreationDate(timetable.getDateOfCreation());
+        timetableEntity.setRuntime(timetable.getRuntime());
+
+        // Check if the lesson is present in the timetable entity.
+        // If the lesson is not present create it, else set the new values (which may or may not be equal to the previous ones)
+        timetable.getScheduledLessonList().forEach((scheduledLesson) -> {
+            String lessonClassId = scheduledLesson.getClassId();
+            Time lessonTime = scheduledLesson.getScheduledTime();
+
+            ClassUnitEntity classUnitEntity = classUnitMap.get(lessonClassId);
+            RoomEntity roomEntity = scheduledLesson.getRoomId() != null ? roomEntityFactory.getOrCreateRoom(scheduledLesson.getRoomId()) : null;
+            TimeBlockEntity timeBlockEntity = timeBlockEntityFactory.getOrCreate(lessonTime.getStartSlot(), lessonTime.getLength(), lessonTime.getDays(), lessonTime.getWeeks());
+
+            if(!lessonsMap.containsKey(lessonClassId)) {
+                ScheduledLessonEntity scheduledLessonEntity = new ScheduledLessonEntity(timetableEntity, classUnitEntity, roomEntity, timeBlockEntity);
+
+                session.persist(scheduledLessonEntity);
+            } else {
+                ScheduledLessonEntity scheduledLessonEntity = lessonsMap.get(lessonClassId);
+
+                scheduledLessonEntity.setClassUnitEntity(classUnitEntity);
+                scheduledLessonEntity.setRoomEntity(roomEntity);
+                scheduledLessonEntity.setTimeBlockEntity(timeBlockEntity);
+            }
+
+            lessonsMap.remove(lessonClassId);
+        });
+
+        // If there are any leftovers they must be removed
+        lessonsMap.forEach((classId, scheduledLessonEntity) -> {
+            timetableEntity.getScheduledLessonEntityList().remove(scheduledLessonEntity);
+        });
+    }
+
+    public void createTimetable(ProgramEntity programEntity, Timetable timetable) {
+        TimetableEntity timetableEntity = new TimetableEntity(timetable.getTimetableId(), programEntity, timetable.getDateOfCreation(), timetable.getRuntime());
+        session.persist(timetableEntity);
+
+        for(ScheduledLesson lesson : timetable.getScheduledLessonList()) {
+            Time lessonTime = lesson.getScheduledTime();
+
+            ClassUnitEntity classUnitEntity = classUnitMap.get(lesson.getClassId());
+            RoomEntity roomEntity = lesson.getRoomId() != null ? roomEntityFactory.getOrCreateRoom(lesson.getRoomId()) : null;
+            TimeBlockEntity timeBlockEntity = timeBlockEntityFactory.getOrCreate(lessonTime.getStartSlot(), lessonTime.getLength(), lessonTime.getDays(), lessonTime.getWeeks());
+
+            ScheduledLessonEntity scheduledLessonEntity = new ScheduledLessonEntity(timetableEntity, classUnitEntity, roomEntity, timeBlockEntity);
+            session.persist(scheduledLessonEntity);
+        }
     }
 }

@@ -2,11 +2,17 @@ package thesis.model.exporter;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thesis.model.XLSXFormat;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.*;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -42,7 +48,7 @@ public class TimetableDataExporter implements DataExporter {
 
     public enum FileFormat {
         XML("xml"),
-        CSV("csv"),
+        XLSX("xlsx"),
         PDF("pdf"),
         PNG("png");
 
@@ -58,6 +64,9 @@ public class TimetableDataExporter implements DataExporter {
         }
     }
 
+    // XLSV creation variable
+    String[] HEADERS = { "author", "title"};
+
     public TimetableDataExporter() {
         exportLocation = new File(EXPORT_LOCATION_PATH);
 
@@ -68,7 +77,7 @@ public class TimetableDataExporter implements DataExporter {
         }
     }
 
-    private File avoidFileOverwriting(String name, FileFormat fileFormat) {
+    private File avoidFileOverwriting(String name, FileFormat fileFormat) throws IOException {
         int solutionExportNumber = 0;
         File file;
         do {
@@ -79,7 +88,11 @@ public class TimetableDataExporter implements DataExporter {
             solutionExportNumber++;
         } while(file.exists());
 
-        return file;
+        if(file.createNewFile()) {
+            return file;
+        }
+
+        throw new IOException("Couldn't create the following file: " + file.getAbsolutePath());
     }
 
 
@@ -353,17 +366,249 @@ public class TimetableDataExporter implements DataExporter {
         writeToFile(file, stringBuilder.toString());
     }
 
+    private static Row nextXLSXRow(Sheet sheet) {
+        return sheet.createRow(sheet.getLastRowNum() + 1);
+    }
+
+    private static void fillXLSXRow(Row row, Object... values) {
+        for (int i = 0; i < values.length; i++) {
+            Cell cell = row.createCell(i);
+            Object value = values[i];
+
+            if (value instanceof Number) {
+                cell.setCellValue(((Number) value).doubleValue());
+            } else if (value instanceof Boolean) {
+                cell.setCellValue((Boolean) value);
+            } else {
+                cell.setCellValue(value != null ? value.toString() : "");
+            }
+        }
+    }
+
     @Override
-    public void exportDataToCSV(InMemoryRepository data) throws IOException {
-        File file = avoidFileOverwriting(data.getProgramName(), FileFormat.CSV);
-        
+    public void exportDataToXLSX(InMemoryRepository data) throws IOException {
+        File file = avoidFileOverwriting(data.getProgramName(), FileFormat.XLSX);
+
+        try(XSSFWorkbook workbook = new XSSFWorkbook()) {
+            for(Map.Entry<XLSXFormat.SHEET_NAMES, List<String>> sheetFormat : XLSXFormat.FORMAT_PER_SHEET.entrySet()) {
+                XSSFSheet sheet = workbook.createSheet(sheetFormat.getKey().label);
+
+                // Build the header of the sheet
+                Row header = sheet.createRow(0);
+                fillXLSXRow(header, sheetFormat.getValue().toArray());
+
+                // Structures to help with the data exporting
+                HashMap<String, Map<Time, Integer>> classTimes = new HashMap<>();
+                HashMap<String, Map<String, Integer>> classRooms = new HashMap<>();
+                HashMap<String, List<String>> classHierarchy = new HashMap<>();
+                HashMap<String, List<Integer>> classTeachers = new HashMap<>();
+                for(Course course : data.getCourses()) {
+                    for(Config config : course.getConfigList()) {
+                        for(Subpart subpart : config.getSubpartList()) {
+                            for(ClassUnit classUnit : subpart.getClassUnitList()) {
+                                String parentClass = classUnit.getParentClassId() != null ? classUnit.getParentClassId() : "";
+
+                                classHierarchy.put(classUnit.getClassId(), List.of(
+                                    course.getCourseId(),
+                                    config.getConfigId(),
+                                    subpart.getSubpartId(),
+                                    classUnit.getClassId(),
+                                    parentClass));
+
+                                classRooms.put(classUnit.getClassId(), classUnit.getClassRoomPenalties());
+                                classTimes.put(classUnit.getClassId(), classUnit.getClassTimePenalties());
+
+                                List<Integer> teacherList = new ArrayList<>(classUnit.getTeacherIdList());
+                                classTeachers.put(classUnit.getClassId(), teacherList);
+                            }
+                        }
+                    }
+                }
+
+                // Fill the sheet with data
+                switch(sheetFormat.getKey()) {
+                    case Configuration:
+                        {
+                        Row row = nextXLSXRow(sheet);
+
+                        TimetableConfiguration conf = data.getTimetableConfiguration();
+
+                        fillXLSXRow(
+                                row,
+                                data.getProgramName(),
+                                conf.getNumDays(),
+                                conf.getSlotsPerDay(),
+                                conf.getNumWeeks(),
+                                conf.getTimeWeight(),
+                                conf.getRoomWeight(),
+                                conf.getDistribWeight());
+                        }
+                        break;
+                    case Classes:
+                        classHierarchy.forEach((classId, hierarchy) -> {
+                            Row row = nextXLSXRow(sheet);
+
+                            fillXLSXRow(row, hierarchy.toArray());
+                        });
+                        break;
+                    case Class_Times:
+                        classTimes.forEach((classId, times) -> {
+                            for(Map.Entry<Time, Integer> timePenalty : times.entrySet()) {
+                                Row row = nextXLSXRow(sheet);
+                                Time time = timePenalty.getKey();
+
+                                fillXLSXRow(
+                                    row,
+                                    classId,
+                                    time.getStartSlot(),
+                                    time.getLength(),
+                                    time.getDays(),
+                                    time.getWeeks(),
+                                    timePenalty.getValue()
+                                );
+                            }
+                        });
+                        break;
+                    case Class_Rooms:
+                        classRooms.forEach((classId, rooms) -> {
+                            for(Map.Entry<String, Integer> roomPenalty : rooms.entrySet()) {
+                                Row row = nextXLSXRow(sheet);
+
+                                fillXLSXRow(row, classId, roomPenalty.getKey(), roomPenalty.getValue());
+                            }
+                        });
+                        break;
+                    case Class_Teachers:
+                        classTeachers.forEach((classId, teachers) -> {
+                            for(int teacherId : teachers) {
+                                Row row = nextXLSXRow(sheet);
+
+                                fillXLSXRow(row, classId, teacherId);
+                            }
+                        });
+                        break;
+                    case Constraints:
+                        for(Constraint constraint : data.getConstraints()) {
+                            Row row = nextXLSXRow(sheet);
+
+                            Integer penalty = constraint.getPenalty() != null ? constraint.getPenalty() : 0;
+
+                            fillXLSXRow(row,
+                                constraint.getId(),
+                                constraint.getType(),
+                                penalty,
+                                constraint.getRequired(),
+                                String.join(",", constraint.getClassUnitIdList()));
+                        }
+                        break;
+                    case Teachers:
+                        data.getTeachers().forEach((teacher) -> {
+                            Row row = nextXLSXRow(sheet);
+
+                            fillXLSXRow(row, teacher.getId(), teacher.getName());
+                        });
+                        break;
+                    case Teacher_Unavailabilities:
+                        data.getTeachers().forEach((teacher) -> {
+                            for(Time unavailability : teacher.getTeacherUnavailabilities()) {
+                                Row row = nextXLSXRow(sheet);
+
+                                fillXLSXRow(
+                                    row,
+                                    teacher.getId(),
+                                    unavailability.getStartSlot(),
+                                    unavailability.getLength(),
+                                    unavailability.getDays(),
+                                    unavailability.getWeeks());
+                            }
+                        });
+                        break;
+                    case Rooms:
+                        data.getRooms().forEach((room) -> {
+                            Row row = nextXLSXRow(sheet);
+
+                            fillXLSXRow(row, room.getRoomId());
+                        });
+                        break;
+                    case Room_Unavailabilities:
+                        data.getRooms().forEach((room) -> {
+                            for(Time unavailability : room.getRoomUnavailabilities()) {
+                                Row row = nextXLSXRow(sheet);
+
+                                fillXLSXRow(
+                                    row,
+                                    room.getRoomId(),
+                                    unavailability.getStartSlot(),
+                                    unavailability.getLength(),
+                                    unavailability.getDays(),
+                                    unavailability.getWeeks());
+                            }
+                        });
+                        break;
+                    case Room_Distances:
+                        data.getRooms().forEach((room1) -> {
+                            room1.getRoomDistances().forEach((room2, penalty) -> {
+                                Row row = nextXLSXRow(sheet);
+
+                                fillXLSXRow(
+                                    row,
+                                    room1.getRoomId(),
+                                    room2,
+                                    penalty);
+                            });
+                        });
+                        break;
+                    case Solutions:
+                        for(Timetable timetable : data.getTimetableList()) {
+                            Row row = nextXLSXRow(sheet);
+
+                            fillXLSXRow(
+                                row,
+                                timetable.getTimetableId(),
+                                timetable.getRuntime(),
+                                timetable.getDateOfCreationString());
+                        }
+                        break;
+                    case Scheduled_Lessons:
+                        for(Timetable timetable : data.getTimetableList()) {
+                            for(ScheduledLesson lesson : timetable.getScheduledLessonList()) {
+                                Row row = nextXLSXRow(sheet);
+
+                                Time time = lesson.getScheduledTime();
+                                String roomId = lesson.getRoomId() != null ? lesson.getRoomId() : "";
+
+                                List<String> teacherIds = new ArrayList<>();
+                                for(int teacherId : lesson.getTeacherIds()) {
+                                    teacherIds.add(String.valueOf(teacherId));
+                                }
+
+                                fillXLSXRow(
+                                    row,
+                                    timetable.getTimetableId(),
+                                    lesson.getClassId(),
+                                    roomId,
+                                    String.join(",", teacherIds),
+                                    time.getStartSlot(),
+                                    time.getLength(),
+                                    time.getDays(),
+                                    time.getWeeks());
+                            }
+                        }
+                        break;
+                    default:
+                        throw new RuntimeException("XLSX Format Error!");
+                }
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                workbook.write(fos);
+            }
+        }
     }
 
     private Pair<Map<String, List<Integer>>, Map<String, List<ScheduledLesson>>> getWeekGroups(Timetable timetable, int maxWeeks) {
-        // key -> list of week numbers
-        LinkedHashMap<String, List<Integer>> weekGroups = new LinkedHashMap<>();
-        // key -> list of ScheduledLesson objects for that key
-        Map<String, List<ScheduledLesson>> lessonsByKey = new HashMap<>();
+        Map<String, List<Integer>> weekGroups = new HashMap<>(); // key -> list of week numbers
+        Map<String, List<ScheduledLesson>> lessonsByKey = new HashMap<>(); // key -> list of ScheduledLesson objects for that key
 
         for (int week = 0; week < maxWeeks; week++) {
             final int finalWeek = week;

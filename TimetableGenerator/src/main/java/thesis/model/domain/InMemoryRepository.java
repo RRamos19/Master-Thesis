@@ -6,6 +6,7 @@ import thesis.model.parser.XmlResult;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.UUID;
 
 public interface InMemoryRepository extends XmlResult {
     // Setter and Getter of the problem's name
@@ -46,6 +47,7 @@ public interface InMemoryRepository extends XmlResult {
     void addTimetable(Timetable timetable) throws InvalidConfigurationException;
     void removeTimetable(Timetable timetable);
     Collection<Timetable> getTimetableList();
+    Timetable getTimetable(UUID id);
 
     // Is used to optimize constraint verifications
     void setRoomBidirectionalDistances();

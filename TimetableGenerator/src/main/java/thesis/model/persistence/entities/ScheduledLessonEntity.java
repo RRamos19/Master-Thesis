@@ -16,7 +16,7 @@ public class ScheduledLessonEntity implements Serializable {
 
     @ManyToOne
     @MapsId("classId")
-    @JoinColumn(name = "class_id")
+    @JoinColumn(name = "class_id", referencedColumnName = "id")
     private ClassUnitEntity classUnitEntity;
 
     @ManyToOne
@@ -25,12 +25,12 @@ public class ScheduledLessonEntity implements Serializable {
 
     @ManyToOne
     @MapsId("timetableId")
-    @JoinColumn(name = "timetable_id")
+    @JoinColumn(name = "timetable_id", referencedColumnName = "id")
     private TimetableEntity timetableEntity;
 
     @ManyToOne
     @MapsId("timeBlockId")
-    @JoinColumn(name = "time_block_id")
+    @JoinColumn(name = "time_block_id", referencedColumnName = "id")
     private TimeBlockEntity timeBlockEntity;
 
     @OneToMany(mappedBy = "scheduledLessonEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -45,6 +45,7 @@ public class ScheduledLessonEntity implements Serializable {
         this.timeBlockEntity = timeBlockEntity;
 
         timetableEntity.addScheduledLesson(this);
+        classUnitEntity.addScheduledLesson(this);
     }
 
     public ScheduledLessonPK getId() {
@@ -99,14 +100,11 @@ public class ScheduledLessonEntity implements Serializable {
     public boolean equals(Object o) {
         if (!(o instanceof ScheduledLessonEntity)) return false;
         ScheduledLessonEntity that = (ScheduledLessonEntity) o;
-        return Objects.equals(classUnitEntity, that.classUnitEntity) &&
-                Objects.equals(roomEntity, that.roomEntity) &&
-                Objects.equals(timetableEntity, that.timetableEntity) &&
-                Objects.equals(timeBlockEntity, that.timeBlockEntity);
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(classUnitEntity, roomEntity, timetableEntity, timeBlockEntity);
+        return Objects.hash(id);
     }
 }

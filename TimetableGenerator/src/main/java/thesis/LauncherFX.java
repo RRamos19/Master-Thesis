@@ -9,7 +9,7 @@ import thesis.model.Model;
 import thesis.model.ModelInterface;
 import thesis.model.exporter.DataExporter;
 import thesis.model.exporter.TimetableDataExporter;
-import thesis.model.parser.ITCFormatParser;
+import thesis.model.parser.InputFormatParser;
 import thesis.model.parser.InputFileReader;
 import thesis.view.JavaFXView;
 import thesis.view.ViewInterface;
@@ -22,7 +22,7 @@ public class LauncherFX extends Application {
     public void start(Stage primaryStage) throws Exception {
         // Create the importer and exporter
         DataExporter dataExporter = new TimetableDataExporter();
-        InputFileReader inputReader = new ITCFormatParser();
+        InputFileReader inputReader = new InputFormatParser();
 
         // Create the Model, View and Controller
         controller = new Controller();

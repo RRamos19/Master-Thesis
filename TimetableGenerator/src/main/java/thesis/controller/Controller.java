@@ -8,9 +8,11 @@ import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.stage.*;
 import org.apache.http.conn.util.InetAddressUtils;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import thesis.model.ModelInterface;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.Timetable;
+import thesis.model.exceptions.CheckedIllegalArgumentException;
 import thesis.model.exceptions.CheckedIllegalStateException;
 import thesis.model.exceptions.InvalidConfigurationException;
 import thesis.model.exceptions.ParsingException;
@@ -25,7 +27,7 @@ import thesis.view.viewobjects.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public class Controller implements ControllerInterface {
     private WindowManager windowManager;
@@ -170,9 +172,9 @@ public class Controller implements ControllerInterface {
     private void importData(List<File> files) {
         Task<Void> importTask = new Task<>() {
             @Override
-            protected Void call() throws CheckedIllegalStateException, InvalidConfigurationException, ParsingException {
+            protected Void call() throws CheckedIllegalStateException, InvalidConfigurationException, ParsingException, IOException, CheckedIllegalArgumentException {
                 for(File file : files) {
-                    importDataITC(file);
+                    importDataFromFile(file);
                 }
 
                 return null;
@@ -191,27 +193,38 @@ public class Controller implements ControllerInterface {
         new Thread(importTask).start();
     }
 
-    private void importDataITC(File file) throws CheckedIllegalStateException, InvalidConfigurationException, ParsingException {
+    private void importDataFromFile(File file) throws CheckedIllegalStateException, InvalidConfigurationException, ParsingException, IOException, CheckedIllegalArgumentException {
         XmlResult result;
 
         result = model.readFile(file);
 
         if(result instanceof InMemoryRepository) {
             InMemoryRepository dataRepository = (InMemoryRepository) result;
+            String programName = dataRepository.getProgramName();
+            if(programName == null) {
+                showErrorAlert("Program has no name!");
+                return;
+            }
 
-            InMemoryRepository storedData = model.getDataRepository(dataRepository.getProgramName());
+            InMemoryRepository storedData = model.getDataRepository(programName);
 
             if(storedData == null) {
                 model.importRepository(dataRepository);
             } else {
-                if(showConfirmationAlert("There is already a program stored which is equal to the program of the file provided. Overwrite (while retaining the solutions, if possible) ?")) {
-                    for(Timetable solution : storedData.getTimetableList()) {
-                        solution.clearCache();
-                        dataRepository.addTimetable(solution);
-                    }
+                showConfirmationAlert("There is already a program stored which is equal to the program of the file provided. Overwrite (while retaining the solutions, if possible) ?", (confirmation) -> {
+                    if(confirmation) {
+                        for(Timetable solution : storedData.getTimetableList()) {
+                            solution.clearCache();
+                            try {
+                                dataRepository.addTimetable(solution);
+                            } catch (InvalidConfigurationException ignored) {}
+                        }
 
-                    model.importRepository(dataRepository);
-                }
+                        try {
+                            model.importRepository(dataRepository);
+                        } catch (InvalidConfigurationException ignored) {}
+                    }
+                });
             }
         } else if(result instanceof Timetable) {
             Timetable solution = (Timetable) result;
@@ -284,12 +297,12 @@ public class Controller implements ControllerInterface {
     }
 
     @Override
-    public void exportDataCSVEvent() {
+    public void exportDataXLSXEvent() {
         if(!checkBeforeExportation()) {
             return;
         }
 
-        export(chosenProgram, ModelInterface.ExportType.CSV);
+        export(chosenProgram, ModelInterface.ExportType.XLSX);
     }
 
     @Override
@@ -343,7 +356,7 @@ public class Controller implements ControllerInterface {
     private void export(String programName, ModelInterface.ExportType type) {
         Task<Void> exportTask = new Task<>() {
             @Override
-            protected Void call() throws IOException {
+            protected Void call() throws IOException, InvalidFormatException {
                 model.export(programName, type);
 
                 return null;
@@ -521,39 +534,18 @@ public class Controller implements ControllerInterface {
     }
 
     @Override
-    public boolean showConfirmationAlert(String message) {
-        final Object lock = new Object();
-        final AtomicReference<Optional<ButtonType>> resultRef = new AtomicReference<>();
-
+    public void showConfirmationAlert(String message, Consumer<Boolean> callback) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
             alert.initStyle(StageStyle.DECORATED);
             alert.initOwner(primaryWindow);
             alert.initModality(Modality.WINDOW_MODAL);
 
-            resultRef.set(alert.showAndWait());
+            Optional<ButtonType> result = alert.showAndWait();
+            boolean confirmed = result.isPresent() && result.get() == ButtonType.YES;
 
-            synchronized (lock) {
-                lock.notify();
-            }
+            callback.accept(confirmed);
         });
-
-        // Synchronize the JavaFX thread with the current thread
-        synchronized (lock) {
-            try {
-                lock.wait();
-            } catch (InterruptedException ignored) {}
-        }
-
-        Optional<ButtonType> optionalResponse = resultRef.get();
-
-        if(optionalResponse.isPresent()) {
-            ButtonType response = optionalResponse.get();
-
-            return response.equals(ButtonType.YES);
-        }
-
-        return false;
     }
 
     @Override
@@ -566,7 +558,9 @@ public class Controller implements ControllerInterface {
 
     @Override
     public void showExceptionMessage(Throwable e) {
-        windowManager.getExceptionMessage(e).show();
+        Platform.runLater(() -> {
+            windowManager.getExceptionMessage(e).show();
+        });
     }
 
     @Override

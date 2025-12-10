@@ -14,11 +14,16 @@ public class ScheduledLessonTeacherEntity implements Serializable {
 
     @ManyToOne
     @MapsId("teacherId")
-    @JoinColumn(name = "teacher_id")
+    @JoinColumn(name = "teacher_id", referencedColumnName = "id")
     private TeacherEntity teacherEntity;
 
     @ManyToOne
     @MapsId("scheduledLessonPK")
+    @JoinColumns({
+            @JoinColumn(name = "scheduled_lesson_class_id", referencedColumnName = "class_id"),
+            @JoinColumn(name = "scheduled_lesson_time_block_id", referencedColumnName = "time_block_id"),
+            @JoinColumn(name = "scheduled_lesson_timetable_id", referencedColumnName = "timetable_id")
+    })
     private ScheduledLessonEntity scheduledLessonEntity;
 
     public ScheduledLessonTeacherEntity() {}

@@ -36,6 +36,9 @@ public class ClassUnitEntity implements Serializable {
     @OneToMany(mappedBy = "classUnitEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final Set<ClassConstraintEntity> classConstraintEntitySet = new HashSet<>();
 
+    @OneToMany(mappedBy = "classUnitEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private final Set<ScheduledLessonEntity> classScheduledLessonEntitySet = new HashSet<>();
+
     public ClassUnitEntity() {}
 
     public ClassUnitEntity(SubpartEntity subpartEntity, ClassUnitNameEntity classUnitNameEntity) {
@@ -92,6 +95,10 @@ public class ClassUnitEntity implements Serializable {
         return classConstraintEntitySet;
     }
 
+    public Set<ScheduledLessonEntity> getClassScheduledLessonEntitySet() {
+        return classScheduledLessonEntitySet;
+    }
+
     public void addTeacherClass(TeacherClassEntity teacherClassEntity) {
         teacherClassEntitySet.add(teacherClassEntity);
     }
@@ -114,6 +121,14 @@ public class ClassUnitEntity implements Serializable {
 
     public void removeClassConstraint(ClassConstraintEntity classConstraintEntity) {
         classConstraintEntitySet.remove(classConstraintEntity);
+    }
+
+    public void addScheduledLesson(ScheduledLessonEntity scheduledLessonEntity) {
+        classScheduledLessonEntitySet.add(scheduledLessonEntity);
+    }
+
+    public void removeScheduledLesson(ScheduledLessonEntity scheduledLessonEntity) {
+        classScheduledLessonEntitySet.remove(scheduledLessonEntity);
     }
 
     @Override

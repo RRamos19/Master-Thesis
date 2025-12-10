@@ -26,7 +26,7 @@ public class JavaFXView implements ViewInterface {
     @FXML private Pane dragAndDropPane;
     @FXML private MenuItem importITCBtn;
     @FXML private MenuItem exportDataITCBtn;
-    @FXML private MenuItem exportDataCSVBtn;
+    @FXML private MenuItem exportDataXLSXBtn;
     @FXML private MenuItem exportSolutionITCBtn;
     @FXML private MenuItem exportSolutionPNGBtn;
     @FXML private MenuItem exportSolutionPDFBtn;
@@ -59,7 +59,7 @@ public class JavaFXView implements ViewInterface {
             connectBtn.setOnAction(e -> controller.connectEvent());
             importITCBtn.setOnAction(e -> controller.importDataITCEvent());
             exportDataITCBtn.setOnAction(e -> controller.exportDataITCEvent());
-            exportDataCSVBtn.setOnAction(e -> controller.exportDataCSVEvent());
+            exportDataXLSXBtn.setOnAction(e -> controller.exportDataXLSXEvent());
             exportSolutionITCBtn.setOnAction(e -> controller.exportSolutionITCEvent());
             exportSolutionPNGBtn.setOnAction(e -> controller.exportSolutionPNGEvent());
             exportSolutionPDFBtn.setOnAction(e -> controller.exportSolutionPDFEvent());
@@ -167,9 +167,5 @@ public class JavaFXView implements ViewInterface {
     @Override
     public Parent getRoot() {
         return root;
-    }
-
-    public void stop() {
-        controller.cleanup();
     }
 }

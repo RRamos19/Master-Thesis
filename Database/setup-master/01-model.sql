@@ -1,6 +1,6 @@
 CREATE TABLE tb_program (
 	id SERIAL PRIMARY KEY,
-	name VARCHAR(30) NOT NULL UNIQUE,
+	name TEXT NOT NULL UNIQUE,
 	time_weight SMALLINT NOT NULL,
 	room_weight SMALLINT NOT NULL,
 	distribution_weight SMALLINT NOT NULL,
@@ -21,12 +21,12 @@ CREATE TABLE time_block (
 
 CREATE TABLE teacher (
     id INT PRIMARY KEY,
-    name VARCHAR(30) NOT NULL
+    name TEXT NOT NULL
 );
 
 CREATE TABLE course_name (
 	id SERIAL PRIMARY KEY,
-	name VARCHAR(10) NOT NULL UNIQUE
+	name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE course (
@@ -39,7 +39,7 @@ CREATE TABLE course (
 
 CREATE TABLE config_name (
 	id SERIAL PRIMARY KEY,
-	name VARCHAR(10) NOT NULL UNIQUE
+	name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE config (
@@ -52,7 +52,7 @@ CREATE TABLE config (
 
 CREATE TABLE subpart_name (
 	id SERIAL PRIMARY KEY,
-	name VARCHAR(10) NOT NULL UNIQUE
+	name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE subpart (
@@ -65,7 +65,7 @@ CREATE TABLE subpart (
 
 CREATE TABLE class_unit_name (
 	id SERIAL PRIMARY KEY,
-	name VARCHAR(10) NOT NULL UNIQUE
+	name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE class_unit (
@@ -82,6 +82,7 @@ CREATE TABLE timetable (
     id UUID PRIMARY KEY,
 	program_id INT NOT NULL,
 	creation_date TIMESTAMP NOT NULL,
+	runtime BIGINT NOT NULL,
 	CONSTRAINT timetable_program_fk FOREIGN KEY (program_id) REFERENCES tb_program(id)
 );
 
@@ -130,7 +131,7 @@ CREATE TABLE teacher_class (
 
 CREATE TABLE room (
 	id SERIAL PRIMARY KEY,
-	name VARCHAR(6) NOT NULL UNIQUE
+	name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE class_room (

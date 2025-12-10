@@ -2,6 +2,7 @@ package thesis.model.persistence;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.UUID;
 
 public interface DBManager<T> {
     /**
@@ -15,4 +16,8 @@ public interface DBManager<T> {
      * @param data Class that contains all the data to be inserted
      */
     void storeData(Map<String, T> data);
+
+    void removeTimetable(String programName, UUID timetableId);
+
+    void removeProgram(String programName);
 }

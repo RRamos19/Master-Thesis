@@ -15,6 +15,9 @@ public class TimetableEntity implements Serializable {
     @Column(name = "creation_date")
     private LocalDateTime creationDate;
 
+    @Column(name = "runtime")
+    private Long runtime;
+
     @ManyToOne
     @JoinColumn(name = "program_id", referencedColumnName = "id", nullable = false)
     private ProgramEntity programEntity;
@@ -24,10 +27,11 @@ public class TimetableEntity implements Serializable {
 
     public TimetableEntity() {}
 
-    public TimetableEntity(UUID id, ProgramEntity programEntity, LocalDateTime creationDate){
+    public TimetableEntity(UUID id, ProgramEntity programEntity, LocalDateTime creationDate, Long runtime){
         this.id = id;
         this.programEntity = programEntity;
         this.creationDate = creationDate;
+        this.runtime = runtime;
     }
 
     public UUID getId() {
@@ -52,6 +56,14 @@ public class TimetableEntity implements Serializable {
 
     public ProgramEntity getProgramEntity() {
         return programEntity;
+    }
+
+    public Long getRuntime() {
+        return runtime;
+    }
+
+    public void setRuntime(Long runtime) {
+        this.runtime = runtime;
     }
 
     public List<ScheduledLessonEntity> getScheduledLessonEntityList() {

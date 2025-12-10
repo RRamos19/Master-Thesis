@@ -36,7 +36,7 @@
                         <Menu mnemonicParsing="false" text="Data">
                           <items>
                             <MenuItem fx:id="exportDataITCBtn" mnemonicParsing="false" text="Export as ITC" />
-                              <MenuItem fx:id="exportDataCSVBtn" mnemonicParsing="false" text="Export as CSV" />
+                              <MenuItem fx:id="exportDataXLSXBtn" mnemonicParsing="false" text="Export as XLSX" />
                           </items>
                         </Menu>
                         <Menu mnemonicParsing="false" text="Solution">

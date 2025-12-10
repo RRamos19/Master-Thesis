@@ -11,7 +11,7 @@ public class TeacherEntity implements Serializable {
     @Id
     private Integer id;
 
-    @Column(length = 30, nullable = false)
+    @Column(nullable = false)
     private String name;
 
     @OneToMany(mappedBy = "teacherEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

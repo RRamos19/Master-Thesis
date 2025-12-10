@@ -11,7 +11,7 @@ public class ConstraintTypeEntity implements Serializable {
     @Id
     private Integer id;
 
-    @Column(length = 30, unique = true)
+    @Column(unique = true)
     private String name;
 
     public ConstraintTypeEntity() {}

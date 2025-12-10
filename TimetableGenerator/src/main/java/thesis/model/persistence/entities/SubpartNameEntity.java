@@ -11,7 +11,7 @@ public class SubpartNameEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(length = 10, nullable = false)
+    @Column(unique = true, nullable = false)
     private String name;
 
     public SubpartNameEntity() {}

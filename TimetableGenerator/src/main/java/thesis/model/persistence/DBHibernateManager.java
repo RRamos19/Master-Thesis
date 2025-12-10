@@ -16,6 +16,7 @@ import thesis.model.exceptions.InvalidConfigurationException;
 import thesis.model.persistence.entities.*;
 import thesis.model.persistence.entities.utils.RoomEntityFactory;
 import thesis.model.persistence.entities.utils.TeacherEntityFactory;
+import thesis.model.persistence.entities.utils.TimeBlockEntityFactory;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -45,6 +46,8 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
         List<String> programsToFetch = new ArrayList<>();
 
         try(Session session = sessionFactory.openSession()) {
+            Transaction tx = session.beginTransaction();
+
             List<Object[]> programs = session.createQuery("select a.name, a.lastUpdatedAt from ProgramEntity a", Object[].class).getResultList();
 
             for(Object[] data : programs) {
@@ -65,6 +68,8 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
 
                 programsToFetch.add(programName);
             }
+
+            tx.commit();
         }
 
         return programsToFetch;
@@ -81,19 +86,55 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
         try(Session session = sessionFactory.openSession()) {
             Transaction tx = session.beginTransaction();
 
+            // Only fetch the problems that are more recent than the local ones
             for(String programName : programsToFetch) {
                 List<ProgramEntity> programs = session.createQuery("SELECT a FROM ProgramEntity a WHERE a.name = :name", ProgramEntity.class)
-                        .setParameter("name", programName)
-                        .getResultList();
+                    .setParameter("name", programName)
+                    .getResultList();
 
-                for (ProgramEntity programEntity : programs) {
-                    try {
-                        allData.add(convertToDomain(programEntity));
-                    } catch (Exception e) {
-                        // Should be impossible, unless the data that causes the problem
-                        // was added on the database manually
-                        logger.error("An exception occurred: {}\nStacktrace: {}", e.getMessage(), Arrays.toString(e.getStackTrace()));
+                if(programs.isEmpty()) continue;
+
+                // There is only one program per name
+                ProgramEntity program = programs.get(0);
+
+                try {
+                    InMemoryRepository repository = convertToDomain(program);
+
+                    allData.add(repository);
+                } catch (Exception e) {
+                    // Should be impossible, unless the data that causes the problem
+                    // was added on the database manually
+                    logger.error("An exception occurred while fetching the data", e);
+                }
+            }
+
+            //TODO: fix this workaround
+            HashMap<String, InMemoryRepository> newData = new HashMap<>(storedData);
+            for(InMemoryRepository repo : allData) {
+                newData.put(repo.getProgramName(), repo);
+            }
+            for(InMemoryRepository repo : newData.values()) {
+                if(programsToFetch.contains(repo.getProgramName())) {
+                    newData.remove(repo.getProgramName());
+                }
+            }
+
+            // Get all the timetables that are not in local (only fetches the timetables whose ids are not found in local)
+            for(InMemoryRepository repository : newData.values()) {
+                List<UUID> timetableIds = new ArrayList<>();
+                for(Timetable timetable : repository.getTimetableList()) {
+                    timetableIds.add(timetable.getTimetableId());
+                }
+                try {
+                    Collection<Timetable> timetables = fetchSolutions(repository.getProgramName(), timetableIds);
+
+                    for(Timetable timetable : timetables) {
+                        repository.addTimetable(timetable);
                     }
+                } catch (Exception e) {
+                    // Should be impossible, unless the data that causes the problem
+                    // was added on the database manually
+                    logger.error("An exception occurred while fetching the solutions", e);
                 }
             }
 
@@ -103,11 +144,114 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
         return allData;
     }
 
+    private Collection<Timetable> fetchSolutions(String programName, Collection<UUID> storedTimetables) throws CheckedIllegalArgumentException {
+        Collection<Timetable> timetableList = new ArrayList<>();
+
+        try(Session session = sessionFactory.openSession()) {
+            Transaction tx = session.beginTransaction();
+
+            List<TimetableEntity> timetableEntityList = session
+                .createQuery("SELECT a FROM TimetableEntity a WHERE a.programEntity.name = :timetableProgramName", TimetableEntity.class)
+                .setParameter("timetableProgramName", programName)
+                .getResultList();
+
+            for(TimetableEntity timetableEntity : timetableEntityList) {
+                if(storedTimetables != null && storedTimetables.contains(timetableEntity.getId())) continue;
+
+                Timetable timetable = new Timetable(timetableEntity.getId(), timetableEntity.getProgramEntity().getName(), timetableEntity.getCreationDate(), timetableEntity.getRuntime());
+
+                for(ScheduledLessonEntity scheduledLessonEntity : timetableEntity.getScheduledLessonEntityList()) {
+                    ScheduledLesson scheduledLesson = new ScheduledLesson(
+                        scheduledLessonEntity.getClassUnitEntity().getClassUnitNameEntity().getName(),
+                        scheduledLessonEntity.getRoomEntity().getName(),
+                        scheduledLessonEntity.getTimeBlockEntity().getDays(),
+                        scheduledLessonEntity.getTimeBlockEntity().getWeeks(),
+                        scheduledLessonEntity.getTimeBlockEntity().getStartSlot(),
+                        scheduledLessonEntity.getTimeBlockEntity().getDuration());
+
+                    timetable.addScheduledLesson(scheduledLesson);
+                }
+
+                timetableList.add(timetable);
+            }
+
+            tx.commit();
+        }
+
+        return timetableList;
+    }
+
+    private void storeSolutions(InMemoryRepository repository) {
+        try(Session session = sessionFactory.openSession()) {
+            Transaction tx = session.beginTransaction();
+
+            List<ProgramEntity> storedProgram = session
+                .createQuery("SELECT p FROM ProgramEntity p WHERE p.name = :name", ProgramEntity.class)
+                .setParameter("name", repository.getProgramName())
+                .getResultList();
+
+            if(storedProgram.isEmpty()) return;
+
+            ProgramEntity programEntity = storedProgram.get(0);
+
+            RoomEntityFactory roomEntityFactory = new RoomEntityFactory(session);
+            TimeBlockEntityFactory timeBlockEntityFactory = new TimeBlockEntityFactory(session);
+
+            Map<String, ClassUnitEntity> classUnitEntityMap = new HashMap<>(); // ClassId -> ClassUnit
+
+            // Get all the classUnits to make the creation of timetables easier
+            for(CourseEntity courseEntity : programEntity.getCourseEntitySet()) {
+                for(ConfigEntity configEntity : courseEntity.getConfigSet()) {
+                    for(SubpartEntity subpartEntity : configEntity.getSubpartSet()) {
+                        for(ClassUnitEntity classUnitEntity : subpartEntity.getClassUnitSet()) {
+                            classUnitEntityMap.put(classUnitEntity.getClassUnitNameEntity().getName(), classUnitEntity);
+                        }
+                    }
+                }
+            }
+
+            for(Timetable timetable : repository.getTimetableList()) {
+                boolean storeTimetable = true;
+                for(TimetableEntity timetableEntity : programEntity.getTimetableEntitySet()) {
+                    if (timetableEntity.getId().equals(timetable.getTimetableId())) {
+                        storeTimetable = false;
+                        break;
+                    }
+                }
+
+                if(storeTimetable) {
+                    TimetableEntity timetableEntity = new TimetableEntity(
+                        timetable.getTimetableId(),
+                        programEntity,
+                        timetable.getDateOfCreation(),
+                        timetable.getRuntime());
+
+                    session.persist(timetableEntity);
+
+                    for(ScheduledLesson scheduledLesson : timetable.getScheduledLessonList()) {
+                        Time lessonTime = scheduledLesson.getScheduledTime();
+                        RoomEntity roomEntity = scheduledLesson.getRoomId() != null ? roomEntityFactory.getOrCreateRoom(scheduledLesson.getRoomId()) : null;
+
+                        ScheduledLessonEntity scheduledLessonEntity = new ScheduledLessonEntity(
+                            timetableEntity,
+                            classUnitEntityMap.get(scheduledLesson.getClassId()),
+                            roomEntity,
+                            timeBlockEntityFactory.getOrCreate(lessonTime.getStartSlot(), lessonTime.getLength(), lessonTime.getDays(), lessonTime.getWeeks()));
+
+                        session.persist(scheduledLessonEntity);
+                    }
+                }
+            }
+
+            tx.commit();
+        }
+    }
+
     private Collection<String> checkIfStoreIsNeeded(Map<String, InMemoryRepository> storedData) {
         List<String> programsToStore = new ArrayList<>(storedData.keySet());
 
         try(Session session = sessionFactory.openSession()) {
-            List<Object[]> programs = session.createQuery("select a.name, a.lastUpdatedAt from ProgramEntity a", Object[].class).getResultList();
+            List<Object[]> programs = session.createQuery("SELECT a.name, a.lastUpdatedAt FROM ProgramEntity a", Object[].class).getResultList();
 
             for(Object[] data : programs) {
                 String programName = (String) data[0];
@@ -144,8 +288,8 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
                 for (String programToStore : dataToStore) {
                     InMemoryRepository inMemoryRepository = storedData.get(programToStore);
 
-                    List<ProgramEntity> storedPrograms = session.createQuery(
-                                    "SELECT p FROM ProgramEntity p WHERE p.name = :name", ProgramEntity.class)
+                    List<ProgramEntity> storedPrograms = session
+                            .createQuery("SELECT p FROM ProgramEntity p WHERE p.name = :name", ProgramEntity.class)
                             .setParameter("name", programToStore)
                             .getResultList();
 
@@ -161,6 +305,12 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
                     // Creates and or merges all the data if there are instances in the database
                     createOrMergeData(session, dbProgram, inMemoryRepository);
                 }
+
+                // Try to store all the solutions
+                for(InMemoryRepository repository : storedData.values()) {
+                    storeSolutions(repository);
+                }
+
                 tx.commit();
 
             } catch (Exception e) {
@@ -227,9 +377,8 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
         // Merge the classes
         dataMerger.mergeClasses(programEntity, programData);
 
-        programData.getTimetableList().forEach((timetable -> {
-
-        }));
+        // Merge the solutions
+        dataMerger.mergeSolutions(programEntity, programData);
     }
 
     private InMemoryRepository convertToDomain(ProgramEntity programEntity) throws CheckedIllegalArgumentException, InvalidConfigurationException {
@@ -285,25 +434,26 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
 
             for(TimeBlockEntity roomUnavailabilityEntity : roomEntity.getRoomUnavailabilityList()) {
                 room.addUnavailability(
-                        roomUnavailabilityEntity.getDays(),
-                        roomUnavailabilityEntity.getWeeks(),
-                        roomUnavailabilityEntity.getStartSlot(),
-                        roomUnavailabilityEntity.getDuration());
+                    roomUnavailabilityEntity.getDays(),
+                    roomUnavailabilityEntity.getWeeks(),
+                    roomUnavailabilityEntity.getStartSlot(),
+                    roomUnavailabilityEntity.getDuration());
             }
 
             data.addRoom(room);
         }
 
+        // Get all the constraints
         Map<ConstraintEntity, Constraint> constraintMap = new HashMap<>();
         for(ConstraintEntity constraintEntity : constraintEntitySet) {
             Constraint constraint = ConstraintFactory.createConstraint(
-                    constraintEntity.getId().getConstraintPK(),
-                    constraintEntity.getConstraintTypeEntity().getName(),
-                    constraintEntity.getFirst_parameter(),
-                    constraintEntity.getSecond_parameter(),
-                    constraintEntity.getPenalty(),
-                    constraintEntity.getRequired(),
-                    data.getTimetableConfiguration());
+                constraintEntity.getId().getConstraintPK(),
+                constraintEntity.getConstraintTypeEntity().getName(),
+                constraintEntity.getFirst_parameter(),
+                constraintEntity.getSecond_parameter(),
+                constraintEntity.getPenalty(),
+                constraintEntity.getRequired(),
+                data.getTimetableConfiguration());
 
             data.addConstraint(constraint);
 
@@ -318,10 +468,10 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
 
             for(TeacherUnavailabilityEntity teacherUnavailabilityEntity : teacherEntity.getTeacherUnavailabilityEntitySet()) {
                 teacher.addUnavailability(
-                        teacherUnavailabilityEntity.getDays(),
-                        teacherUnavailabilityEntity.getWeeks(),
-                        teacherUnavailabilityEntity.getStartSlot(),
-                        teacherUnavailabilityEntity.getDuration());
+                    teacherUnavailabilityEntity.getDays(),
+                    teacherUnavailabilityEntity.getWeeks(),
+                    teacherUnavailabilityEntity.getStartSlot(),
+                    teacherUnavailabilityEntity.getDuration());
             }
 
             data.addTeacher(teacher);
@@ -368,17 +518,18 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
 
         // Add the timetables, scheduled lessons and respective teachers
         for(TimetableEntity timetableEntity : programEntity.getTimetableEntitySet()) {
-            Timetable timetable = new Timetable(timetableEntity.getId(), data.getProgramName(), timetableEntity.getCreationDate());
+            Timetable timetable = new Timetable(timetableEntity.getId(), data.getProgramName(), timetableEntity.getCreationDate(), timetableEntity.getRuntime());
 
             for(ScheduledLessonEntity scheduledLessonEntity : timetableEntity.getScheduledLessonEntityList()) {
                 TimeBlockEntity timeBlockEntity = scheduledLessonEntity.getTimeBlockEntity();
+                RoomEntity roomEntity = scheduledLessonEntity.getRoomEntity();
                 ScheduledLesson scheduledLesson = new ScheduledLesson(
-                        scheduledLessonEntity.getClassUnitEntity().getClassUnitNameEntity().getName(),
-                        scheduledLessonEntity.getRoomEntity().getName(),
-                        timeBlockEntity.getDays(),
-                        timeBlockEntity.getWeeks(),
-                        timeBlockEntity.getStartSlot(),
-                        timeBlockEntity.getDuration());
+                    scheduledLessonEntity.getClassUnitEntity().getClassUnitNameEntity().getName(),
+                    roomEntity != null ? roomEntity.getName() : null,
+                    timeBlockEntity.getDays(),
+                    timeBlockEntity.getWeeks(),
+                    timeBlockEntity.getStartSlot(),
+                    timeBlockEntity.getDuration());
 
                 for(ScheduledLessonTeacherEntity scheduledLessonTeacherEntity : scheduledLessonEntity.getScheduledLessonTeacherList()) {
                     scheduledLesson.addTeacherId(scheduledLessonTeacherEntity.getTeacher().getId());
@@ -387,9 +538,63 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
                 scheduledLesson.bindModel(data);
                 timetable.addScheduledLesson(scheduledLesson);
             }
+
             data.addTimetable(timetable);
         }
 
         return data;
+    }
+
+    @Override
+    public void removeTimetable(String programName, UUID timetableId) {
+        try(Session session = sessionFactory.openSession()) {
+            Transaction tx = session.beginTransaction();
+
+            List<ProgramEntity> programs = session
+                    .createQuery("SELECT a FROM ProgramEntity a WHERE a.name = :name", ProgramEntity.class)
+                    .setParameter("name", programName)
+                    .getResultList();
+
+            if(programs.isEmpty()) {
+                tx.rollback();
+                return;
+            }
+
+            // There is only one program per name
+            ProgramEntity program = programs.get(0);
+
+            for(TimetableEntity timetableEntity : program.getTimetableEntitySet()) {
+                if(Objects.equals(timetableEntity.getId(), timetableId)) {
+                    program.getTimetableEntitySet().remove(timetableEntity);
+                    break;
+                }
+            }
+
+            tx.commit();
+        }
+    }
+
+    @Override
+    public void removeProgram(String programName) {
+        try(Session session = sessionFactory.openSession()) {
+            Transaction tx = session.beginTransaction();
+
+            List<ProgramEntity> programs = session
+                .createQuery("SELECT a FROM ProgramEntity a WHERE a.name = :name", ProgramEntity.class)
+                .setParameter("name", programName)
+                .getResultList();
+
+            if(programs.isEmpty()) {
+                tx.rollback();
+                return;
+            }
+
+            // There is only one program per name
+            ProgramEntity program = programs.get(0);
+
+            session.remove(program);
+
+            tx.commit();
+        }
     }
 }
