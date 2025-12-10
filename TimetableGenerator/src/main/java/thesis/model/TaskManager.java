@@ -38,7 +38,7 @@ public class TaskManager {
     private final Map<UUID, TaskInformation> taskInformationMap = new ConcurrentHashMap<>();
 
     private final ExecutorService threadPool = Executors.newFixedThreadPool(
-            2, //Runtime.getRuntime().availableProcessors(),
+            Runtime.getRuntime().availableProcessors(),
             new DaemonThreadFactory()
     );
 
@@ -56,7 +56,9 @@ public class TaskManager {
         logger.info("Starting Auto Synchronization Task!");
 
         synchronizationTask = synchronizationExecutorService.scheduleAtFixedRate(() -> {
+            ControllerInterface controller = model.getController();
             try {
+                // Block the thread while there are solutions being generated
                 while (numGenerationTasks.get() != 0) {
                     try {
                         Thread.sleep(BLOCK_SLEEP_TIME);
@@ -67,22 +69,27 @@ public class TaskManager {
 
                 logger.info("Initiating Synchronization!");
 
+                // Fetch the changes in the database
                 try {
                     model.fetchDataFromDatabase();
                 } catch (Exception e) {
                     logger.error(e.getMessage());
-                    ControllerInterface controller = model.getController();
                     if (controller != null) {
                         controller.showExceptionMessage(e);
                     }
                 }
 
+                // Store the local changes
                 model.storeInDatabase();
+
+                // Update the last sync text
+                if(controller != null) {
+                    controller.updateLastSyncText();
+                }
 
                 logger.info("Synchronization Finished!");
             } catch (Exception e) {
                 logger.error(e.getMessage());
-                ControllerInterface controller = model.getController();
                 if (controller != null) {
                     controller.showExceptionMessage(e);
                 }

@@ -1,6 +1,8 @@
 package thesis.controller;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -26,6 +28,8 @@ import thesis.view.viewobjects.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -38,6 +42,7 @@ public class Controller implements ControllerInterface {
     private Window primaryWindow;
     private GeneralConfiguration generalConfiguration;
     private ProgressBarManager progressBarManager;
+    private final StringProperty lastSyncText = new SimpleStringProperty("Never");
 
     // Types of values that can be shown on the table view
     public enum TableType {
@@ -234,6 +239,18 @@ public class Controller implements ControllerInterface {
         } else {
             throw new IllegalStateException("The resulting type of the parsing is unsupported");
         }
+    }
+
+    @Override
+    public StringProperty getLastSyncStringProperty() {
+        return lastSyncText;
+    }
+
+    @Override
+    public void updateLastSyncText() {
+        Platform.runLater(() -> {
+            lastSyncText.setValue(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+        });
     }
 
     @Override

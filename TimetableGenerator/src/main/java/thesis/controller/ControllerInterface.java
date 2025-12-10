@@ -1,5 +1,6 @@
 package thesis.controller;
 
+import javafx.beans.property.StringProperty;
 import javafx.scene.control.TreeItem;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
@@ -38,6 +39,10 @@ public interface ControllerInterface {
     void tableViewMouseClickedEvent(MouseEvent event);
     void progressContainterResizeEvent();
     void removeProgramEvent();
+
+    // Last update string
+    StringProperty getLastSyncStringProperty();
+    void updateLastSyncText();
 
     // Show results
     void updateStoredPrograms();

@@ -46,6 +46,7 @@ public class JavaFXView implements ViewInterface {
     @FXML private Button removeButton;
     @FXML private Button generateSolutionButton;
     @FXML private Button programRemoveButton;
+    @FXML private Label lastSyncLabel;
 
     public JavaFXView(ControllerInterface controller) {
         this.controller = controller;
@@ -89,6 +90,9 @@ public class JavaFXView implements ViewInterface {
             taskContainer.visibleProperty().bind(
                     Bindings.isNotEmpty(progressContainer.getItems())
             );
+
+            // Bind the label with the string that contains the last update date
+            lastSyncLabel.textProperty().bind(controller.getLastSyncStringProperty());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
