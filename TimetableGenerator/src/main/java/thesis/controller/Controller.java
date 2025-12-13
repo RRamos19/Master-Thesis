@@ -158,7 +158,7 @@ public class Controller implements ControllerInterface {
         model.disconnectFromDatabase();
     }
 
-    private FileChooser createXmlFileChooser() {
+    private FileChooser createImportFileChooser() {
         FileChooser fileChooser = new FileChooser();
 
         // Sets the initial location of the FileChooser as the directory where the application is located
@@ -167,7 +167,7 @@ public class Controller implements ControllerInterface {
             fileChooser.setInitialDirectory(initialDirectory);
         }
 
-        FileChooser.ExtensionFilter xmlFileFilter = new FileChooser.ExtensionFilter("XML Files", "*.xml");
+        FileChooser.ExtensionFilter xmlFileFilter = new FileChooser.ExtensionFilter("XML and Excel Files", "*.xml", "*.xlsx");
         fileChooser.getExtensionFilters().add(xmlFileFilter);
         fileChooser.setSelectedExtensionFilter(xmlFileFilter);
 
@@ -254,8 +254,8 @@ public class Controller implements ControllerInterface {
     }
 
     @Override
-    public void importDataITCEvent() {
-        FileChooser fileChooser = createXmlFileChooser();
+    public void importDataEvent() {
+        FileChooser fileChooser = createImportFileChooser();
 
         List<File> chosenFiles = fileChooser.showOpenMultipleDialog(new Stage());
 

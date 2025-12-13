@@ -20,7 +20,7 @@ public interface ControllerInterface {
 
     // Button events
     void connectEvent();
-    void importDataITCEvent();
+    void importDataEvent();
     void configMenuEvent();
     void exportDataITCEvent();
     void exportDataXLSXEvent();

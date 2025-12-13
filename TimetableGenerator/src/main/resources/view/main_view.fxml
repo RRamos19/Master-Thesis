@@ -26,11 +26,7 @@
         <menus>
           <Menu mnemonicParsing="false" text="File">
             <items>
-                  <Menu mnemonicParsing="false" text="Import">
-                    <items>
-                      <MenuItem fx:id="importITCBtn" mnemonicParsing="false" text="ITC" />
-                    </items>
-                  </Menu>
+                  <MenuItem fx:id="importDataBtn" mnemonicParsing="false" text="Import" />
                   <Menu mnemonicParsing="false" text="Export">
                     <items>
                         <Menu mnemonicParsing="false" text="Data">
@@ -77,14 +73,14 @@
                      <children>
                         <HBox alignment="BOTTOM_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" style="-fx-border-style: solid; -fx-border-radius: 10px; -fx-border-color: gray;">
                            <children>
-                              <VBox>
+                              <VBox HBox.hgrow="ALWAYS">
                                  <children>
                                     <Label alignment="CENTER" text="Database Connection">
                                        <VBox.margin>
                                           <Insets left="10.0" top="10.0" />
                                        </VBox.margin>
                                     </Label>
-                                    <VBox maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefWidth="683.0">
+                                    <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefWidth="683.0">
                                        <children>
                                           <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" spacing="50.0">
                                              <children>
@@ -147,7 +143,7 @@
                                     </VBox>
                                  </children>
                               </VBox>
-                              <AnchorPane>
+                              <AnchorPane HBox.hgrow="NEVER">
                                  <children>
                                     <VBox AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="5.0">
                                        <children>

@@ -24,7 +24,7 @@ public class JavaFXView implements ViewInterface {
     // UI Components
     @FXML private Pane applicationPrincipalPane;
     @FXML private Pane dragAndDropPane;
-    @FXML private MenuItem importITCBtn;
+    @FXML private MenuItem importDataBtn;
     @FXML private MenuItem exportDataITCBtn;
     @FXML private MenuItem exportDataXLSXBtn;
     @FXML private MenuItem exportSolutionITCBtn;
@@ -58,7 +58,7 @@ public class JavaFXView implements ViewInterface {
 
             // Bind the buttons to the events
             connectBtn.setOnAction(e -> controller.connectEvent());
-            importITCBtn.setOnAction(e -> controller.importDataITCEvent());
+            importDataBtn.setOnAction(e -> controller.importDataEvent());
             exportDataITCBtn.setOnAction(e -> controller.exportDataITCEvent());
             exportDataXLSXBtn.setOnAction(e -> controller.exportDataXLSXEvent());
             exportSolutionITCBtn.setOnAction(e -> controller.exportSolutionITCEvent());
