@@ -77,6 +77,10 @@ public class Controller implements ControllerInterface {
         TIMETABLE {
             @Override
             public String toString() {return "Timetables";}
+        },
+        TEACHER {
+            @Override
+            public String toString() {return "Teachers";}
         }
     }
 
@@ -233,9 +237,7 @@ public class Controller implements ControllerInterface {
             }
         } else if(result instanceof Timetable) {
             Timetable solution = (Timetable) result;
-
             model.importSolution(solution);
-
         } else {
             throw new IllegalStateException("The resulting type of the parsing is unsupported");
         }
@@ -478,6 +480,7 @@ public class Controller implements ControllerInterface {
             return;
         }
         model.removeProgram(chosenProgram);
+        chosenProgram = null;
         view.getTreeView().getSelectionModel().clearSelection();
         updateStoredPrograms();
     }
@@ -717,6 +720,19 @@ public class Controller implements ControllerInterface {
                         removeButton.setVisible(true);
                         reoptimizeButton.setVisible(true);
                         break;
+                    case TEACHER:
+                        TableColumn<ViewModel, Number> teacherIds = new TableColumn<>("Id");
+                        TableColumn<ViewModel, String> teacherNames = new TableColumn<>("Name");
+                        TableColumn<ViewModel, Number> nUnavailabilities = new TableColumn<>("Nº of Unavailabilities");
+                        TableColumn<ViewModel, Number> nTeacherClasses = new TableColumn<>("Nº of Classes");
+
+                        teacherIds.setCellValueFactory(data -> ((TeacherViewModel) data.getValue()).idProperty());
+                        teacherNames.setCellValueFactory(data -> ((TeacherViewModel) data.getValue()).nameProperty());
+                        nUnavailabilities.setCellValueFactory(data -> ((TeacherViewModel) data.getValue()).nUnavailabilitiesProperty());
+                        nTeacherClasses.setCellValueFactory(data -> ((TeacherViewModel) data.getValue()).nClassesProperty());
+
+                        setTableViewData(DataConverter.getTeachers(chosenProgramStr, this, model), teacherIds, teacherNames, nUnavailabilities, nTeacherClasses);
+                        break;
                 }
             }
         });
@@ -735,9 +751,10 @@ public class Controller implements ControllerInterface {
         TreeItem<TableType> classes = new TreeItem<>(TableType.CLASSES);
         TreeItem<TableType> rooms = new TreeItem<>(TableType.ROOM);
         TreeItem<TableType> timetables = new TreeItem<>(TableType.TIMETABLE);
+        TreeItem<TableType> teachers = new TreeItem<>(TableType.TEACHER);
 
         ObservableList<TreeItem<TableType>> rootChildren = root.getChildren();
-        rootChildren.addAll(List.of(configuration, courses, configs, subparts, classes, constraints, rooms, timetables));
+        rootChildren.addAll(List.of(configuration, courses, configs, subparts, classes, constraints, rooms, teachers, timetables));
         treeView.setRoot(root);
     }
 

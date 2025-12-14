@@ -174,6 +174,7 @@ public class Model implements ModelInterface {
         return dataRepository.getClassUnits();
     }
 
+    @Override
     public TimetableConfiguration getConfiguration(String progName) throws CheckedIllegalStateException {
         InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
         if(dataRepository == null) {
@@ -183,6 +184,7 @@ public class Model implements ModelInterface {
         return dataRepository.getTimetableConfiguration();
     }
 
+    @Override
     public Collection<Config> getConfigs(String progName) throws CheckedIllegalStateException {
         InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
         if(dataRepository == null) {
@@ -192,6 +194,7 @@ public class Model implements ModelInterface {
         return dataRepository.getConfigs();
     }
 
+    @Override
     public Collection<Constraint> getConstraints(String progName) throws CheckedIllegalStateException {
         InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
         if(dataRepository == null) {
@@ -201,6 +204,7 @@ public class Model implements ModelInterface {
         return dataRepository.getConstraints();
     }
 
+    @Override
     public Collection<Room> getRooms(String progName) throws CheckedIllegalStateException {
         InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
         if(dataRepository == null) {
@@ -210,6 +214,7 @@ public class Model implements ModelInterface {
         return dataRepository.getRooms();
     }
 
+    @Override
     public Collection<Subpart> getSubparts(String progName) throws CheckedIllegalStateException {
         InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
         if(dataRepository == null) {
@@ -219,6 +224,7 @@ public class Model implements ModelInterface {
         return dataRepository.getSubparts();
     }
 
+    @Override
     public Collection<Timetable> getTimetables(String progName) throws CheckedIllegalStateException {
         InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
         if(dataRepository == null) {
@@ -226,6 +232,16 @@ public class Model implements ModelInterface {
         }
 
         return dataRepository.getTimetableList();
+    }
+
+    @Override
+    public Collection<Teacher> getTeachers(String progName) throws CheckedIllegalStateException {
+        InMemoryRepository dataRepository = dataRepositoryHashMap.get(progName);
+        if(dataRepository == null) {
+            throw new CheckedIllegalStateException("No data was already stored for the solution imported");
+        }
+
+        return dataRepository.getTeachers();
     }
 
     @Override

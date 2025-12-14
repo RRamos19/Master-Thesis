@@ -19,7 +19,8 @@ public class TeacherEntityFactory {
     public TeacherEntity create(int teacherId, String teacherName) {
         TeacherEntity teacherEntity = new TeacherEntity(teacherId, teacherName);
         session.persist(teacherEntity);
-        return teacherEntityMap.put(teacherId, teacherEntity);
+        teacherEntityMap.put(teacherId, teacherEntity);
+        return teacherEntity;
     }
 
     public TeacherEntity get(int teacherId) {

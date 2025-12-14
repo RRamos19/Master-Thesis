@@ -20,6 +20,7 @@ import thesis.model.persistence.entities.utils.TimeBlockEntityFactory;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DBHibernateManager implements DBManager<InMemoryRepository> {
     private static final Logger logger = LoggerFactory.getLogger(DBHibernateManager.class);
@@ -75,12 +76,65 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
         return programsToFetch;
     }
 
+    private void syncTimetables(InMemoryRepository repo, Session session) throws CheckedIllegalArgumentException, InvalidConfigurationException {
+        List<UUID> existingIds = repo.getTimetableList().stream()
+                .map(Timetable::getTimetableId)
+                .collect(Collectors.toList());
+
+        Collection<Timetable> newOnes =
+                fetchSolutions(repo.getProgramName(), existingIds, session);
+
+        for(Timetable timetable : newOnes) {
+            repo.addTimetable(timetable);
+        }
+    }
+
+    private void syncRooms(InMemoryRepository repo, List<RoomEntity> roomEntities) throws CheckedIllegalArgumentException {
+        for (RoomEntity entity : roomEntities) {
+            Room room = repo.getRoom(entity.getName());
+
+            if (room == null) continue;
+
+            room.clearRoomDistances();
+            for (RoomDistanceEntity roomDistanceEntity : entity.getRoom1DistanceSet()) {
+                room.addRoomDistance(roomDistanceEntity.getRoom2().getName(), roomDistanceEntity.getDistance());
+            }
+            room.optimizeRoomDistances();
+
+            room.clearRoomUnavailabilities();
+            for (TimeBlockEntity unavailabilityEntity : entity.getRoomUnavailabilityList()) {
+                room.addUnavailability(TimeFactory.create(
+                    unavailabilityEntity.getDays(),
+                    unavailabilityEntity.getWeeks(),
+                    unavailabilityEntity.getStartSlot(),
+                    unavailabilityEntity.getDuration()));
+            }
+        }
+    }
+
+    private void syncTeachers(InMemoryRepository repo, List<TeacherEntity> teacherEntities) throws CheckedIllegalArgumentException {
+        for (TeacherEntity entity : teacherEntities) {
+            Teacher teacher = repo.getTeacher(entity.getId());
+            if (teacher == null) continue;
+
+            teacher.setName(entity.getName());
+            teacher.clearTeacherUnavailabilities();
+
+            for(TeacherUnavailabilityEntity teacherUnavailabilityEntity : entity.getTeacherUnavailabilityEntitySet()) {
+                teacher.addUnavailability(teacherUnavailabilityEntity.getDays(),
+                    teacherUnavailabilityEntity.getWeeks(),
+                    teacherUnavailabilityEntity.getStartSlot(),
+                    teacherUnavailabilityEntity.getDuration());
+            }
+        }
+    }
+
     /**
      * Selects all the data available in the database and stores in its respective objects
      * @return Aggregate of all the data stored in the database
      */
     public Collection<InMemoryRepository> fetchData(Map<String, InMemoryRepository> storedData) {
-        Collection<InMemoryRepository> allData = new ArrayList<>();
+        Collection<InMemoryRepository> fetchedData = new ArrayList<>();
         Collection<String> programsToFetch = checkIfFetchIsNeeded(storedData);
 
         try(Session session = sessionFactory.openSession()) {
@@ -100,7 +154,7 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
                 try {
                     InMemoryRepository repository = convertToDomain(program);
 
-                    allData.add(repository);
+                    fetchedData.add(repository);
                 } catch (Exception e) {
                     // Should be impossible, unless the data that causes the problem
                     // was added on the database manually
@@ -110,72 +164,67 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
 
             //TODO: fix this workaround
             HashMap<String, InMemoryRepository> newData = new HashMap<>(storedData);
-            for(InMemoryRepository repo : allData) {
+            for(InMemoryRepository repo : fetchedData) {
                 newData.put(repo.getProgramName(), repo);
             }
-            for(InMemoryRepository repo : newData.values()) {
-                if(programsToFetch.contains(repo.getProgramName())) {
-                    newData.remove(repo.getProgramName());
-                }
-            }
+            // Remove the newly fetched objects
+            newData.values().removeIf(repo ->
+                    programsToFetch.contains(repo.getProgramName()));
 
-            // Get all the timetables that are not in local (only fetches the timetables whose ids are not found in local)
-            for(InMemoryRepository repository : newData.values()) {
-                List<UUID> timetableIds = new ArrayList<>();
-                for(Timetable timetable : repository.getTimetableList()) {
-                    timetableIds.add(timetable.getTimetableId());
-                }
-                try {
-                    Collection<Timetable> timetables = fetchSolutions(repository.getProgramName(), timetableIds);
+            // Get the data that should be equal between programs
+            if(!newData.isEmpty()) {
+                List<RoomEntity> roomEntities = session.createQuery("SELECT a FROM RoomEntity a", RoomEntity.class)
+                        .getResultList();
+                List<TeacherEntity> teacherEntities = session.createQuery("SELECT a FROM TeacherEntity a", TeacherEntity.class)
+                        .getResultList();
 
-                    for(Timetable timetable : timetables) {
-                        repository.addTimetable(timetable);
+                // Get all the timetables that are not in local (only fetches the timetables whose ids are not found in local)
+                // Also update the rooms and teachers as they should be equal between problems
+                for (InMemoryRepository repository : newData.values()) {
+                    try {
+                        syncTimetables(repository, session);
+                        syncRooms(repository, roomEntities);
+                        syncTeachers(repository, teacherEntities);
+                    } catch (Exception e) {
+                        // Should be impossible, unless the data that causes the problem
+                        // was added on the database manually
+                        logger.error("An exception occurred while fetching the solutions", e);
                     }
-                } catch (Exception e) {
-                    // Should be impossible, unless the data that causes the problem
-                    // was added on the database manually
-                    logger.error("An exception occurred while fetching the solutions", e);
                 }
             }
 
             tx.commit();
         }
 
-        return allData;
+        return fetchedData;
     }
 
-    private Collection<Timetable> fetchSolutions(String programName, Collection<UUID> storedTimetables) throws CheckedIllegalArgumentException {
+    private Collection<Timetable> fetchSolutions(String programName, Collection<UUID> storedTimetables, Session session) throws CheckedIllegalArgumentException {
         Collection<Timetable> timetableList = new ArrayList<>();
 
-        try(Session session = sessionFactory.openSession()) {
-            Transaction tx = session.beginTransaction();
+        List<TimetableEntity> timetableEntityList = session
+            .createQuery("SELECT a FROM TimetableEntity a WHERE a.programEntity.name = :timetableProgramName", TimetableEntity.class)
+            .setParameter("timetableProgramName", programName)
+            .getResultList();
 
-            List<TimetableEntity> timetableEntityList = session
-                .createQuery("SELECT a FROM TimetableEntity a WHERE a.programEntity.name = :timetableProgramName", TimetableEntity.class)
-                .setParameter("timetableProgramName", programName)
-                .getResultList();
+        for(TimetableEntity timetableEntity : timetableEntityList) {
+            if(storedTimetables != null && storedTimetables.contains(timetableEntity.getId())) continue;
 
-            for(TimetableEntity timetableEntity : timetableEntityList) {
-                if(storedTimetables != null && storedTimetables.contains(timetableEntity.getId())) continue;
+            Timetable timetable = new Timetable(timetableEntity.getId(), timetableEntity.getProgramEntity().getName(), timetableEntity.getCreationDate(), timetableEntity.getRuntime());
 
-                Timetable timetable = new Timetable(timetableEntity.getId(), timetableEntity.getProgramEntity().getName(), timetableEntity.getCreationDate(), timetableEntity.getRuntime());
+            for(ScheduledLessonEntity scheduledLessonEntity : timetableEntity.getScheduledLessonEntityList()) {
+                ScheduledLesson scheduledLesson = new ScheduledLesson(
+                    scheduledLessonEntity.getClassUnitEntity().getClassUnitNameEntity().getName(),
+                    scheduledLessonEntity.getRoomEntity().getName(),
+                    scheduledLessonEntity.getTimeBlockEntity().getDays(),
+                    scheduledLessonEntity.getTimeBlockEntity().getWeeks(),
+                    scheduledLessonEntity.getTimeBlockEntity().getStartSlot(),
+                    scheduledLessonEntity.getTimeBlockEntity().getDuration());
 
-                for(ScheduledLessonEntity scheduledLessonEntity : timetableEntity.getScheduledLessonEntityList()) {
-                    ScheduledLesson scheduledLesson = new ScheduledLesson(
-                        scheduledLessonEntity.getClassUnitEntity().getClassUnitNameEntity().getName(),
-                        scheduledLessonEntity.getRoomEntity().getName(),
-                        scheduledLessonEntity.getTimeBlockEntity().getDays(),
-                        scheduledLessonEntity.getTimeBlockEntity().getWeeks(),
-                        scheduledLessonEntity.getTimeBlockEntity().getStartSlot(),
-                        scheduledLessonEntity.getTimeBlockEntity().getDuration());
-
-                    timetable.addScheduledLesson(scheduledLesson);
-                }
-
-                timetableList.add(timetable);
+                timetable.addScheduledLesson(scheduledLesson);
             }
 
-            tx.commit();
+            timetableList.add(timetable);
         }
 
         return timetableList;
@@ -328,6 +377,7 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
     private void createOrMergeData(Session session, ProgramEntity programEntity, InMemoryRepository programData) {
         TeacherEntityFactory teacherEntityFactory = new TeacherEntityFactory(session);
         RoomEntityFactory roomEntityFactory = new RoomEntityFactory(session);
+        TimeBlockEntityFactory timeBlockEntityFactory = new TimeBlockEntityFactory(session);
 
         DataMerger dataMerger = new DataMerger(session, roomEntityFactory, teacherEntityFactory);
 
@@ -370,8 +420,33 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
         programData.getTeachers().forEach((teacher) -> {
             TeacherEntity teacherEntity = teacherEntityFactory.get(teacher.getId());
             if(teacherEntity == null) {
-                teacherEntityFactory.create(teacher.getId(), teacher.getName());
+                teacherEntity = teacherEntityFactory.create(teacher.getId(), teacher.getName());
             }
+            Set<TeacherUnavailabilityEntity> teacherUnavailabilities = teacherEntity.getTeacherUnavailabilityEntitySet();
+
+            // Removes unavailabilities not found in this program
+            teacherUnavailabilities.removeIf(unavailabilityEntity ->
+                    teacher.getTeacherUnavailabilities().stream().noneMatch(unavailability ->
+                        unavailabilityEntity.getDays() == unavailability.getDays() &&
+                        unavailabilityEntity.getWeeks() == unavailability.getWeeks() &&
+                        unavailabilityEntity.getStartSlot() == unavailability.getStartSlot() &&
+                        unavailabilityEntity.getDuration() == unavailability.getLength()
+            ));
+
+            // Create the remaining unavailabilities
+            TeacherEntity finalTeacherEntity = teacherEntity;
+            teacher.getTeacherUnavailabilities().stream()
+                .filter(unavailability ->
+                        teacherUnavailabilities.stream().noneMatch(unavailabilityEntity ->
+                            unavailabilityEntity.getDays() == unavailability.getDays() &&
+                            unavailabilityEntity.getWeeks() == unavailability.getWeeks() &&
+                            unavailabilityEntity.getStartSlot() == unavailability.getStartSlot() &&
+                            unavailabilityEntity.getDuration() == unavailability.getLength())
+                ).forEach(unavailability -> {
+                    TimeBlockEntity unavailableTime = timeBlockEntityFactory.getOrCreate(unavailability.getStartSlot(), unavailability.getLength(), unavailability.getDays(), unavailability.getWeeks());
+                    TeacherUnavailabilityEntity teacherUnavailabilityEntity = new TeacherUnavailabilityEntity(finalTeacherEntity, unavailableTime);
+                    session.persist(teacherUnavailabilityEntity);
+                });
         });
 
         // Merge the classes

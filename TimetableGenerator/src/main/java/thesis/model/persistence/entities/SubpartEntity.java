@@ -13,12 +13,12 @@ public class SubpartEntity implements Serializable {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "config_id", referencedColumnName = "id")
-    private ConfigEntity configEntity;
-
-    @ManyToOne
     @JoinColumn(name = "name_id", referencedColumnName = "id", nullable = false)
     private SubpartNameEntity subpartNameEntity;
+
+    @ManyToOne
+    @JoinColumn(name = "config_id", referencedColumnName = "id", nullable = false)
+    private ConfigEntity configEntity;
 
     @OneToMany(mappedBy = "subpartEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final Set<ClassUnitEntity> classUnitSet = new HashSet<>();

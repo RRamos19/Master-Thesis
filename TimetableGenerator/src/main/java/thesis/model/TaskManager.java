@@ -69,6 +69,9 @@ public class TaskManager {
 
                 logger.info("Initiating Synchronization!");
 
+                // Store the local changes
+                model.storeInDatabase();
+
                 // Fetch the changes in the database
                 try {
                     model.fetchDataFromDatabase();
@@ -78,9 +81,6 @@ public class TaskManager {
                         controller.showExceptionMessage(e);
                     }
                 }
-
-                // Store the local changes
-                model.storeInDatabase();
 
                 // Update the last sync text
                 if(controller != null) {

@@ -15,15 +15,15 @@ public class ConfigEntity implements Serializable {
     private Integer id;
 
     @ManyToOne
+    @JoinColumn(name = "name_id", referencedColumnName = "id", nullable = false)
+    private ConfigNameEntity configNameEntity;
+
+    @ManyToOne
     @JoinColumn(name = "course_id", referencedColumnName = "id", nullable = false)
     private CourseEntity courseEntity;
 
     @OneToMany(mappedBy = "configEntity", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final Set<SubpartEntity> subpartEntitySet = new HashSet<>();
-
-    @ManyToOne
-    @JoinColumn(name = "name_id", referencedColumnName = "id", nullable = false)
-    private ConfigNameEntity configNameEntity;
 
     public ConfigEntity() {}
 

@@ -34,6 +34,7 @@ public interface ModelInterface {
     Collection<Constraint> getConstraints(String progName) throws CheckedIllegalStateException;
     Collection<Room> getRooms(String progName) throws CheckedIllegalStateException;
     Collection<Timetable> getTimetables(String progName) throws CheckedIllegalStateException;
+    Collection<Teacher> getTeachers(String progName) throws CheckedIllegalStateException;
 
     // Schedule solution generation methods
     void startGeneratingSolution(String programName, UUID progressUUID, double initialTemperature, double minTemperature, double coolingRate, int k);

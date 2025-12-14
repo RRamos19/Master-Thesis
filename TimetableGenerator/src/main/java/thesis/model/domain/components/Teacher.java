@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Teacher {
     private final int id;
-    private final String name;
+    private String name;
 
     private final List<Time> teacherUnavailabilities = new ArrayList<>();
     private final List<String> teacherClassList = new ArrayList<>();
@@ -26,8 +26,16 @@ public class Teacher {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public List<Time> getTeacherUnavailabilities() {
         return Collections.unmodifiableList(teacherUnavailabilities);
+    }
+
+    public void clearTeacherUnavailabilities() {
+        teacherUnavailabilities.clear();
     }
 
     public List<String> getTeacherClassList() {

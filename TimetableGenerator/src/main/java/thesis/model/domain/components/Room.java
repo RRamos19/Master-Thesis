@@ -47,7 +47,14 @@ public class Room {
         roomDistances.remove(roomId);
     }
 
-    public void fixRoomDistances() {
+    public void clearRoomDistances() {
+        roomDistances.clear();
+        fastRoomDistances.clear();
+    }
+
+    public void optimizeRoomDistances() {
+        // Should only be executed after creating the rooms because the RoomFastIdFactory
+        // may not have the requested room
         for(Map.Entry<String, Integer> roomDistance : roomDistances.entrySet()) {
             fastRoomDistances.put(RoomFastIdFactory.getId(roomDistance.getKey()), roomDistance.getValue().intValue());
         }
@@ -55,6 +62,10 @@ public class Room {
 
     public List<Time> getRoomUnavailabilities() {
         return Collections.unmodifiableList(roomUnavailabilities);
+    }
+
+    public void clearRoomUnavailabilities() {
+        roomUnavailabilities.clear();
     }
 
     public Map<String, Integer> getRoomDistances() {

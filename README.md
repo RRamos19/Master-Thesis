@@ -43,6 +43,12 @@ POSTGRES_PASSWORD=
 
 More variables may be defined to customize the PostgreSQL instance.
 
+To start the docker instance run the following command on the same folder as the docker-compose.yml file.
+
+```
+docker-compose up
+```
+
 ## Building the Application
 
 Java JDK (11 or higher) and Maven are required to build the application

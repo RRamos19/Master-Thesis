@@ -128,7 +128,7 @@ public class DataConverter {
         }
 
         List<ViewModel> roomViewModels = roomList.stream()
-                .map(c -> new RoomViewModel(c.getRoomId(), c.getRoomUnavailabilities().size(), c.getRoomDistances().size()))
+                .map(r -> new RoomViewModel(r.getRoomId(), r.getRoomUnavailabilities().size(), r.getRoomDistances().size()))
                 .collect(Collectors.toList());
 
         return FXCollections.observableList(roomViewModels);
@@ -144,7 +144,23 @@ public class DataConverter {
         }
 
         List<ViewModel> timetableViewModels = timetableList.stream()
-                .map(c -> new TimetableViewModel(c.getDateOfCreationString(), c.getRuntime(), c.cost().getTotalPenalty(), c.getScheduledLessonList().size(), c.isValid(), c))
+                .map(t -> new TimetableViewModel(t.getDateOfCreationString(), t.getRuntime(), t.cost().getTotalPenalty(), t.getScheduledLessonList().size(), t.isValid(), t))
+                .collect(Collectors.toList());
+
+        return FXCollections.observableList(timetableViewModels);
+    }
+
+    public static ObservableList<ViewModel> getTeachers(String progName, ControllerInterface controller, ModelInterface model) {
+        Collection<Teacher> teacherList;
+        try {
+            teacherList = model.getTeachers(progName);
+        } catch (CheckedIllegalStateException e) {
+            controller.showExceptionMessage(e);
+            return null;
+        }
+
+        List<ViewModel> timetableViewModels = teacherList.stream()
+                .map(t -> new TeacherViewModel(t.getId(), t.getName(), t.getTeacherUnavailabilities().size(), t.getTeacherClassList().size()))
                 .collect(Collectors.toList());
 
         return FXCollections.observableList(timetableViewModels);

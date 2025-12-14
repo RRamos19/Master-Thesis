@@ -284,7 +284,7 @@ public class DataRepository implements InMemoryRepository {
         // Now that the bidirectionality is done populate the new map that was made
         // to optimize the lookups of room distances
         for(Room room : roomMap.values()) {
-            room.fixRoomDistances();
+            room.optimizeRoomDistances();
         }
     }
 
