@@ -69,11 +69,11 @@ public class TaskManager {
 
                 logger.info("Initiating Synchronization!");
 
-                // Store the local changes
-                model.storeInDatabase();
-
-                // Fetch the changes in the database
                 try {
+                    // Store the local changes
+                    model.storeInDatabase();
+
+                    // Fetch the changes in the database
                     model.fetchDataFromDatabase();
                 } catch (Exception e) {
                     logger.error(e.getMessage());

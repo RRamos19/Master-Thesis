@@ -379,7 +379,7 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
         RoomEntityFactory roomEntityFactory = new RoomEntityFactory(session);
         TimeBlockEntityFactory timeBlockEntityFactory = new TimeBlockEntityFactory(session);
 
-        DataMerger dataMerger = new DataMerger(session, roomEntityFactory, teacherEntityFactory);
+        DataMerger dataMerger = new DataMerger(session, roomEntityFactory, teacherEntityFactory, timeBlockEntityFactory);
 
         TimetableConfiguration timetableConfiguration = programData.getTimetableConfiguration();
 
@@ -413,6 +413,16 @@ public class DBHibernateManager implements DBManager<InMemoryRepository> {
                 if(!alreadyExists) {
                     new RoomDistanceEntity(roomEntity, roomEntityFactory.getOrCreateRoom(roomId), distance);
                 }
+            });
+
+            roomEntity.getRoomUnavailabilityList().clear();
+            room.getRoomUnavailabilities().forEach((unavailability) -> {
+                roomEntity.addRoomUnavailability(timeBlockEntityFactory.getOrCreate(
+                    unavailability.getStartSlot(),
+                    unavailability.getLength(),
+                    unavailability.getDays(),
+                    unavailability.getWeeks()
+                ));
             });
         });
 

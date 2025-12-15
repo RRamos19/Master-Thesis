@@ -25,10 +25,10 @@ public class DataMerger {
 
     private final Map<String, ClassUnitEntity> classUnitMap = new HashMap<>();
 
-    public DataMerger(Session session, RoomEntityFactory roomEntityFactory, TeacherEntityFactory teacherEntityFactory) {
+    public DataMerger(Session session, RoomEntityFactory roomEntityFactory, TeacherEntityFactory teacherEntityFactory, TimeBlockEntityFactory timeBlockEntityFactory) {
         this.session = session;
         this.constraintTypeEntityFactory = new ConstraintTypeEntityFactory(session);
-        this.timeBlockEntityFactory = new TimeBlockEntityFactory(session);
+        this.timeBlockEntityFactory = timeBlockEntityFactory;
         this.roomEntityFactory = roomEntityFactory;
         this.teacherEntityFactory = teacherEntityFactory;
         this.courseNameEntityFactory = new CourseNameEntityFactory(session);
