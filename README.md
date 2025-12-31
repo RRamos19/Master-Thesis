@@ -4,9 +4,9 @@
 
 [Institution's Website](https://www.isel.pt/)
 
-Project Work: Tool for generating course schedules with constraints
+Code from the Master Thesis of Ricardo Ramos entitled "Tool for generating course schedules with constraints", Master in Computer Science and Computer Engineering, Lisbon School of Engineering, Portugal, December 2025
 
-Advisors: [Nuno Leite](https://github.com/nleite-isel) and [Artur Ferreira](https://github.com/arturj)
+Supervised by Prof. Nuno Leite and Prof. Artur Ferreira <https://www.isel.pt/docentes/nuno-miguel-da-costa-de-sousa-leite> <https://www.isel.pt/docentes/artur-jorge-ferreira>
 
 ## Introduction
 
