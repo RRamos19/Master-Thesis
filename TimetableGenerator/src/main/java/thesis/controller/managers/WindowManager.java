@@ -214,10 +214,10 @@ public class WindowManager {
             dayLabel.setMinWidth(dayLabel.getPrefWidth());
             dayLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
             dayLabel.setStyle(
-                    "-fx-font-weight: bold;" +
-                    "-fx-border-color: black;" +
-                    "-fx-border-width: 1;" +
-                    "-fx-background-color: #f0f0f0;" // Very light gray
+                "-fx-font-weight: bold;" +
+                "-fx-border-color: black;" +
+                "-fx-border-width: 1;" +
+                "-fx-background-color: #f0f0f0;" // Very light gray
             );
 
             grid.add(dayLabel, colCursor, 0, span, 1);
@@ -238,17 +238,23 @@ public class WindowManager {
             timeLabel.setMinHeight(rowHeight);
             timeLabel.setPrefHeight(rowHeight);
             timeLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-            timeLabel.setStyle("-fx-border-color: black; -fx-border-width: 1; -fx-background-color: #fafafa;");
+            timeLabel.setStyle("-fx-border-color: black; -fx-border-width: 1; -fx-background-color: lightgray;");
             grid.add(timeLabel, 0, slot + 1);
 
             // add empty panes for each sub-column so borders appear
-            for (int c = 1; c <= totalSubCols; c++) {
-                Pane cell = new Pane();
-                cell.setMinHeight(rowHeight);
-                cell.setPrefHeight(rowHeight);
-                cell.setStyle("-fx-border-color: lightgray; -fx-border-width: 1;");
-                GridPane.setVgrow(cell, Priority.NEVER);
-                grid.add(cell, c, slot + 1);
+            // The colors white and light gray are alternated day by day to differentiate the days more easily
+            int currCol = 1;
+            for(int col = 0; col < subColsPerDay.length; col++) {
+                String cellColor = col % 2 == 0 ? "white" : "lightgray";
+                for (int c = currCol; c <= currCol + subColsPerDay[col]; c++) {
+                    Pane cell = new Pane();
+                    cell.setMinHeight(rowHeight);
+                    cell.setPrefHeight(rowHeight);
+                    cell.setStyle("-fx-border-color: black; -fx-background-color: " + cellColor + "; -fx-border-width: 1;");
+                    GridPane.setVgrow(cell, Priority.NEVER);
+                    grid.add(cell, c, slot + 1);
+                }
+                currCol += subColsPerDay[col];
             }
         }
 
@@ -256,6 +262,9 @@ public class WindowManager {
         for (int day = 0; day < days; day++) {
             List<ScheduledLesson> dayLessons = lessonsByDay.get(day);
             if(dayLessons == null) continue;
+
+            // Same logic as the alternating cell color explained in line 245
+            String cellColor = day % 2 == 0 ? "lightblue" : "lightgreen";
 
             for (ScheduledLesson lesson : dayLessons) {
                 int startSlot = lesson.getStartSlot();
@@ -298,7 +307,7 @@ public class WindowManager {
                 box.setMinHeight(rowHeight*visibleSpan);
                 box.setPrefHeight(rowHeight*visibleSpan);
                 box.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-                box.setStyle("-fx-background-color: lightblue; -fx-border-color: black; -fx-border-width: 1;");
+                box.setStyle("-fx-background-color: " + cellColor + "; -fx-border-color: black; -fx-border-width: 1;");
                 GridPane.setHgrow(box, Priority.ALWAYS);
                 GridPane.setVgrow(box, Priority.NEVER);
 

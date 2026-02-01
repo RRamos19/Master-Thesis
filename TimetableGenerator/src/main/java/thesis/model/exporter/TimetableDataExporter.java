@@ -45,6 +45,7 @@ public class TimetableDataExporter implements DataExporter {
 
     private static final Color LIGHT_GRAY_COLOR = new Color(210, 210, 210);
     private static final Color LIGHT_BLUE_COLOR = new Color(173, 216, 230);
+    private static final Color LIGHT_GREEN_COLOR = new Color(156, 234, 157);
 
     public enum FileFormat {
         XML("xml"),
@@ -614,17 +615,17 @@ public class TimetableDataExporter implements DataExporter {
             final int finalWeek = week;
             // collect active lessons this week
             List<ScheduledLesson> active = timetable.getScheduledLessonList().stream()
-                    .filter(l -> {
-                        String weeks = l.getWeeksBinaryString();
-                        return finalWeek < weeks.length() && weeks.charAt(finalWeek) == '1';
-                    })
-                    .collect(Collectors.toList());
+                .filter(l -> {
+                    String weeks = l.getWeeksBinaryString();
+                    return finalWeek < weeks.length() && weeks.charAt(finalWeek) == '1';
+                })
+                .collect(Collectors.toList());
 
             // create a key to represent all lessons
             List<String> ids = active.stream()
-                    .map(ScheduledLesson::getClassId)
-                    .sorted()
-                    .collect(Collectors.toList());
+                .map(ScheduledLesson::getClassId)
+                .sorted()
+                .collect(Collectors.toList());
 
             String key = String.join("|", ids); // key creation
 
@@ -836,8 +837,8 @@ public class TimetableDataExporter implements DataExporter {
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, timeColWidth + totalSubColumns * cellWidth, (visibleSlots + 1) * cellHeight);
 
-        // light grey colored grid
-        g.setColor(LIGHT_GRAY_COLOR);
+        // black colored grid
+        g.setColor(Color.BLACK);
         for (int day = 0; day < days; day++) { // lines in y axis
             int dayColStart = 0;
             for (int dd = 0; dd < day; dd++) dayColStart += subColsPerDay[dd];
@@ -860,8 +861,13 @@ public class TimetableDataExporter implements DataExporter {
 
             int x = timeColWidth + dayColStart * cellWidth;
             int rectWidth = subColsPerDay[day] * cellWidth;
-            g.setColor(Color.WHITE);
-            g.fillRect(x, 0, rectWidth, cellHeight);
+
+            Color columnColor = day % 2 == 0 ? Color.WHITE : Color.LIGHT_GRAY;
+
+            g.setColor(columnColor);
+            for(int cell = 0; cell <= visibleSlots; cell++) { // fill every cell in this column
+                g.fillRect(x, cell * cellHeight, rectWidth, cellHeight);
+            }
             g.setColor(Color.BLACK);
             g.drawRect(x, 0, rectWidth, cellHeight);
             drawCenteredString(g, DAYS_OF_WEEK.get(day), new Rectangle(x, 0, rectWidth, cellHeight));
@@ -871,7 +877,7 @@ public class TimetableDataExporter implements DataExporter {
         g.setFont(new Font("SansSerif", Font.PLAIN, 11));
         for (int slot = startSlot; slot <= endSlot; slot++) {
             int y = (slot - startSlot + 1) * cellHeight;
-            g.setColor(Color.WHITE);
+            g.setColor(Color.LIGHT_GRAY);
             g.fillRect(0, y, timeColWidth, cellHeight);
             g.setColor(Color.BLACK);
             g.drawRect(0, y, timeColWidth, cellHeight);
@@ -893,6 +899,8 @@ public class TimetableDataExporter implements DataExporter {
             List<ScheduledLesson> dayLessons = lessonsByDay.get(day);
             if(dayLessons == null) continue;
 
+            Color cellColor = day % 2 == 0 ? LIGHT_BLUE_COLOR : LIGHT_GREEN_COLOR;
+
             for (ScheduledLesson lesson : dayLessons) {
                 int subColIndex = subColAssignments.get(lesson);
 
@@ -905,14 +913,41 @@ public class TimetableDataExporter implements DataExporter {
                 int y = (lesson.getStartSlot() - startSlot + 1) * cellHeight;
                 int height = lesson.getLength() * cellHeight;
 
-                g.setColor(LIGHT_BLUE_COLOR);
+                g.setColor(cellColor);
                 g.fillRect(x, y, cellWidth, height);
-                g.setColor(Color.BLUE);
+                g.setColor(Color.BLACK);
                 g.drawRect(x, y, cellWidth, height);
 
-                drawCenteredString(g, lesson.getClassId(), new Rectangle(x, y, cellWidth, height));
-                drawCenteredString(g, "[" + data.getProgramName() + "]", new Rectangle(x, y + 15, cellWidth, height));
-                drawCenteredString(g, "[" + lesson.getRoomId() + "]", new Rectangle(x, y + 30, cellWidth, height));
+                List<String> teacherList = new ArrayList<>();
+                for(Teacher teacher : lesson.getTeachers()) teacherList.add(teacher.getName());
+
+                // Starting Y considering all the lines to be added
+                int currentY = y - teacherList.size() * 15;
+                drawCenteredString(g, lesson.getClassId(), new Rectangle(x, currentY, cellWidth, height));
+                currentY += 15;
+                drawCenteredString(g, "[" + data.getProgramName() + "]", new Rectangle(x, currentY, cellWidth, height));
+                currentY += 15;
+                // Write every name of every teacher who lectures this lesson
+                for(int i=0; i<teacherList.size(); i++) {
+                    String teacherName = teacherList.get(i);
+                    String text = "";
+                    if(i == 0) { // first element
+                        text = "[(";
+                    }
+
+                    text += teacherName;
+
+                    if (i == teacherList.size() - 1) { // last element
+                        text += ")]";
+                    } else {
+                        text += ");";
+                    }
+
+                    drawCenteredString(g, text, new Rectangle(x, currentY, cellWidth, height));
+
+                    currentY += 15;
+                }
+                drawCenteredString(g, "[" + lesson.getRoomId() + "]", new Rectangle(x, currentY, cellWidth, height));
             }
         }
     }
@@ -935,25 +970,6 @@ public class TimetableDataExporter implements DataExporter {
         cs.addRect(0, 0, timeColWidth + totalSubColumns * cellWidth, (visibleSlots + 1) * cellHeight);
         cs.fill();
 
-        // Light grey colored grid
-        cs.setStrokingColor(LIGHT_GRAY_COLOR);
-        for (int day = 0; day < days; day++) {
-            int dayColStart = 0;
-            for (int dd = 0; dd < day; dd++) dayColStart += subColsPerDay[dd];
-
-            for(int subCol = 0; subCol <= subColsPerDay[day]; subCol++) {
-                float x = timeColWidth + (dayColStart + subCol) * cellWidth;
-                cs.moveTo(x, 0);
-                cs.lineTo(x, visibleSlots * cellHeight);
-            }
-        }
-        for (int slot = 0; slot <= visibleSlots + 1; slot++) {
-            float y = slot * cellHeight;
-            cs.moveTo(0, y);
-            cs.lineTo(timeColWidth + totalSubColumns * cellWidth, y);
-        }
-        cs.stroke();
-
         // Header
         cs.setFont(new PDType1Font(FontName.HELVETICA_BOLD), 10);
         for (int day = 0; day < days; day++) {
@@ -962,6 +978,12 @@ public class TimetableDataExporter implements DataExporter {
 
             int x = timeColWidth + dayColStart * cellWidth;
             int y = visibleSlots * cellHeight;
+
+            Color columnColor = day % 2 == 0 ? Color.WHITE : Color.LIGHT_GRAY;
+
+            cs.setNonStrokingColor(columnColor);
+            cs.addRect(x, 0, subColsPerDay[day] * cellWidth, visibleSlots * cellHeight);
+            cs.fill();
 
             cs.setNonStrokingColor(Color.WHITE);
             cs.addRect(x, y, subColsPerDay[day] * cellWidth, cellHeight);
@@ -979,13 +1001,32 @@ public class TimetableDataExporter implements DataExporter {
             cs.endText();
         }
 
+        // black colored grid
+        cs.setStrokingColor(Color.BLACK);
+        for (int day = 0; day < days; day++) {
+            int dayColStart = 0;
+            for (int dd = 0; dd < day; dd++) dayColStart += subColsPerDay[dd];
+
+            for(int subCol = 0; subCol <= subColsPerDay[day]; subCol++) {
+                float x = timeColWidth + (dayColStart + subCol) * cellWidth;
+                cs.moveTo(x, 0);
+                cs.lineTo(x, visibleSlots * cellHeight);
+            }
+        }
+        for (int slot = 0; slot <= visibleSlots + 1; slot++) {
+            float y = slot * cellHeight;
+            cs.moveTo(0, y);
+            cs.lineTo(timeColWidth + totalSubColumns * cellWidth, y);
+        }
+        cs.stroke();
+
         // Hours column
         cs.setFont(new PDType1Font(FontName.HELVETICA), 11);
         {
             int x = timeColWidth / 2;
             for (int slot = visibleSlots; slot > 0; slot--) {
                 int y = (slot - 1) * cellHeight;
-                cs.setNonStrokingColor(Color.WHITE);
+                cs.setNonStrokingColor(Color.LIGHT_GRAY);
                 cs.addRect(0, y, timeColWidth, cellHeight);
                 cs.fill();
 
@@ -1018,6 +1059,8 @@ public class TimetableDataExporter implements DataExporter {
             List<ScheduledLesson> dayLessons = lessonsByDay.get(day);
             if(dayLessons == null) continue;
 
+            Color cellColor = day % 2 == 0 ? LIGHT_BLUE_COLOR : LIGHT_GREEN_COLOR;
+
             for (ScheduledLesson lesson : dayLessons) {
                 if (lesson.getDaysBinaryString().charAt(day) == '1') {
                     int subColIndex = subColAssignments.get(lesson);
@@ -1030,33 +1073,66 @@ public class TimetableDataExporter implements DataExporter {
                     float y = (endSlot - lesson.getStartSlot()) * cellHeight;
                     float height = lesson.getLength() * cellHeight;
 
-                    cs.setNonStrokingColor(LIGHT_BLUE_COLOR);
+                    cs.setNonStrokingColor(cellColor);
                     cs.addRect(x, y - height, cellWidth, height);
                     cs.fill();
 
-                    cs.setStrokingColor(Color.BLUE);
+                    cs.setStrokingColor(Color.BLACK);
                     cs.addRect(x, y - height, cellWidth, height);
                     cs.stroke();
 
+                    List<String> teacherList = new ArrayList<>();
+                    for(Teacher teacher : lesson.getTeachers()) teacherList.add(teacher.getName());
+
                     float textX = x + (float) cellWidth / 2;
                     float textY = y - height / 2;
+                    if(!teacherList.isEmpty()) textY += 15 * (teacherList.size() - 1);
+
                     String line1 = lesson.getClassId();
                     String line2 = "[" + data.getProgramName() + "]";
-                    String line3 = "[" + lesson.getRoomId() + "]";
+
+                    String finalLine = "[" + lesson.getRoomId() + "]";
+                    String finalTeacherLine = "";
 
                     float line1Width = getPDFStringWidth(line1, lessonFont, lessonFontSize);
                     float line2Width = getPDFStringWidth(line2, lessonFont, lessonFontSize);
-                    float line3Width = getPDFStringWidth(line3, lessonFont, lessonFontSize);
+                    float finalLineWidth = getPDFStringWidth(finalLine, lessonFont, lessonFontSize);
 
                     // Centered text
                     cs.beginText();
                     cs.setNonStrokingColor(Color.BLACK);
-                    cs.newLineAtOffset(textX - line1Width / 2, textY + 15); // Starting position
+                    cs.newLineAtOffset(textX - line1Width / 2, textY); // Starting position
                     cs.showText(line1);
                     cs.newLineAtOffset((line1Width - line2Width) / 2, -15); // Offset from the previous line
                     cs.showText(line2);
-                    cs.newLineAtOffset((line2Width - line3Width) / 2, -15); // Offset from the previous line
-                    cs.showText(line3);
+
+                    float earlierLineWidth = line2Width;
+                    for(int i=0; i<teacherList.size(); i++) {
+                        String teacherName = teacherList.get(i);
+                        String text = "";
+                        if(i == 0) { // first element
+                            text = "[(";
+                        }
+
+                        text += teacherName;
+
+                        if (i == teacherList.size() - 1) { // last element
+                            text += ")]";
+                            finalTeacherLine = text;
+                        } else {
+                            text += ");";
+                        }
+
+                        float teacherLineWidth = getPDFStringWidth(text, lessonFont, lessonFontSize);
+
+                        cs.newLineAtOffset((earlierLineWidth - teacherLineWidth) / 2, -15); // Offset from the previous line
+                        cs.showText(text);
+                        earlierLineWidth = teacherLineWidth;
+                    }
+
+                    float lastTeacherLineWidth = getPDFStringWidth(finalTeacherLine, lessonFont, lessonFontSize);
+                    cs.newLineAtOffset((lastTeacherLineWidth - finalLineWidth) / 2, -15); // Offset from the previous line
+                    cs.showText(finalLine);
                     cs.endText();
                 }
             }
