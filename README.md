@@ -67,6 +67,16 @@ After the previous command has completed one jar file was generated on the shade
 java -jar TimetableGenerator.jar
 ```
 
+## Run the Application without building
+
+Go to the [Releases](https://github.com/RRamos19/Master-Thesis/releases) page and download the most recent release of the application.
+
+To run the application simply simply double click it or run the command:
+
+```
+java -jar TimetableGenerator.jar
+```
+
 ## Graphical Interface
 
 Initial look of the tool.
