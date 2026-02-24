@@ -1,0 +1,1334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE problem PUBLIC "-//ITC 2019//DTD Problem Format/EN" "http://www.itc2019.org/competition-format.dtd">
+
+<problem name="MEIM" nrDays="7" slotsPerDay="48" nrWeeks="28">
+  <optimization time="2" room="1" distribution="5"/>
+  <rooms>
+    <room id="C.1.01"/>
+	<room id="C.1.02"/>
+	<room id="C.1.03"/>
+	<room id="C.1.04"/>
+	<room id="C.1.05"/>
+	<room id="C.1.06"/>
+	<room id="C.1.07"/>
+	<room id="C.1.08"/>
+	<room id="C.1.09"/>
+	<room id="C.1.10"/>
+	<room id="C.2.01"/>
+	<room id="C.2.02"/>
+	<room id="C.2.03"/>
+	<room id="C.2.04"/>
+	<room id="C.2.05"/>
+	<room id="C.2.06"/>
+	<room id="C.2.07"/>
+	<room id="C.2.08"/>
+	<room id="C.2.09"/>
+	<room id="C.2.10"/>
+	<room id="E.1.07"/>
+	<room id="E.1.09"/>
+	<room id="E.1.33"/>
+	<room id="E.3.01"/>
+	<room id="E.3.02"/>
+	<room id="E.3.03"/>
+	<room id="E.3.04"/>
+	<room id="E.3.05"/>
+	<room id="E.3.06"/>
+	<room id="E.3.07"/>
+	<room id="E.3.08"/>
+	<room id="E.3.09"/>
+	<room id="E.3.10"/>
+	<room id="E.3.11"/>
+	<room id="E.3.12"/>
+	<room id="E.3.13"/>
+	<room id="E.3.14"/>
+	<room id="E.3.15"/>
+	<room id="E.3.16"/>
+	<room id="E.3.17"/>
+	<room id="E.3.18"/>
+	<room id="E.3.19"/>
+	<room id="E.3.20"/>
+	<room id="F.1.01"/>
+	<room id="F.1.02"/>
+	<room id="F.1.03"/>
+	<room id="F.1.04"/>
+	<room id="F.1.05"/>
+	<room id="F.1.06"/>
+	<room id="F.1.07"/>
+	<room id="F.1.08"/>
+	<room id="F.1.09"/>
+	<room id="F.1.10"/>
+	<room id="F.2.01"/>
+	<room id="F.2.02"/>
+	<room id="F.2.03"/>
+	<room id="F.2.04"/>
+	<room id="F.2.05"/>
+	<room id="F.2.06"/>
+	<room id="F.2.07"/>
+	<room id="F.2.08"/>
+	<room id="F.2.09"/>
+	<room id="F.2.10"/>
+	<room id="G.0.01"/>
+	<room id="G.0.02"/>
+	<room id="G.0.03"/>
+	<room id="G.0.04"/>
+	<room id="G.0.05"/>
+	<room id="G.0.06"/>
+	<room id="G.0.07"/>
+	<room id="G.0.08"/>
+	<room id="G.0.09"/>
+	<room id="G.0.10"/>
+	<room id="G.0.13"/>
+	<room id="G.0.14"/>
+	<room id="G.0.15"/>
+	<room id="G.0.16"/>
+	<room id="G.0.18"/>
+	<room id="G.0.19"/>
+	<room id="G.0.20"/>
+	<room id="G.1.01"/>
+	<room id="G.1.02"/>
+	<room id="G.1.03"/>
+	<room id="G.1.04"/>
+	<room id="G.1.05"/>
+	<room id="G.1.06"/>
+	<room id="G.1.07"/>
+	<room id="G.1.08"/>
+	<room id="G.1.09"/>
+	<room id="G.1.10"/>
+  </rooms>
+  <courses>
+    <course id="ES">
+      <config id="1">
+        <subpart id="1">
+          <class id="ES_2h_1_1D">
+            <room id="G.0.01" penalty="10"/>
+	        <room id="G.0.02" penalty="10"/>
+	        <room id="G.0.03" penalty="10"/>
+	        <room id="G.0.04" penalty="10"/>
+	        <room id="G.0.05" penalty="10"/>
+	        <room id="G.0.06" penalty="10"/>
+	        <room id="G.0.07" penalty="10"/>
+	        <room id="G.0.08" penalty="10"/>
+	        <room id="G.0.09" penalty="10"/>
+	        <room id="G.0.10" penalty="10"/>
+	        <room id="G.0.13" penalty="0"/>
+	        <room id="G.1.01" penalty="10"/>
+	        <room id="G.1.02" penalty="10"/>
+	        <room id="G.1.03" penalty="10"/>
+	        <room id="G.1.04" penalty="10"/>
+	        <room id="G.1.05" penalty="10"/>
+	        <room id="G.1.06" penalty="10"/>
+	        <room id="G.1.07" penalty="10"/>
+	        <room id="G.1.08" penalty="10"/>
+	        <room id="G.1.09" penalty="10"/>
+	        <room id="G.1.10" penalty="10"/>
+            <time days="1000000" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="28" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="1000000" start="32" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+          <class id="ES_2h_2_1D">
+            <room id="G.0.01" penalty="10"/>
+	        <room id="G.0.02" penalty="10"/>
+	        <room id="G.0.03" penalty="10"/>
+	        <room id="G.0.04" penalty="10"/>
+	        <room id="G.0.05" penalty="10"/>
+	        <room id="G.0.06" penalty="10"/>
+	        <room id="G.0.07" penalty="10"/>
+	        <room id="G.0.08" penalty="10"/>
+	        <room id="G.0.09" penalty="10"/>
+	        <room id="G.0.10" penalty="10"/>
+	        <room id="G.0.13" penalty="0"/>
+	        <room id="G.1.01" penalty="10"/>
+	        <room id="G.1.02" penalty="10"/>
+	        <room id="G.1.03" penalty="10"/>
+	        <room id="G.1.04" penalty="10"/>
+	        <room id="G.1.05" penalty="10"/>
+	        <room id="G.1.06" penalty="10"/>
+	        <room id="G.1.07" penalty="10"/>
+	        <room id="G.1.08" penalty="10"/>
+	        <room id="G.1.09" penalty="10"/>
+	        <room id="G.1.10" penalty="10"/>
+            <time days="0000100" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="28" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0000100" start="32" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+        </subpart>
+		<subpart id="2">
+		  <class id="ES_2h_1_1N">
+			<room id="G.0.01" penalty="10"/>
+	        <room id="G.0.02" penalty="10"/>
+	        <room id="G.0.03" penalty="10"/>
+	        <room id="G.0.04" penalty="10"/>
+	        <room id="G.0.05" penalty="10"/>
+	        <room id="G.0.06" penalty="10"/>
+	        <room id="G.0.07" penalty="10"/>
+	        <room id="G.0.08" penalty="10"/>
+	        <room id="G.0.09" penalty="10"/>
+	        <room id="G.0.10" penalty="10"/>
+	        <room id="G.0.14" penalty="0"/>
+	        <room id="G.1.01" penalty="10"/>
+	        <room id="G.1.02" penalty="10"/>
+	        <room id="G.1.03" penalty="10"/>
+	        <room id="G.1.04" penalty="10"/>
+	        <room id="G.1.05" penalty="10"/>
+	        <room id="G.1.06" penalty="10"/>
+	        <room id="G.1.07" penalty="10"/>
+	        <room id="G.1.08" penalty="10"/>
+	        <room id="G.1.09" penalty="10"/>
+	        <room id="G.1.10" penalty="10"/>
+            <time days="0010000" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="32" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="41" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0010000" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+		  </class>
+          <class id="ES_2h_2_1N">
+            <room id="G.0.01" penalty="10"/>
+	        <room id="G.0.02" penalty="10"/>
+	        <room id="G.0.03" penalty="10"/>
+	        <room id="G.0.04" penalty="10"/>
+	        <room id="G.0.05" penalty="10"/>
+	        <room id="G.0.06" penalty="10"/>
+	        <room id="G.0.07" penalty="10"/>
+	        <room id="G.0.08" penalty="10"/>
+	        <room id="G.0.09" penalty="10"/>
+	        <room id="G.0.10" penalty="10"/>
+	        <room id="G.0.14" penalty="0"/>
+	        <room id="G.1.01" penalty="10"/>
+	        <room id="G.1.02" penalty="10"/>
+	        <room id="G.1.03" penalty="10"/>
+	        <room id="G.1.04" penalty="10"/>
+	        <room id="G.1.05" penalty="10"/>
+	        <room id="G.1.06" penalty="10"/>
+	        <room id="G.1.07" penalty="10"/>
+	        <room id="G.1.08" penalty="10"/>
+	        <room id="G.1.09" penalty="10"/>
+	        <room id="G.1.10" penalty="10"/>
+            <time days="0001000" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="32" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="37" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0001000" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+		</subpart>
+      </config>
+    </course>
+    <course id="IASC">
+      <config id="2">
+        <subpart id="3">
+          <class id="IASC_2h_1_1D">
+            <room id="G.0.01" penalty="10"/>
+	        <room id="G.0.02" penalty="10"/>
+	        <room id="G.0.03" penalty="10"/>
+	        <room id="G.0.04" penalty="10"/>
+	        <room id="G.0.05" penalty="10"/>
+	        <room id="G.0.06" penalty="10"/>
+	        <room id="G.0.07" penalty="10"/>
+	        <room id="G.0.08" penalty="10"/>
+	        <room id="G.0.09" penalty="10"/>
+	        <room id="G.0.10" penalty="10"/>
+	        <room id="G.0.13" penalty="0"/>
+	        <room id="G.1.01" penalty="10"/>
+	        <room id="G.1.02" penalty="10"/>
+	        <room id="G.1.03" penalty="10"/>
+	        <room id="G.1.04" penalty="10"/>
+	        <room id="G.1.05" penalty="10"/>
+	        <room id="G.1.06" penalty="10"/>
+	        <room id="G.1.07" penalty="10"/>
+	        <room id="G.1.08" penalty="10"/>
+	        <room id="G.1.09" penalty="10"/>
+	        <room id="G.1.10" penalty="10"/>
+            <time days="1000000" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="32" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="1000000" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+          <class id="IASC_2h_2_1D">
+            <room id="G.0.01" penalty="10"/>
+	        <room id="G.0.02" penalty="10"/>
+	        <room id="G.0.03" penalty="10"/>
+	        <room id="G.0.04" penalty="10"/>
+	        <room id="G.0.05" penalty="10"/>
+	        <room id="G.0.06" penalty="10"/>
+	        <room id="G.0.07" penalty="10"/>
+	        <room id="G.0.08" penalty="10"/>
+	        <room id="G.0.09" penalty="10"/>
+	        <room id="G.0.10" penalty="10"/>
+	        <room id="G.0.13" penalty="0"/>
+	        <room id="G.1.01" penalty="10"/>
+	        <room id="G.1.02" penalty="10"/>
+	        <room id="G.1.03" penalty="10"/>
+	        <room id="G.1.04" penalty="10"/>
+	        <room id="G.1.05" penalty="10"/>
+	        <room id="G.1.06" penalty="10"/>
+	        <room id="G.1.07" penalty="10"/>
+	        <room id="G.1.08" penalty="10"/>
+	        <room id="G.1.09" penalty="10"/>
+	        <room id="G.1.10" penalty="10"/>
+            <time days="0010000" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="32" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0010000" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+        </subpart>
+		<subpart id="4">
+          <class id="IASC_2h_1_1N">
+            <room id="C.1.01" penalty="10"/>
+	        <room id="C.1.02" penalty="0"/>
+	        <room id="C.1.03" penalty="10"/>
+	        <room id="C.1.04" penalty="10"/>
+	        <room id="C.1.05" penalty="10"/>
+	        <room id="C.1.06" penalty="10"/>
+	        <room id="C.1.07" penalty="10"/>
+	        <room id="C.1.08" penalty="10"/>
+	        <room id="C.1.09" penalty="10"/>
+	        <room id="C.1.10" penalty="10"/>
+	        <room id="C.2.01" penalty="10"/>
+	        <room id="C.2.02" penalty="10"/>
+	        <room id="C.2.03" penalty="10"/>
+	        <room id="C.2.04" penalty="10"/>
+	        <room id="C.2.05" penalty="10"/>
+	        <room id="C.2.06" penalty="10"/>
+	        <room id="C.2.07" penalty="10"/>
+	        <room id="C.2.08" penalty="10"/>
+	        <room id="C.2.09" penalty="10"/>
+	        <room id="C.2.10" penalty="10"/>
+            <time days="0100000" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="32" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="37" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0100000" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+          <class id="IASC_2h_2_1N">
+            <room id="C.1.01" penalty="10"/>
+	        <room id="C.1.02" penalty="0"/>
+	        <room id="C.1.03" penalty="10"/>
+	        <room id="C.1.04" penalty="10"/>
+	        <room id="C.1.05" penalty="10"/>
+	        <room id="C.1.06" penalty="10"/>
+	        <room id="C.1.07" penalty="10"/>
+	        <room id="C.1.08" penalty="10"/>
+	        <room id="C.1.09" penalty="10"/>
+	        <room id="C.1.10" penalty="10"/>
+	        <room id="C.2.01" penalty="10"/>
+	        <room id="C.2.02" penalty="10"/>
+	        <room id="C.2.03" penalty="10"/>
+	        <room id="C.2.04" penalty="10"/>
+	        <room id="C.2.05" penalty="10"/>
+	        <room id="C.2.06" penalty="10"/>
+	        <room id="C.2.07" penalty="10"/>
+	        <room id="C.2.08" penalty="10"/>
+	        <room id="C.2.09" penalty="10"/>
+	        <room id="C.2.10" penalty="10"/>
+            <time days="0000100" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="32" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="41" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0000100" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+        </subpart>
+      </config>
+    </course>
+    <course id="CD">
+      <config id="3">
+        <subpart id="5">
+          <class id="CD_2h_1_1D">
+            <room id="G.0.01" penalty="10"/>
+	        <room id="G.0.02" penalty="10"/>
+	        <room id="G.0.03" penalty="10"/>
+	        <room id="G.0.04" penalty="10"/>
+	        <room id="G.0.05" penalty="10"/>
+	        <room id="G.0.06" penalty="10"/>
+	        <room id="G.0.07" penalty="10"/>
+	        <room id="G.0.08" penalty="10"/>
+	        <room id="G.0.09" penalty="10"/>
+	        <room id="G.0.10" penalty="10"/>
+	        <room id="G.0.14" penalty="0"/>
+	        <room id="G.1.01" penalty="10"/>
+	        <room id="G.1.02" penalty="10"/>
+	        <room id="G.1.03" penalty="10"/>
+	        <room id="G.1.04" penalty="10"/>
+	        <room id="G.1.05" penalty="10"/>
+	        <room id="G.1.06" penalty="10"/>
+	        <room id="G.1.07" penalty="10"/>
+	        <room id="G.1.08" penalty="10"/>
+	        <room id="G.1.09" penalty="10"/>
+	        <room id="G.1.10" penalty="10"/>
+            <time days="0100000" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="28" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0100000" start="32" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+          <class id="CD_2h_2_1D">
+            <room id="C.1.01" penalty="0"/>
+			<room id="C.1.02" penalty="10"/>
+			<room id="C.1.03" penalty="10"/>
+			<room id="C.1.04" penalty="10"/>
+			<room id="C.1.05" penalty="10"/>
+			<room id="C.1.06" penalty="10"/>
+			<room id="C.1.07" penalty="10"/>
+			<room id="C.1.08" penalty="10"/>
+			<room id="C.1.09" penalty="10"/>
+			<room id="C.1.10" penalty="10"/>
+			<room id="C.2.01" penalty="10"/>
+			<room id="C.2.02" penalty="10"/>
+			<room id="C.2.03" penalty="10"/>
+			<room id="C.2.04" penalty="10"/>
+			<room id="C.2.05" penalty="10"/>
+			<room id="C.2.06" penalty="10"/>
+			<room id="C.2.07" penalty="10"/>
+			<room id="C.2.08" penalty="10"/>
+			<room id="C.2.09" penalty="10"/>
+			<room id="C.2.10" penalty="10"/>
+            <time days="0010000" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="28" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0010000" start="32" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+        </subpart>
+		<subpart id="6">
+          <class id="CD_2h_1_1N">
+            <room id="G.0.01" penalty="10"/>
+	        <room id="G.0.02" penalty="10"/>
+	        <room id="G.0.03" penalty="10"/>
+	        <room id="G.0.04" penalty="10"/>
+	        <room id="G.0.05" penalty="10"/>
+	        <room id="G.0.06" penalty="10"/>
+	        <room id="G.0.07" penalty="10"/>
+	        <room id="G.0.08" penalty="10"/>
+	        <room id="G.0.09" penalty="10"/>
+	        <room id="G.0.10" penalty="10"/>
+	        <room id="G.0.13" penalty="0"/>
+	        <room id="G.1.01" penalty="10"/>
+	        <room id="G.1.02" penalty="10"/>
+	        <room id="G.1.03" penalty="10"/>
+	        <room id="G.1.04" penalty="10"/>
+	        <room id="G.1.05" penalty="10"/>
+	        <room id="G.1.06" penalty="10"/>
+	        <room id="G.1.07" penalty="10"/>
+	        <room id="G.1.08" penalty="10"/>
+	        <room id="G.1.09" penalty="10"/>
+	        <room id="G.1.10" penalty="10"/>
+            <time days="0100000" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="32" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="41" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0100000" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+          <class id="CD_2h_2_1N">
+            <room id="G.0.01" penalty="10"/>
+	        <room id="G.0.02" penalty="10"/>
+	        <room id="G.0.03" penalty="10"/>
+	        <room id="G.0.04" penalty="10"/>
+	        <room id="G.0.05" penalty="10"/>
+	        <room id="G.0.06" penalty="10"/>
+	        <room id="G.0.07" penalty="10"/>
+	        <room id="G.0.08" penalty="10"/>
+	        <room id="G.0.09" penalty="10"/>
+	        <room id="G.0.10" penalty="10"/>
+	        <room id="G.0.14" penalty="0"/>
+	        <room id="G.1.01" penalty="10"/>
+	        <room id="G.1.02" penalty="10"/>
+	        <room id="G.1.03" penalty="10"/>
+	        <room id="G.1.04" penalty="10"/>
+	        <room id="G.1.05" penalty="10"/>
+	        <room id="G.1.06" penalty="10"/>
+	        <room id="G.1.07" penalty="10"/>
+	        <room id="G.1.08" penalty="10"/>
+	        <room id="G.1.09" penalty="10"/>
+	        <room id="G.1.10" penalty="10"/>
+            <time days="0000100" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="32" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="37" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0000100" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+        </subpart>
+      </config>
+    </course>
+    <course id="CS">
+      <config id="4">
+        <subpart id="7">
+          <class id="CS_2h_1_1D">
+            <room id="G.0.01" penalty="10"/>
+	        <room id="G.0.02" penalty="10"/>
+	        <room id="G.0.03" penalty="10"/>
+	        <room id="G.0.04" penalty="10"/>
+	        <room id="G.0.05" penalty="10"/>
+	        <room id="G.0.06" penalty="10"/>
+	        <room id="G.0.07" penalty="10"/>
+	        <room id="G.0.08" penalty="10"/>
+	        <room id="G.0.09" penalty="10"/>
+	        <room id="G.0.10" penalty="10"/>
+	        <room id="G.0.14" penalty="0"/>
+	        <room id="G.1.01" penalty="10"/>
+	        <room id="G.1.02" penalty="10"/>
+	        <room id="G.1.03" penalty="10"/>
+	        <room id="G.1.04" penalty="10"/>
+	        <room id="G.1.05" penalty="10"/>
+	        <room id="G.1.06" penalty="10"/>
+	        <room id="G.1.07" penalty="10"/>
+	        <room id="G.1.08" penalty="10"/>
+	        <room id="G.1.09" penalty="10"/>
+	        <room id="G.1.10" penalty="10"/>
+            <time days="0100000" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="32" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0100000" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+		  <class id="CS_2h_2_1D">
+            <room id="G.0.01" penalty="10"/>
+	        <room id="G.0.02" penalty="10"/>
+	        <room id="G.0.03" penalty="10"/>
+	        <room id="G.0.04" penalty="10"/>
+	        <room id="G.0.05" penalty="10"/>
+	        <room id="G.0.06" penalty="10"/>
+	        <room id="G.0.07" penalty="10"/>
+	        <room id="G.0.08" penalty="10"/>
+	        <room id="G.0.09" penalty="10"/>
+	        <room id="G.0.10" penalty="10"/>
+	        <room id="G.0.18" penalty="0"/>
+	        <room id="G.1.01" penalty="10"/>
+	        <room id="G.1.02" penalty="10"/>
+	        <room id="G.1.03" penalty="10"/>
+	        <room id="G.1.04" penalty="10"/>
+	        <room id="G.1.05" penalty="10"/>
+	        <room id="G.1.06" penalty="10"/>
+	        <room id="G.1.07" penalty="10"/>
+	        <room id="G.1.08" penalty="10"/>
+	        <room id="G.1.09" penalty="10"/>
+	        <room id="G.1.10" penalty="10"/>
+            <time days="0000100" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="32" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0000100" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+        </subpart>
+		<subpart id="8">
+          <class id="CS_2h_1_1N">
+            <room id="G.0.01" penalty="10"/>
+			<room id="G.0.02" penalty="10"/>
+			<room id="G.0.03" penalty="10"/>
+			<room id="G.0.04" penalty="10"/>
+			<room id="G.0.05" penalty="10"/>
+			<room id="G.0.06" penalty="10"/>
+			<room id="G.0.07" penalty="10"/>
+			<room id="G.0.08" penalty="10"/>
+			<room id="G.0.09" penalty="10"/>
+			<room id="G.0.10" penalty="10"/>
+			<room id="G.0.15" penalty="0"/>
+			<room id="G.1.01" penalty="10"/>
+			<room id="G.1.02" penalty="10"/>
+			<room id="G.1.03" penalty="10"/>
+			<room id="G.1.04" penalty="10"/>
+			<room id="G.1.05" penalty="10"/>
+			<room id="G.1.06" penalty="10"/>
+			<room id="G.1.07" penalty="10"/>
+			<room id="G.1.08" penalty="10"/>
+			<room id="G.1.09" penalty="10"/>
+			<room id="G.1.10" penalty="10"/>
+            <time days="0010000" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="32" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="37" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0010000" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+		  <class id="CS_2h_2_1N">
+            <room id="G.0.01" penalty="10"/>
+			<room id="G.0.02" penalty="10"/>
+			<room id="G.0.03" penalty="10"/>
+			<room id="G.0.04" penalty="10"/>
+			<room id="G.0.05" penalty="10"/>
+			<room id="G.0.06" penalty="10"/>
+			<room id="G.0.07" penalty="10"/>
+			<room id="G.0.08" penalty="10"/>
+			<room id="G.0.09" penalty="10"/>
+			<room id="G.0.10" penalty="10"/>
+			<room id="G.0.14" penalty="0"/>
+			<room id="G.1.01" penalty="10"/>
+			<room id="G.1.02" penalty="10"/>
+			<room id="G.1.03" penalty="10"/>
+			<room id="G.1.04" penalty="10"/>
+			<room id="G.1.05" penalty="10"/>
+			<room id="G.1.06" penalty="10"/>
+			<room id="G.1.07" penalty="10"/>
+			<room id="G.1.08" penalty="10"/>
+			<room id="G.1.09" penalty="10"/>
+			<room id="G.1.10" penalty="10"/>
+            <time days="0001000" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="32" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="41" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0001000" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+        </subpart>
+      </config>
+    </course>
+    <course id="AII">
+      <config id="5">
+        <subpart id="9">
+          <class id="AII_2h_1_1D">
+            <room id="C.1.01" penalty="10"/>
+			<room id="C.1.02" penalty="10"/>
+			<room id="C.1.03" penalty="10"/>
+			<room id="C.1.04" penalty="10"/>
+			<room id="C.1.05" penalty="10"/>
+			<room id="C.1.06" penalty="10"/>
+			<room id="C.1.07" penalty="10"/>
+			<room id="C.1.08" penalty="0"/>
+			<room id="C.1.09" penalty="10"/>
+			<room id="C.1.10" penalty="10"/>
+			<room id="C.2.01" penalty="10"/>
+			<room id="C.2.02" penalty="10"/>
+			<room id="C.2.03" penalty="10"/>
+			<room id="C.2.04" penalty="10"/>
+			<room id="C.2.05" penalty="10"/>
+			<room id="C.2.06" penalty="10"/>
+			<room id="C.2.07" penalty="10"/>
+			<room id="C.2.08" penalty="10"/>
+			<room id="C.2.09" penalty="10"/>
+			<room id="C.2.10" penalty="10"/>
+            <time days="0100000" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="32" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0100000" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0100000" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+		  <class id="AII_2h_2_1D">
+            <room id="G.0.01" penalty="10"/>
+			<room id="G.0.02" penalty="10"/>
+			<room id="G.0.03" penalty="10"/>
+			<room id="G.0.04" penalty="10"/>
+			<room id="G.0.05" penalty="10"/>
+			<room id="G.0.06" penalty="10"/>
+			<room id="G.0.07" penalty="10"/>
+			<room id="G.0.08" penalty="10"/>
+			<room id="G.0.09" penalty="10"/>
+			<room id="G.0.10" penalty="10"/>
+			<room id="G.0.16" penalty="0"/>
+			<room id="G.1.01" penalty="10"/>
+			<room id="G.1.02" penalty="10"/>
+			<room id="G.1.03" penalty="10"/>
+			<room id="G.1.04" penalty="10"/>
+			<room id="G.1.05" penalty="10"/>
+			<room id="G.1.06" penalty="10"/>
+			<room id="G.1.07" penalty="10"/>
+			<room id="G.1.08" penalty="10"/>
+			<room id="G.1.09" penalty="10"/>
+			<room id="G.1.10" penalty="10"/>
+            <time days="0000100" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="32" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0000100" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0000100" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+        </subpart>
+      </config>
+    </course>
+    <course id="AMD">
+      <config id="6">
+        <subpart id="10">
+          <class id="AMD_4h_1D">
+            <room id="G.0.01" penalty="10"/>
+			<room id="G.0.02" penalty="10"/>
+			<room id="G.0.03" penalty="10"/>
+			<room id="G.0.04" penalty="10"/>
+			<room id="G.0.05" penalty="10"/>
+			<room id="G.0.06" penalty="10"/>
+			<room id="G.0.07" penalty="10"/>
+			<room id="G.0.08" penalty="10"/>
+			<room id="G.0.09" penalty="10"/>
+			<room id="G.0.10" penalty="10"/>
+			<room id="G.0.18" penalty="0"/>
+			<room id="G.1.01" penalty="10"/>
+			<room id="G.1.02" penalty="10"/>
+			<room id="G.1.03" penalty="10"/>
+			<room id="G.1.04" penalty="10"/>
+			<room id="G.1.05" penalty="10"/>
+			<room id="G.1.06" penalty="10"/>
+			<room id="G.1.07" penalty="10"/>
+			<room id="G.1.08" penalty="10"/>
+			<room id="G.1.09" penalty="10"/>
+			<room id="G.1.10" penalty="10"/>
+            <time days="0001000" start="16" length="8" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="20" length="8" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="24" length="8" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="28" length="8" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0001000" start="32" length="8" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="36" length="8" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="40" length="8" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="44" length="8" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+        </subpart>
+		<subpart id="11">
+          <class id="AMD_4h_1N">
+            <room id="G.0.01" penalty="10"/>
+			<room id="G.0.02" penalty="10"/>
+			<room id="G.0.03" penalty="10"/>
+			<room id="G.0.04" penalty="10"/>
+			<room id="G.0.05" penalty="10"/>
+			<room id="G.0.06" penalty="10"/>
+			<room id="G.0.07" penalty="10"/>
+			<room id="G.0.08" penalty="10"/>
+			<room id="G.0.09" penalty="10"/>
+			<room id="G.0.10" penalty="10"/>
+			<room id="G.0.20" penalty="0"/>
+			<room id="G.1.01" penalty="10"/>
+			<room id="G.1.02" penalty="10"/>
+			<room id="G.1.03" penalty="10"/>
+			<room id="G.1.04" penalty="10"/>
+			<room id="G.1.05" penalty="10"/>
+			<room id="G.1.06" penalty="10"/>
+			<room id="G.1.07" penalty="10"/>
+			<room id="G.1.08" penalty="10"/>
+			<room id="G.1.09" penalty="10"/>
+			<room id="G.1.10" penalty="10"/>
+            <time days="1000000" start="16" length="8" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="20" length="8" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="24" length="8" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="28" length="8" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="32" length="8" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="36" length="8" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="37" length="8" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="1000000" start="40" length="8" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="1000000" start="44" length="8" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+        </subpart>
+      </config>
+    </course>
+    <course id="SB">
+      <config id="7">
+        <subpart id="12">
+          <class id="SB_2h_1_1N">
+            <room id="G.0.01" penalty="10"/>
+			<room id="G.0.02" penalty="10"/>
+			<room id="G.0.03" penalty="10"/>
+			<room id="G.0.04" penalty="10"/>
+			<room id="G.0.05" penalty="10"/>
+			<room id="G.0.06" penalty="10"/>
+			<room id="G.0.07" penalty="10"/>
+			<room id="G.0.08" penalty="10"/>
+			<room id="G.0.09" penalty="10"/>
+			<room id="G.0.10" penalty="10"/>
+			<room id="G.0.14" penalty="0"/>
+			<room id="G.1.01" penalty="10"/>
+			<room id="G.1.02" penalty="10"/>
+			<room id="G.1.03" penalty="10"/>
+			<room id="G.1.04" penalty="10"/>
+			<room id="G.1.05" penalty="10"/>
+			<room id="G.1.06" penalty="10"/>
+			<room id="G.1.07" penalty="10"/>
+			<room id="G.1.08" penalty="10"/>
+			<room id="G.1.09" penalty="10"/>
+			<room id="G.1.10" penalty="10"/>
+            <time days="0010000" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="32" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="37" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0010000" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0010000" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+		  <class id="SB_2h_2_1N">
+            <room id="G.0.01" penalty="10"/>
+			<room id="G.0.02" penalty="10"/>
+			<room id="G.0.03" penalty="10"/>
+			<room id="G.0.04" penalty="10"/>
+			<room id="G.0.05" penalty="10"/>
+			<room id="G.0.06" penalty="10"/>
+			<room id="G.0.07" penalty="10"/>
+			<room id="G.0.08" penalty="10"/>
+			<room id="G.0.09" penalty="10"/>
+			<room id="G.0.10" penalty="10"/>
+			<room id="G.0.15" penalty="0"/>
+			<room id="G.1.01" penalty="10"/>
+			<room id="G.1.02" penalty="10"/>
+			<room id="G.1.03" penalty="10"/>
+			<room id="G.1.04" penalty="10"/>
+			<room id="G.1.05" penalty="10"/>
+			<room id="G.1.06" penalty="10"/>
+			<room id="G.1.07" penalty="10"/>
+			<room id="G.1.08" penalty="10"/>
+			<room id="G.1.09" penalty="10"/>
+			<room id="G.1.10" penalty="10"/>
+            <time days="0001000" start="16" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="20" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="24" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="28" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="32" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="36" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="40" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+			<time days="0001000" start="41" length="4" weeks="1111111111111100000000000000" penalty="0"/>
+			<time days="0001000" start="44" length="4" weeks="1111111111111100000000000000" penalty="10"/>
+          </class>
+        </subpart>
+      </config>
+    </course>
+	<course id="PF">
+      <config id="8">
+        <subpart id="13">
+          <class id="PF_4h_2D">
+			<room id="G.0.01" penalty="10"/>
+			<room id="G.0.02" penalty="10"/>
+			<room id="G.0.03" penalty="10"/>
+			<room id="G.0.04" penalty="10"/>
+			<room id="G.0.05" penalty="10"/>
+			<room id="G.0.06" penalty="10"/>
+			<room id="G.0.07" penalty="10"/>
+			<room id="G.0.08" penalty="10"/>
+			<room id="G.0.09" penalty="10"/>
+			<room id="G.0.10" penalty="10"/>
+			<room id="G.0.20" penalty="0"/>
+			<room id="G.1.01" penalty="10"/>
+			<room id="G.1.02" penalty="10"/>
+			<room id="G.1.03" penalty="10"/>
+			<room id="G.1.04" penalty="10"/>
+			<room id="G.1.05" penalty="10"/>
+			<room id="G.1.06" penalty="10"/>
+			<room id="G.1.07" penalty="10"/>
+			<room id="G.1.08" penalty="10"/>
+			<room id="G.1.09" penalty="10"/>
+			<room id="G.1.10" penalty="10"/>
+            <time days="1000000" start="16" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="20" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="24" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="28" length="8" weeks="0000000000000011111111111111" penalty="0"/>
+			<time days="1000000" start="32" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="36" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="40" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="44" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+          </class>
+        </subpart>
+      </config>
+    </course>
+	<course id="FR">
+      <config id="9">
+        <subpart id="14">
+          <class id="FR_4h_2D">
+            <room id="C.1.01" penalty="10"/>
+	        <room id="C.1.02" penalty="10"/>
+	        <room id="C.1.03" penalty="10"/>
+	        <room id="C.1.04" penalty="10"/>
+	        <room id="C.1.05" penalty="10"/>
+	        <room id="C.1.06" penalty="10"/>
+	        <room id="C.1.07" penalty="0"/>
+	        <room id="C.1.08" penalty="10"/>
+	        <room id="C.1.09" penalty="10"/>
+	        <room id="C.1.10" penalty="10"/>
+	        <room id="C.2.01" penalty="10"/>
+	        <room id="C.2.02" penalty="10"/>
+	        <room id="C.2.03" penalty="10"/>
+	        <room id="C.2.04" penalty="10"/>
+	        <room id="C.2.05" penalty="10"/>
+	        <room id="C.2.06" penalty="10"/>
+	        <room id="C.2.07" penalty="10"/>
+	        <room id="C.2.08" penalty="10"/>
+	        <room id="C.2.09" penalty="10"/>
+	        <room id="C.2.10" penalty="10"/>
+            <time days="0001000" start="16" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0001000" start="20" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0001000" start="24" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0001000" start="28" length="8" weeks="0000000000000011111111111111" penalty="0"/>
+			<time days="0001000" start="32" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0001000" start="36" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0001000" start="40" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0001000" start="44" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+          </class>
+        </subpart>
+      </config>
+    </course>
+	<course id="VARM">
+      <config id="10">
+        <subpart id="15">
+          <class id="VARM_2h_1_2N">
+            <room id="C.1.01" penalty="10"/>
+			<room id="C.1.02" penalty="0"/>
+			<room id="C.1.03" penalty="10"/>
+			<room id="C.1.04" penalty="10"/>
+			<room id="C.1.05" penalty="10"/>
+			<room id="C.1.06" penalty="10"/>
+			<room id="C.1.07" penalty="10"/>
+			<room id="C.1.08" penalty="10"/>
+			<room id="C.1.09" penalty="10"/>
+			<room id="C.1.10" penalty="10"/>
+			<room id="C.2.01" penalty="10"/>
+			<room id="C.2.02" penalty="10"/>
+			<room id="C.2.03" penalty="10"/>
+			<room id="C.2.04" penalty="10"/>
+			<room id="C.2.05" penalty="10"/>
+			<room id="C.2.06" penalty="10"/>
+			<room id="C.2.07" penalty="10"/>
+			<room id="C.2.08" penalty="10"/>
+			<room id="C.2.09" penalty="10"/>
+			<room id="C.2.10" penalty="10"/>
+            <time days="1000000" start="16" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="20" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="24" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="28" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="32" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="36" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="37" length="4" weeks="0000000000000011111111111111" penalty="0"/>
+			<time days="1000000" start="40" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="44" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+          </class>
+          <class id="VARM_2h_2_2N">
+            <room id="C.1.01" penalty="10"/>
+			<room id="C.1.02" penalty="0"/>
+			<room id="C.1.03" penalty="10"/>
+			<room id="C.1.04" penalty="10"/>
+			<room id="C.1.05" penalty="10"/>
+			<room id="C.1.06" penalty="10"/>
+			<room id="C.1.07" penalty="10"/>
+			<room id="C.1.08" penalty="10"/>
+			<room id="C.1.09" penalty="10"/>
+			<room id="C.1.10" penalty="10"/>
+			<room id="C.2.01" penalty="10"/>
+			<room id="C.2.02" penalty="10"/>
+			<room id="C.2.03" penalty="10"/>
+			<room id="C.2.04" penalty="10"/>
+			<room id="C.2.05" penalty="10"/>
+			<room id="C.2.06" penalty="10"/>
+			<room id="C.2.07" penalty="10"/>
+			<room id="C.2.08" penalty="10"/>
+			<room id="C.2.09" penalty="10"/>
+			<room id="C.2.10" penalty="10"/>
+            <time days="0100000" start="16" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0100000" start="20" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0100000" start="24" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0100000" start="28" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0100000" start="32" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0100000" start="36" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0100000" start="40" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0100000" start="41" length="4" weeks="0000000000000011111111111111" penalty="0"/>
+			<time days="0100000" start="44" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+          </class>
+        </subpart>
+	  </config>
+    </course>
+    <course id="AMI">
+      <config id="11">
+        <subpart id="16">
+          <class id="AMI_2h_1_2N">
+            <room id="G.0.01" penalty="10"/>
+			<room id="G.0.02" penalty="10"/>
+			<room id="G.0.03" penalty="10"/>
+			<room id="G.0.04" penalty="10"/>
+			<room id="G.0.05" penalty="10"/>
+			<room id="G.0.06" penalty="10"/>
+			<room id="G.0.07" penalty="10"/>
+			<room id="G.0.08" penalty="10"/>
+			<room id="G.0.09" penalty="10"/>
+			<room id="G.0.10" penalty="10"/>
+			<room id="G.0.20" penalty="0"/>
+			<room id="G.1.01" penalty="10"/>
+			<room id="G.1.02" penalty="10"/>
+			<room id="G.1.03" penalty="10"/>
+			<room id="G.1.04" penalty="10"/>
+			<room id="G.1.05" penalty="10"/>
+			<room id="G.1.06" penalty="10"/>
+			<room id="G.1.07" penalty="10"/>
+			<room id="G.1.08" penalty="10"/>
+			<room id="G.1.09" penalty="10"/>
+			<room id="G.1.10" penalty="10"/>
+            <time days="1000000" start="16" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="20" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="24" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="28" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="32" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="36" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="40" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="1000000" start="41" length="4" weeks="0000000000000011111111111111" penalty="0"/>
+			<time days="1000000" start="44" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+          </class>
+          <class id="AMI_2h_2_2N">
+            <room id="C.1.01" penalty="10"/>
+			<room id="C.1.02" penalty="0"/>
+			<room id="C.1.03" penalty="10"/>
+			<room id="C.1.04" penalty="10"/>
+			<room id="C.1.05" penalty="10"/>
+			<room id="C.1.06" penalty="10"/>
+			<room id="C.1.07" penalty="10"/>
+			<room id="C.1.08" penalty="10"/>
+			<room id="C.1.09" penalty="10"/>
+			<room id="C.1.10" penalty="10"/>
+			<room id="C.2.01" penalty="10"/>
+			<room id="C.2.02" penalty="10"/>
+			<room id="C.2.03" penalty="10"/>
+			<room id="C.2.04" penalty="10"/>
+			<room id="C.2.05" penalty="10"/>
+			<room id="C.2.06" penalty="10"/>
+			<room id="C.2.07" penalty="10"/>
+			<room id="C.2.08" penalty="10"/>
+			<room id="C.2.09" penalty="10"/>
+			<room id="C.2.10" penalty="10"/>
+            <time days="0100000" start="16" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0100000" start="20" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0100000" start="24" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0100000" start="28" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0100000" start="32" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0100000" start="36" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0100000" start="37" length="4" weeks="0000000000000011111111111111" penalty="0"/>
+			<time days="0100000" start="40" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0100000" start="44" length="4" weeks="0000000000000011111111111111" penalty="10"/>
+          </class>
+        </subpart>
+      </config>
+    </course>
+	<course id="IAEOD">
+      <config id="12">
+        <subpart id="17">
+          <class id="IAEOD_4h_2N">
+            <room id="G.0.01" penalty="10"/>
+			<room id="G.0.02" penalty="10"/>
+			<room id="G.0.03" penalty="10"/>
+			<room id="G.0.04" penalty="10"/>
+			<room id="G.0.05" penalty="10"/>
+			<room id="G.0.06" penalty="10"/>
+			<room id="G.0.07" penalty="10"/>
+			<room id="G.0.08" penalty="10"/>
+			<room id="G.0.09" penalty="10"/>
+			<room id="G.0.10" penalty="10"/>
+			<room id="G.0.18" penalty="0"/>
+			<room id="G.1.01" penalty="10"/>
+			<room id="G.1.02" penalty="10"/>
+			<room id="G.1.03" penalty="10"/>
+			<room id="G.1.04" penalty="10"/>
+			<room id="G.1.05" penalty="10"/>
+			<room id="G.1.06" penalty="10"/>
+			<room id="G.1.07" penalty="10"/>
+			<room id="G.1.08" penalty="10"/>
+			<room id="G.1.09" penalty="10"/>
+			<room id="G.1.10" penalty="10"/>
+            <time days="0010000" start="16" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0010000" start="20" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0010000" start="24" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0010000" start="28" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0010000" start="32" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0010000" start="36" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0010000" start="37" length="8" weeks="0000000000000011111111111111" penalty="0"/>
+			<time days="0010000" start="40" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0010000" start="44" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+          </class>
+        </subpart>
+      </config>
+    </course>
+	<course id="RPC">
+      <config id="13">
+        <subpart id="18">
+          <class id="RPC_4h_2N">
+            <room id="G.0.01" penalty="10"/>
+			<room id="G.0.02" penalty="10"/>
+			<room id="G.0.03" penalty="10"/>
+			<room id="G.0.04" penalty="10"/>
+			<room id="G.0.05" penalty="10"/>
+			<room id="G.0.06" penalty="10"/>
+			<room id="G.0.07" penalty="10"/>
+			<room id="G.0.08" penalty="10"/>
+			<room id="G.0.09" penalty="10"/>
+			<room id="G.0.10" penalty="10"/>
+			<room id="G.0.14" penalty="0"/>
+			<room id="G.1.01" penalty="10"/>
+			<room id="G.1.02" penalty="10"/>
+			<room id="G.1.03" penalty="10"/>
+			<room id="G.1.04" penalty="10"/>
+			<room id="G.1.05" penalty="10"/>
+			<room id="G.1.06" penalty="10"/>
+			<room id="G.1.07" penalty="10"/>
+			<room id="G.1.08" penalty="10"/>
+			<room id="G.1.09" penalty="10"/>
+			<room id="G.1.10" penalty="10"/>
+            <time days="0010000" start="16" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0010000" start="20" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0010000" start="24" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0010000" start="28" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0010000" start="32" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0010000" start="36" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0010000" start="37" length="8" weeks="0000000000000011111111111111" penalty="0"/>
+			<time days="0010000" start="40" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0010000" start="44" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+          </class>
+        </subpart>
+      </config>
+    </course>
+	<course id="AP">
+      <config id="14">
+        <subpart id="19">
+          <class id="AP_4h_2N">
+            <room id="G.0.01" penalty="10"/>
+			<room id="G.0.02" penalty="10"/>
+			<room id="G.0.03" penalty="10"/>
+			<room id="G.0.04" penalty="10"/>
+			<room id="G.0.05" penalty="10"/>
+			<room id="G.0.06" penalty="10"/>
+			<room id="G.0.07" penalty="10"/>
+			<room id="G.0.08" penalty="10"/>
+			<room id="G.0.09" penalty="10"/>
+			<room id="G.0.10" penalty="10"/>
+			<room id="G.0.20" penalty="0"/>
+			<room id="G.1.01" penalty="10"/>
+			<room id="G.1.02" penalty="10"/>
+			<room id="G.1.03" penalty="10"/>
+			<room id="G.1.04" penalty="10"/>
+			<room id="G.1.05" penalty="10"/>
+			<room id="G.1.06" penalty="10"/>
+			<room id="G.1.07" penalty="10"/>
+			<room id="G.1.08" penalty="10"/>
+			<room id="G.1.09" penalty="10"/>
+			<room id="G.1.10" penalty="10"/>
+            <time days="0001000" start="16" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0001000" start="20" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0001000" start="24" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0001000" start="28" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0001000" start="32" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0001000" start="36" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0001000" start="37" length="8" weeks="0000000000000011111111111111" penalty="0"/>
+			<time days="0001000" start="40" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0001000" start="44" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+          </class>
+        </subpart>
+      </config>
+    </course>
+	<course id="SGAIM">
+      <config id="15">
+        <subpart id="20">
+          <class id="SGAIM_4h_2N">
+            <room id="G.0.01" penalty="10"/>
+			<room id="G.0.02" penalty="10"/>
+			<room id="G.0.03" penalty="10"/>
+			<room id="G.0.04" penalty="10"/>
+			<room id="G.0.05" penalty="10"/>
+			<room id="G.0.06" penalty="10"/>
+			<room id="G.0.07" penalty="10"/>
+			<room id="G.0.08" penalty="10"/>
+			<room id="G.0.09" penalty="10"/>
+			<room id="G.0.10" penalty="10"/>
+			<room id="G.0.19" penalty="0"/>
+			<room id="G.1.01" penalty="10"/>
+			<room id="G.1.02" penalty="10"/>
+			<room id="G.1.03" penalty="10"/>
+			<room id="G.1.04" penalty="10"/>
+			<room id="G.1.05" penalty="10"/>
+			<room id="G.1.06" penalty="10"/>
+			<room id="G.1.07" penalty="10"/>
+			<room id="G.1.08" penalty="10"/>
+			<room id="G.1.09" penalty="10"/>
+			<room id="G.1.10" penalty="10"/>
+            <time days="0000100" start="16" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0000100" start="20" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0000100" start="24" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0000100" start="28" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0000100" start="32" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0000100" start="36" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0000100" start="37" length="8" weeks="0000000000000011111111111111" penalty="0"/>
+			<time days="0000100" start="40" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+			<time days="0000100" start="44" length="8" weeks="0000000000000011111111111111" penalty="10"/>
+          </class>
+        </subpart>
+      </config>
+    </course>
+  </courses>
+  <teachers>
+	<teacher id="1" name="Luís Filipe Morgado">
+		<class id="ES_2h_1_1D"/>
+		<class id="ES_2h_2_1D"/>
+		<class id="IASC_2h_1_1D"/>
+		<class id="IASC_2h_2_1D"/>
+	</teacher>
+	<teacher id="2" name="Jorge Boto Branco">
+		<class id="ES_2h_1_1N"/>
+		<class id="ES_2h_2_1N"/>
+	</teacher>
+	<teacher id="3" name="Hélder Filipe Bastos">
+		<class id="IASC_2h_1_1N"/>
+		<class id="IASC_2h_2_1N"/>
+	</teacher>
+	<teacher id="4" name="José Manuel Simão">
+		<class id="CD_2h_1_1D"/>
+		<class id="CD_2h_2_1D"/>
+		<class id="CS_2h_1_1D"/>
+		<class id="CS_2h_2_1D"/>
+		<class id="CS_2h_1_1N"/>
+		<class id="CS_2h_2_1N"/>
+	</teacher>
+	<teacher id="5" name="Lucía Fernández Suárez">
+		<class id="CS_2h_1_1D"/>
+		<class id="CS_2h_2_1D"/>
+		<class id="CS_2h_1_1N"/>
+		<class id="CS_2h_2_1N"/>
+	</teacher>
+	<teacher id="6" name="Nuno Miguel Cruz">
+		<class id="CS_2h_1_1D"/>
+		<class id="CS_2h_2_1D"/>
+		<class id="CS_2h_1_1N"/>
+		<class id="CS_2h_2_1N"/>
+	</teacher>
+	<teacher id="7" name="Tiago Miguel Dias">
+		<class id="CS_2h_1_1D"/>
+		<class id="CS_2h_2_1D"/>
+		<class id="CS_2h_1_1N"/>
+		<class id="CS_2h_2_1N"/>
+	</teacher>
+	<teacher id="8" name="Joel Vera Paulo">
+		<class id="AII_2h_1_1D"/>
+		<class id="AII_2h_2_1D"/>
+	</teacher>
+	<teacher id="9" name="Paulo Trigo Silva">
+		<class id="AMD_4h_1D"/>
+		<class id="RPC_4h_2N"/>
+	</teacher>
+	<teacher id="10" name="Artur Jorge Ferreira">
+		<class id="AMD_4h_1N"/>
+		<class id="SB_2h_1_1N"/>
+		<class id="SB_2h_2_1N"/>
+	</teacher>
+	<teacher id="11" name="Luís Manuel Assunção">
+		<class id="CD_2h_1_1N"/>
+		<class id="CD_2h_2_1N"/>
+	</teacher>
+	<teacher id="12" name="André Ribeiro Lourenço">
+		<class id="SB_2h_1_1N"/>
+		<class id="SB_2h_2_1N"/>
+	</teacher>
+	<teacher id="13" name="Carlos Eduardo Ribeiro">
+		<class id="PF_4h_2D"/>
+	</teacher>
+	<teacher id="14" name="Jorge Miguel Pais">
+		<class id="FR_4h_2D"/>
+	</teacher>
+	<teacher id="15" name="Pedro Mendes Jorge">
+		<class id="VARM_2h_1_2N"/>
+		<class id="VARM_2h_2_2N"/>
+	</teacher>
+	<teacher id="16" name="Rui Manuel Jesus">
+		<class id="AMI_2h_1_2N"/>
+		<class id="AMI_2h_2_2N"/>
+	</teacher>
+	<teacher id="17" name="Matilde Pós-de-Mina Pato">
+		<class id="IAEOD_4h_2N"/>
+	</teacher>
+	<teacher id="18" name="Nuno Miguel Datia">
+		<class id="IAEOD_4h_2N"/>
+	</teacher>
+	<teacher id="19" name="Gonçalo Caetano Marques">
+		<class id="AP_4h_2N"/>
+	</teacher>
+	<teacher id="20" name="Arnaldo Joaquim Abrantes">
+		<class id="SGAIM_4h_2N"/>
+	</teacher>
+  </teachers>
+  <distributions>
+    <distribution type="NotOverlap" required="true">
+      <class id="ES_2h_1_1D"/>
+	  <class id="ES_2h_2_1D"/>
+      <class id="ES_2h_1_1N"/>
+	  <class id="ES_2h_2_1N"/>
+	  <class id="IASC_2h_1_1D"/>
+	  <class id="IASC_2h_2_1D"/>
+	  <class id="IASC_2h_1_1N"/>
+	  <class id="IASC_2h_2_1N"/>
+	  <class id="CD_2h_1_1D"/>
+	  <class id="CD_2h_2_1D"/>
+	  <class id="CD_2h_1_1N"/>
+	  <class id="CD_2h_2_1N"/>
+      <class id="CS_2h_1_1D"/>
+	  <class id="CS_2h_2_1D"/>
+	  <class id="CS_2h_1_1N"/>
+	  <class id="CS_2h_2_1N"/>
+	  <class id="AMD_4h_1D"/>
+	  <class id="AMD_4h_1N"/>
+    </distribution>
+	<distribution type="NotOverlap" required="true">
+	  <class id="PF_4h_2D"/>
+	  <class id="FR_4h_2D"/>
+      <class id="VARM_2h_1_2N"/>
+	  <class id="VARM_2h_2_2N"/>
+      <class id="AMI_2h_1_2N"/>
+      <class id="AMI_2h_2_2N"/>
+	  <class id="IAEOD_4h_2N"/>
+	  <class id="AP_4h_2N"/>
+	  <class id="SGAIM_4h_2N"/>
+    </distribution>
+	<distribution type="NotOverlap" required="true">
+	  <class id="AII_2h_1_1D"/>
+	  <class id="AII_2h_2_1D"/>
+    </distribution>
+	<distribution type="NotOverlap" required="true">
+	  <class id="SB_2h_1_1N"/>
+	  <class id="SB_2h_2_1N"/>
+    </distribution>
+  </distributions>
+  <students/>
+</problem>

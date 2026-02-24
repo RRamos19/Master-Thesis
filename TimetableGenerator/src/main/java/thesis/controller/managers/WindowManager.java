@@ -287,7 +287,7 @@ public class WindowManager {
 
                 Label idLabel = new Label(lesson.getClassId());
                 Label progLabel = new Label("[" + data.getProgramName() + "]");
-                Label teachersLabel = teacherList.isEmpty() ? null : new Label("[(" + String.join(");\n ", teacherList) + ")]");
+                Label teachersLabel = teacherList.isEmpty() ? null : new Label("[(" + String.join(");\n(", teacherList) + ")]");
                 Label roomLabel = lesson.getRoomId() != null ? new Label("[" + lesson.getRoomId() + "]") : null;
 
                 VBox box = new VBox(2);
