@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import thesis.model.persistence.entities.embeddableIds.ConstraintPK;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "timetable_constraint")

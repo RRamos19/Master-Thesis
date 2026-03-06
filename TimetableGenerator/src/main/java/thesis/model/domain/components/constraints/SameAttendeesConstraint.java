@@ -2,7 +2,9 @@ package thesis.model.domain.components.constraints;
 
 import thesis.model.domain.components.*;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class SameAttendeesConstraint extends Constraint {
     public SameAttendeesConstraint(int id, String type, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {

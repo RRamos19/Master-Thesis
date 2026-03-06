@@ -16,7 +16,8 @@ import thesis.model.persistence.DBManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 public class Model implements ModelInterface {
     private static final Logger logger = LoggerFactory.getLogger(Model.class);

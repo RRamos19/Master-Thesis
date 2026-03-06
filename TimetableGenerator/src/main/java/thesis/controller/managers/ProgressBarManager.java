@@ -6,9 +6,8 @@ import javafx.scene.layout.HBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thesis.controller.ControllerInterface;
-import thesis.model.ModelInterface;
 import thesis.controller.managers.components.ProgressBarUnit;
-import thesis.model.exporter.TimetableDataExporter;
+import thesis.model.ModelInterface;
 
 import java.util.HashMap;
 import java.util.Map;

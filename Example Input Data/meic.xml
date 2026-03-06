@@ -1491,10 +1491,6 @@
 	  <class id="ES_2h_2_1D"/>
 	  <class id="ES_2h_1_1N"/>
 	  <class id="ES_2h_2_1N"/>
-	  <class id="IASC_2h_1_1D"/>
-	  <class id="IASC_2h_2_1D"/>
-	  <class id="IASC_2h_1_1N"/>
-	  <class id="IASC_2h_2_1N"/>
 	  <class id="CD_2h_1_1D"/>
 	  <class id="CD_2h_2_1D"/>
 	  <class id="CD_2h_1_1N"/>
@@ -1505,6 +1501,12 @@
 	  <class id="CS_2h_2_1N"/>
 	  <class id="AMD_4h_1D"/>
 	  <class id="AMD_4h_1N"/>
+    </distribution>
+	<distribution type="NotOverlap" required="true">
+	  <class id="IASC_2h_1_1D"/>
+	  <class id="IASC_2h_2_1D"/>
+	  <class id="IASC_2h_1_1N"/>
+	  <class id="IASC_2h_2_1N"/>
     </distribution>
 	<distribution type="NotOverlap" required="true">
       <class id="IESD_2h_1_2N"/>

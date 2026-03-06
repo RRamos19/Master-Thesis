@@ -1,7 +1,5 @@
 package thesis.model.domain.components;
 
-import java.util.List;
-
 public class TimetableConfiguration {
     private short timeWeight;
     private short roomWeight;

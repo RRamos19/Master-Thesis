@@ -2,9 +2,7 @@ package thesis.model.domain.components.constraints;
 
 import thesis.model.domain.components.*;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class MaxDaysConstraint extends Constraint {
     public MaxDaysConstraint(int id, String restrictionType, Integer param1, Integer penalty, boolean required, TimetableConfiguration timetableConfiguration) {

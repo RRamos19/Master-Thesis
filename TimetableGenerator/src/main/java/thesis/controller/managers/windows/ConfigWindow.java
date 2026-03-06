@@ -14,8 +14,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import thesis.controller.ControllerInterface;
-import thesis.view.utils.AppIcons;
 import thesis.controller.managers.components.GeneralConfiguration;
+import thesis.view.utils.AppIcons;
 
 public class ConfigWindow {
     private final Stage configStage;

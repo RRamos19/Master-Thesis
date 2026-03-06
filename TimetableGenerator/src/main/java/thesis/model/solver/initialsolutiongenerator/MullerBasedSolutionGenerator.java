@@ -3,7 +3,7 @@ package thesis.model.solver.initialsolutiongenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thesis.model.domain.InMemoryRepository;
-import thesis.model.domain.components.*;
+import thesis.model.domain.components.ClassUnit;
 import thesis.model.solver.core.*;
 import thesis.utils.RandomToolkit;
 

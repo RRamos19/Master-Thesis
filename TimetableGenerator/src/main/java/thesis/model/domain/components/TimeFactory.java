@@ -5,7 +5,9 @@ import org.slf4j.LoggerFactory;
 import thesis.model.exceptions.CheckedIllegalArgumentException;
 
 import java.lang.ref.SoftReference;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * Creates time objects when its the first time they are created. If an equal object has been created before, that same object is returned instead.

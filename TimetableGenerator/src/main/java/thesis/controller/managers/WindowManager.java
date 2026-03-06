@@ -13,13 +13,13 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import thesis.controller.ControllerInterface;
+import thesis.controller.managers.components.GeneralConfiguration;
+import thesis.controller.managers.windows.ConfigWindow;
+import thesis.controller.managers.windows.ExceptionMessageWindow;
 import thesis.model.domain.InMemoryRepository;
 import thesis.model.domain.components.ScheduledLesson;
 import thesis.model.domain.components.Timetable;
 import thesis.view.utils.AppIcons;
-import thesis.controller.managers.components.GeneralConfiguration;
-import thesis.controller.managers.windows.ConfigWindow;
-import thesis.controller.managers.windows.ExceptionMessageWindow;
 import thesis.view.utils.Defaults;
 
 import java.util.*;

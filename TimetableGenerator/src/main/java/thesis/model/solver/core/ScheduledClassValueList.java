@@ -6,7 +6,10 @@ import thesis.model.domain.components.ScheduledLesson;
 import thesis.model.domain.components.Time;
 import thesis.utils.RandomToolkit;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 public class ScheduledClassValueList implements ISGValueList<DefaultISGValue> {
 

@@ -3,8 +3,6 @@ package thesis.view.viewobjects;
 import javafx.beans.property.*;
 import thesis.model.domain.components.Timetable;
 
-import java.time.LocalDateTime;
-
 public class TimetableViewModel implements ViewModel {
     private final StringProperty dateOfCreation;
     private final LongProperty runtime;
