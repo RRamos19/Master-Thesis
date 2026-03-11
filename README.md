@@ -69,9 +69,9 @@ java -jar TimetableGenerator.jar
 
 ## Run the Application without building
 
-Go to the [Releases](https://github.com/RRamos19/Master-Thesis/releases) page and download the most recent release of the application.
+Go to the [Releases page](https://github.com/RRamos19/Master-Thesis/releases) and download the most recent release of the application for your operating system.
 
-To run the application simply simply double click it or run the command:
+To run the application simply double click it or run the command:
 
 ```
 java -jar TimetableGenerator.jar
